@@ -1,0 +1,61 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+              xmlns:cnh="http://schemas.android.com/apk/res/com.cnh.android.data.management"
+              android:layout_width="match_parent"
+              android:layout_height="match_parent"
+              android:orientation="vertical">
+
+
+   <LinearLayout android:layout_width="match_parent" android:layout_height="wrap_content"
+                 android:orientation="horizontal">
+      <com.cnh.android.widget.control.PickListEditable
+              android:id="@+id/source_pick"
+              style="@style/PickListBig"
+              android:layout_width="0dp"
+              android:layout_weight="1"
+              android:layout_height="wrap_content"
+              cnh:allowItemManagement="false"
+              cnh:allowItemCreation="false"
+              cnh:allowItemEditing="false"
+              cnh:allowItemDeletion="false"
+              cnh:allowItemCopying="false"
+              cnh:title="@string/import_source"/>
+
+      <com.cnh.android.widget.control.PickListEditable
+              android:id="@+id/destination_pick"
+              style="@style/PickListBig"
+              android:layout_width="0dp"
+              android:layout_weight="1"
+              android:layout_height="wrap_content"
+              cnh:allowItemManagement="false"
+              cnh:allowItemCreation="false"
+              cnh:allowItemEditing="false"
+              cnh:allowItemDeletion="false"
+              cnh:allowItemCopying="false"
+              cnh:title="@string/destination"/>
+
+   </LinearLayout>
+
+   <LinearLayout android:layout_width="match_parent" android:layout_height="match_parent"
+                 android:orientation="horizontal">
+      <pl.polidea.treeview.TreeViewList
+              android:id="@+id/tree_view"
+              android:layout_width="0dp"
+              android:layout_weight="3"
+              android:layout_height="wrap_content"
+              cnh:collapsible="true"/>
+
+      <Button
+              android:id="@+id/btn_import"
+              style="@style/Button"
+              android:layout_width="0dp"
+              android:layout_weight="1"
+              android:layout_height="wrap_content"
+              android:layout_marginLeft="0dp"
+              android:layout_marginRight="0dp"
+              android:paddingLeft="10dp"
+              android:paddingRight="10dp"
+              android:visibility="gone"
+              android:text="@string/import_string"/>
+   </LinearLayout>
+</LinearLayout>

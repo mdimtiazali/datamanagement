@@ -1,3 +1,12 @@
+/*
+ * Copyright (C) 2015 CNH Industrial NV. All rights reserved.
+ *
+ * This software contains proprietary information of CNH Industrial NV. Neither
+ * receipt nor possession thereof confers any right to reproduce, use, or
+ * disclose in whole or in part any such information without written
+ * authorization from CNH Industrial NV.
+ *
+ */
 package com.cnh.android.data.management;
 
 import android.app.Activity;
@@ -88,6 +97,10 @@ public class DataManagementTabActivity extends TabActivity {
    @Override
    public void onCreate(Bundle savedInstanceState) {
       super.onCreate(savedInstanceState);
+      TabActivityTab importExportTestTab = new TabActivityTab(R.string.tab_import, android.R.drawable.ic_dialog_alert, "import_export_test_tab",
+              new DataManagementTabListener(new ImportFragment(), this));
+      addTab(importExportTestTab);
       setTabActivityTitle(getString(R.string.app_name));
+      selectTabAtPosition(0);
    }
 }
