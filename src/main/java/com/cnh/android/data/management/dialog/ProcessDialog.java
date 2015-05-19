@@ -13,11 +13,11 @@ import android.app.Activity;
 import android.view.LayoutInflater;
 import android.view.View;
 
-import android.widget.ProgressBar;
 import com.cnh.android.data.management.R;
 import com.cnh.android.data.management.adapter.DataManagementBaseAdapter;
 import com.cnh.android.dialog.DialogView;
 import com.cnh.android.widget.activity.TabActivity;
+import com.cnh.android.widget.control.ProgressBarView;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -31,7 +31,7 @@ public class ProcessDialog extends DialogView {
    private DataManagementBaseAdapter adapter;
    private View activeView;
    private Activity context;
-   private ProgressBar pbBar;
+   private ProgressBarView pbBar;
 
 
    public ProcessDialog(Activity context) {
@@ -41,14 +41,14 @@ public class ProcessDialog extends DialogView {
    }
 
    private void init() {
-      setPadding(20, 20, 20, 4); // adjusting pop-up size to UI spec: CH26_UI-5285
       setFirstButtonText(context.getResources().getString(R.string.cancel));
       showSecondButton(false);
       showThirdButton(false);
 
       LayoutInflater inflater = ((Activity)getContext()).getLayoutInflater();
       View view = inflater.inflate(R.layout.progress_layout, null);
-      pbBar = (ProgressBar) view.findViewById(R.id.p_bar);
+      pbBar = (ProgressBarView) view.findViewById(R.id.progress_bar);
+      pbBar.setProgress(0);
       activeView = this.setBodyView(view);
    }
 
@@ -104,5 +104,11 @@ public class ProcessDialog extends DialogView {
    public void setProgress(int progress) {
       logger.debug("setProgress:" + progress);
       pbBar.setProgress(progress);
+   }
+
+   @Override
+   public DialogView setTitle(String text) {
+      pbBar.setTitle(text);
+      return super.setTitle(text);
    }
 }
