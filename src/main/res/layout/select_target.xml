@@ -47,6 +47,8 @@
        android:layout_height="wrap_content"
        cnh:title="@string/target"
        cnh:allowItemCreation="false"
+       cnh:allowItemDeletion="false"
+       cnh:allowItemManagement="false"
        cnh:allowItemCopying="false"
        cnh:allowItemEditing="false"/>
 </LinearLayout>

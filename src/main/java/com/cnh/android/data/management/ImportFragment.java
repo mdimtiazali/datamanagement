@@ -121,7 +121,7 @@ public class ImportFragment extends Fragment implements Mediator.ProgressListene
 
    public void onProgressPublished(String operation, int progress, int max) {
       logger.debug(String.format("publishProgress(%s, %d, %d)", operation, progress, max));
-      final Double percent = ((progress+1 * 1.0) / max) * 100;
+      final Double percent = ((progress * 1.0) / max) * 100;
       activity.runOnUiThread(new Runnable() {
          @Override
          public void run() {
