@@ -10,7 +10,9 @@
 package com.cnh.android.data.management;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import org.jgroups.Address;
 import org.jgroups.Global;
@@ -240,6 +242,20 @@ public class ImportFragment extends Fragment implements Mediator.ProgressListene
       });
    }
 
+    //Set Target for graph to handle partial imports(Inserts parent if not in destination)
+   private List<Operation> processPartialImports(List<Operation> operations) {
+       Map<ObjectGraph, Operation> operationMap = new HashMap<ObjectGraph,Operation>();
+       for (Operation operation : operations) {
+           operationMap.put(operation.getData(), operation);
+       }
+       for (ObjectGraph graph : treeAdapter.getSelected()) {
+           if (graph.getParent() != null) {
+               operationMap.get(graph).setTarget(graph.getParent());
+           }
+       }
+       return new ArrayList<Operation>(operationMap.values());
+   }
+
    private class ConnectTask extends AsyncTask<Void, Void, Void> {
 
       @Override
@@ -325,6 +341,7 @@ public class ImportFragment extends Fragment implements Mediator.ProgressListene
       protected void onPostExecute(List<Operation> operations) {
          super.onPostExecute(operations);
 
+         operations = processPartialImports(operations);
          boolean hasMultipleTargets = false;
          for (Operation operation : operations) {
             if (operation.getPotentialTargets() != null && operation.getPotentialTargets().size() > 1) {

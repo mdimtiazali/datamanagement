@@ -11,11 +11,10 @@ package com.cnh.android.data.management.adapter;
 
 import java.util.List;
 
-import android.view.KeyEvent;
-import android.view.inputmethod.EditorInfo;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.LinearLayout;
+import android.widget.Toast;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -81,27 +80,21 @@ public class ConflictResolutionViewAdapter extends DataManagementBaseAdapter {
                   }
                   else if (v.equals(viewHolder.keepBothBtn)) {
                      viewHolder.newNameLayout.setVisibility(View.VISIBLE);
-                     viewHolder.doneBtn.setEnabled(false);
-                     viewHolder.fileNameView.setOnEditorActionListener(new TextView.OnEditorActionListener() {
-                        @Override
-                        public boolean onEditorAction(TextView v, int actionId, KeyEvent event) {
-                           if (actionId == EditorInfo.IME_ACTION_DONE) {
-                              String entered = v.getText().toString();
-                              if (!entered.isEmpty()) {
-                                 viewHolder.doneBtn.setEnabled(true);
-                              }
-                           }
-                           return false;
-                        }
-                     });
+                     viewHolder.doneBtn.setEnabled(true);
                      viewHolder.doneBtn.setOnClickListener(new View.OnClickListener() {
                         @Override
                         public void onClick(View v) {
-                           operationList.get(activeOperation).getData().setName(viewHolder.fileNameView.getText().toString());
-                           operationList.get(activeOperation).setAction(Operation.Action.COPY_AND_KEEP);
-                           clearInputLayout(viewHolder);
-                           activeOperation++;
-                           checkAndUpdateActive();
+                           String newName = viewHolder.fileNameView.getText().toString();
+                           if (newName.equals("")) {
+                              Toast.makeText(context.getApplicationContext(), "New name cannot be blank", Toast.LENGTH_LONG).show();
+                           }
+                           else {
+                              operationList.get(activeOperation).setNewName(newName);
+                              operationList.get(activeOperation).setAction(Operation.Action.COPY_AND_KEEP);
+                              clearInputLayout(viewHolder);
+                              activeOperation++;
+                              checkAndUpdateActive();
+                           }
                         }
                      });
                   }

@@ -16,7 +16,7 @@
    <parent>
       <groupId>com.cnh.pf</groupId>
       <artifactId>parent</artifactId>
-      <version>5.49.0-SNAPSHOT</version>
+      <version>5.52.0-SNAPSHOT</version>
    </parent>
 
     <artifactId>datamanagement</artifactId>
@@ -33,7 +33,7 @@
         <dependency>
             <groupId>com.cnh.pf</groupId>
             <artifactId>libdatamng</artifactId>
-            <version>5.49.0-SNAPSHOT</version>
+            <version>${project.version}</version>
             <exclusions>
                <exclusion>
                   <groupId>org.codehaus.groovy</groupId>
