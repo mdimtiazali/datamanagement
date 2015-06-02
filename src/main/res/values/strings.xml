@@ -20,5 +20,6 @@
    <string name="checking_targets">Checking Potential Targets...</string>
    <string name="checking_conflicts">Checking Conflicts...</string>
    <string name="importing">Importing...</string>
+   <string name="select_path">Select Path...</string>
 
 </resources>

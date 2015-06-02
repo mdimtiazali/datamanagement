@@ -8,31 +8,49 @@
 
    <LinearLayout android:layout_width="match_parent" android:layout_height="wrap_content"
                  android:orientation="horizontal">
-      <com.cnh.android.widget.control.PickListEditable
-              android:id="@+id/source_pick"
-              style="@style/PickListBig"
-              android:layout_width="0dp"
-              android:layout_weight="1"
-              android:layout_height="wrap_content"
-              cnh:allowItemManagement="false"
-              cnh:allowItemCreation="false"
-              cnh:allowItemEditing="false"
-              cnh:allowItemDeletion="false"
-              cnh:allowItemCopying="false"
-              cnh:title="@string/import_source"/>
 
-      <com.cnh.android.widget.control.PickListEditable
-              android:id="@+id/destination_pick"
-              style="@style/PickListBig"
-              android:layout_width="0dp"
-              android:layout_weight="1"
-              android:layout_height="wrap_content"
-              cnh:allowItemManagement="false"
-              cnh:allowItemCreation="false"
-              cnh:allowItemEditing="false"
-              cnh:allowItemDeletion="false"
-              cnh:allowItemCopying="false"
-              cnh:title="@string/destination"/>
+       <LinearLayout
+           android:layout_width="0dp"
+           android:layout_weight="1"
+           android:layout_height="wrap_content"
+           android:orientation="vertical">
+
+           <com.cnh.android.widget.control.PickListEditable
+               android:id="@+id/source_pick"
+               style="@style/PickListBig"
+               android:layout_width="match_parent"
+               android:layout_height="wrap_content"
+               cnh:allowItemManagement="false"
+               cnh:allowItemCreation="false"
+               cnh:allowItemEditing="false"
+               cnh:allowItemDeletion="false"
+               cnh:allowItemCopying="false"
+               cnh:title="@string/import_source"/>
+
+           <TextView
+               android:id="@+id/source_dir"
+               android:layout_width="match_parent"
+               android:layout_height="wrap_content"
+               android:layout_marginTop="10dp"
+               android:padding="5dp"
+               android:textSize="28dp"
+               android:textColor="@color/StandardBlackColor"
+               android:background="@drawable/text_border"
+               android:visibility="gone"/>
+       </LinearLayout>
+
+        <com.cnh.android.widget.control.PickListEditable
+            android:id="@+id/destination_pick"
+            style="@style/PickListBig"
+            android:layout_width="0dp"
+            android:layout_weight="1"
+            android:layout_height="wrap_content"
+            cnh:allowItemManagement="false"
+            cnh:allowItemCreation="false"
+            cnh:allowItemEditing="false"
+            cnh:allowItemDeletion="false"
+            cnh:allowItemCopying="false"
+            cnh:title="@string/destination"/>
 
    </LinearLayout>
 
