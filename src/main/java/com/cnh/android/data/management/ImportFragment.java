@@ -15,8 +15,6 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import android.content.Context;
-import android.content.SharedPreferences;
 import org.jgroups.Address;
 import org.jgroups.Global;
 import org.jgroups.JChannel;
@@ -30,7 +28,9 @@ import pl.polidea.treeview.TreeStateManager;
 import pl.polidea.treeview.TreeViewList;
 
 import android.app.Fragment;
+import android.content.Context;
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.os.Handler;
@@ -45,7 +45,6 @@ import android.widget.Toast;
 
 import ch.qos.logback.classic.android.BasicLogcatConfigurator;
 
-import com.cnh.android.widget.control.SegmentedToggleButtonGroup;
 import com.cnh.android.data.management.adapter.ConflictResolutionViewAdapter;
 import com.cnh.android.data.management.adapter.DataManagementBaseAdapter;
 import com.cnh.android.data.management.adapter.ObjectTreeViewAdapater;
@@ -80,13 +79,14 @@ public class ImportFragment extends Fragment implements Mediator.ProgressListene
    private PickListEditable sourcePick;
    private PickListEditable destinationPick;
    private TextView sourceDir;
+   private TextView destDir;
    private TreeViewList treeView;
    private TreeStateManager<ObjectGraph> manager;
    private ObjectTreeViewAdapater treeAdapter;
    private TreeBuilder<ObjectGraph> treeBuilder;
    private Button continueBtn;
-   private SegmentedToggleButtonGroup opGroup;
    private volatile Long sdCardId;
+   private volatile Long destSdCardId;
 
    private Mediator mediator;
 
@@ -133,10 +133,9 @@ public class ImportFragment extends Fragment implements Mediator.ProgressListene
       sourcePick = (PickListEditable) layout.findViewById(R.id.source_pick);
       destinationPick = (PickListEditable) layout.findViewById(R.id.destination_pick);
       sourceDir = (TextView) layout.findViewById(R.id.source_dir);
+      destDir = (TextView) layout.findViewById(R.id.dest_dir);
       treeView = (TreeViewList) layout.findViewById(R.id.tree_view);
       continueBtn = (Button) layout.findViewById(R.id.btn_continue);
-      opGroup = (SegmentedToggleButtonGroup) layout.findViewById(R.id.importExportGroup);
-      opGroup.enableButton(R.id.importButton);
       final TabActivity activity = (TabActivity) getActivity();
       return layout;
    }
@@ -210,10 +209,9 @@ public class ImportFragment extends Fragment implements Mediator.ProgressListene
                                     sourceDir.setText(path);
                                     Intent i = new Intent();
                                     i.setAction("com.cnh.pf.data.EXTERNAL_DATA");
-//                                    i.putExtra("path", path);
                                     i.putExtra("paths", new String[] {path});
-                                    i.putExtra("create", (opGroup.getCheckedRadioButtonId() == R.id.exportButton));
                                     i.setFlags(Intent.FLAG_INCLUDE_STOPPED_PACKAGES);
+                                    i.putExtra("create", false);
                                     activity.sendBroadcast(i);
 
                                     handler.postDelayed(new Runnable() {
@@ -223,10 +221,14 @@ public class ImportFragment extends Fragment implements Mediator.ProgressListene
                                           for (Address addr : members) {
                                              try {
                                                 if (!addr.equals(channel.getAddress())) {
+                                                   logger.debug("Getting sources for: " + addr.toString());
                                                    Datasource.Source[] sources = mediator.getSources(addr);
                                                    if (Arrays.asList(sources).contains(Datasource.Source.USB)) {
                                                       logger.debug("addr: " + addr.toString() + " is valid datasource");
                                                       addrs.add(addr);
+                                                   }
+                                                   else {
+                                                      logger.debug("addr: " + addr.toString() + " is not valid datasource");
                                                    }
                                                 }
                                              }
@@ -238,7 +240,7 @@ public class ImportFragment extends Fragment implements Mediator.ProgressListene
                                              new DiscoveryTask().execute(addrs);
                                           }
                                        }
-                                    }, 5000);    //TODO need to investigate a more precise delay for datasources to register.
+                                    }, 4000); //TODO need to investigate a more precise delay for datasources to register.
                                  }
                               });
                               activity.showPopup(pathDialog, true);
@@ -249,7 +251,7 @@ public class ImportFragment extends Fragment implements Mediator.ProgressListene
                         logger.debug("Selected DataSource:" + members.get((int) id).toString());
                         ignoreNewViews = false;
                         sourceDir.setVisibility(View.GONE);
-                        new DiscoveryTask().execute(new ArrayList<Address>() {{add(members.get((int) id));}});
+                        new DiscoveryTask().execute(new ArrayList<Address>() {{ add(members.get((int) id)); }});
                      }
                   }
                }
@@ -259,32 +261,98 @@ public class ImportFragment extends Fragment implements Mediator.ProgressListene
 
                }
             });
+            popDest();
+         }
+      });
+   }
 
-            if (destinationPick.getAdapter() != null) {
-               destinationPick.clearList();
-            }
-            destinationPick.setAdapter(new PickListAdapter(destinationPick, getActivity().getApplicationContext()));
-            for (int i = 0; i < members.size(); i++) {
-               Address addr = members.get(i);
-               if (!addr.equals(channel.getAddress())) {
-                  destinationPick.addItem(new PickListItem(i, addr.toString()));
-               }
-            }
+   private void popDest() {
+      if (destinationPick.getAdapter() != null) {
+         destinationPick.clearList();
+      }
+      destinationPick.setAdapter(new PickListAdapter(destinationPick, getActivity().getApplicationContext()));
+      for (int i = 0; i < members.size(); i++) {
+         Address addr = members.get(i);
+         if (!addr.equals(channel.getAddress())) {
+            destinationPick.addItem(new PickListItem(i, addr.toString()));
+         }
+      }
 
-            destinationPick.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
-               @Override
-               public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
-                  if (id != PickListEditable.NO_ID) {
-                     logger.debug("Selected Destination DataSource:" + members.get((int) id).toString());
-                     destinationAddr = members.get((int) id);
+      //Add destination for sdcard, will be actual device later
+      destSdCardId = destinationPick.getNextId();
+      destinationPick.addItem(new PickListItem(sdCardId, "sdcard"));
+
+      destinationPick.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
+         @Override
+         public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
+            if (id == destSdCardId) {
+               destDir.setVisibility(View.VISIBLE);
+               destDir.setText("/");
+               destDir.setOnClickListener(new View.OnClickListener() {
+                  @Override
+                  public void onClick(View v) {
+                     logger.debug("onclick");
+                     pathDialog = new PathDialog(activity);
+                     pathDialog.setOnPathSelectedListener(new PathTreeViewAdapter.OnPathSelectedListener() {
+                        @Override
+                        public void onPathSelected(String path) {
+                           ignoreNewViews = true;
+                           destDir.setText(path);
+                           Intent i = new Intent();
+                           i.setAction("com.cnh.pf.data.EXTERNAL_DATA");
+                           i.putExtra("paths", new String[] { path });
+                           i.putExtra("create", true);
+                           i.setFlags(Intent.FLAG_INCLUDE_STOPPED_PACKAGES);
+                           activity.sendBroadcast(i);
+
+                           handler.postDelayed(new Runnable() {
+                              @Override
+                              public void run() {
+                                 List<Address> addrs = new ArrayList<Address>();
+                                 for (Address addr : members) {
+                                    try {
+                                       if (!addr.equals(channel.getAddress())) {
+                                          logger.debug("Getting sources for: " + addr.toString());
+                                          Datasource.Source[] sources = mediator.getSources(addr);
+                                          if (Arrays.asList(sources).contains(Datasource.Source.USB)) {
+                                             logger.debug("addr: " + addr.toString() + " is valid datasource");
+                                             addrs.add(addr);
+                                          }
+                                          else {
+                                             logger.debug("addr: " + addr.toString() + " is not valid datasource");
+                                          }
+                                       }
+                                    }
+                                    catch (Exception e) {
+                                       e.printStackTrace();
+                                    }
+                                 }
+                                 if (!addrs.isEmpty()) {
+                                    destinationAddr = addrs.get(0);
+                                    logger.debug("Setting destination addr to:" +destinationAddr);
+                                    //TODO bad shortcut
+                                 }
+                              }
+                           }, 4000);    //TODO need to investigate a more precise delay for datasources to register.
+                        }
+
+                     });
+                     activity.showPopup(pathDialog, true);
                   }
+               });
+            }
+            else {
+               destDir.setVisibility(View.GONE);
+               if (id != PickListEditable.NO_ID) {
+                  logger.debug("Selected Destination DataSource:" + members.get((int) id).toString());
+                  destinationAddr = members.get((int) id);
                }
+            }
+         }
 
-               @Override
-               public void onNothingSelected(AdapterView<?> parent) {
+         @Override
+         public void onNothingSelected(AdapterView<?> parent) {
 
-               }
-            });
          }
       });
    }

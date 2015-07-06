@@ -39,44 +39,38 @@
                android:visibility="gone"/>
        </LinearLayout>
 
-        <com.cnh.android.widget.control.PickListEditable
-            android:id="@+id/destination_pick"
-            style="@style/PickListBig"
-            android:layout_width="0dp"
-            android:layout_weight="1"
-            android:layout_height="wrap_content"
-            cnh:allowItemManagement="false"
-            cnh:allowItemCreation="false"
-            cnh:allowItemEditing="false"
-            cnh:allowItemDeletion="false"
-            cnh:allowItemCopying="false"
-            cnh:title="@string/destination"/>
+       <LinearLayout
+           android:layout_width="0dp"
+           android:layout_weight="1"
+           android:layout_height="wrap_content"
+           android:orientation="vertical">
+
+           <com.cnh.android.widget.control.PickListEditable
+               android:id="@+id/destination_pick"
+               style="@style/PickListBig"
+               android:layout_width="match_parent"
+               android:layout_height="wrap_content"
+               cnh:allowItemManagement="false"
+               cnh:allowItemCreation="false"
+               cnh:allowItemEditing="false"
+               cnh:allowItemDeletion="false"
+               cnh:allowItemCopying="false"
+               cnh:title="@string/destination"/>
+
+           <TextView
+               android:id="@+id/dest_dir"
+               android:layout_width="match_parent"
+               android:layout_height="wrap_content"
+               android:layout_marginTop="10dp"
+               android:padding="5dp"
+               android:textSize="28dp"
+               android:textColor="@color/StandardBlackColor"
+               android:background="@drawable/text_border"
+               android:visibility="gone"/>
+       </LinearLayout>
+
 
    </LinearLayout>
-
-    <com.cnh.android.widget.control.SegmentedToggleButtonGroup
-        android:id="@+id/importExportGroup"
-        style="@style/SegmentedToggleButton"
-        android:layout_width="300dp"
-        android:layout_height="wrap_content"
-        android:layout_marginBottom="20dp"
-        android:layout_marginTop="10dp"
-        android:orientation="horizontal" >
-        <!--android:visibility="gone"-->
-
-        <com.cnh.android.widget.control.SegmentedToggleButton
-            android:id="@+id/importButton"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:enabled="true"
-            android:text="Import" />
-
-        <com.cnh.android.widget.control.SegmentedToggleButton
-            android:id="@+id/exportButton"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:text="Export" />
-    </com.cnh.android.widget.control.SegmentedToggleButtonGroup>
 
    <LinearLayout android:layout_width="match_parent" android:layout_height="match_parent"
                  android:orientation="horizontal">
