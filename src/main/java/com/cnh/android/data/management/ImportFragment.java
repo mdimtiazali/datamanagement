@@ -211,14 +211,14 @@ public class ImportFragment extends Fragment implements Mediator.ProgressListene
                                     handler.postDelayed(new Runnable() {
                                        @Override
                                        public void run() {
-                                          List<String> addrs = new ArrayList<String>();
+                                          List<Address> addrs = new ArrayList<Address>();
                                           for (Address addr : members) {
                                              try {
                                                 if (!addr.equals(channel.getAddress())) {
-                                                   Datasource.Source[] sources = mediator.getSources(UUID.get(addr));
+                                                   Datasource.Source[] sources = mediator.getSources(addr);
                                                    if (Arrays.asList(sources).contains(Datasource.Source.USB)) {
-                                                      logger.debug("addr: " +addr.toString()+ " is valid datasource");
-                                                      addrs.add(UUID.get(addr));
+                                                      logger.debug("addr: " + addr.toString() + " is valid datasource");
+                                                      addrs.add(addr);
                                                    }
                                                 }
                                              }
@@ -241,7 +241,7 @@ public class ImportFragment extends Fragment implements Mediator.ProgressListene
                         logger.debug("Selected DataSource:" + members.get((int) id).toString());
                         ignoreNewViews = false;
                         sourceDir.setVisibility(View.GONE);
-                        new DiscoveryTask().execute(new ArrayList<String>() {{add(members.get((int) id).toString());}});
+                        new DiscoveryTask().execute(new ArrayList<Address>() {{add(members.get((int) id));}});
                      }
                   }
                }
@@ -389,13 +389,13 @@ public class ImportFragment extends Fragment implements Mediator.ProgressListene
       }
    }
 
-   private class DiscoveryTask extends AsyncTask<List<String>, Void, List<ObjectGraph>> {
+   private class DiscoveryTask extends AsyncTask<List<Address>, Void, List<ObjectGraph>> {
 
       @Override
-      protected List<ObjectGraph> doInBackground(List<String>... params) {
+      protected List<ObjectGraph> doInBackground(List<Address>... params) {
          logger.debug("Discovery for " + params[0].toString() + " source...");
          try {
-            return mediator.discovery(params[0].toArray(new String[params[0].size()]));
+            return mediator.discovery(params[0].toArray(new Address[params[0].size()]));
          }
          catch (Exception e) {
             e.printStackTrace();
@@ -426,7 +426,7 @@ public class ImportFragment extends Fragment implements Mediator.ProgressListene
          List<ObjectGraph> objs = params[0].second;
          logger.debug("Calculate Targets...");
          try {
-            return mediator.calculateOperations(destinationAddr.toString(), objs);
+            return mediator.calculateOperations(destinationAddr, objs);
          }
          catch (Exception e) {
             logger.error("Send exception", e);
@@ -498,7 +498,7 @@ public class ImportFragment extends Fragment implements Mediator.ProgressListene
          List<Operation> objs = params[0].second;
          logger.debug("Calculate Conflicts...");
          try {
-            return mediator.calculateConflicts(destinationAddr.toString(), objs);
+            return mediator.calculateConflicts(destinationAddr, objs);
          }
          catch (Exception e) {
             logger.error("Send exception", e);
@@ -555,7 +555,7 @@ public class ImportFragment extends Fragment implements Mediator.ProgressListene
                      logger.debug("onCompletion");
                      processDialog.hide();
                      if (operations.size() > 0) {
-                        new PerformOperationsTask().execute(Pair.create(destinationAddr.toString(), operations));
+                        new PerformOperationsTask().execute(Pair.create(destinationAddr, operations));
                      }
                   }
                });
@@ -578,13 +578,13 @@ public class ImportFragment extends Fragment implements Mediator.ProgressListene
             } else {
                processDialog.hide();
                if (operations.size() > 0) {
-                  new PerformOperationsTask().execute(Pair.create(destinationAddr.toString(), operations));
+                  new PerformOperationsTask().execute(Pair.create(destinationAddr, operations));
                }
             }
       }
    }
 
-   private class PerformOperationsTask extends ProgressTask<Pair<String, List<Operation>>, Void, Void> {
+   private class PerformOperationsTask extends ProgressTask<Pair<Address, List<Operation>>, Void, Void> {
 
       @Override
       protected void onPreExecute() {
@@ -593,12 +593,11 @@ public class ImportFragment extends Fragment implements Mediator.ProgressListene
       }
 
       @Override
-      protected Void doInBackground(Pair<String, List<Operation>>... params) {
-         String dst = params[0].first;
+      protected Void doInBackground(Pair<Address, List<Operation>>... params) {
          List<Operation> objs = params[0].second;
          logger.debug("Performing Operations...");
          try {
-            mediator.performOperations(dst, objs);
+            mediator.performOperations(params[0].first, objs);
          }
          catch (Exception e) {
             logger.error("Send exception", e);
