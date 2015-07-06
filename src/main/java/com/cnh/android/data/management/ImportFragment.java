@@ -15,11 +15,12 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import android.content.Context;
+import android.content.SharedPreferences;
 import org.jgroups.Address;
 import org.jgroups.Global;
 import org.jgroups.JChannel;
 import org.jgroups.blocks.RpcDispatcher;
-import org.jgroups.util.UUID;
 import org.jgroups.util.Util;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -93,7 +94,7 @@ public class ImportFragment extends Fragment implements Mediator.ProgressListene
       System.setProperty(Global.CUSTOM_LOG_FACTORY, Slf4jLogImpl.class.getName());
    }
 
-
+   public static final String GLOBAL_PREFERENCES_PACKAGE = "com.cnh.pf.android.preference";
    private JChannel channel;
    private RpcDispatcher disp;
    private List<Address> members = null;
@@ -372,25 +373,26 @@ public class ImportFragment extends Fragment implements Mediator.ProgressListene
       @Override
       protected Void doInBackground(Void... params) {
          try {
-
+            SharedPreferences prefs = getActivity().createPackageContext(GLOBAL_PREFERENCES_PACKAGE, Context.CONTEXT_IGNORE_SECURITY)
+                  .getSharedPreferences(GLOBAL_PREFERENCES_PACKAGE, Context.MODE_WORLD_READABLE);
+            String config = prefs.getString("jgroups_config", "jgroups.xml");
+            boolean gossip = config.equals("jgroups-tunnel.xml");
+            boolean tcp = config.equals("jgroups-tcp.xml");
+            if(gossip || tcp) {
+               System.setProperty("jgroups.tunnel.gossip_router_hosts", String.format("%s[%s]",
+                     prefs.getString("jgroups_gossip_host", "10.0.2.2"),
+                     prefs.getString("jgroups_gossip_port", "12001")));
+            }
+            if(tcp) {
+               String tcpExternalPort = prefs.getString("jgroups_external_port", "10000");
+               System.setProperty("jgroups.tcp.bind_port", tcpExternalPort);
+               System.setProperty(Global.EXTERNAL_ADDR, prefs.getString("jgroups_external_host", "10.0.0.11"));
+               System.setProperty(Global.EXTERNAL_PORT, tcpExternalPort);
+            }
+            logger.info("Using JGroups config {}", config);
             logger.info("Connecting");
             System.setProperty(Global.IPv4, "true");
-
-            //TODO Need smarter way of selecting jgroups configuration
-//            UDP MULTICAST
-                        channel = new JChannel(getResources().getAssets().open("jgroups.xml"));
-
-            //GOSSIP DISCOVERY
-            //            System.setProperty("jgroups.tcp.bind_port", "10000");
-            //            System.setProperty(Global.EXTERNAL_ADDR, "10.0.0.11");
-            //            System.setProperty(Global.EXTERNAL_PORT, "10000");
-            //            System.setProperty("jgroups.tunnel.gossip_router_hosts", "10.0.0.11[12001]");
-            //            channel = new JChannel(getResources().getAssets().open("jgroups-gossip.xml"));
-
-            //GOSSIP ROUTING
-            //            System.setProperty("jgroups.tunnel.gossip_router_hosts", "10.0.2.2[12001]");
-//            System.setProperty("jgroups.tunnel.gossip_router_hosts", "192.168.88.5[12001]");
-//            channel = new JChannel(getResources().getAssets().open("jgroups-tunnel.xml"));
+            channel = new JChannel(config);
 
             mediator = new Mediator(channel, "Android");
             mediator.setProgressListener(ImportFragment.this);
