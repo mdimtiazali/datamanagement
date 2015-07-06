@@ -54,6 +54,30 @@
 
    </LinearLayout>
 
+    <com.cnh.android.widget.control.SegmentedToggleButtonGroup
+        android:id="@+id/importExportGroup"
+        style="@style/SegmentedToggleButton"
+        android:layout_width="300dp"
+        android:layout_height="wrap_content"
+        android:layout_marginBottom="20dp"
+        android:layout_marginTop="10dp"
+        android:orientation="horizontal" >
+        <!--android:visibility="gone"-->
+
+        <com.cnh.android.widget.control.SegmentedToggleButton
+            android:id="@+id/importButton"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:enabled="true"
+            android:text="Import" />
+
+        <com.cnh.android.widget.control.SegmentedToggleButton
+            android:id="@+id/exportButton"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Export" />
+    </com.cnh.android.widget.control.SegmentedToggleButtonGroup>
+
    <LinearLayout android:layout_width="match_parent" android:layout_height="match_parent"
                  android:orientation="horizontal">
       <pl.polidea.treeview.TreeViewList
@@ -64,7 +88,7 @@
               cnh:collapsible="true"/>
 
       <Button
-              android:id="@+id/btn_import"
+              android:id="@+id/btn_continue"
               style="@style/Button"
               android:layout_width="0dp"
               android:layout_weight="1"
@@ -74,6 +98,6 @@
               android:paddingLeft="10dp"
               android:paddingRight="10dp"
               android:visibility="gone"
-              android:text="@string/import_string"/>
+              android:text="@string/continue_string"/>
    </LinearLayout>
 </LinearLayout>

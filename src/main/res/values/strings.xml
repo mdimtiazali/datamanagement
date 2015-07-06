@@ -21,5 +21,6 @@
    <string name="checking_conflicts">Checking Conflicts...</string>
    <string name="importing">Importing...</string>
    <string name="select_path">Select Path...</string>
+   <string name="continue_string">Continue</string>
 
 </resources>

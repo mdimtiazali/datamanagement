@@ -44,6 +44,7 @@ import android.widget.Toast;
 
 import ch.qos.logback.classic.android.BasicLogcatConfigurator;
 
+import com.cnh.android.widget.control.SegmentedToggleButtonGroup;
 import com.cnh.android.data.management.adapter.ConflictResolutionViewAdapter;
 import com.cnh.android.data.management.adapter.DataManagementBaseAdapter;
 import com.cnh.android.data.management.adapter.ObjectTreeViewAdapater;
@@ -82,7 +83,8 @@ public class ImportFragment extends Fragment implements Mediator.ProgressListene
    private TreeStateManager<ObjectGraph> manager;
    private ObjectTreeViewAdapater treeAdapter;
    private TreeBuilder<ObjectGraph> treeBuilder;
-   private Button importBtn;
+   private Button continueBtn;
+   private SegmentedToggleButtonGroup opGroup;
    private volatile Long sdCardId;
 
    private Mediator mediator;
@@ -121,6 +123,7 @@ public class ImportFragment extends Fragment implements Mediator.ProgressListene
          }
       }.execute();
       super.onDestroy();
+      doneOperation();
    }
 
    @Override
@@ -130,7 +133,9 @@ public class ImportFragment extends Fragment implements Mediator.ProgressListene
       destinationPick = (PickListEditable) layout.findViewById(R.id.destination_pick);
       sourceDir = (TextView) layout.findViewById(R.id.source_dir);
       treeView = (TreeViewList) layout.findViewById(R.id.tree_view);
-      importBtn = (Button) layout.findViewById(R.id.btn_import);
+      continueBtn = (Button) layout.findViewById(R.id.btn_continue);
+      opGroup = (SegmentedToggleButtonGroup) layout.findViewById(R.id.importExportGroup);
+      opGroup.enableButton(R.id.importButton);
       final TabActivity activity = (TabActivity) getActivity();
       return layout;
    }
@@ -204,7 +209,9 @@ public class ImportFragment extends Fragment implements Mediator.ProgressListene
                                     sourceDir.setText(path);
                                     Intent i = new Intent();
                                     i.setAction("com.cnh.pf.data.EXTERNAL_DATA");
-                                    i.putExtra("path", path);
+//                                    i.putExtra("path", path);
+                                    i.putExtra("paths", new String[] {path});
+                                    i.putExtra("create", (opGroup.getCheckedRadioButtonId() == R.id.exportButton));
                                     i.setFlags(Intent.FLAG_INCLUDE_STOPPED_PACKAGES);
                                     activity.sendBroadcast(i);
 
@@ -285,7 +292,7 @@ public class ImportFragment extends Fragment implements Mediator.ProgressListene
       if (manager != null) {
          manager.clear();
       }
-      importBtn.setVisibility(View.GONE);
+      continueBtn.setVisibility(View.GONE);
       destinationPick.clearSelection();
    }
 
@@ -312,14 +319,14 @@ public class ImportFragment extends Fragment implements Mediator.ProgressListene
          treeAdapter.setData(result);
          treeView.setAdapter(treeAdapter);
          manager.collapseChildren(null); //Collapse all children
-         importBtn.setVisibility(View.VISIBLE);
-         importBtn.setEnabled(true);
-         importBtn.setOnClickListener(new View.OnClickListener() {
+         continueBtn.setVisibility(View.VISIBLE);
+         continueBtn.setEnabled(true);
+         continueBtn.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
                if (destinationAddr != null) {
                   if (!treeAdapter.getSelected().isEmpty()) {
-                     importBtn.setEnabled(false);
+                     continueBtn.setEnabled(false);
                      List<ObjectGraph> objs = new ArrayList<ObjectGraph>(treeAdapter.getSelected());
                      new CalculateTargetsTask().execute(Pair.create(destinationAddr.toString(), objs));
                   }
@@ -337,6 +344,13 @@ public class ImportFragment extends Fragment implements Mediator.ProgressListene
       else {
          Toast.makeText(getActivity().getApplicationContext(), "No Data Found", Toast.LENGTH_LONG).show();
       }
+   }
+
+   private void doneOperation() {
+      logger.debug("Sending STOP Intent");
+      Intent i = new Intent();
+      i.setAction("com.cnh.pf.data.EXTERNAL_DATA_STOP");
+      activity.sendBroadcast(i);
    }
 
     //Set Target for graph to handle partial imports(Inserts parent if not in destination)
@@ -466,7 +480,7 @@ public class ImportFragment extends Fragment implements Mediator.ProgressListene
                   if (which == DialogViewInterface.BUTTON_FIRST) {
                      // user pressed "Cancel" button
                      dialog.dismiss();
-                     importBtn.setEnabled(true);
+                     continueBtn.setEnabled(true);
                   }
                }
             });
@@ -565,7 +579,7 @@ public class ImportFragment extends Fragment implements Mediator.ProgressListene
                      if (which == DialogViewInterface.BUTTON_FIRST) {
                         // user pressed "Cancel" button
                         dialog.dismiss();
-                        importBtn.setEnabled(true);
+                        continueBtn.setEnabled(true);
                      }
                   }
                });
@@ -615,9 +629,10 @@ public class ImportFragment extends Fragment implements Mediator.ProgressListene
                if (which == DialogViewInterface.BUTTON_FIRST) {
                   // user pressed "Done" button
                   processDialog.hide();
-                  importBtn.setEnabled(true);
+                  continueBtn.setEnabled(true);
                   sourcePick.clearSelection();
                   clearTree();
+                  doneOperation();
                }
             }
          });

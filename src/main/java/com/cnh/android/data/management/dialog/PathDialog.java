@@ -19,7 +19,6 @@ import pl.polidea.treeview.TreeStateManager;
 import pl.polidea.treeview.TreeViewList;
 
 import android.app.Activity;
-import android.os.Environment;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.widget.Toast;
@@ -101,14 +100,20 @@ public class PathDialog extends DialogView {
    private List<String> getSourcePath(File dir) {
       File[] files = dir.listFiles();
       List<String> sourcePaths = new ArrayList<String>();
-      for (File file : files) {
-         if (file.getName().contains("cn1")) {
-            sourcePaths.add(file.getAbsolutePath());
-         }
-         else if (file.isDirectory()) {
-            List<String> cPath = getSourcePath(file);
-            for (String path : cPath) {
-               sourcePaths.add(path);
+      if (files != null) {
+         for (File file : files) {
+            if (file.getName().contains("cn1")) {
+               sourcePaths.add(file.getAbsolutePath());
+            }
+            else if (file.getName().contains("TASKDATA")) {
+               sourcePaths.add(file.getAbsolutePath());
+            }
+            else if (file.isDirectory()) {
+               sourcePaths.add(file.getAbsolutePath());
+               List<String> cPath = getSourcePath(file);
+               for (String path : cPath) {
+                  sourcePaths.add(path);
+               }
             }
          }
       }
