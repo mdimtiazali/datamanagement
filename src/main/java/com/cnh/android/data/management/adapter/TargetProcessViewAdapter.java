@@ -12,6 +12,7 @@ package com.cnh.android.data.management.adapter;
 import java.util.ArrayList;
 import java.util.List;
 
+import com.cnh.jgroups.MultiSetObjectGraph;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -80,6 +81,15 @@ public class TargetProcessViewAdapter extends DataManagementBaseAdapter {
          logger.debug("Solve Target for object: " + activeOperation);
          TViewHolder viewHolder = (TViewHolder) newView.getTag();
          Operation operation = operationList.get(activeOperation);
+         if (operation.getData() instanceof MultiSetObjectGraph) {
+            //TODO add UI to select options
+            //for now select first option
+            List<String> options = ((MultiSetObjectGraph) operation.getData()).getOptions();
+            String firstOption = ((MultiSetObjectGraph) operation.getData()).getOptions().get(0);
+            ArrayList<String> selected = new ArrayList<String>();
+            selected.add(firstOption);
+            ((MultiSetObjectGraph) operation.getData()).setSelectedOptions(selected);
+         }
          viewHolder.typeView.setText(operation.getData().getType());
          viewHolder.nameView.setText(operation.getData().getName());
          viewHolder.targetList.clearList();
