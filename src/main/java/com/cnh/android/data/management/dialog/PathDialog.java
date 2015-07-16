@@ -13,6 +13,7 @@ import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
 
+import android.os.Environment;
 import pl.polidea.treeview.InMemoryTreeStateManager;
 import pl.polidea.treeview.TreeBuilder;
 import pl.polidea.treeview.TreeStateManager;
@@ -36,9 +37,9 @@ import com.cnh.android.widget.activity.TabActivity;
 public class PathDialog extends DialogView {
 
    private TreeViewList pathList;
-   private TreeStateManager<String> manager;
+   private TreeStateManager<File> manager;
    private PathTreeViewAdapter treeAdapter;
-   private TreeBuilder<String> treeBuilder;
+   private TreeBuilder<File> treeBuilder;
 
    private PathTreeViewAdapter.OnPathSelectedListener listener;
 
@@ -51,27 +52,19 @@ public class PathDialog extends DialogView {
       LayoutInflater inflater = ((Activity) getContext()).getLayoutInflater();
       View view = inflater.inflate(R.layout.path_tree, null);
       pathList = (TreeViewList) view.findViewById(R.id.path_tree_view);
-      manager = new InMemoryTreeStateManager<String>();
-      treeBuilder = new TreeBuilder<String>(manager);
+      manager = new InMemoryTreeStateManager<File>();
+      treeBuilder = new TreeBuilder<File>(manager);
       pathList.removeAllViewsInLayout();
 
-      List<String> paths;
-
       // Hard-coding until we begin support for usb slot
-      File fileList = new File("/sdcard");
+      getSourcePath(null, Environment.getExternalStorageDirectory());
 
-      paths = getSourcePath(fileList);
-      for (String path : paths) {
-         treeBuilder.sequentiallyAddNextNode(path, 0);
-         //TODO Currenly creates list of directories, should be enhanced to provide for Directory Tree
-         //         addChildrenToTree(graph, 0);
-      }
       treeAdapter = new PathTreeViewAdapter((Activity) getContext(), manager, 1);
       pathList.setAdapter(treeAdapter);
       manager.collapseChildren(null); //Collapse all children
       treeAdapter.setOnPathSelectedListener(new PathTreeViewAdapter.OnPathSelectedListener() {
          @Override
-         public void onPathSelected(String path) {
+         public void onPathSelected(File path) {
             Toast.makeText(getContext(), "Selected Path:" + path, Toast.LENGTH_LONG).show();
             ((TabActivity) getContext()).dismissPopup(PathDialog.this);
 
@@ -97,27 +90,23 @@ public class PathDialog extends DialogView {
       showThirdButton(false);
    }
 
-   private List<String> getSourcePath(File dir) {
-      File[] files = dir.listFiles();
-      List<String> sourcePaths = new ArrayList<String>();
-      if (files != null) {
-         for (File file : files) {
-            if (file.getName().contains("cn1")) {
-               sourcePaths.add(file.getAbsolutePath());
-            }
-            else if (file.getName().contains("TASKDATA")) {
-               sourcePaths.add(file.getAbsolutePath());
-            }
-            else if (file.isDirectory()) {
-               sourcePaths.add(file.getAbsolutePath());
-               List<String> cPath = getSourcePath(file);
-               for (String path : cPath) {
-                  sourcePaths.add(path);
+   private void getSourcePath(File parent, File dir) {
+      if(parent==null) {
+         treeBuilder.sequentiallyAddNextNode(dir, 0);
+      } else {
+         treeBuilder.addRelation(parent, dir);
+      }
+      if(!dir.getName().contains("cn1") &&
+            !dir.getName().contains("TASKDATA")) {
+         File[] files = dir.listFiles();
+         if (files != null) {
+            for (File file : files) {
+               if (file.isDirectory()) {
+                  getSourcePath(dir, file);
                }
             }
          }
       }
-      return sourcePaths;
    }
 
    public void setOnPathSelectedListener(PathTreeViewAdapter.OnPathSelectedListener listener) {

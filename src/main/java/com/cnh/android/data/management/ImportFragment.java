@@ -9,16 +9,21 @@
  */
 package com.cnh.android.data.management;
 
+import java.io.File;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import android.widget.AbsListView;
 import org.jgroups.Address;
 import org.jgroups.Global;
 import org.jgroups.JChannel;
 import org.jgroups.blocks.RpcDispatcher;
+import org.jgroups.util.Rsp;
+import org.jgroups.util.RspList;
+import org.jgroups.util.UUID;
 import org.jgroups.util.Util;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -135,6 +140,7 @@ public class ImportFragment extends Fragment implements Mediator.ProgressListene
       sourceDir = (TextView) layout.findViewById(R.id.source_dir);
       destDir = (TextView) layout.findViewById(R.id.dest_dir);
       treeView = (TreeViewList) layout.findViewById(R.id.tree_view);
+      treeView.setChoiceMode(AbsListView.CHOICE_MODE_NONE);
       continueBtn = (Button) layout.findViewById(R.id.btn_continue);
       final TabActivity activity = (TabActivity) getActivity();
       return layout;
@@ -204,12 +210,12 @@ public class ImportFragment extends Fragment implements Mediator.ProgressListene
                               pathDialog = new PathDialog(activity);
                               pathDialog.setOnPathSelectedListener(new PathTreeViewAdapter.OnPathSelectedListener() {
                                  @Override
-                                 public void onPathSelected(String path) {
+                                 public void onPathSelected(File path) {
                                     ignoreNewViews = true;
-                                    sourceDir.setText(path);
+                                    sourceDir.setText(path.getAbsolutePath());
                                     Intent i = new Intent();
                                     i.setAction("com.cnh.pf.data.EXTERNAL_DATA");
-                                    i.putExtra("paths", new String[] {path});
+                                    i.putExtra("paths", new String[] {path.getAbsolutePath()});
                                     i.setFlags(Intent.FLAG_INCLUDE_STOPPED_PACKAGES);
                                     i.putExtra("create", false);
                                     activity.sendBroadcast(i);
@@ -217,25 +223,7 @@ public class ImportFragment extends Fragment implements Mediator.ProgressListene
                                     handler.postDelayed(new Runnable() {
                                        @Override
                                        public void run() {
-                                          List<Address> addrs = new ArrayList<Address>();
-                                          for (Address addr : members) {
-                                             try {
-                                                if (!addr.equals(channel.getAddress())) {
-                                                   logger.debug("Getting sources for: " + addr.toString());
-                                                   Datasource.Source[] sources = mediator.getSources(addr);
-                                                   if (Arrays.asList(sources).contains(Datasource.Source.USB)) {
-                                                      logger.debug("addr: " + addr.toString() + " is valid datasource");
-                                                      addrs.add(addr);
-                                                   }
-                                                   else {
-                                                      logger.debug("addr: " + addr.toString() + " is not valid datasource");
-                                                   }
-                                                }
-                                             }
-                                             catch (Exception e) {
-                                                e.printStackTrace();
-                                             }
-                                          }
+                                          List<Address> addrs = getSources(Datasource.Source.USB);
                                           if (!addrs.isEmpty()) {
                                              new DiscoveryTask().execute(addrs);
                                           }
@@ -264,6 +252,29 @@ public class ImportFragment extends Fragment implements Mediator.ProgressListene
             popDest();
          }
       });
+   }
+
+   public List<Address> getSources(Datasource.Source source) {
+      List<Address> addrs = new ArrayList<Address>();
+      try {
+         RspList<Datasource.Source[]> rsp = mediator.getAllSources();
+         for (Map.Entry<Address, Rsp<Datasource.Source[]>> entry : rsp.entrySet()) {
+            if (entry.getValue().hasException()) {
+               logger.warn("Couldn't receive sources from {}" + UUID.get(entry.getKey()));
+               continue;
+            }
+            if (Arrays.asList(entry.getValue().getValue()).contains(source)) {
+               logger.info("addr: " + entry.getKey().toString() + " is valid datasource");
+               addrs.add(entry.getKey());
+            }
+            else {
+               logger.info("addr: " + entry.getKey().toString() + " is not valid datasource");
+            }
+         }
+      }catch(Exception e) {
+         logger.error("Exception getSources", e);
+      }
+      return addrs;
    }
 
    private void popDest() {
@@ -295,12 +306,12 @@ public class ImportFragment extends Fragment implements Mediator.ProgressListene
                      pathDialog = new PathDialog(activity);
                      pathDialog.setOnPathSelectedListener(new PathTreeViewAdapter.OnPathSelectedListener() {
                         @Override
-                        public void onPathSelected(String path) {
+                        public void onPathSelected(File path) {
                            ignoreNewViews = true;
-                           destDir.setText(path);
+                           destDir.setText(path.getAbsolutePath());
                            Intent i = new Intent();
                            i.setAction("com.cnh.pf.data.EXTERNAL_DATA");
-                           i.putExtra("paths", new String[] { path });
+                           i.putExtra("paths", new String[] { path.getAbsolutePath() });
                            i.putExtra("create", true);
                            i.setFlags(Intent.FLAG_INCLUDE_STOPPED_PACKAGES);
                            activity.sendBroadcast(i);
@@ -308,25 +319,7 @@ public class ImportFragment extends Fragment implements Mediator.ProgressListene
                            handler.postDelayed(new Runnable() {
                               @Override
                               public void run() {
-                                 List<Address> addrs = new ArrayList<Address>();
-                                 for (Address addr : members) {
-                                    try {
-                                       if (!addr.equals(channel.getAddress())) {
-                                          logger.debug("Getting sources for: " + addr.toString());
-                                          Datasource.Source[] sources = mediator.getSources(addr);
-                                          if (Arrays.asList(sources).contains(Datasource.Source.USB)) {
-                                             logger.debug("addr: " + addr.toString() + " is valid datasource");
-                                             addrs.add(addr);
-                                          }
-                                          else {
-                                             logger.debug("addr: " + addr.toString() + " is not valid datasource");
-                                          }
-                                       }
-                                    }
-                                    catch (Exception e) {
-                                       e.printStackTrace();
-                                    }
-                                 }
+                                 List<Address> addrs = getSources(Datasource.Source.USB);
                                  if (!addrs.isEmpty()) {
                                     destinationAddr = addrs.get(0);
                                     logger.debug("Setting destination addr to:" +destinationAddr);
@@ -387,7 +380,7 @@ public class ImportFragment extends Fragment implements Mediator.ProgressListene
          treeAdapter = new ObjectTreeViewAdapater(getActivity(), manager, 1);
          treeAdapter.setData(result);
          treeView.setAdapter(treeAdapter);
-         manager.collapseChildren(null); //Collapse all children
+         //         manager.collapseChildren(null); //Collapse all children
          continueBtn.setVisibility(View.VISIBLE);
          continueBtn.setEnabled(true);
          continueBtn.setOnClickListener(new View.OnClickListener() {
@@ -422,18 +415,18 @@ public class ImportFragment extends Fragment implements Mediator.ProgressListene
       activity.sendBroadcast(i);
    }
 
-    //Set Target for graph to handle partial imports(Inserts parent if not in destination)
+   //Set Target for graph to handle partial imports(Inserts parent if not in destination)
    private List<Operation> processPartialImports(List<Operation> operations) {
-       Map<ObjectGraph, Operation> operationMap = new HashMap<ObjectGraph,Operation>();
-       for (Operation operation : operations) {
-           operationMap.put(operation.getData(), operation);
-       }
-       for (ObjectGraph graph : treeAdapter.getSelected()) {
-           if (graph.getParent() != null) {
-               operationMap.get(graph).setTarget(graph.getParent());
-           }
-       }
-       return new ArrayList<Operation>(operationMap.values());
+      Map<ObjectGraph, Operation> operationMap = new HashMap<ObjectGraph,Operation>();
+      for (Operation operation : operations) {
+         operationMap.put(operation.getData(), operation);
+      }
+      for (ObjectGraph graph : treeAdapter.getSelected()) {
+         if (graph.getParent() != null) {
+            operationMap.get(graph).setTarget(graph.getParent());
+         }
+      }
+      return new ArrayList<Operation>(operationMap.values());
    }
 
    private class ConnectTask extends AsyncTask<Void, Void, Void> {
@@ -620,51 +613,51 @@ public class ImportFragment extends Fragment implements Mediator.ProgressListene
       @Override
       protected void onPostExecute(List<Operation> operations) {
          super.onPostExecute(operations);
-            logger.debug("Got conflicts: " + operations.toString());
-            //Check for conflicts
-            boolean hasConflicts = false;
-            for (Operation operation : operations) {
-               if (operation.isConflict()) {
-                  hasConflicts = true;
-                  break;
-               }
+         logger.debug("Got conflicts: " + operations.toString());
+         //Check for conflicts
+         boolean hasConflicts = false;
+         for (Operation operation : operations) {
+            if (operation.isConflict()) {
+               hasConflicts = true;
+               break;
             }
-            if (hasConflicts) {
-               ConflictResolutionViewAdapter adapter = new ConflictResolutionViewAdapter(activity, operations);
-               processDialog.setAdapter(adapter);
-               processDialog.clearLoading();
-               adapter.setOnTargetsSelectedListener(new DataManagementBaseAdapter.OnTargetsSelectedListener() {
-                  @Override
-                  public void onCompletion(List<Operation> operations) {
-                     logger.debug("onCompletion");
-                     processDialog.hide();
-                     if (operations.size() > 0) {
-                        new PerformOperationsTask().execute(Pair.create(destinationAddr, operations));
-                     }
+         }
+         if (hasConflicts) {
+            ConflictResolutionViewAdapter adapter = new ConflictResolutionViewAdapter(activity, operations);
+            processDialog.setAdapter(adapter);
+            processDialog.clearLoading();
+            adapter.setOnTargetsSelectedListener(new DataManagementBaseAdapter.OnTargetsSelectedListener() {
+               @Override
+               public void onCompletion(List<Operation> operations) {
+                  logger.debug("onCompletion");
+                  processDialog.hide();
+                  if (operations.size() > 0) {
+                     new PerformOperationsTask().execute(Pair.create(destinationAddr, operations));
                   }
-               });
-               processDialog.setOnButtonClickListener(new DialogViewInterface.OnButtonClickListener() {
-                  @Override
-                  public void onButtonClick(DialogViewInterface dialog, int which) {
-                     if (which == DialogViewInterface.BUTTON_FIRST) {
-                        // user pressed "Cancel" button
-                        dialog.dismiss();
-                        continueBtn.setEnabled(true);
-                     }
-                  }
-               });
-               processDialog.setOnDismissListener(new DialogViewInterface.OnDismissListener() {
-                  @Override
-                  public void onDismiss(DialogViewInterface dialog) {
-                     processDialog.hide();
-                  }
-               });
-            } else {
-               processDialog.hide();
-               if (operations.size() > 0) {
-                  new PerformOperationsTask().execute(Pair.create(destinationAddr, operations));
                }
+            });
+            processDialog.setOnButtonClickListener(new DialogViewInterface.OnButtonClickListener() {
+               @Override
+               public void onButtonClick(DialogViewInterface dialog, int which) {
+                  if (which == DialogViewInterface.BUTTON_FIRST) {
+                     // user pressed "Cancel" button
+                     dialog.dismiss();
+                     continueBtn.setEnabled(true);
+                  }
+               }
+            });
+            processDialog.setOnDismissListener(new DialogViewInterface.OnDismissListener() {
+               @Override
+               public void onDismiss(DialogViewInterface dialog) {
+                  processDialog.hide();
+               }
+            });
+         } else {
+            processDialog.hide();
+            if (operations.size() > 0) {
+               new PerformOperationsTask().execute(Pair.create(destinationAddr, operations));
             }
+         }
       }
    }
 

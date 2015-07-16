@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  ~ Copyright (C) 2015 CNH Industrial NV. All rights reserved.
+  ~
+  ~ This software contains proprietary information of CNH Industrial NV. Neither
+  ~ receipt nor possession thereof confers any right to reproduce, use, or
+  ~ disclose in whole or in part any such information without written
+  ~ authorization from CNH Industrial NV.
+  -->
+
+<resources>
+   <color name="tree_line">#ffd9d9d9</color>
+   <color name="tree_dotted_line">#ff6bc4cb</color>
+   
+   <color name="bg_selected">#ff25a9ce</color>
+   <color name="bg_implicit_stroke">#ff83b8db</color>
+   <color name="bg_implicit_fill">#ffe0f3f8</color>
+   
+   <dimen name="selected_corner_radius">4dp</dimen>
+
+</resources>

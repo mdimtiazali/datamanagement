@@ -9,6 +9,7 @@
  */
 package com.cnh.android.data.management.adapter;
 
+import android.widget.AdapterView;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import pl.polidea.treeview.AbstractTreeViewAdapter;
@@ -23,11 +24,13 @@ import android.widget.TextView;
 
 import com.cnh.android.data.management.R;
 
+import java.io.File;
+
 /**
  * Adapter feeds dir to TreeView
  * @author oscar.salazar@cnhind.com
  */
-public class PathTreeViewAdapter extends AbstractTreeViewAdapter<String> {
+public class PathTreeViewAdapter extends AbstractTreeViewAdapter<File> {
    private static final Logger logger = LoggerFactory.getLogger(PathTreeViewAdapter.class);
 
    private OnPathSelectedListener listener;
@@ -37,36 +40,33 @@ public class PathTreeViewAdapter extends AbstractTreeViewAdapter<String> {
    }
 
    @Override
-   public void handleItemClick(View view, Object id) {
-      super.handleItemClick(view, id);
+   public void handleItemClick(final AdapterView< ? > parent, final View view, final int position, final Object id) {
+      super.handleItemClick(parent, view, position, id);
       if (listener != null) {
-         listener.onPathSelected((String) id);
+         listener.onPathSelected((File) id);
       }
    }
 
    @Override
    public View getNewChildView(TreeNodeInfo treeNodeInfo) {
-      final LinearLayout viewLayout = (LinearLayout) getActivity().getLayoutInflater().inflate(R.layout.tree_list_item, null);
+      final LinearLayout viewLayout = (LinearLayout) getActivity().getLayoutInflater().inflate(R.layout.tree_list_item_simple, null);
+      final TextView nameView = (TextView) viewLayout.findViewById(R.id.item_name);
+      viewLayout.setTag(nameView);
       return updateView(viewLayout, treeNodeInfo);
    }
 
    @Override
    public View updateView(View view, TreeNodeInfo treeNodeInfo) {
       final LinearLayout viewLayout = (LinearLayout) view;
-      final TextView levelView = (TextView) viewLayout.findViewById(R.id.demo_list_item_level);
-      final TextView nameView = (TextView) viewLayout.findViewById(R.id.item_name);
-      final CheckBox itemBox = (CheckBox) viewLayout.findViewById(R.id.item_checkbox);
-      itemBox.setVisibility(View.GONE);
-      levelView.setVisibility(View.GONE);
-      String path = (String) treeNodeInfo.getId();
-      levelView.setText(Integer.toString(treeNodeInfo.getLevel()));
-      nameView.setText(path);
+      final TextView nameView = (TextView) viewLayout.getTag();
+      File path = (File) treeNodeInfo.getId();
+      nameView.setText(path.getName());
       return viewLayout;
    }
 
    @Override
    public long getItemId(int position) {
-      return 0;
+      return position;
    }
 
    public void setOnPathSelectedListener(OnPathSelectedListener listener) {
@@ -78,6 +78,6 @@ public class PathTreeViewAdapter extends AbstractTreeViewAdapter<String> {
        * Invokes when user has selected a path
        * @param path String Absolute Path
        */
-      public abstract void onPathSelected(String path);
+      void onPathSelected(File path);
    }
 }
