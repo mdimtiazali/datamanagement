@@ -49,19 +49,16 @@ public class PathTreeViewAdapter extends AbstractTreeViewAdapter<File> {
 
    @Override
    public View getNewChildView(TreeNodeInfo treeNodeInfo) {
-      final LinearLayout viewLayout = (LinearLayout) getActivity().getLayoutInflater().inflate(R.layout.tree_list_item_simple, null);
-      final TextView nameView = (TextView) viewLayout.findViewById(R.id.item_name);
-      viewLayout.setTag(nameView);
-      return updateView(viewLayout, treeNodeInfo);
+      final TextView nameView = (TextView) getActivity().getLayoutInflater().inflate(R.id.tree_list_item_simple, null);
+      return updateView(nameView, treeNodeInfo);
    }
 
    @Override
    public View updateView(View view, TreeNodeInfo treeNodeInfo) {
-      final LinearLayout viewLayout = (LinearLayout) view;
-      final TextView nameView = (TextView) viewLayout.getTag();
+      final TextView nameView = (TextView) view;
       File path = (File) treeNodeInfo.getId();
       nameView.setText(path.getName());
-      return viewLayout;
+      return nameView;
    }
 
    @Override

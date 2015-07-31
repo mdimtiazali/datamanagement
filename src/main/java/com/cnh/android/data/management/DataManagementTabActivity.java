@@ -9,22 +9,34 @@
  */
 package com.cnh.android.data.management;
 
+import java.lang.reflect.Constructor;
+import java.util.HashMap;
+import java.util.Map;
+
 import android.app.Activity;
 import android.app.Fragment;
 import android.app.FragmentTransaction;
+import android.content.Context;
 import android.os.Bundle;
+import android.util.AttributeSet;
+import android.view.View;
 import com.cnh.android.widget.activity.TabActivity;
 import com.cnh.android.widget.control.TabActivityListeners;
 import com.cnh.android.widget.control.TabActivityTab;
+import com.google.inject.Key;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import roboguice.RoboGuice;
+import roboguice.util.RoboContext;
 
 /**
  * Data Management Tab Activity
  * Contains test UI, will later include Data Management, Data Sync, Import & Export
  */
-public class DataManagementTabActivity extends TabActivity {
+public class DataManagementTabActivity extends TabActivity implements RoboContext {
    private static final Logger logger = LoggerFactory.getLogger(DataManagementTabActivity.class);
+
+   protected HashMap<Key<?>,Object> scopedObjects = new HashMap<Key<?>, Object>();
 
    private class DataManagementTabListener implements TabActivityListeners.TabListener {
       private final Activity a;
@@ -97,10 +109,50 @@ public class DataManagementTabActivity extends TabActivity {
    @Override
    public void onCreate(Bundle savedInstanceState) {
       super.onCreate(savedInstanceState);
-      TabActivityTab importExportTestTab = new TabActivityTab(R.string.tab_import, android.R.drawable.ic_dialog_alert, "import_export_test_tab",
+      TabActivityTab importExportTestTab = new TabActivityTab(R.string.tab_import, R.drawable.tab_import, "import_export_test_tab",
               new DataManagementTabListener(new ImportFragment(), this));
       addTab(importExportTestTab);
       setTabActivityTitle(getString(R.string.app_name));
       selectTabAtPosition(0);
+   }
+
+   @Override
+   public Map<Key<?>, Object> getScopedObjectMap() {
+      return scopedObjects;
+   }
+
+   /**
+    * @return true if name begins with a lowercase character (indicating a package) and it doesn't start with com.android
+    */
+   protected static boolean shouldInjectOnCreateView(String name) {
+      return Character.isLowerCase(name.charAt(0)) && !name.startsWith("com.android") && !name.equals("fragment");
+   }
+
+   @Override
+   public View onCreateView(String name, Context context, AttributeSet attrs) {
+      if (shouldInjectOnCreateView(name))
+         return injectOnCreateView(name, context, attrs);
+
+      return super.onCreateView(name, context, attrs);
+   }
+
+   @Override
+   public View onCreateView(View parent, String name, Context context, AttributeSet attrs) {
+      if (shouldInjectOnCreateView(name))
+         return injectOnCreateView(name, context, attrs);
+
+      return super.onCreateView(parent, name, context, attrs);
+   }
+
+   protected static View injectOnCreateView(String name, Context context, AttributeSet attrs) {
+      try {
+         final Constructor<?> constructor = Class.forName(name).getConstructor(Context.class, AttributeSet.class);
+         final View view = (View) constructor.newInstance(context, attrs);
+         RoboGuice.getInjector(context).injectMembers(view);
+         RoboGuice.getInjector(context).injectViewMembers(view);
+         return view;
+      } catch (Exception e) {
+         throw new RuntimeException(e);
+      }
    }
 }

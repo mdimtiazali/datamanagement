@@ -17,7 +17,7 @@
         </encoder>
     </appender>
 
-    <root level="error">
+    <root level="INFO">
         <appender-ref ref="LOGCAT" />
     </root>
 
@@ -25,7 +25,7 @@
         <appender-ref ref="LOGCAT" />
     </logger>
 
-    <logger name="org.jgroups" level="OFF" additivity="false">
+    <logger name="org.jgroups.blocks.RpcDispatcher" level="TRACE" additivity="false">
         <appender-ref ref="LOGCAT" />
     </logger>
 

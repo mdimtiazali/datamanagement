@@ -10,24 +10,24 @@ import android.view.View.OnClickListener;
 import android.view.ViewGroup;
 import android.widget.AdapterView;
 import android.widget.BaseAdapter;
+import android.widget.Button;
 import android.widget.FrameLayout;
 import android.widget.FrameLayout.LayoutParams;
 import android.widget.ImageView;
-import android.widget.ImageView.ScaleType;
 import android.widget.LinearLayout;
 import android.widget.ListAdapter;
 import com.cnh.android.data.management.R;
 
 /**
  * Adapter used to feed the table view.
- * 
+ *
  * @param <T>
  *            class for ID of the tree
  */
 public abstract class AbstractTreeViewAdapter<T> extends BaseAdapter implements
-        ListAdapter {
+                                                                     ListAdapter {
     private static final String TAG = AbstractTreeViewAdapter.class
-            .getSimpleName();
+          .getSimpleName();
     private final TreeStateManager<T> treeStateManager;
     private final int numberOfLevels;
     private final LayoutInflater layoutInflater;
@@ -73,11 +73,11 @@ public abstract class AbstractTreeViewAdapter<T> extends BaseAdapter implements
     }
 
     public AbstractTreeViewAdapter(final Activity activity,
-            final TreeStateManager<T> treeStateManager, final int numberOfLevels) {
+          final TreeStateManager<T> treeStateManager, final int numberOfLevels) {
         this.activity = activity;
         this.treeStateManager = treeStateManager;
         this.layoutInflater = (LayoutInflater) activity
-                .getSystemService(Context.LAYOUT_INFLATER_SERVICE);
+              .getSystemService(Context.LAYOUT_INFLATER_SERVICE);
         this.numberOfLevels = numberOfLevels;
         this.collapsedDrawable = null;
         this.expandedDrawable = null;
@@ -144,26 +144,26 @@ public abstract class AbstractTreeViewAdapter<T> extends BaseAdapter implements
     }
 
     protected int getTreeListItemWrapperId() {
-        return R.layout.tree_list_item_wrapper;
+        return R.layout.tree_list_item_wrapper_right;
     }
 
     @Override
     public final View getView(final int position, final View convertView,
-            final ViewGroup parent) {
-//        Log.d(TAG, "Creating a view based on " + convertView
-//                + " with position " + position);
+          final ViewGroup parent) {
+        //        Log.d(TAG, "Creating a view based on " + convertView
+        //                + " with position " + position);
         final TreeNodeInfo<T> nodeInfo = getTreeNodeInfo(position);
         if (convertView == null) {
-//            Log.d(TAG, "Creating the view a new");
+            //            Log.d(TAG, "Creating the view a new");
             final LinearLayout layout = (LinearLayout) layoutInflater.inflate(
-                    getTreeListItemWrapperId(), null);
+                  getTreeListItemWrapperId(), null);
             return populateTreeItem(layout, getNewChildView(nodeInfo),
-                    nodeInfo, true);
+                  nodeInfo, true);
         } else {
-//            Log.d(TAG, "Reusing the view");
+            //            Log.d(TAG, "Reusing the view");
             final LinearLayout linear = (LinearLayout) convertView;
             final FrameLayout frameLayout = (FrameLayout) linear
-                    .findViewById(R.id.treeview_list_item_frame);
+                  .findViewById(R.id.treeview_list_item_frame);
             final View childView = frameLayout.getChildAt(0);
             updateView(childView, nodeInfo);
             return populateTreeItem(linear, childView, nodeInfo, false);
@@ -172,7 +172,7 @@ public abstract class AbstractTreeViewAdapter<T> extends BaseAdapter implements
 
     /**
      * Called when new view is to be created.
-     * 
+     *
      * @param treeNodeInfo
      *            node info
      * @return view that should be displayed as tree content
@@ -184,7 +184,7 @@ public abstract class AbstractTreeViewAdapter<T> extends BaseAdapter implements
      * and fill it in with the data required to display the new information. You
      * can also create a new view, which will mean that the old view will not be
      * reused.
-     * 
+     *
      * @param view
      *            view that should be updated with the new values
      * @param treeNodeInfo
@@ -195,7 +195,7 @@ public abstract class AbstractTreeViewAdapter<T> extends BaseAdapter implements
 
     /**
      * Retrieves background drawable for the node.
-     * 
+     *
      * @param treeNodeInfo
      *            node info
      * @return drawable returned as background for the whole row. Might be null,
@@ -208,50 +208,51 @@ public abstract class AbstractTreeViewAdapter<T> extends BaseAdapter implements
     private Drawable getDrawableOrDefaultBackground(final Drawable r) {
         if (r == null) {
             return activity.getResources()
-                    .getDrawable(R.drawable.list_selector_background).mutate();
+                  .getDrawable(R.drawable.list_selector_background).mutate();
         } else {
             return r;
         }
     }
 
     public final LinearLayout populateTreeItem(final LinearLayout layout,
-            final View childView, final TreeNodeInfo<T> nodeInfo,
-            final boolean newChildView) {
+          final View childView, final TreeNodeInfo<T> nodeInfo,
+          final boolean newChildView) {
         final Drawable individualRowDrawable = getBackgroundDrawable(nodeInfo);
         final Drawable bgDrawable = individualRowDrawable == null ?
               getDrawableOrDefaultBackground(rowBackgroundDrawable)
               : individualRowDrawable;
 
-        final LinearLayout indicatorLayout = (LinearLayout) layout.findViewById(R.id.treeview_list_item_image_layout);
-        layout.setTag(R.id.treeview_list_item_image_layout, indicatorLayout);
-        indicatorLayout.setGravity(indicatorGravity);
-        indicatorLayout.setLayoutParams(new LinearLayout.LayoutParams(calculateIndentation(nodeInfo), LayoutParams.MATCH_PARENT));
-
-        final ImageView image = (ImageView) layout.findViewById(R.id.treeview_list_item_image);
-        layout.setTag(R.id.treeview_list_item_image, image);
-        image.setVisibility((nodeInfo.isWithChildren() && collapsible) ? View.VISIBLE : View.INVISIBLE);
-        image.setImageDrawable(getDrawable(nodeInfo));
-        image.setBackground(getDrawableOrDefaultBackground(indicatorBackgroundDrawable));
-        image.setScaleType(ScaleType.CENTER);
-        image.setTag(nodeInfo.getId());
-        if (nodeInfo.isWithChildren() && collapsible) {
-            image.setOnClickListener(indicatorClickListener);
-        } else {
-            image.setOnClickListener(null);
+        if(newChildView) {
+            layout.setTag(R.id.treeview_list_item_indent, layout.findViewById(R.id.treeview_list_item_indent));
+            final View view = layout.findViewById(R.id.treeview_list_item_frame_layout);
+            layout.setTag(R.id.treeview_list_item_frame_layout, view);
+            layout.setTag(R.id.treeview_list_item_toggle, view.findViewById(R.id.treeview_list_item_toggle));
+            layout.setTag(R.id.treeview_list_item_frame, view.findViewById(R.id.treeview_list_item_frame));
         }
+        final View indentView = (View) layout.getTag(R.id.treeview_list_item_indent);
+        final ImageView toggle = (ImageView) layout.getTag(R.id.treeview_list_item_toggle);
+        final LinearLayout frameLayout = (LinearLayout) layout.getTag(R.id.treeview_list_item_frame_layout);
+        final FrameLayout frame = (FrameLayout) layout.getTag(R.id.treeview_list_item_frame);
+
+        indentView.setLayoutParams(new LinearLayout.LayoutParams(calculateIndentation(nodeInfo), LayoutParams.MATCH_PARENT));
+
+        toggle.setImageDrawable(getDrawable(nodeInfo));
+        toggle.setVisibility((nodeInfo.isWithChildren() && collapsible) ? View.VISIBLE : View.GONE);
+        toggle.setOnClickListener(nodeInfo.isWithChildren() && collapsible ? indicatorClickListener : null);
+        toggle.setTag(nodeInfo.getId());
+
         layout.setTag(nodeInfo.getId());
 
-        final FrameLayout frameLayout = (FrameLayout) layout.findViewById(R.id.treeview_list_item_frame);
         frameLayout.setBackground(bgDrawable);
         if (newChildView) {
-            frameLayout.addView(childView, LayoutParams.MATCH_PARENT, LayoutParams.MATCH_PARENT);
+            frame.addView(childView, LayoutParams.MATCH_PARENT, LayoutParams.WRAP_CONTENT);
         }
         frameLayout.setTag(nodeInfo.getId());
         return layout;
     }
 
     protected int calculateIndentation(final TreeNodeInfo<T> nodeInfo) {
-        return getIndentWidth() * (nodeInfo.getLevel() + (collapsible ? 1 : 0));
+        return getIndentWidth() * nodeInfo.getLevel();
     }
 
     protected Drawable getDrawable(final TreeNodeInfo<T> nodeInfo) {
@@ -283,7 +284,7 @@ public abstract class AbstractTreeViewAdapter<T> extends BaseAdapter implements
     }
 
     public void setIndicatorBackgroundDrawable(
-            final Drawable indicatorBackgroundDrawable) {
+          final Drawable indicatorBackgroundDrawable) {
         this.indicatorBackgroundDrawable = indicatorBackgroundDrawable;
     }
 

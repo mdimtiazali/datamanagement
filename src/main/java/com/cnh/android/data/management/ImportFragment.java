@@ -9,6 +9,7 @@
  */
 package com.cnh.android.data.management;
 
+import javax.inject.Named;
 import java.io.File;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -16,24 +17,6 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import android.widget.AbsListView;
-import org.jgroups.Address;
-import org.jgroups.Global;
-import org.jgroups.JChannel;
-import org.jgroups.blocks.RpcDispatcher;
-import org.jgroups.util.Rsp;
-import org.jgroups.util.RspList;
-import org.jgroups.util.UUID;
-import org.jgroups.util.Util;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import pl.polidea.treeview.InMemoryTreeStateManager;
-import pl.polidea.treeview.TreeBuilder;
-import pl.polidea.treeview.TreeStateManager;
-import pl.polidea.treeview.TreeViewList;
-
-import android.app.Fragment;
-import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.os.AsyncTask;
@@ -43,13 +26,11 @@ import android.util.Pair;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.AbsListView;
 import android.widget.AdapterView;
 import android.widget.Button;
 import android.widget.TextView;
 import android.widget.Toast;
-
-import ch.qos.logback.classic.android.BasicLogcatConfigurator;
-
 import com.cnh.android.data.management.adapter.ConflictResolutionViewAdapter;
 import com.cnh.android.data.management.adapter.DataManagementBaseAdapter;
 import com.cnh.android.data.management.adapter.ObjectTreeViewAdapater;
@@ -68,12 +49,29 @@ import com.cnh.jgroups.Mediator;
 import com.cnh.jgroups.ObjectGraph;
 import com.cnh.jgroups.Operation;
 import com.cnh.jgroups.Slf4jLogImpl;
+import com.google.common.base.Throwables;
+import com.google.inject.Inject;
+import com.google.inject.Provider;
+import org.jgroups.Address;
+import org.jgroups.Global;
+import org.jgroups.util.Rsp;
+import org.jgroups.util.RspList;
+import org.jgroups.util.UUID;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import pl.polidea.treeview.InMemoryTreeStateManager;
+import pl.polidea.treeview.TreeBuilder;
+import pl.polidea.treeview.TreeStateManager;
+import pl.polidea.treeview.TreeViewList;
+import roboguice.fragment.provided.RoboFragment;
 
 /**
- * Import Export Test Fragment, Fragment test copying objects from a source datasource to destination datasource. This fragment will be replaced when DataManagement, Import, and Export UI is finalized.
+ * Import Export Test Fragment, Fragment test copying objects from a source datasource to destination datasource. This fragment will be replaced when DataManagement, Import, and
+ * Export UI is finalized.
+ *
  * @author oscar.salazar@cnhind.com
  */
-public class ImportFragment extends Fragment implements Mediator.ProgressListener {
+public class ImportFragment extends RoboFragment implements Mediator.ProgressListener {
    private static final Logger logger = LoggerFactory.getLogger(ImportFragment.class);
 
    private TabActivity activity;
@@ -92,44 +90,59 @@ public class ImportFragment extends Fragment implements Mediator.ProgressListene
    private Button continueBtn;
    private volatile Long sdCardId;
    private volatile Long destSdCardId;
+   private SharedPreferences.OnSharedPreferenceChangeListener listener = new SharedPreferences.OnSharedPreferenceChangeListener() {
+      @Override
+      public void onSharedPreferenceChanged(SharedPreferences sharedPreferences, String key) {
+         logger.info("Reconnecting to cluster.  Preferences have changed.");
+         if (mediator != null) {
+            mediator.close();
+         }
+         new ConnectTask().execute();
+      }
+   };
 
+   @Inject
+   @Named("global")
+   private SharedPreferences prefs;
+
+   @Inject
+   private Provider<Mediator> mediatorProvider;
    private Mediator mediator;
+
+   private List<Address> members = null;
+   private Address destinationAddr = null;
+   private Handler handler = new Handler();
 
    static {
       System.setProperty(Global.CUSTOM_LOG_FACTORY, Slf4jLogImpl.class.getName());
    }
 
-   public static final String GLOBAL_PREFERENCES_PACKAGE = "com.cnh.pf.android.preference";
-   private JChannel channel;
-   private RpcDispatcher disp;
-   private List<Address> members = null;
-   private Address destinationAddr = null;
-
-   private Handler handler = new Handler();
-
    @Override
    public void onCreate(Bundle savedInstanceState) {
-      BasicLogcatConfigurator.configureDefaultContext();
       super.onCreate(savedInstanceState);
       activity = (TabActivity) getActivity();
+      prefs.registerOnSharedPreferenceChangeListener(listener);
+   }
+
+   @Override
+   public void onResume() {
+      super.onResume();
       new ConnectTask().execute();
    }
 
    @Override
+   public void onPause() {
+      if (mediator != null) {
+         mediator.close();
+      }
+      super.onPause();
+   }
+
+   @Override
    public void onDestroy() {
-      new AsyncTask<Void, Void, Void>() {
-         @Override
-         protected Void doInBackground(Void... params) {
-            if (disp != null) {
-               disp.stop();
-               disp = null;
-            }
-            Util.close(channel);
-            return null;
-         }
-      }.execute();
-      super.onDestroy();
+      prefs.unregisterOnSharedPreferenceChangeListener(listener);
       doneOperation();
+      super.onDestroy();
    }
 
    @Override
@@ -142,16 +155,16 @@ public class ImportFragment extends Fragment implements Mediator.ProgressListene
       treeView = (TreeViewList) layout.findViewById(R.id.tree_view);
       treeView.setChoiceMode(AbsListView.CHOICE_MODE_NONE);
       continueBtn = (Button) layout.findViewById(R.id.btn_continue);
-      final TabActivity activity = (TabActivity) getActivity();
       return layout;
    }
 
    /**
     * Called by mediator when ever the target datasource publishes progress back...
     * Updates progressbar on ProgressDialog
-    * @param operation  current Current operation being performed (i.e. calculateConflicts)
-    * @param progress   current progress. 0 <= progress <= max
-    * @param max        max progress
+    *
+    * @param operation current Current operation being performed (i.e. calculateConflicts)
+    * @param progress current progress. 0 <= progress <= max
+    * @param max max progress
     */
    public void onProgressPublished(String operation, int progress, int max) {
       logger.debug(String.format("publishProgress(%s, %d, %d)", operation, progress, max));
@@ -164,8 +177,14 @@ public class ImportFragment extends Fragment implements Mediator.ProgressListene
       });
    }
 
+   @Override
+   public void onSecondaryProgressPublished(String secondaryOperation, int secondaryProgress, int secondaryMax) {
+      //Widget Progress Bar doesn't support secondary progress.... or any string descriptions of operation...
+   }
+
    /**
     * Called by mediator when this application has joined the jgroups cluster
+    *
     * @param view View includes all members of this jgroups cluster.
     */
    public void onViewAccepted(org.jgroups.View view) {
@@ -186,8 +205,8 @@ public class ImportFragment extends Fragment implements Mediator.ProgressListene
             sourcePick.setAdapter(new PickListAdapter(sourcePick, getActivity().getApplicationContext()));
 
             for (int i = 0; i < members.size(); i++) {
-               if (!members.get(i).equals(channel.getAddress())) {
-                  sourcePick.addItem(new PickListItem(i, members.get(i).toString()));
+               if (!members.get(i).equals(mediator.getAddress())) {
+                  sourcePick.addItem(new ObjectPickListItem<Address>(i, members.get(i).toString(), members.get(i)));
                }
             }
 
@@ -215,7 +234,7 @@ public class ImportFragment extends Fragment implements Mediator.ProgressListene
                                     sourceDir.setText(path.getAbsolutePath());
                                     Intent i = new Intent();
                                     i.setAction("com.cnh.pf.data.EXTERNAL_DATA");
-                                    i.putExtra("paths", new String[] {path.getAbsolutePath()});
+                                    i.putExtra("paths", new String[] { path.getAbsolutePath() });
                                     i.setFlags(Intent.FLAG_INCLUDE_STOPPED_PACKAGES);
                                     i.putExtra("create", false);
                                     activity.sendBroadcast(i);
@@ -225,7 +244,7 @@ public class ImportFragment extends Fragment implements Mediator.ProgressListene
                                        public void run() {
                                           List<Address> addrs = getSources(Datasource.Source.USB);
                                           if (!addrs.isEmpty()) {
-                                             new DiscoveryTask().execute(addrs);
+                                             new DiscoveryTask().execute(addrs.toArray(new Address[addrs.size()]));
                                           }
                                        }
                                     }, 4000); //TODO need to investigate a more precise delay for datasources to register.
@@ -236,10 +255,11 @@ public class ImportFragment extends Fragment implements Mediator.ProgressListene
                         });
                      }
                      else {
-                        logger.debug("Selected DataSource:" + members.get((int) id).toString());
+                        ObjectPickListItem<Address> item = (ObjectPickListItem<Address>) sourcePick.findItemById(id);
+                        logger.debug("Selected DataSource:" + item.getObject().toString());
                         ignoreNewViews = false;
                         sourceDir.setVisibility(View.GONE);
-                        new DiscoveryTask().execute(new ArrayList<Address>() {{ add(members.get((int) id)); }});
+                        new DiscoveryTask().execute(item.getObject());
                      }
                   }
                }
@@ -259,11 +279,12 @@ public class ImportFragment extends Fragment implements Mediator.ProgressListene
       try {
          RspList<Datasource.Source[]> rsp = mediator.getAllSources();
          for (Map.Entry<Address, Rsp<Datasource.Source[]>> entry : rsp.entrySet()) {
-            if (entry.getValue().hasException()) {
+            Rsp<Datasource.Source[]> response = entry.getValue();
+            if (response.hasException()) {
                logger.warn("Couldn't receive sources from {}" + UUID.get(entry.getKey()));
                continue;
             }
-            if (Arrays.asList(entry.getValue().getValue()).contains(source)) {
+            if (response.wasReceived() && Arrays.asList(entry.getValue().getValue()).contains(source)) {
                logger.info("addr: " + entry.getKey().toString() + " is valid datasource");
                addrs.add(entry.getKey());
             }
@@ -271,7 +292,8 @@ public class ImportFragment extends Fragment implements Mediator.ProgressListene
                logger.info("addr: " + entry.getKey().toString() + " is not valid datasource");
             }
          }
-      }catch(Exception e) {
+      }
+      catch (Exception e) {
          logger.error("Exception getSources", e);
       }
       return addrs;
@@ -284,8 +306,8 @@ public class ImportFragment extends Fragment implements Mediator.ProgressListene
       destinationPick.setAdapter(new PickListAdapter(destinationPick, getActivity().getApplicationContext()));
       for (int i = 0; i < members.size(); i++) {
          Address addr = members.get(i);
-         if (!addr.equals(channel.getAddress())) {
-            destinationPick.addItem(new PickListItem(i, addr.toString()));
+         if (!addr.equals(mediator.getAddress())) {
+            destinationPick.addItem(new ObjectPickListItem<Address>(i, addr.toString(), addr));
          }
       }
 
@@ -322,7 +344,7 @@ public class ImportFragment extends Fragment implements Mediator.ProgressListene
                                  List<Address> addrs = getSources(Datasource.Source.USB);
                                  if (!addrs.isEmpty()) {
                                     destinationAddr = addrs.get(0);
-                                    logger.debug("Setting destination addr to:" +destinationAddr);
+                                    logger.debug("Setting destination addr to:" + destinationAddr);
                                     //TODO bad shortcut
                                  }
                               }
@@ -337,8 +359,9 @@ public class ImportFragment extends Fragment implements Mediator.ProgressListene
             else {
                destDir.setVisibility(View.GONE);
                if (id != PickListEditable.NO_ID) {
-                  logger.debug("Selected Destination DataSource:" + members.get((int) id).toString());
-                  destinationAddr = members.get((int) id);
+                  ObjectPickListItem<Address> item = (ObjectPickListItem<Address>) destinationPick.findItemById(id);
+                  logger.debug("Selected Destination DataSource:" + item.getObject().toString());
+                  destinationAddr = item.getObject();
                }
             }
          }
@@ -358,27 +381,46 @@ public class ImportFragment extends Fragment implements Mediator.ProgressListene
       destinationPick.clearSelection();
    }
 
-   private void addChildrenToTree(ObjectGraph parent, int parentLevel) {
-      if (!parent.getChildren().isEmpty()) {
-         for (ObjectGraph child : parent.getChildren()) {
-            treeBuilder.sequentiallyAddNextNode(child, parentLevel+1);
-            addChildrenToTree(child, parentLevel+1);
+   private void addToTree(ObjectGraph parent, ObjectGraph object) {
+      if (parent == null) {
+         treeBuilder.sequentiallyAddNextNode(object, 0);
+      }
+      else {
+         treeBuilder.addRelation(parent, object);
+      }
+      //group children of field by type
+      if (object.getType().equals("com.cnh.pf.model.pfds.Field")) {
+         Map<String, ObjectGraph> groups = new HashMap<String, ObjectGraph>();
+         for (ObjectGraph child : object.getChildren()) {
+            final String type = child.getType();
+            if (!groups.containsKey(type)) {
+               ObjectGraph g = new ObjectGraph(null, type + "_Group", type.substring(type.lastIndexOf('.') + 1) + "s", null, object);
+               groups.put(type, g);
+               treeBuilder.addRelation(object, g);
+            }
+            addToTree(groups.get(type), child);
+         }
+      }
+      else {
+         for (ObjectGraph child : object.getChildren()) {
+            addToTree(object, child);
          }
       }
    }
 
-   private void onNewObjectGraphReceived(final List<ObjectGraph> result) {
-      if (!result.isEmpty()) {
+   private void onNewObjectGraphReceived(final Pair<Datasource.DataType, List<ObjectGraph>> result) {
+      if (result != null && !result.second.isEmpty()) {
          manager = new InMemoryTreeStateManager<ObjectGraph>();
          treeBuilder = new TreeBuilder<ObjectGraph>(manager);
          treeView.removeAllViewsInLayout();
          treeView.setVisibility(View.VISIBLE);
-         for (ObjectGraph graph : result) {
-            treeBuilder.sequentiallyAddNextNode(graph, 0);
-            addChildrenToTree(graph, 0);
+         ObjectGraph root = new ObjectGraph(null, result.first.name(), getResources().getString(R.string.pfds));
+         addToTree(null, root);
+         for (ObjectGraph graph : result.second) {
+            addToTree(root, graph);
          }
          treeAdapter = new ObjectTreeViewAdapater(getActivity(), manager, 1);
-         treeAdapter.setData(result);
+         treeAdapter.setData(result.second);
          treeView.setAdapter(treeAdapter);
          //         manager.collapseChildren(null); //Collapse all children
          continueBtn.setVisibility(View.VISIBLE);
@@ -417,7 +459,7 @@ public class ImportFragment extends Fragment implements Mediator.ProgressListene
 
    //Set Target for graph to handle partial imports(Inserts parent if not in destination)
    private List<Operation> processPartialImports(List<Operation> operations) {
-      Map<ObjectGraph, Operation> operationMap = new HashMap<ObjectGraph,Operation>();
+      Map<ObjectGraph, Operation> operationMap = new HashMap<ObjectGraph, Operation>();
       for (Operation operation : operations) {
          operationMap.put(operation.getData(), operation);
       }
@@ -429,33 +471,28 @@ public class ImportFragment extends Fragment implements Mediator.ProgressListene
       return new ArrayList<Operation>(operationMap.values());
    }
 
+   public static class ObjectPickListItem<T> extends PickListItem {
+
+      private T object;
+
+      public ObjectPickListItem(long id, String value, T object) {
+         super(id, value);
+         this.object = object;
+      }
+
+      public T getObject() {
+         return object;
+      }
+   }
+
    private class ConnectTask extends AsyncTask<Void, Void, Void> {
 
       @Override
       protected Void doInBackground(Void... params) {
          try {
-            SharedPreferences prefs = getActivity().createPackageContext(GLOBAL_PREFERENCES_PACKAGE, Context.CONTEXT_IGNORE_SECURITY)
-                  .getSharedPreferences(GLOBAL_PREFERENCES_PACKAGE, Context.MODE_WORLD_READABLE);
-            String config = prefs.getString("jgroups_config", "jgroups.xml");
-            boolean gossip = config.equals("jgroups-tunnel.xml");
-            boolean tcp = config.equals("jgroups-tcp.xml");
-            if(gossip || tcp) {
-               System.setProperty("jgroups.tunnel.gossip_router_hosts", String.format("%s[%s]",
-                     prefs.getString("jgroups_gossip_host", "10.0.2.2"),
-                     prefs.getString("jgroups_gossip_port", "12001")));
-            }
-            if(tcp) {
-               String tcpExternalPort = prefs.getString("jgroups_external_port", "10000");
-               System.setProperty("jgroups.tcp.bind_port", tcpExternalPort);
-               System.setProperty(Global.EXTERNAL_ADDR, prefs.getString("jgroups_external_host", "10.0.0.11"));
-               System.setProperty(Global.EXTERNAL_PORT, tcpExternalPort);
-            }
-            logger.info("Using JGroups config {}", config);
-            logger.info("Connecting");
             System.setProperty(Global.IPv4, "true");
-            channel = new JChannel(config);
-
-            mediator = new Mediator(channel, "Android");
+            //get new instance each time, preferences may have changed
+            mediator = mediatorProvider.get();
             mediator.setProgressListener(ImportFragment.this);
             mediator.start();
          }
@@ -466,24 +503,27 @@ public class ImportFragment extends Fragment implements Mediator.ProgressListene
       }
    }
 
-   private class DiscoveryTask extends AsyncTask<List<Address>, Void, List<ObjectGraph>> {
+   private class DiscoveryTask extends AsyncTask<Address, Void, Pair<Datasource.DataType, List<ObjectGraph>>> {
 
       @Override
-      protected List<ObjectGraph> doInBackground(List<Address>... params) {
+      protected Pair<Datasource.DataType, List<ObjectGraph>> doInBackground(Address... params) {
          logger.debug("Discovery for " + params[0].toString() + " source...");
          try {
-            return mediator.discovery(params[0].toArray(new Address[params[0].size()]));
+            List<ObjectGraph> data = mediator.discovery(params);
+            Datasource.DataType type = mediator.getDatatypes(params[0])[0];
+            return new Pair<Datasource.DataType, List<ObjectGraph>>(type, data);
          }
          catch (Exception e) {
-            e.printStackTrace();
+            showExceptionDialog(e);
          }
          return null;
       }
 
       @Override
-      protected void onPostExecute(List<ObjectGraph> result) {
+      protected void onPostExecute(Pair<Datasource.DataType, List<ObjectGraph>> result) {
          super.onPostExecute(result);
-         if (result == null) return;
+         if (result == null)
+            return;
          onNewObjectGraphReceived(result);
       }
    }
@@ -561,6 +601,36 @@ public class ImportFragment extends Fragment implements Mediator.ProgressListene
       }
    }
 
+   private void showExceptionDialog(Exception e) {
+      final DialogView dialogView = new DialogView(activity);
+      TextView tv = new TextView(activity);
+      tv.setText(String.format("Error: %s\nCause: %s\nStack Trace:\n%s",
+         e.toString(),
+         Throwables.getRootCause(e),
+         Throwables.getStackTraceAsString(e)));
+      tv.setTextSize(16);
+      dialogView.setBodyView(tv);
+      dialogView.setFirstButtonText("Done");
+      dialogView.showSecondButton(false);
+      dialogView.showThirdButton(false);
+      dialogView.setOnButtonClickListener(new DialogViewInterface.OnButtonClickListener() {
+         @Override
+         public void onButtonClick(DialogViewInterface dialog, int which) {
+            if (which == DialogViewInterface.BUTTON_FIRST) {
+               // user pressed "Done" button
+               dialogView.dismiss();
+               activity.dismissPopup(dialogView);
+            }
+         }
+      });
+      activity.runOnUiThread(new Runnable() {
+         @Override
+         public void run() {
+            activity.showPopup(dialogView, false);
+         }
+      });
+   }
+
    private class CalculateConflictsTask extends ProgressTask<Pair<String, List<Operation>>, Void, List<Operation>> {
 
       @Override
@@ -579,32 +649,7 @@ public class ImportFragment extends Fragment implements Mediator.ProgressListene
          }
          catch (Exception e) {
             logger.error("Send exception", e);
-
-            //TODO Need to create Exception Dialog when an execption from backed is thrown.
-            final DialogView dialogView = new DialogView(activity);
-            TextView tv = new TextView(activity);
-            tv.setText("Got Exception from backend: " + e.toString());
-            tv.setTextSize(28);
-            dialogView.setBodyView(tv);
-            dialogView.setFirstButtonText("Done");
-            dialogView.showSecondButton(false);
-            dialogView.showThirdButton(false);
-            dialogView.setOnButtonClickListener(new DialogViewInterface.OnButtonClickListener() {
-               @Override
-               public void onButtonClick(DialogViewInterface dialog, int which) {
-                  if (which == DialogViewInterface.BUTTON_FIRST) {
-                     // user pressed "Done" button
-                     dialogView.dismiss();
-                     activity.dismissPopup(dialogView);
-                  }
-               }
-            });
-            activity.runOnUiThread(new Runnable() {
-               @Override
-               public void run() {
-                  activity.showPopup(dialogView, false);
-               }
-            });
+            showExceptionDialog(e);
             this.cancel(true);
          }
          return null;
@@ -617,10 +662,7 @@ public class ImportFragment extends Fragment implements Mediator.ProgressListene
          //Check for conflicts
          boolean hasConflicts = false;
          for (Operation operation : operations) {
-            if (operation.isConflict()) {
-               hasConflicts = true;
-               break;
-            }
+            hasConflicts |= operation.isConflict();
          }
          if (hasConflicts) {
             ConflictResolutionViewAdapter adapter = new ConflictResolutionViewAdapter(activity, operations);
@@ -652,7 +694,8 @@ public class ImportFragment extends Fragment implements Mediator.ProgressListene
                   processDialog.hide();
                }
             });
-         } else {
+         }
+         else {
             processDialog.hide();
             if (operations.size() > 0) {
                new PerformOperationsTask().execute(Pair.create(destinationAddr, operations));
@@ -678,13 +721,14 @@ public class ImportFragment extends Fragment implements Mediator.ProgressListene
          }
          catch (Exception e) {
             logger.error("Send exception", e);
+            showExceptionDialog(e);
          }
          return null;
       }
 
       @Override
-      protected void onPostExecute(Void aVoid) {
-         super.onPostExecute(aVoid);
+      protected void onPostExecute(Void error) {
+         super.onPostExecute(error);
          processDialog.setFirstButtonText("Done");
          processDialog.setOnButtonClickListener(new DialogViewInterface.OnButtonClickListener() {
             @Override

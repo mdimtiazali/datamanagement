@@ -8,17 +8,13 @@
   ~ authorization from CNH Industrial NV.
   -->
 
-<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android" android:layout_width="match_parent"
-              android:layout_height="match_parent" android:gravity="center_vertical" android:padding="2dp">
-
-    <TextView android:text="Text"
-              android:padding="4dip"
-              android:layout_width="match_parent"
-              android:layout_height="wrap_content"
-              android:id="@+id/item_name"
-              android:textSize="24dp"
-              android:layout_weight="1"
-              android:gravity="center_vertical"
-              android:textColor="@color/StandardBlackColor"/>
-
-</LinearLayout>
+<TextView xmlns:android="http://schemas.android.com/apk/res/android"
+          android:text="Text"
+          android:layout_width="match_parent"
+          android:layout_height="wrap_content"
+          android:id="@+id/tree_list_item_simple"
+          android:textSize="20sp"
+          android:fontFamily="sans-seriff"
+          android:layout_weight="1"
+          android:gravity="center_vertical"
+          android:textColor="@color/StandardBlackColor"/>

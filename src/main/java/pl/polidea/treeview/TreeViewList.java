@@ -8,6 +8,8 @@
  */
 package pl.polidea.treeview;
 
+import java.lang.reflect.Field;
+
 import android.content.Context;
 import android.content.res.TypedArray;
 import android.graphics.Canvas;
@@ -22,8 +24,6 @@ import android.widget.AdapterView;
 import android.widget.ListAdapter;
 import android.widget.ListView;
 import com.cnh.android.data.management.R;
-
-import java.lang.reflect.Field;
 
 /**
  * Tree view, expandable multi-level.
@@ -286,6 +286,7 @@ public class TreeViewList extends ListView {
    @Override
    protected void onMeasure(int widthMeasureSpec, int heightMeasureSpec) {
       int heightMode = MeasureSpec.getMode(heightMeasureSpec);
+      //get big in ScrollView
       if(heightMode == MeasureSpec.UNSPECIFIED) {
          super.onMeasure(widthMeasureSpec, MeasureSpec.makeMeasureSpec(99999, MeasureSpec.AT_MOST));
       } else {
@@ -295,6 +296,8 @@ public class TreeViewList extends ListView {
 
    @Override
    protected void dispatchDraw(Canvas canvas) {
+      super.dispatchDraw(canvas);
+
       //draw the tree structure lines
       // ----------------- -----------
       //|      | indicator|           |
@@ -304,35 +307,46 @@ public class TreeViewList extends ListView {
       //             |
       //        -----|----------------   -----------
       //       |     |    |           | |           |
-      //       |     -----|-----      | |  frame    |
+      //       |     -----|      | |  frame    |
       //       |  space   | indicator | |           |
       //        ----------------------   -----------
       if(drawLine) {
+         //y coordinate of previous sibling's horizontal centerline
          int []prevHorizLineByLevel = new int[20];
+         //x coordinate of previous sibling's vertical centerline
+         int []prevVertLineByLevel = new int[20];
          for (int i = 0; i < getChildCount(); i++) {
             View child = getChildAt(i);
 
             int treeLevel = treeAdapter.getTreeNodeInfo(i + getFirstPosition()).getLevel();
 
-            View indicatorLayout = (View)child.getTag(R.id.treeview_list_item_image_layout);
-            View indicator = (View)child.getTag(R.id.treeview_list_item_image);
+            View indicatorLayout = (View)child.getTag(R.id.treeview_list_item_frame_layout);
+            View indicator = (View)child.getTag(R.id.treeview_list_item_toggle);
 
-            int nodeLeft = child.getLeft()
+            int toggleLeft = child.getLeft()
                   + indicatorLayout.getLeft()
-                  + indicator.getLeft()
-                  + (indicator.getRight()-indicator.getLeft())/2;
+                  + indicatorLayout.getPaddingLeft();
+            int toggleCenter = child.getLeft()
+               + indicatorLayout.getLeft()
+               + indicatorLayout.getPaddingLeft()
+               + (indicator.getRight()-indicator.getLeft())/2;
 
-            mTempRect.set(nodeLeft - indentWidth,
+            int toggleBottom = child.getTop()
+               + indicatorLayout.getBottom()
+               - indicatorLayout.getPaddingBottom();
+
+            mTempRect.set(prevVertLineByLevel[treeLevel],
                   prevHorizLineByLevel[treeLevel],
-                  nodeLeft,
+                  toggleLeft,
                   (child.getBottom()-child.getTop())/2+child.getTop());
-            prevHorizLineByLevel[treeLevel+1] = mTempRect.bottom;
+
+            prevHorizLineByLevel[treeLevel+1] = toggleBottom;
+            prevVertLineByLevel[treeLevel+1] = toggleCenter;
             if(treeLevel>0) {
                canvas.drawLine(mTempRect.left, mTempRect.top, mTempRect.left, mTempRect.bottom, linePaint);
                canvas.drawLine(mTempRect.left, mTempRect.bottom, mTempRect.right, mTempRect.bottom, linePaint);
             }
          }
       }
-      super.dispatchDraw(canvas);
    }
 }

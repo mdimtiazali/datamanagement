@@ -20,6 +20,7 @@ import android.widget.CompoundButton;
 import android.widget.LinearLayout;
 import android.widget.TextView;
 import com.cnh.android.data.management.R;
+import com.cnh.jgroups.Datasource;
 import pl.polidea.treeview.AbstractTreeViewAdapter;
 import pl.polidea.treeview.ImplicitSelectLinearLayout;
 import pl.polidea.treeview.TreeNodeInfo;
@@ -58,7 +59,11 @@ public class ObjectTreeViewAdapater extends AbstractTreeViewAdapter<ObjectGraph>
       TYPE_ICONS.put("com.cnh.pf.model.pfds.Farm", R.drawable.ic_datatree_farm);
       TYPE_ICONS.put("com.cnh.pf.model.pfds.Field", R.drawable.ic_datatree_field);
       TYPE_ICONS.put("com.cnh.pf.model.pfds.Task", R.drawable.ic_datatree_tasks);
-      TYPE_ICONS.put("com.cnh.pf.model.map.Prescription", R.drawable.ic_datatree_prescription);
+      TYPE_ICONS.put("com.cnh.pf.model.pfds.Prescription", R.drawable.ic_datatree_prescription);
+      TYPE_ICONS.put("com.cnh.pf.model.pfds.RxPlan", R.drawable.ic_datatree_prescription);
+      TYPE_ICONS.put(Datasource.DataType.PFDS.name(), 0);
+      TYPE_ICONS.put("com.cnh.pf.model.pfds.Prescription_Group", 0);
+      TYPE_ICONS.put("com.cnh.pf.model.pfds.Task_Group", 0);
    }
 
    private final Map<ObjectGraph, SelectionType> selectionMap;
@@ -103,8 +108,8 @@ public class ObjectTreeViewAdapater extends AbstractTreeViewAdapter<ObjectGraph>
       ObjectGraph node = new ObjectGraph(obj.getSource(), obj.getType(), obj.getName(), new HashMap<String, String>(obj.getData()), null);
       for(ObjectGraph child : obj.getChildren()) {
          if(selectionMap.containsKey(child)) {
-            if(Arrays.binarySearch(types, selectionMap.get(child))>0) {
-               node.addChild(filterSelected(obj));
+            if(Arrays.binarySearch(types, selectionMap.get(child))>=0) {
+               node.addChild(filterSelected(child, types));
             }
          }
       }
@@ -140,6 +145,7 @@ public class ObjectTreeViewAdapater extends AbstractTreeViewAdapter<ObjectGraph>
 
       ObjectGraph obj = (ObjectGraph)id;
       logger.debug("handleItemClick: " + obj);
+      if(obj.getType().endsWith("_Group")) return; //TODO how to handle group selection, now it is ignored
 
       //update selectionMap
       SelectionType type = selectionMap.get(obj);
@@ -193,21 +199,18 @@ public class ObjectTreeViewAdapater extends AbstractTreeViewAdapter<ObjectGraph>
 
    @Override
    public View getNewChildView(TreeNodeInfo treeNodeInfo) {
-      final LinearLayout viewLayout = (LinearLayout) getActivity()
+      final TextView view = (TextView) getActivity()
             .getLayoutInflater().inflate(R.layout.tree_list_item_simple, null);
-      final TextView nameView = (TextView) viewLayout.findViewById(R.id.item_name);
-      viewLayout.setTag(nameView);
-      return updateView(viewLayout, treeNodeInfo);
+      return updateView(view, treeNodeInfo);
    }
 
    @Override
    public View updateView(View view, TreeNodeInfo treeNodeInfo) {
-      final LinearLayout viewLayout = (LinearLayout) view;
-      final TextView nameView = (TextView) viewLayout.getTag();
+      final TextView nameView = (TextView) view;
       ObjectGraph graph = (ObjectGraph) treeNodeInfo.getId();
-      nameView.setText(String.format("%d - %s", treeNodeInfo.getLevel(), graph.getName()));
+      nameView.setText(graph.getName());
       nameView.setCompoundDrawablesWithIntrinsicBounds(TYPE_ICONS.get(graph.getType()), 0, 0, 0);
-      return viewLayout;
+      return view;
    }
 
    @Override
@@ -243,6 +246,7 @@ public class ObjectTreeViewAdapater extends AbstractTreeViewAdapter<ObjectGraph>
    public Set<ObjectGraph> getSelected() {
       final List<ObjectGraph> stage1 = new LinkedList<ObjectGraph>();
       for(ObjectGraph root : data) {
+         if(!selectionMap.containsKey(root)) continue;
          //filter out unselected nodes from selected parents
          ObjectGraph filtered = filterSelected(root, SelectionType.FULL, SelectionType.IMPLICIT); //starting at top level, any selected nodes
          //find root level nodes FULL selected with IMPLICIT/null parent
@@ -262,6 +266,9 @@ public class ObjectTreeViewAdapater extends AbstractTreeViewAdapter<ObjectGraph>
       HashSet<ObjectGraph> selected = new HashSet<ObjectGraph>();
       for(ObjectGraph root : stage1) {
          ObjectGraph filtered = filterSelected(root, SelectionType.FULL); //starting at top level, only FULL selected nodes
+         //this stripped the parents, so we need to put them back
+         ObjectGraph parent = root.getParent().copyUp();
+         parent.addChild(filtered);
          selected.add(filtered);
       }
       return selected;
