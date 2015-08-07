@@ -91,6 +91,14 @@
         <finalName>${project.artifactId}</finalName>
         <plugins>
             <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-compiler-plugin</artifactId>
+                <configuration>
+                    <compilerArgument>-AguiceAnnotationDatabasePackageName=com.cnh.android.data.management</compilerArgument>
+                    <fork>true</fork>
+                </configuration>
+            </plugin>
+            <plugin>
                 <groupId>com.simpligility.maven.plugins</groupId>
                 <artifactId>android-maven-plugin</artifactId>
                 <extensions>true</extensions>
