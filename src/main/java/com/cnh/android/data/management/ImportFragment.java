@@ -38,6 +38,7 @@ import com.cnh.android.data.management.adapter.PathTreeViewAdapter;
 import com.cnh.android.data.management.adapter.TargetProcessViewAdapter;
 import com.cnh.android.data.management.dialog.PathDialog;
 import com.cnh.android.data.management.dialog.ProcessDialog;
+import com.cnh.android.data.management.graph.GroupObjectGraph;
 import com.cnh.android.dialog.DialogView;
 import com.cnh.android.dialog.DialogViewInterface;
 import com.cnh.android.widget.activity.TabActivity;
@@ -382,29 +383,32 @@ public class ImportFragment extends RoboFragment implements Mediator.ProgressLis
    }
 
    private void addToTree(ObjectGraph parent, ObjectGraph object) {
-      if (parent == null) {
-         treeBuilder.sequentiallyAddNextNode(object, 0);
+      //Check if entity can be grouped
+      if (TreeEntityHelper.groupables.contains(object.getType())) {
+         GroupObjectGraph gparent = null;
+         for (ObjectGraph child : manager.getChildren(parent)) {
+            if (child instanceof GroupObjectGraph && child.getType().equals(object.getType())) {
+               gparent = (GroupObjectGraph) child;
+            }
+         }
+         if (gparent == null) {
+            if (object.getType().equals("com.cnh.pf.model.pfds.Customer")) {
+               gparent = new GroupObjectGraph(null, object.getType(), getString(R.string.pfds));
+               treeBuilder.sequentiallyAddNextNode(gparent, 0);
+            }
+            else {
+               gparent = new GroupObjectGraph(null, object.getType(), object.getType().substring(object.getType().lastIndexOf('.') + 1) + "s", null, parent);
+               treeBuilder.addRelation(parent, gparent);
+            }
+         }
+         treeBuilder.addRelation(gparent, object);
       }
+      //Else just add to parent
       else {
          treeBuilder.addRelation(parent, object);
       }
-      //group children of field by type
-      if (object.getType().equals("com.cnh.pf.model.pfds.Field")) {
-         Map<String, ObjectGraph> groups = new HashMap<String, ObjectGraph>();
-         for (ObjectGraph child : object.getChildren()) {
-            final String type = child.getType();
-            if (!groups.containsKey(type)) {
-               ObjectGraph g = new ObjectGraph(null, type + "_Group", type.substring(type.lastIndexOf('.') + 1) + "s", null, object);
-               groups.put(type, g);
-               treeBuilder.addRelation(object, g);
-            }
-            addToTree(groups.get(type), child);
-         }
-      }
-      else {
-         for (ObjectGraph child : object.getChildren()) {
-            addToTree(object, child);
-         }
+      for (ObjectGraph child : object.getChildren()) {
+         addToTree(object, child);
       }
    }
 
@@ -414,12 +418,15 @@ public class ImportFragment extends RoboFragment implements Mediator.ProgressLis
          treeBuilder = new TreeBuilder<ObjectGraph>(manager);
          treeView.removeAllViewsInLayout();
          treeView.setVisibility(View.VISIBLE);
-         ObjectGraph root = new ObjectGraph(null, result.first.name(), getResources().getString(R.string.pfds));
-         addToTree(null, root);
          for (ObjectGraph graph : result.second) {
-            addToTree(root, graph);
+            addToTree(null, graph);
          }
-         treeAdapter = new ObjectTreeViewAdapater(getActivity(), manager, 1);
+         treeAdapter = new ObjectTreeViewAdapater(getActivity(), manager, 1) {
+            @Override
+            protected boolean isGroupableEntity(ObjectGraph node) {
+               return TreeEntityHelper.groupables.contains(node.getType());
+            }
+         };
          treeAdapter.setData(result.second);
          treeView.setAdapter(treeAdapter);
          //         manager.collapseChildren(null); //Collapse all children
