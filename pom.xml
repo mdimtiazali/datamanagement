@@ -19,6 +19,7 @@
 
 	<modules>
 		<module>datamanagement-ui</module>
+		<module>datamanagement-service</module>
 	</modules>
 	
 	<scm>

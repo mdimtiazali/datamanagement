@@ -33,7 +33,7 @@ import android.widget.TextView;
 import android.widget.Toast;
 import com.cnh.pf.android.data.management.adapter.ConflictResolutionViewAdapter;
 import com.cnh.pf.android.data.management.adapter.DataManagementBaseAdapter;
-import com.cnh.pf.android.data.management.adapter.ObjectTreeViewAdapater;
+import com.cnh.pf.android.data.management.adapter.ObjectTreeViewAdapter;
 import com.cnh.pf.android.data.management.adapter.PathTreeViewAdapter;
 import com.cnh.pf.android.data.management.adapter.TargetProcessViewAdapter;
 import com.cnh.pf.android.data.management.dialog.PathDialog;
@@ -86,7 +86,7 @@ public class ImportFragment extends RoboFragment implements Mediator.ProgressLis
    private TextView destDir;
    private TreeViewList treeView;
    private TreeStateManager<ObjectGraph> manager;
-   private ObjectTreeViewAdapater treeAdapter;
+   private ObjectTreeViewAdapter treeAdapter;
    private TreeBuilder<ObjectGraph> treeBuilder;
    private Button continueBtn;
    private volatile Long sdCardId;
@@ -421,7 +421,7 @@ public class ImportFragment extends RoboFragment implements Mediator.ProgressLis
          for (ObjectGraph graph : result.second) {
             addToTree(null, graph);
          }
-         treeAdapter = new ObjectTreeViewAdapater(getActivity(), manager, 1) {
+         treeAdapter = new ObjectTreeViewAdapter(getActivity(), manager, 1) {
             @Override
             protected boolean isGroupableEntity(ObjectGraph node) {
                return TreeEntityHelper.groupables.contains(node.getType());

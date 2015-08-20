@@ -12,6 +12,7 @@ package com.cnh.pf.android.data.management.adapter;
 import android.app.Activity;
 import android.graphics.drawable.Drawable;
 import android.view.View;
+import android.widget.AdapterView;
 import android.widget.TextView;
 import com.cnh.pf.android.data.management.R;
 import com.cnh.pf.android.data.management.graph.GroupObjectGraph;
@@ -34,8 +35,8 @@ import java.util.Set;
  * Adapter feeds data to TreeView
  * Created by oscar.salazar@cnhind.com
  */
-public abstract class ObjectTreeViewAdapater extends SelectionTreeViewAdapter<ObjectGraph> {
-   private static final Logger logger = LoggerFactory.getLogger(ObjectTreeViewAdapater.class);
+public abstract class ObjectTreeViewAdapter extends SelectionTreeViewAdapter<ObjectGraph> {
+   private static final Logger logger = LoggerFactory.getLogger(ObjectTreeViewAdapter.class);
 
    private static final Map<String, Integer> TYPE_ICONS = new HashMap<String, Integer>();
 
@@ -51,7 +52,7 @@ public abstract class ObjectTreeViewAdapater extends SelectionTreeViewAdapter<Ob
 
    private List<ObjectGraph> data;
 
-   public ObjectTreeViewAdapater(Activity activity, TreeStateManager treeStateManager, int numberOfLevels) {
+   public ObjectTreeViewAdapter(Activity activity, TreeStateManager treeStateManager, int numberOfLevels) {
       super(activity, treeStateManager, numberOfLevels);
 
    }
