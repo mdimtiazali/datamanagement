@@ -7,7 +7,7 @@
  * authorization from CNH Industrial NV.
  */
 
-package com.cnh.android.data.management;
+package com.cnh.pf.android.data.management;
 
 import java.util.HashSet;
 import java.util.Set;

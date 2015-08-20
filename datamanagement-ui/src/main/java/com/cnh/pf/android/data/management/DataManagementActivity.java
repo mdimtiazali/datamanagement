@@ -7,7 +7,7 @@
  * authorization from CNH Industrial NV.
  *
  */
-package com.cnh.android.data.management;
+package com.cnh.pf.android.data.management;
 
 import java.lang.reflect.Constructor;
 import java.util.HashMap;
@@ -33,8 +33,8 @@ import roboguice.util.RoboContext;
  * Data Management Tab Activity
  * Contains test UI, will later include Data Management, Data Sync, Import & Export
  */
-public class DataManagementTabActivity extends TabActivity implements RoboContext {
-   private static final Logger logger = LoggerFactory.getLogger(DataManagementTabActivity.class);
+public class DataManagementActivity extends TabActivity implements RoboContext {
+   private static final Logger logger = LoggerFactory.getLogger(DataManagementActivity.class);
 
    protected HashMap<Key<?>,Object> scopedObjects = new HashMap<Key<?>, Object>();
 

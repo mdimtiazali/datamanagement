@@ -7,14 +7,14 @@
  * authorization from CNH Industrial NV.
  *
  */
-package com.cnh.android.data.management.dialog;
+package com.cnh.pf.android.data.management.dialog;
 
 import android.app.Activity;
 import android.view.LayoutInflater;
 import android.view.View;
 
-import com.cnh.android.data.management.R;
-import com.cnh.android.data.management.adapter.DataManagementBaseAdapter;
+import com.cnh.pf.android.data.management.R;
+import com.cnh.pf.android.data.management.adapter.DataManagementBaseAdapter;
 import com.cnh.android.dialog.DialogView;
 import com.cnh.android.widget.activity.TabActivity;
 import com.cnh.android.widget.control.ProgressBarView;

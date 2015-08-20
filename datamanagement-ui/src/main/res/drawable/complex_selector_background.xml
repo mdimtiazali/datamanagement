@@ -9,7 +9,7 @@
   -->
 
 <selector xmlns:android="http://schemas.android.com/apk/res/android"
-xmlns:cnh="http://schemas.android.com/apk/res/com.cnh.android.data.management">
+xmlns:cnh="http://schemas.android.com/apk/res/com.cnh.pf.android.data.management">
 
 	<item android:state_selected="true" android:state_pressed="false">
        <shape android:shape="rectangle">

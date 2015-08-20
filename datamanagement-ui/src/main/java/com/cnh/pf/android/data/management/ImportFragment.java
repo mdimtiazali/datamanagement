@@ -7,7 +7,7 @@
  * authorization from CNH Industrial NV.
  *
  */
-package com.cnh.android.data.management;
+package com.cnh.pf.android.data.management;
 
 import javax.inject.Named;
 import java.io.File;
@@ -31,14 +31,14 @@ import android.widget.AdapterView;
 import android.widget.Button;
 import android.widget.TextView;
 import android.widget.Toast;
-import com.cnh.android.data.management.adapter.ConflictResolutionViewAdapter;
-import com.cnh.android.data.management.adapter.DataManagementBaseAdapter;
-import com.cnh.android.data.management.adapter.ObjectTreeViewAdapater;
-import com.cnh.android.data.management.adapter.PathTreeViewAdapter;
-import com.cnh.android.data.management.adapter.TargetProcessViewAdapter;
-import com.cnh.android.data.management.dialog.PathDialog;
-import com.cnh.android.data.management.dialog.ProcessDialog;
-import com.cnh.android.data.management.graph.GroupObjectGraph;
+import com.cnh.pf.android.data.management.adapter.ConflictResolutionViewAdapter;
+import com.cnh.pf.android.data.management.adapter.DataManagementBaseAdapter;
+import com.cnh.pf.android.data.management.adapter.ObjectTreeViewAdapater;
+import com.cnh.pf.android.data.management.adapter.PathTreeViewAdapter;
+import com.cnh.pf.android.data.management.adapter.TargetProcessViewAdapter;
+import com.cnh.pf.android.data.management.dialog.PathDialog;
+import com.cnh.pf.android.data.management.dialog.ProcessDialog;
+import com.cnh.pf.android.data.management.graph.GroupObjectGraph;
 import com.cnh.android.dialog.DialogView;
 import com.cnh.android.dialog.DialogViewInterface;
 import com.cnh.android.widget.activity.TabActivity;

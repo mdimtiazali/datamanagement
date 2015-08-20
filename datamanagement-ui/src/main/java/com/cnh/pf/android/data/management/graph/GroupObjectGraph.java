@@ -7,7 +7,7 @@
  * authorization from CNH Industrial NV.
  */
 
-package com.cnh.android.data.management.graph;
+package com.cnh.pf.android.data.management.graph;
 
 import com.cnh.jgroups.ObjectGraph;
 import org.jgroups.Address;

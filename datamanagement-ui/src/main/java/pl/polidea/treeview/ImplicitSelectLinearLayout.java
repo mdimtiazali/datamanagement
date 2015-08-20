@@ -12,7 +12,7 @@ package pl.polidea.treeview;
 import android.content.Context;
 import android.util.AttributeSet;
 import android.widget.LinearLayout;
-import com.cnh.android.data.management.R;
+import com.cnh.pf.android.data.management.R;
 
 /**
  * @author kedzie

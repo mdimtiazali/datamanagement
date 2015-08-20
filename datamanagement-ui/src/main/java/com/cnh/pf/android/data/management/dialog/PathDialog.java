@@ -7,11 +7,9 @@
  * authorization from CNH Industrial NV.
  *
  */
-package com.cnh.android.data.management.dialog;
+package com.cnh.pf.android.data.management.dialog;
 
 import java.io.File;
-import java.util.ArrayList;
-import java.util.List;
 
 import android.os.Environment;
 import pl.polidea.treeview.InMemoryTreeStateManager;
@@ -24,8 +22,8 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.widget.Toast;
 
-import com.cnh.android.data.management.R;
-import com.cnh.android.data.management.adapter.PathTreeViewAdapter;
+import com.cnh.pf.android.data.management.R;
+import com.cnh.pf.android.data.management.adapter.PathTreeViewAdapter;
 import com.cnh.android.dialog.DialogView;
 import com.cnh.android.dialog.DialogViewInterface;
 import com.cnh.android.widget.activity.TabActivity;

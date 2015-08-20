@@ -7,7 +7,7 @@
  * authorization from CNH Industrial NV.
  *
  */
-package com.cnh.android.data.management.adapter;
+package com.cnh.pf.android.data.management.adapter;
 
 import java.util.List;
 
@@ -23,7 +23,7 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.widget.TextView;
 
-import com.cnh.android.data.management.R;
+import com.cnh.pf.android.data.management.R;
 import com.cnh.jgroups.Operation;
 
 /**

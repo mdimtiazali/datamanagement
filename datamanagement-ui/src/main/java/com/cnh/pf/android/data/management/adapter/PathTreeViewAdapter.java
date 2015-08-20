@@ -7,7 +7,7 @@
  * authorization from CNH Industrial NV.
  *
  */
-package com.cnh.android.data.management.adapter;
+package com.cnh.pf.android.data.management.adapter;
 
 import android.widget.AdapterView;
 import org.slf4j.Logger;
@@ -18,11 +18,9 @@ import pl.polidea.treeview.TreeStateManager;
 
 import android.app.Activity;
 import android.view.View;
-import android.widget.CheckBox;
-import android.widget.LinearLayout;
 import android.widget.TextView;
 
-import com.cnh.android.data.management.R;
+import com.cnh.pf.android.data.management.R;
 
 import java.io.File;
 

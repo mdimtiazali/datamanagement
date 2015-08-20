@@ -7,15 +7,14 @@
  * authorization from CNH Industrial NV.
  *
  */
-package com.cnh.android.data.management.adapter;
+package com.cnh.pf.android.data.management.adapter;
 
 import android.app.Activity;
 import android.graphics.drawable.Drawable;
 import android.view.View;
-import android.widget.AdapterView;
 import android.widget.TextView;
-import com.cnh.android.data.management.R;
-import com.cnh.android.data.management.graph.GroupObjectGraph;
+import com.cnh.pf.android.data.management.R;
+import com.cnh.pf.android.data.management.graph.GroupObjectGraph;
 import com.cnh.jgroups.Datasource;
 import pl.polidea.treeview.TreeNodeInfo;
 import pl.polidea.treeview.TreeStateManager;

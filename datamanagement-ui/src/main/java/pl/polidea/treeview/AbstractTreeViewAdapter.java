@@ -16,7 +16,7 @@ import android.widget.FrameLayout.LayoutParams;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.ListAdapter;
-import com.cnh.android.data.management.R;
+import com.cnh.pf.android.data.management.R;
 
 /**
  * Adapter used to feed the table view.

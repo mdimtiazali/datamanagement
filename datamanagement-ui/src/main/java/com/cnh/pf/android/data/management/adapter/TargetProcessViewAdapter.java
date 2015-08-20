@@ -7,7 +7,7 @@
  * authorization from CNH Industrial NV.
  *
  */
-package com.cnh.android.data.management.adapter;
+package com.cnh.pf.android.data.management.adapter;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -22,7 +22,7 @@ import android.view.View;
 import android.widget.AdapterView;
 import android.widget.TextView;
 
-import com.cnh.android.data.management.R;
+import com.cnh.pf.android.data.management.R;
 import com.cnh.android.widget.control.PickListAdapter;
 import com.cnh.android.widget.control.PickListEditable;
 import com.cnh.android.widget.control.PickListItem;

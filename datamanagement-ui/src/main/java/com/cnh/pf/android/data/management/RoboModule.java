@@ -7,7 +7,7 @@
  * authorization from CNH Industrial NV.
  */
 
-package com.cnh.android.data.management;
+package com.cnh.pf.android.data.management;
 
 import javax.inject.Named;
 import javax.inject.Singleton;
