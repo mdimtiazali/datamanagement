@@ -1,131 +1,30 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<!--
-  ~ Copyright (C) 2015 CNH Industrial NV. All rights reserved.
-  ~
-  ~ This software contains proprietary information of CNH Industrial NV. Neither
-  ~ receipt nor possession thereof confers any right to reproduce, use, or
-  ~ disclose in whole or in part any such information without written
-  ~ authorization from CNH Industrial NV.
-  -->
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0
+                              http://maven.apache.org/maven-v4_0_0.xsd">
+	<modelVersion>4.0.0</modelVersion>
 
-<project xmlns="http://maven.apache.org/POM/4.0.0"
-         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
-    <modelVersion>4.0.0</modelVersion>
+	<parent>
+		<groupId>com.cnh.pf</groupId>
+		<artifactId>parent</artifactId>
+		<version>6.57.0-SNAPSHOT</version>
+		<relativePath>../</relativePath>
+	</parent>
 
-   <parent>
-      <groupId>com.cnh.pf</groupId>
-      <artifactId>parent</artifactId>
-      <version>6.57.0-SNAPSHOT</version>
-   </parent>
+	<artifactId>datamanagement-parent</artifactId>
 
-    <artifactId>datamanagement</artifactId>
+	<packaging>pom</packaging>
 
-    <packaging>apk</packaging>
+	<name>Data Management Android Parent</name>
 
-    <dependencies>
-        <dependency>
-            <groupId>android</groupId>
-            <artifactId>android</artifactId>
-            <scope>provided</scope>
-        </dependency>
-        <dependency>
-            <groupId>com.cnh.pf</groupId>
-            <artifactId>libdatamng</artifactId>
-            <version>${project.version}</version>
-            <exclusions>
-               <exclusion>
-                  <groupId>org.codehaus.groovy</groupId>
-                  <artifactId>groovy</artifactId>
-               </exclusion>
-               <exclusion>
-                  <groupId>ch.qos.logback</groupId>
-                  <artifactId>logback-core</artifactId>
-               </exclusion>
-               <exclusion>
-                  <groupId>ch.qos.logback</groupId>
-                  <artifactId>logback-classic</artifactId>
-               </exclusion>
-            </exclusions>
-        </dependency>
-        <dependency>
-            <groupId>com.cnh.pf</groupId>
-            <artifactId>widget</artifactId>
-            <version>6.1.1</version>
-            <type>aar</type>
-        </dependency>
-        <dependency>
-            <groupId>com.github.tony19</groupId>
-            <artifactId>logback-android-core</artifactId>
-        </dependency>
-        <dependency>
-            <groupId>com.github.tony19</groupId>
-            <artifactId>logback-android-classic</artifactId>
-            <exclusions>
-                <exclusion>
-                    <groupId>com.google.android</groupId>
-                    <artifactId>android</artifactId>
-                </exclusion>
-            </exclusions>
-        </dependency>
-        <dependency>
-            <groupId>org.roboguice</groupId>
-            <artifactId>roboguice</artifactId>
-            <version>3.0.1</version>
-            <exclusions>
-                <exclusion>
-                    <groupId>android.support</groupId>
-                    <artifactId>compatibility-v4</artifactId>
-                </exclusion>
-            </exclusions>
-        </dependency>
-        <dependency>
-            <groupId>org.roboguice</groupId>
-            <artifactId>roboblender</artifactId>
-            <version>3.0.1</version>
-            <scope>provided</scope>
-        </dependency>
-    </dependencies>
-
-    <build>
-        <finalName>${project.artifactId}</finalName>
-        <plugins>
-            <plugin>
-                <groupId>org.apache.maven.plugins</groupId>
-                <artifactId>maven-compiler-plugin</artifactId>
-                <configuration>
-                    <compilerArgument>-AguiceAnnotationDatabasePackageName=com.cnh.android.data.management</compilerArgument>
-                    <fork>true</fork>
-                </configuration>
-            </plugin>
-            <plugin>
-                <groupId>com.simpligility.maven.plugins</groupId>
-                <artifactId>android-maven-plugin</artifactId>
-                <extensions>true</extensions>
-                <configuration>
-                    <sdk>
-                        <platform>18</platform>
-                    </sdk>
-                    <manifest>
-                        <debuggable>true</debuggable>
-                        <versionName/>
-                        <versionCodeUpdateFromVersion>true</versionCodeUpdateFromVersion>
-                    </manifest>
-                    <attachSources>true</attachSources>
-                    <!-- these default values are set explicitly so IntelliJ can see them -->
-                    <androidManifestFile>${project.basedir}/src/main/AndroidManifest.xml</androidManifestFile>
-                    <resourceDirectory>${project.basedir}/src/main/res</resourceDirectory>
-                    <assetsDirectory>${project.basedir}/src/main/assets</assetsDirectory>
-                </configuration>
-                <executions>
-                    <execution>
-                        <id>manifest</id>
-                        <phase>process-resources</phase>
-                        <goals><goal>manifest-update</goal></goals>
-                    </execution>
-                </executions>
-            </plugin>
-        </plugins>
-    </build>
-
+	<modules>
+		<module>datamanagement-ui</module>
+	</modules>
+	
+	<scm>
+        <url>https://eagle.repositoryhosting.com/git/eagle/datamanagement</url>
+        <connection>scm:git:ssh://git@eagle.repositoryhosting.com/eagle/datamanagement</connection>
+        <developerConnection>scm:git:ssh://git@eagle.repositoryhosting.com/eagle/datamanagement</developerConnection>
+        <tag>HEAD</tag>
+    </scm>
 </project>
