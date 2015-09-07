@@ -38,7 +38,7 @@ import com.google.inject.Singleton;
    private static final Logger logger = LoggerFactory.getLogger(DatasourceHelper.class);
 
    private @Inject Mediator mediator;
-   private ConcurrentHashMap<Datasource.Source, Map<Address, List<Datasource.DataType>>> sourceMap;
+   private ConcurrentHashMap<Datasource.Source, Map<Address, List<Datasource.DataType>>> sourceMap = null;
 
    public void setSourceMap(View view) throws Exception {
       sourceMap = new ConcurrentHashMap<Datasource.Source, Map<Address, List<Datasource.DataType>>>();
@@ -69,6 +69,7 @@ import com.google.inject.Singleton;
       catch (Exception e) {
          logger.error("Exception getSources", e);
       }
+      logger.debug("sourceMap: {}", sourceMap.toString());
    }
 
    private List<Datasource.DataType> getDataTypes(Address addr, RspList<Datasource.DataType[]> rsp) {
@@ -86,7 +87,10 @@ import com.google.inject.Singleton;
     * @return
     */
    public Address[] getAddressForSourceType(Datasource.Source sourceType) {
-      return sourceMap.get(sourceType).keySet().toArray(new Address[sourceMap.get(sourceType).keySet().size()]);
+      if (sourceMap != null) {
+         return sourceMap.get(sourceType) != null ? sourceMap.get(sourceType).keySet().toArray(new Address[sourceMap.get(sourceType).keySet().size()]) : new Address[0];
+      }
+      return new Address[0];
    }
 
    /**

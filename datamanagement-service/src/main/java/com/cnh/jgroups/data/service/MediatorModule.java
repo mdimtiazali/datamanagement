@@ -10,18 +10,23 @@ package com.cnh.jgroups.data.service;
 
 import android.app.Application;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import com.google.inject.Provides;
+import com.google.inject.Singleton;
+import com.google.inject.name.Named;
+import org.jgroups.Global;
+import org.jgroups.JChannel;
 
 import com.cnh.jgroups.Mediator;
 import com.google.inject.AbstractModule;
-import com.google.inject.Singleton;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * Provides Mediator implementation to all objects that depend on Mediator.
  * @author oscar.salazar@cnhind.com
  */
 public class MediatorModule extends AbstractModule {
+   private static Logger logger = LoggerFactory.getLogger(MediatorModule.class);
 
    private Application application;
 
@@ -31,7 +36,14 @@ public class MediatorModule extends AbstractModule {
 
    @Override
    protected void configure() {
-      bind(Mediator.class).toProvider(new MediatorProvider(application)).in(Singleton.class);
+      System.setProperty(Global.IPv4, "true");
+   }
+
+   @Provides
+   @Singleton
+   public Mediator getMediator(@Named("data") JChannel channel) {
+      logger.debug("Using channel {}", channel.getProperties());
+      return new Mediator(channel, "DataManagementService");
    }
 
 }

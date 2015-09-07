@@ -29,8 +29,9 @@ import org.slf4j.LoggerFactory;
 import com.cnh.jgroups.Datasource;
 import com.cnh.jgroups.Mediator;
 import com.cnh.jgroups.Operation;
-import com.cnh.jgroups.data.service.aidl.IDataManagementListenerAIDL;
-import com.cnh.jgroups.data.service.aidl.IDataManagementServiceAIDL;
+import com.cnh.pf.data.management.DataManagementSession;
+import com.cnh.pf.data.management.aidl.IDataManagementListenerAIDL;
+import com.cnh.pf.data.management.aidl.IDataManagementServiceAIDL;
 import com.cnh.jgroups.data.service.helper.DatasourceHelper;
 import roboguice.service.RoboService;
 
@@ -137,7 +138,7 @@ public class DataManagementService extends RoboService {
          if (sessionOperation.equals(DataManagementSession.SessionOperation.DISCOVERY)) {
             new DiscoveryTask().execute();
          }
-         else if (sessionOperation.equals(DataManagementSession.SessionOperation.CALCULATTE_OPERATIONS)) {
+         else if (sessionOperation.equals(DataManagementSession.SessionOperation.CALCULATE_OPERATIONS)) {
             new CalculateTargetsTask().execute();
          }
          else if (sessionOperation.equals(DataManagementSession.SessionOperation.CALCULATE_CONFLICTS)) {
@@ -205,7 +206,7 @@ public class DataManagementService extends RoboService {
       protected Void doInBackground(Void... params) {
          try {
             session.setObjectData(mediator.discovery(dsHelper.getAddressForSourceType(session.getSourceType())));
-            session.setSessionOperation(DataManagementSession.SessionOperation.CALCULATTE_OPERATIONS);
+            session.setSessionOperation(DataManagementSession.SessionOperation.CALCULATE_OPERATIONS);
          }
          catch (Exception e) {
             logger.debug("error in discovery", e);
