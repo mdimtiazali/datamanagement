@@ -11,11 +11,21 @@
 <resources>
    <color name="tree_line">#ffd9d9d9</color>
    <color name="tree_dotted_line">#ff6bc4cb</color>
-   
+
    <color name="bg_selected">#ff25a9ce</color>
    <color name="bg_implicit_stroke">#ff83b8db</color>
    <color name="bg_implicit_fill">#ffe0f3f8</color>
-   
+
    <dimen name="selected_corner_radius">4dp</dimen>
+
+   <!-- Dashed border -->
+   <color name="dash_border">#1277bd</color>
+   <dimen name="dash_gap">18dp</dimen>
+   <dimen name="dash_length">18dp</dimen>
+   <dimen name="dash_width">2dp</dimen>
+
+   <!-- Panel border -->
+   <color name="data_panel_border">#80bee9</color>
+   <color name="data_header_background">#e8e8e8</color>
 
 </resources>

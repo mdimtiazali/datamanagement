@@ -53,6 +53,14 @@ public abstract class DataManagementBaseAdapter {
    }
 
    /**
+    * Return entity name of the current entity being processed
+    */
+   public String getEntityString() {
+      String type = operationList.get(activeOperation).getData().getType();
+      return type.substring(type.lastIndexOf('.') + 1);
+   }
+
+   /**
     * Updates view with new data
     * @param convertView View to reuse
     * @return updated view

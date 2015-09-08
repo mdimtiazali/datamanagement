@@ -1,0 +1,69 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  ~ Copyright (C) 2015 CNH Industrial NV. All rights reserved.
+  ~
+  ~ This software contains proprietary information of CNH Industrial NV. Neither
+  ~ receipt nor possession thereof confers any right to reproduce, use, or
+  ~ disclose in whole or in part any such information without written
+  ~ authorization from CNH Industrial NV.
+  -->
+
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+              android:orientation="vertical"
+              android:layout_width="match_parent"
+              android:layout_height="match_parent">
+
+   <LinearLayout
+      android:layout_width="match_parent"
+      android:layout_height="match_parent"
+      android:layout_marginLeft="16dp"
+      android:layout_marginRight="16dp"
+      android:orientation="vertical">
+
+      <Button
+         android:id="@+id/import_source_btn"
+         android:layout_width="match_parent"
+         android:layout_height="wrap_content"
+         android:layout_marginTop="12dp"
+         android:layout_gravity="center"
+         style="@style/Button"
+         android:text="@string/select_source"
+         android:textSize="22dp"/>
+
+      <LinearLayout
+         android:id="@+id/import_drop_zone"
+         android:layout_width="match_parent"
+         android:layout_height="wrap_content"
+         android:layout_marginTop="12dp"
+         android:orientation="vertical"
+         android:background="@drawable/dashed_border">
+
+         <ImageView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="50dp"
+            android:background="@drawable/ic_dragdrop_import_display"
+            android:layout_gravity="center"/>
+
+         <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center_horizontal"
+            android:gravity="center"
+            android:layout_marginBottom="50dp"
+            style="@style/TextAppearance.Import.Entity"
+            android:text="@string/import_drag_and_drop"/>
+      </LinearLayout>
+
+      <Button
+         android:id="@+id/import_selected_btn"
+         style="@style/Button"
+         android:layout_width="match_parent"
+         android:layout_height="wrap_content"
+         android:layout_marginTop="12dp"
+         android:enabled="false"
+         android:text="@string/import_selected"
+         android:textSize="22dp"/>
+   </LinearLayout>
+
+</LinearLayout>

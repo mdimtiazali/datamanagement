@@ -135,6 +135,7 @@ public class DataManagementService extends RoboService {
          logger.debug("service.processOperation: " + DataManagementSession.SessionOperation.fromValue(op));
          DataManagementSession.SessionOperation sessionOperation = DataManagementSession.SessionOperation.fromValue(op);
          updateSession(session);
+         //TODO add string constant for action
          if (sessionOperation.equals(DataManagementSession.SessionOperation.DISCOVERY)) {
             new DiscoveryTask().execute();
          }
@@ -150,6 +151,11 @@ public class DataManagementService extends RoboService {
          else {
             logger.error("Couldn't find op");
          }
+      }
+
+      @Override public void resetSession() throws RemoteException {
+         session = null;
+         updateListeners();
       }
    }
 

@@ -12,17 +12,30 @@ package com.cnh.pf.android.data.management;
 import javax.inject.Named;
 import javax.inject.Singleton;
 
+import java.io.File;
+import java.util.ArrayList;
+import java.util.List;
+
 import android.app.Application;
 import android.content.Context;
 import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
+import android.os.Environment;
+
+import com.cnh.jgroups.Datasource;
 import com.cnh.jgroups.Mediator;
+import com.cnh.jgroups.ObjectGraph;
+import com.cnh.jgroups.Operation;
+import com.cnh.pf.data.management.DataManagementSession;
+import com.cnh.pf.android.data.management.connection.DataServiceConnectionImpl;
+
 import com.google.inject.AbstractModule;
 import com.google.inject.Provides;
 import org.jgroups.Global;
 import org.jgroups.JChannel;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import roboguice.event.EventManager;
 
 /**
  * Roboguice module definition
@@ -79,6 +92,11 @@ public class RoboModule extends AbstractModule {
 
     @Provides
     public Mediator getMediator(JChannel channel) {
-        return new Mediator(channel, "Android");
+      return new Mediator(channel, "Android");
+   }
+
+    @Provides public File getUsbFile() {
+       //Mock until USB support, uses internal sdcard
+       return Environment.getExternalStorageDirectory();
     }
 }

@@ -180,4 +180,21 @@ public abstract class SelectionTreeViewAdapter<T> extends AbstractTreeViewAdapte
          }
       }
    }
+
+   /**
+    * Sets all objects in tree to full selection
+    */
+   public void selectAll(AdapterView<?> parent) {
+      //We can use shortcut by clearing selectionMap, and full selection of root objects
+      selectionMap.clear();
+      for (T graph : getManager().getChildren(null)) {
+         traverseTree(graph, TRAVERSE_DOWN, new Visitor<T>() {
+            @Override public boolean visit(T node) {
+               selectionMap.put(node, SelectionType.FULL);
+               return true;
+            }
+         });
+      }
+      updateViewSelection(parent);
+   }
 }

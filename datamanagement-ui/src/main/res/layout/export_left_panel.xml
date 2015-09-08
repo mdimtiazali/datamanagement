@@ -1,0 +1,92 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  ~ Copyright (C) 2015 CNH Industrial NV. All rights reserved.
+  ~
+  ~ This software contains proprietary information of CNH Industrial NV. Neither
+  ~ receipt nor possession thereof confers any right to reproduce, use, or
+  ~ disclose in whole or in part any such information without written
+  ~ authorization from CNH Industrial NV.
+  -->
+
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+              xmlns:cnh="http://schemas.android.com/apk/res/com.cnh.pf.android.data.management"
+              android:orientation="vertical"
+              android:layout_width="match_parent"
+              android:layout_height="match_parent">
+
+   <LinearLayout
+      android:layout_width="match_parent"
+      android:layout_height="match_parent"
+      android:layout_marginLeft="16dp"
+      android:layout_marginRight="16dp"
+      android:orientation="vertical">
+
+      <TextView
+         android:layout_width="wrap_content"
+         android:layout_height="wrap_content"
+         style="@style/TextAppearance.Import.Entity"
+         android:text="@string/export_to"/>
+      
+      <com.cnh.android.widget.control.PickListEditable
+         android:id="@+id/export_medium_picklist"
+         android:layout_width="match_parent"
+         android:layout_height="wrap_content"
+         cnh:allowItemCopying="false"
+         cnh:allowItemDeletion="false"
+         cnh:allowItemCreation="false"
+         cnh:allowItemEditing="false"
+         cnh:allowItemManagement="false"/>
+
+      <TextView
+         android:layout_width="wrap_content"
+         android:layout_height="wrap_content"
+         style="@style/TextAppearance.Import.Entity"
+         android:text="@string/export_format"/>
+
+      <com.cnh.android.widget.control.PickListEditable
+         android:id="@+id/export_format_picklist"
+         android:layout_width="match_parent"
+         android:layout_height="wrap_content"
+         cnh:allowItemCopying="false"
+         cnh:allowItemDeletion="false"
+         cnh:allowItemCreation="false"
+         cnh:allowItemEditing="false"
+         cnh:allowItemManagement="false"/>
+
+      <LinearLayout
+         android:id="@+id/export_drop_zone"
+         android:layout_width="match_parent"
+         android:layout_height="wrap_content"
+         android:layout_marginTop="12dp"
+         android:orientation="vertical"
+         android:background="@drawable/dashed_border">
+
+         <ImageView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="50dp"
+            android:background="@drawable/ic_dragdrop_export_usb"
+            android:layout_gravity="center"/>
+
+         <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center_horizontal"
+            android:gravity="center"
+            android:layout_marginBottom="50dp"
+            style="@style/TextAppearance.Import.Entity"
+            android:text="@string/export_drag_and_drop"/>
+      </LinearLayout>
+
+      <Button
+         android:id="@+id/export_selected_btn"
+         style="@style/Button"
+         android:layout_width="match_parent"
+         android:layout_height="wrap_content"
+         android:layout_marginTop="12dp"
+         android:enabled="false"
+         android:text="@string/export_selected"
+         android:textSize="22dp"/>
+   </LinearLayout>
+
+</LinearLayout>

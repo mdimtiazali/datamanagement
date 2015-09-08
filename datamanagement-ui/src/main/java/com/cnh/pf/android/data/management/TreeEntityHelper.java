@@ -9,7 +9,9 @@
 
 package com.cnh.pf.android.data.management;
 
+import java.util.HashMap;
 import java.util.HashSet;
+import java.util.Map;
 import java.util.Set;
 
 /**
@@ -25,5 +27,9 @@ public class TreeEntityHelper {
       add("com.cnh.pf.model.pfds.Customer");
       add("com.cnh.pf.model.pfds.Task");
       add("com.cnh.pf.model.pfds.Prescription");
+   }};
+
+   public static Map<String, Integer> topLevelEntites = new HashMap<String, Integer>() {{
+      put("com.cnh.pf.model.pfds.Customer", R.string.pfds);
    }};
 }

@@ -1,11 +1,13 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
    <string name="app_name">Data Management</string>
-   <string name="tab_import">Import Export</string>
+   <string name="tab_import">Import</string>
+   <string name="tab_import_test">Import test</string>
    <string name="import_source">Import Source</string>
    <string name="destination">Destination</string>
    <string name="collapse_button_content_description">Collapse Button</string>
-   <string name="import_string">Import</string>
+   <string name="import_selected">Import Selected</string>
+   <string name="export_selected">Export Selected</string>
    <string name="done">Done</string>
    <string name="type">Type:</string>
    <string name="name">Name:</string>
@@ -27,5 +29,15 @@
     <string name="prescriptions">Prescriptions</string>
     <string name="tasks">Tasks</string>
     <string name="boundaries">Boundaries</string>
+   <string name="select_source">Select Import Source</string>
+   <string name="import_drag_and_drop"><![CDATA[Drag & Drop \nto Import \nto PCM/Display]]></string>
+   <string name="export_drag_and_drop"><![CDATA[Drag & Drop \nto Export]]></string>
+   <string name="select_all">Select All</string>
+   <string name="usb_string">USB</string>
+   <string name="display_string">Display</string>
+   <string name="select_string">Select</string>
+   <string name="export_to">Export To:</string>
+   <string name="export_format">Export Format:</string>
+   <string name="tab_export">Export</string>
 
 </resources>

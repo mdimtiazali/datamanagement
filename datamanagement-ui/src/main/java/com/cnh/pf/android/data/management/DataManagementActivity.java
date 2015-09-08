@@ -23,6 +23,7 @@ import android.view.View;
 import com.cnh.android.widget.activity.TabActivity;
 import com.cnh.android.widget.control.TabActivityListeners;
 import com.cnh.android.widget.control.TabActivityTab;
+
 import com.google.inject.Key;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -109,8 +110,14 @@ public class DataManagementActivity extends TabActivity implements RoboContext {
    @Override
    public void onCreate(Bundle savedInstanceState) {
       super.onCreate(savedInstanceState);
-      TabActivityTab importExportTestTab = new TabActivityTab(R.string.tab_import, R.drawable.tab_import, "import_export_test_tab",
-              new DataManagementTabListener(new ImportFragment(), this));
+      TabActivityTab importTab = new TabActivityTab(R.string.tab_import, R.drawable.tab_import, getResources().getString(R.string.tab_import),
+            new DataManagementTabListener(new ImportFragment(), this));
+      addTab(importTab);
+      TabActivityTab exportTab = new TabActivityTab(R.string.tab_export, R.drawable.tab_export, getResources().getString(R.string.tab_export),
+              new DataManagementTabListener(new ExportFragment(), this));
+      addTab(exportTab);
+      TabActivityTab importExportTestTab = new TabActivityTab(R.string.tab_import_test, R.drawable.tab_import, "import_export_test_tab",
+            new DataManagementTabListener(new TestImportFragment(), this));
       addTab(importExportTestTab);
       setTabActivityTitle(getString(R.string.app_name));
       selectTabAtPosition(0);
