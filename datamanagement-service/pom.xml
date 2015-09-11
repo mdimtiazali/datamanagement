@@ -62,14 +62,6 @@
         <finalName>${project.artifactId}</finalName>
         <plugins>
             <plugin>
-                <groupId>org.apache.maven.plugins</groupId>
-                <artifactId>maven-compiler-plugin</artifactId>
-                <configuration>
-                    <compilerArgument>-AguiceAnnotationDatabasePackageName=com.cnh.jgroups.data.service</compilerArgument>
-                    <fork>true</fork>
-                </configuration>
-            </plugin>
-            <plugin>
                 <groupId>com.simpligility.maven.plugins</groupId>
                 <artifactId>android-maven-plugin</artifactId>
                 <extensions>true</extensions>
@@ -105,6 +97,7 @@
                 <configuration>
                     <compilerArgs>
                         <arg>-AandroidManifestFile=${project.basedir}/src/main/AndroidManifest.xml</arg>
+                        <arg>-AguiceAnnotationDatabasePackageName=com.cnh.jgroups.data.service</arg>
                     </compilerArgs>
                 </configuration>
             </plugin>
