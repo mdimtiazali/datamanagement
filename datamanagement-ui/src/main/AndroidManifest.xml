@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
-<manifest xmlns:android="http://schemas.android.com/apk/res/android" android:versionCode="6058000" android:versionName="6.58.0-SNAPSHOT" package="com.cnh.pf.android.data.management">
+<manifest xmlns:android="http://schemas.android.com/apk/res/android" android:versionCode="6058000" android:versionName="6.58.0" package="com.cnh.pf.android.data.management">
    <uses-sdk android:minSdkVersion="18" android:targetSdkVersion="18"/>
 
    <uses-permission android:name="android.permission.INTERNET"/>
