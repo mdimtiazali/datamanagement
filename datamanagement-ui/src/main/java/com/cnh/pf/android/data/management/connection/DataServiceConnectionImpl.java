@@ -9,8 +9,9 @@
 
 package com.cnh.pf.android.data.management.connection;
 
-import com.cnh.pf.data.management.DataManagementSession;
+import android.app.Service;
 
+import com.cnh.pf.data.management.DataManagementSession;
 
 /**
  * Service must handle its own connection to service. Must provide Service connection and status.
@@ -20,8 +21,6 @@ import com.cnh.pf.data.management.DataManagementSession;
  */
 public interface DataServiceConnectionImpl {
    public boolean isConnected();
-   public DataManagementSession getSession();
-   public void processOperation(DataManagementSession session, DataManagementSession.SessionOperation op);
 
    interface ConnectionListener {
       public void onConnectionChange(boolean connected);
@@ -29,9 +28,15 @@ public interface DataServiceConnectionImpl {
 
    class ConnectionEvent {
       private boolean connected;
+      private Service service;
 
-      public ConnectionEvent(boolean connected) {
+      public ConnectionEvent(boolean connected, Service service) {
          this.connected = connected;
+         this.service = service;
+      }
+
+      public Service getService() {
+         return service;
       }
 
       public boolean isConnected() {

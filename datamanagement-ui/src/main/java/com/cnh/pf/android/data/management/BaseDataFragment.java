@@ -15,7 +15,6 @@ import java.util.List;
 import java.util.Map;
 
 import android.os.Bundle;
-import android.os.RemoteException;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -27,10 +26,11 @@ import android.widget.TextView;
 import com.cnh.jgroups.ObjectGraph;
 import com.cnh.jgroups.Operation;
 import com.cnh.pf.android.data.management.adapter.ObjectTreeViewAdapter;
-import com.cnh.pf.android.data.management.connection.DataServiceConnectionImpl;
+import com.cnh.pf.android.data.management.connection.DataServiceConnection;
 import com.cnh.pf.android.data.management.connection.DataServiceConnectionImpl.ConnectionEvent;
 import com.cnh.pf.android.data.management.connection.DataServiceConnectionImpl.DataSessionEvent;
 import com.cnh.pf.android.data.management.graph.GroupObjectGraph;
+import com.cnh.pf.android.data.management.service.DataManagementService;
 import com.cnh.pf.data.management.DataManagementSession;
 
 import butterknife.Bind;
@@ -57,7 +57,7 @@ import roboguice.fragment.provided.RoboFragment;
 public abstract class BaseDataFragment extends RoboFragment {
    private static final Logger logger = LoggerFactory.getLogger(BaseDataFragment.class);
 
-   @Inject private DataServiceConnectionImpl dataServiceConnection;
+   @Inject private DataServiceConnection dataServiceConnection;
    @Inject private EventManager eventManager;
    @Bind(R.id.path_tv) TextView pathTv;
    @Bind(R.id.select_all_btn) Button selectAllBtn;
@@ -107,7 +107,7 @@ public abstract class BaseDataFragment extends RoboFragment {
    public void onResume() {
       super.onResume();
       if (dataServiceConnection.isConnected()) {
-         onResumeSession(dataServiceConnection.getSession());
+         onResumeSession(dataServiceConnection.getService().getSession());
       }
    }
 
@@ -120,10 +120,10 @@ public abstract class BaseDataFragment extends RoboFragment {
    }
 
    /** Called when a change in connection to backend happens */
-   private void onConnected(@Observes ConnectionEvent event) throws RemoteException {
+   private void onConnected(@Observes ConnectionEvent event) {
       logger.debug("onConnected");
       if (event.isConnected()) {
-         eventManager.fire(new DataSessionEvent(dataServiceConnection.getSession()));
+         onResumeSession(dataServiceConnection.getService().getSession());
       }
       else {
          //Disable all buttons for now
@@ -237,8 +237,8 @@ public abstract class BaseDataFragment extends RoboFragment {
       return session;
    }
 
-   public DataServiceConnectionImpl getDataServiceConnection() {
-      return dataServiceConnection;
+   public DataManagementService getDataManagementService() {
+      return dataServiceConnection.getService();
    }
 
    public ObjectTreeViewAdapter getTreeAdapter() {

@@ -6,12 +6,7 @@
  *  disclose in whole or in part any such information without written
  *  authorization from CNH Industrial NV.
  */
-package com.cnh.jgroups.data.service;
-
-import android.content.Intent;
-import android.os.AsyncTask;
-import android.os.IBinder;
-import android.os.RemoteException;
+package com.cnh.pf.android.data.management.service;
 
 import javax.inject.Inject;
 import java.util.ArrayList;
@@ -20,19 +15,22 @@ import java.util.List;
 import java.util.Map.Entry;
 import java.util.concurrent.ConcurrentHashMap;
 
+import android.content.Intent;
+import android.os.AsyncTask;
+import android.os.Binder;
+import android.os.IBinder;
+import android.os.RemoteException;
+
 import org.jgroups.Address;
-import org.jgroups.Global;
 import org.jgroups.View;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.cnh.jgroups.Datasource;
 import com.cnh.jgroups.Mediator;
 import com.cnh.jgroups.Operation;
 import com.cnh.pf.data.management.DataManagementSession;
 import com.cnh.pf.data.management.aidl.IDataManagementListenerAIDL;
-import com.cnh.pf.data.management.aidl.IDataManagementServiceAIDL;
-import com.cnh.jgroups.data.service.helper.DatasourceHelper;
+import com.cnh.pf.android.data.management.helper.DatasourceHelper;
 import roboguice.service.RoboService;
 
 /**
@@ -49,6 +47,10 @@ public class DataManagementService extends RoboService {
 
    DataManagementSession session = null;
    ConcurrentHashMap<String, IDataManagementListenerAIDL> listeners = new ConcurrentHashMap<String, IDataManagementListenerAIDL>();
+   private final IBinder localBinder = new LocalBinder();
+
+   /* Time to wait for USB Datasource to register if the usb has valid data*/
+   private static int usbDelay = 4000;
 
    @Override
    public int onStartCommand(Intent intent, int flags, int startId) {
@@ -56,8 +58,13 @@ public class DataManagementService extends RoboService {
       return START_NOT_STICKY;
    }
 
-   @Override
-   public boolean onUnbind(Intent intent) {
+   @Override public IBinder onBind(Intent intent) {
+      logger.debug("onBind");
+      //TODO distinguish between local and remote bind
+      return localBinder;
+   }
+
+   @Override public boolean onUnbind(Intent intent) {
       logger.debug("onUnbind");
       return super.onUnbind(intent);
    }
@@ -100,67 +107,34 @@ public class DataManagementService extends RoboService {
       mediator.close();
    }
 
-   @Override
-   public IBinder onBind(Intent intent) {
-      logger.debug("onBind");
-      return new IServiceBinder();
-   }
-
-   private synchronized DataManagementSession getDataManagementSession() {
+   public synchronized DataManagementSession getSession() {
       return session;
    }
 
-   public class IServiceBinder extends IDataManagementServiceAIDL.Stub {
-
-      @Override
-      public void register(String name, IDataManagementListenerAIDL listener) throws RemoteException {
-         logger.debug("Register: " + name);
-         listeners.put(name, listener);
-         listener.onDataSessionUpdated(session);
+   public void processOperation(DataManagementSession session, DataManagementSession.SessionOperation sessionOperation) {
+      logger.debug("service.processOperation: {}", sessionOperation);
+      this.session = session;
+      //TODO add string constant for action
+      if (sessionOperation.equals(DataManagementSession.SessionOperation.DISCOVERY)) {
+         new DiscoveryTask().execute();
       }
-
-      @Override
-      public void unregister(String name) throws RemoteException {
-         logger.debug("unRegister:" + name);
-         listeners.remove(name);
+      else if (sessionOperation.equals(DataManagementSession.SessionOperation.CALCULATE_OPERATIONS)) {
+         new CalculateTargetsTask().execute();
       }
-
-      @Override
-      public DataManagementSession getSession() throws RemoteException {
-         return getDataManagementSession();
+      else if (sessionOperation.equals(DataManagementSession.SessionOperation.CALCULATE_CONFLICTS)) {
+         new CalculateConflictsTask().execute();
       }
-
-      @Override
-      public void processOperation(DataManagementSession session, int op) throws RemoteException {
-         logger.debug("service.processOperation: " + DataManagementSession.SessionOperation.fromValue(op));
-         DataManagementSession.SessionOperation sessionOperation = DataManagementSession.SessionOperation.fromValue(op);
-         updateSession(session);
-         //TODO add string constant for action
-         if (sessionOperation.equals(DataManagementSession.SessionOperation.DISCOVERY)) {
-            new DiscoveryTask().execute();
-         }
-         else if (sessionOperation.equals(DataManagementSession.SessionOperation.CALCULATE_OPERATIONS)) {
-            new CalculateTargetsTask().execute();
-         }
-         else if (sessionOperation.equals(DataManagementSession.SessionOperation.CALCULATE_CONFLICTS)) {
-            new CalculateConflictsTask().execute();
-         }
-         else if (sessionOperation.equals(DataManagementSession.SessionOperation.PERFORM_OPERATIONS)) {
-            performOperations();
-         }
-         else {
-            logger.error("Couldn't find op");
-         }
+      else if (sessionOperation.equals(DataManagementSession.SessionOperation.PERFORM_OPERATIONS)) {
+         performOperations();
       }
-
-      @Override public void resetSession() throws RemoteException {
-         session = null;
-         updateListeners();
+      else {
+         logger.error("Couldn't find op");
       }
    }
 
-   private void updateSession(DataManagementSession session) {
-      this.session = session;
+   public void resetSession() throws RemoteException {
+      session = null;
+      updateListeners();
    }
 
    private void performOperations() {
@@ -190,6 +164,13 @@ public class DataManagementService extends RoboService {
          catch (RemoteException e) {
             logger.debug("removing client:" + entry.getValue());
          }
+      }
+   }
+
+   public class LocalBinder extends Binder {
+
+      public DataManagementService getService() {
+         return DataManagementService.this;
       }
    }
 
@@ -288,4 +269,3 @@ public class DataManagementService extends RoboService {
       }
    }
 }
-

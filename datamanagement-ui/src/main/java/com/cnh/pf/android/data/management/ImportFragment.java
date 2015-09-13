@@ -26,6 +26,7 @@ import com.cnh.jgroups.Operation;
 import com.cnh.pf.android.data.management.adapter.TargetProcessViewAdapter;
 import com.cnh.pf.android.data.management.dialog.ImportSourceDialog;
 import com.cnh.pf.android.data.management.dialog.ProcessDialog;
+import com.cnh.pf.android.data.management.service.DataManagementService;
 import com.cnh.pf.data.management.DataManagementSession;
 
 import butterknife.Bind;
@@ -59,7 +60,7 @@ public class ImportFragment extends BaseDataFragment {
    /**Called when user selects Import source, from Import Source Dialog*/
    private void onImportSourceSelected(@Observes ImportSourceDialog.ImportSourceSelectedEvent event) {
       setSession(new DataManagementSession(event.getSourceType(), Datasource.Source.INTERNAL));
-      getDataServiceConnection().processOperation(getSession(), DataManagementSession.SessionOperation.DISCOVERY);
+      getDataManagementService().processOperation(getSession(), DataManagementSession.SessionOperation.DISCOVERY);
    }
 
    @Override
@@ -118,7 +119,7 @@ public class ImportFragment extends BaseDataFragment {
          processDialog.show();
          processDialog.setTitle(getResources().getString(R.string.checking_targets));
          getSession().setObjectData(new ArrayList<ObjectGraph>(getTreeAdapter().getSelected()));
-         getDataServiceConnection().processOperation(getSession(), DataManagementSession.SessionOperation.CALCULATE_OPERATIONS);
+         getDataManagementService().processOperation(getSession(), DataManagementSession.SessionOperation.CALCULATE_OPERATIONS);
       }
       else {
          //notify user he needs to select items first

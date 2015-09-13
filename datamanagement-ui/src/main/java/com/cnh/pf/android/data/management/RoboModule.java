@@ -24,10 +24,6 @@ import android.os.Environment;
 
 import com.cnh.jgroups.Datasource;
 import com.cnh.jgroups.Mediator;
-import com.cnh.jgroups.ObjectGraph;
-import com.cnh.jgroups.Operation;
-import com.cnh.pf.data.management.DataManagementSession;
-import com.cnh.pf.android.data.management.connection.DataServiceConnectionImpl;
 
 import com.google.inject.AbstractModule;
 import com.google.inject.Provides;
@@ -35,68 +31,37 @@ import org.jgroups.Global;
 import org.jgroups.JChannel;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import roboguice.event.EventManager;
 
 /**
  * Roboguice module definition
  * @author kedzie
  */
 public class RoboModule extends AbstractModule {
-    private static final Logger logger = LoggerFactory.getLogger(RoboModule.class);
+   private static final Logger logger = LoggerFactory.getLogger(RoboModule.class);
 
-    public static final String GLOBAL_PREFERENCES_PACKAGE = "com.cnh.pf.android.preference";
+   public static final String GLOBAL_PREFERENCES_PACKAGE = "com.cnh.pf.android.preference";
 
-    private Application application;
+   private Application application;
 
-    public RoboModule(Application ctx) {
-        this.application = ctx;
-    }
-
-    @Override
-    protected void configure() {
-    }
-
-    @Provides
-    @Singleton
-    @Named("global")
-    @SuppressWarnings("deprecation")
-    private SharedPreferences getPrefs() throws PackageManager.NameNotFoundException {
-        return application.createPackageContext(GLOBAL_PREFERENCES_PACKAGE, Context.CONTEXT_IGNORE_SECURITY)
-           .getSharedPreferences(GLOBAL_PREFERENCES_PACKAGE, Context.MODE_WORLD_READABLE);
-    }
-
-    @Provides
-    public JChannel getChannel(@Named("global") SharedPreferences prefs) throws Exception {
-        String config = prefs.getString("jgroups_config", "jgroups.xml");
-        boolean gossip = config.equals("jgroups-tunnel.xml");
-        boolean tcp = config.equals("jgroups-tcp.xml");
-        if(gossip || tcp) {
-            System.setProperty("jgroups.tunnel.gossip_router_hosts", String.format("%s[%s]",
-               prefs.getString("jgroups_gossip_host", "10.0.0.11"),
-               prefs.getString("jgroups_gossip_port", "12001")));
-        }
-        if(tcp) {
-            String tcpExternalHost = prefs.getString("jgroups_external_host", "");
-            String tcpExternalPort = prefs.getString("jgroups_external_port", "");
-            if(!tcpExternalHost.isEmpty()) {
-                System.setProperty(Global.EXTERNAL_ADDR, tcpExternalHost);
-                if(!tcpExternalPort.isEmpty()) {
-                    System.setProperty("jgroups.tcp.bind_port", tcpExternalPort);
-                    System.setProperty(Global.EXTERNAL_PORT, tcpExternalPort);
-                }
-            }
-        }
-        logger.info("Using JGroups config {}", config);
-        return new JChannel(config);
-    }
-
-    @Provides
-    public Mediator getMediator(JChannel channel) {
-      return new Mediator(channel, "Android");
+   public RoboModule(Application ctx) {
+      this.application = ctx;
    }
 
-    @Provides public File getUsbFile() {
-       //Mock until USB support, uses internal sdcard
-       return Environment.getExternalStorageDirectory();
-    }
+   @Override
+   protected void configure() {
+      System.setProperty(Global.IPv4, "true");
+   }
+
+   @Provides
+   @Singleton
+   public Mediator getMediator(@Named("data") JChannel channel) {
+      logger.debug("Using channel {}", channel.getProperties());
+      return new Mediator(channel, "DataManagementService");
+   }
+
+   @Provides
+   public File getUsbFile() {
+      //Mock until USB support, uses internal sdcard
+      return Environment.getExternalStorageDirectory();
+   }
 }

@@ -6,9 +6,9 @@
  * disclose in whole or in part any such information without written
  * authorization from CNH Industrial NV.
  */
-package com.cnh.jgroups.data.service.helper;
 
-import java.util.ArrayList;
+package com.cnh.pf.android.data.management.helper;
+
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.HashSet;

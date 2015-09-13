@@ -17,10 +17,9 @@ import android.content.ServiceConnection;
 import android.os.IBinder;
 import android.os.RemoteException;
 
+import com.cnh.pf.android.data.management.service.DataManagementService;
 import com.cnh.pf.data.management.DataManagementSession;
-import com.cnh.pf.data.management.ServiceConstants;
 import com.cnh.pf.data.management.aidl.IDataManagementListenerAIDL;
-import com.cnh.pf.data.management.aidl.IDataManagementServiceAIDL;
 import com.cnh.pf.android.data.management.DataManagementActivity;
 
 import com.google.inject.Inject;
@@ -42,25 +41,20 @@ public class DataServiceConnection implements DataServiceConnectionImpl {
    private EventManager eventManager;
 
    private Context context;
-   private IDataManagementServiceAIDL service = null;
+   private DataManagementService service = null;
 
    private static String appName = DataManagementActivity.class.getName();
 
    private ServiceConnection serviceConnection = new ServiceConnection() {
       @Override public void onServiceConnected(ComponentName componentName, IBinder iBinder) {
-         service = IDataManagementServiceAIDL.Stub.asInterface(iBinder);
-         try {
-            service.register(appName, dataManagementListenerAIDL);
-            eventManager.fire(new ConnectionEvent(true));
-         }
-         catch (RemoteException e) {
-            logger.error("error in register with service: ", e);
-         }
+         DataManagementService.LocalBinder binder = (DataManagementService.LocalBinder) iBinder;
+         service = (DataManagementService) binder.getService();
+         eventManager.fire(new ConnectionEvent(true, service));
       }
 
       @Override public void onServiceDisconnected(ComponentName componentName) {
          service = null;
-         eventManager.fire(new ConnectionEvent(false));
+         eventManager.fire(new ConnectionEvent(false, null));
       }
 
    };
@@ -70,53 +64,23 @@ public class DataServiceConnection implements DataServiceConnectionImpl {
       this.context = context;
       this.eventManager = eventManager;
       logger.debug("bindService");
-      context.bindService(new Intent(ServiceConstants.dataServiceName), serviceConnection, Context.BIND_AUTO_CREATE);
+      context.bindService(new Intent(context, DataManagementService.class), serviceConnection, Context.BIND_AUTO_CREATE);
    }
 
    private void disconnect(@Observes OnPauseEvent event) {
       logger.debug("disconnect");
-      try {
-         service.unregister(appName);
-      }
-      catch (RemoteException e) {
-         logger.debug("error in disconnect:", e);
-      }
-      context.unbindService(serviceConnection);
+      new Thread(new Runnable() {
+         @Override public void run() {
+            context.unbindService(serviceConnection);
+         }
+      });
    }
 
    public boolean isConnected() {
       return service != null;
    }
 
-   @Override
-   public DataManagementSession getSession() {
-      try {
-         return service.getSession();
-      }
-      catch (RemoteException e) {
-         logger.error("Error Getting Session:", e);
-      }
-      return null;
+   public DataManagementService getService() {
+      return service;
    }
-
-   @Override
-   public void processOperation(DataManagementSession session, DataManagementSession.SessionOperation op) {
-      logger.debug("processOperation: {}", op.toString());
-      try {
-         service.processOperation(session, op.getValue());
-      }
-      catch (RemoteException e) {
-         logger.error("Error processing Operation:", e);
-      }
-   }
-
-   private final IDataManagementListenerAIDL dataManagementListenerAIDL = new IDataManagementListenerAIDL.Stub() {
-      @Override public void onProgressUpdated() throws RemoteException {
-      }
-
-      @Override public void onDataSessionUpdated(DataManagementSession session) throws RemoteException {
-         logger.debug("onDataSessionUpdated");
-         eventManager.fire(new DataSessionEvent(session));
-      }
-   };
 }

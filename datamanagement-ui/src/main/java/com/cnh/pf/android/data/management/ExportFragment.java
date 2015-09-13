@@ -9,16 +9,23 @@
 
 package com.cnh.pf.android.data.management;
 
+import java.io.File;
 import java.util.ArrayList;
+import java.util.List;
 import java.util.Set;
 
+import android.content.Context;
 import android.os.Bundle;
+import android.os.RemoteException;
 import android.view.LayoutInflater;
 import android.view.View;
+import android.widget.AdapterView;
 import android.widget.Button;
 import android.widget.LinearLayout;
 
+import com.cnh.android.widget.control.PickListAdapter;
 import com.cnh.android.widget.control.PickListEditable;
+import com.cnh.android.widget.control.PickListItem;
 import com.cnh.jgroups.Datasource;
 import com.cnh.jgroups.ObjectGraph;
 import com.cnh.pf.data.management.DataManagementSession;
@@ -52,7 +59,7 @@ public class ExportFragment extends BaseDataFragment {
    @Override
    public void onNewSession() {
       setSession(new DataManagementSession(Datasource.Source.INTERNAL, Datasource.Source.USB));
-      getDataServiceConnection().processOperation(getSession(), DataManagementSession.SessionOperation.DISCOVERY);
+      getDataManagementService().processOperation(getSession(), DataManagementSession.SessionOperation.DISCOVERY);
    }
 
    @Override
