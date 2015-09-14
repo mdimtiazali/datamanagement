@@ -54,12 +54,28 @@
          cnh:allowItemManagement="false"/>
 
       <LinearLayout
-         android:id="@+id/export_drop_zone"
          android:layout_width="match_parent"
          android:layout_height="wrap_content"
          android:layout_marginTop="12dp"
          android:orientation="vertical"
          android:background="@drawable/dashed_border">
+
+         <LinearLayout
+            android:id="@+id/status_panel"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            android:visibility="gone">
+
+            <include layout="@layout/perform_left_layout"/>
+         </LinearLayout>
+
+
+         <LinearLayout
+            android:id="@+id/export_drop_zone"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical">
 
          <ImageView
             android:layout_width="wrap_content"
@@ -76,6 +92,7 @@
             android:layout_marginBottom="50dp"
             style="@style/TextAppearance.Import.Entity"
             android:text="@string/export_drag_and_drop"/>
+         </LinearLayout>
       </LinearLayout>
 
       <Button

@@ -55,4 +55,50 @@ public interface DataServiceConnectionImpl {
          return session;
       }
    }
+
+   class ProgressEvent {
+      String operation;
+      int progress;
+      int max;
+
+      public ProgressEvent(String operation, int progress, int max) {
+         this.operation = operation;
+         this.progress = progress;
+         this.max = max;
+      }
+
+      public String getOperation() {
+         return operation;
+      }
+
+      public int getMax() {
+         return max;
+      }
+
+      public int getProgress() {
+         return progress;
+      }
+   }
+
+   class ErrorEvent {
+      private String error;
+      private DataError type;
+
+      public enum DataError {
+         NO_USB_DATASOURCE, CALCULATE_CONFLICT_ERROR, CALCULATE_TARGETS_ERROR, DISCOVERY_ERROR;
+      }
+
+      public ErrorEvent(DataError type, String error) {
+         this.type = type;
+         this.error = error;
+      }
+
+      public String getError() {
+         return error;
+      }
+
+      public DataError getType() {
+         return type;
+      }
+   }
 }

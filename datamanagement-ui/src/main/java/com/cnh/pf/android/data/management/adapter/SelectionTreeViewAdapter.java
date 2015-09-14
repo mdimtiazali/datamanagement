@@ -27,6 +27,11 @@ import java.util.concurrent.ConcurrentHashMap;
  */
 public abstract class SelectionTreeViewAdapter<T> extends AbstractTreeViewAdapter<T> {
 
+   /** Notify listener of object selected/unselected*/
+   public interface OnTreeItemSelectedListener {
+      void onItemSelected();
+   }
+
    public interface Visitor<T> {
       /**
        * visit the node.
@@ -44,6 +49,7 @@ public abstract class SelectionTreeViewAdapter<T> extends AbstractTreeViewAdapte
    }
 
    private Map<T, SelectionType> selectionMap;
+   private OnTreeItemSelectedListener listener;
 
    public SelectionTreeViewAdapter(Activity activity, TreeStateManager treeStateManager, int numberOfLevels) {
       super(activity, treeStateManager, numberOfLevels);
@@ -64,6 +70,20 @@ public abstract class SelectionTreeViewAdapter<T> extends AbstractTreeViewAdapte
             traverseTree(child, TRAVERSE_DOWN, visitor);
          }
       }
+   }
+
+   /**
+    * Get tree item selected listener
+    */
+   public OnTreeItemSelectedListener getOnTreeItemListener() {
+      return listener;
+   }
+
+   /**
+    * Set tree item selected listener
+    */
+   public void setOnTreeItemSelectedListener(OnTreeItemSelectedListener listener) {
+      this.listener = listener;
    }
 
    @Override
@@ -154,6 +174,9 @@ public abstract class SelectionTreeViewAdapter<T> extends AbstractTreeViewAdapte
          });
       }
       updateViewSelection(parent);
+      if (listener != null) {
+         listener.onItemSelected();
+      }
    }
 
    public Map<T, SelectionType> getSelectionMap() {
@@ -196,5 +219,8 @@ public abstract class SelectionTreeViewAdapter<T> extends AbstractTreeViewAdapte
          });
       }
       updateViewSelection(parent);
+      if (listener != null) {
+         listener.onItemSelected();
+      }
    }
 }

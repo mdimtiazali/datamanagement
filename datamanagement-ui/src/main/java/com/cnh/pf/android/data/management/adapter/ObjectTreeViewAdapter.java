@@ -148,8 +148,10 @@ public abstract class ObjectTreeViewAdapter extends SelectionTreeViewAdapter<Obj
       for(ObjectGraph root : stage1) {
          ObjectGraph filtered = filterSelected(root, SelectionType.FULL); //starting at top level, only FULL selected nodes
          //this stripped the parents, so we need to put them back
-         ObjectGraph parent = root.getParent().copyUp();
-         parent.addChild(filtered);
+         if (root.getParent() != null) {
+            ObjectGraph parent = root.getParent().copyUp();
+            parent.addChild(filtered);
+         }
          selected.add(filtered);
       }
       return selected;

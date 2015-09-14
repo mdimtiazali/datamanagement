@@ -59,7 +59,7 @@ public class ImportFragment extends BaseDataFragment {
 
    /**Called when user selects Import source, from Import Source Dialog*/
    private void onImportSourceSelected(@Observes ImportSourceDialog.ImportSourceSelectedEvent event) {
-      setSession(new DataManagementSession(event.getSourceType(), Datasource.Source.INTERNAL));
+      setSession(new DataManagementSession(event.getSourceType(), Datasource.Source.INTERNAL, null));
       getDataManagementService().processOperation(getSession(), DataManagementSession.SessionOperation.DISCOVERY);
    }
 
@@ -109,6 +109,20 @@ public class ImportFragment extends BaseDataFragment {
          }
       }
    }
+
+   /** Check if session returned by service is an import operation*/
+   @Override
+   public boolean isCurrentOperation(DataManagementSession session) {
+      return session.getDestinationType().equals(Datasource.Source.INTERNAL);
+   }
+
+   @Override
+   public void onTreeItemSelected() {
+      //TODO check enableButton
+   }
+
+   @Override
+   public void onProgressPublished(String operation, int progress, int max) { }
 
    @OnClick(R.id.import_selected_btn)
    void importSelected() {

@@ -39,5 +39,8 @@
    <string name="export_to">Export To:</string>
    <string name="export_format">Export Format:</string>
    <string name="tab_export">Export</string>
+   <string name="percent_complete">% Complete</string>
+   <string name="exporting_string">Exporting</string>
+   <string name="exporting_data">Exporting Data</string>
 
 </resources>

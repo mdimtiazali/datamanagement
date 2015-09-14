@@ -18,19 +18,31 @@ import java.util.concurrent.ConcurrentHashMap;
 import android.content.Intent;
 import android.os.AsyncTask;
 import android.os.Binder;
+import android.os.Handler;
 import android.os.IBinder;
 import android.os.RemoteException;
 
+import com.google.inject.name.Named;
 import org.jgroups.Address;
 import org.jgroups.View;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import com.cnh.jgroups.Datasource;
 import com.cnh.jgroups.Mediator;
 import com.cnh.jgroups.Operation;
-import com.cnh.pf.data.management.DataManagementSession;
-import com.cnh.pf.data.management.aidl.IDataManagementListenerAIDL;
+import com.cnh.pf.android.data.management.connection.DataServiceConnectionImpl;
 import com.cnh.pf.android.data.management.helper.DatasourceHelper;
+import com.cnh.pf.data.management.DataManagementSession;
+import com.cnh.pf.data.management.MediumImpl;
+import com.cnh.pf.data.management.ServiceConstants;
+import com.cnh.pf.data.management.aidl.IDataManagementListenerAIDL;
+import com.cnh.pf.data.management.aidl.MediumDevice;
+
+import com.google.inject.Singleton;
+import org.jgroups.Global;
+import roboguice.config.DefaultRoboModule;
+import roboguice.event.EventManager;
 import roboguice.service.RoboService;
 
 /**
@@ -44,16 +56,19 @@ public class DataManagementService extends RoboService {
 
    private @Inject Mediator mediator;
    private @Inject DatasourceHelper dsHelper;
+   private @Inject MediumImpl mediumProvider;
+   @Named(DefaultRoboModule.GLOBAL_EVENT_MANAGER_NAME)
+   @Inject EventManager globalEventManager;
 
    DataManagementSession session = null;
    ConcurrentHashMap<String, IDataManagementListenerAIDL> listeners = new ConcurrentHashMap<String, IDataManagementListenerAIDL>();
+   private Handler handler = new Handler();
    private final IBinder localBinder = new LocalBinder();
 
    /* Time to wait for USB Datasource to register if the usb has valid data*/
    private static int usbDelay = 4000;
 
-   @Override
-   public int onStartCommand(Intent intent, int flags, int startId) {
+   @Override public int onStartCommand(Intent intent, int flags, int startId) {
       logger.debug("onStartCommand");
       return START_NOT_STICKY;
    }
@@ -73,28 +88,9 @@ public class DataManagementService extends RoboService {
    public void onCreate() {
       super.onCreate();
       try {
-         mediator.setProgressListener(new Mediator.ProgressListener() {
-            @Override
-            public void onProgressPublished(String operation, int progress, int max) {
-               //TODO send progress to all listeners
-            }
-
-            @Override
-            public void onSecondaryProgressPublished(String secondaryOperation, int secondaryProgress, int secondaryMax) {
-
-            }
-
-            @Override
-            public void onViewAccepted(View new_view) {
-               try {
-                  dsHelper.setSourceMap(new_view);
-               }
-               catch (Exception e) {
-                  logger.error("Error in updating sourceMap", e);
-               }
-            }
-         });
-         new ConnectTask().execute();
+         mediator.setProgressListener(pListener);
+         if (!mediator.getChannel().isConnected())
+            new ConnectTask().execute();
       }
       catch (Exception e) {
          logger.error("error in onCreate", e);
@@ -104,11 +100,17 @@ public class DataManagementService extends RoboService {
    @Override
    public void onDestroy() {
       super.onDestroy();
-      mediator.close();
+      new Thread(new Runnable() {
+         @Override
+         public void run() {
+            mediator.close();
+         }
+      });
    }
 
-   public synchronized DataManagementSession getSession() {
-      return session;
+   public void register(String name, IDataManagementListenerAIDL listener) {
+      logger.debug("Register: " + name);
+      listeners.put(name, listener);
    }
 
    public void processOperation(DataManagementSession session, DataManagementSession.SessionOperation sessionOperation) {
@@ -116,7 +118,21 @@ public class DataManagementService extends RoboService {
       this.session = session;
       //TODO add string constant for action
       if (sessionOperation.equals(DataManagementSession.SessionOperation.DISCOVERY)) {
-         new DiscoveryTask().execute();
+         int waitForDatasource = 0;
+         if (session.getSourceType().equals(Datasource.Source.USB)) {
+            waitForDatasource = usbDelay;
+            Intent i = new Intent(ServiceConstants.USB_ACTION_INTENT);
+            i.putExtra(ServiceConstants.USB_PATH, new String[] { session.getDevice().getPath().getPath() });
+            i.putExtra(ServiceConstants.CREATE_PATH, false);
+            i.setFlags(Intent.FLAG_INCLUDE_STOPPED_PACKAGES);
+            DataManagementService.this.getApplicationContext().sendBroadcast(i);
+         }
+         handler.postDelayed(new Runnable() {
+            @Override
+            public void run() {
+               new DiscoveryTask().execute();
+            }
+         }, waitForDatasource);
       }
       else if (sessionOperation.equals(DataManagementSession.SessionOperation.CALCULATE_OPERATIONS)) {
          new CalculateTargetsTask().execute();
@@ -132,29 +148,53 @@ public class DataManagementService extends RoboService {
       }
    }
 
-   public void resetSession() throws RemoteException {
+   public void resetSession() {
+      logger.debug("resetSession");
       session = null;
-      updateListeners();
+   }
+
+   public List<MediumDevice> getMediums() {
+      return mediumProvider.getDevices();
    }
 
    private void performOperations() {
       try {
-         new PerformOperationsTask() {
+         int waitStart = 0;
+         if (session.getDevice().getType().equals(Datasource.Source.USB)) {
+            String path = session.getDevice().getPath().getPath();
+            startDisplayServices(path, true);
+            waitStart = usbDelay;
+         }
+         handler.postDelayed(new Runnable() {
             @Override
-            protected void onPostExecute(Void aVoid) {
-               super.onPostExecute(aVoid);
-               session = null;
-               stopSelf();
+            public void run() {
+               new PerformOperationsTask() {
+                  @Override
+                  protected void onPostExecute(Integer result) {
+                     super.onPostExecute(result);
+                     session = null;
+                     stopSelf();
+                  }
+               }.execute();
             }
-         }.execute();
+         }, waitStart);
       }
       catch (Exception e) {
          logger.error("Could not find destination address for this type", e);
       }
    }
 
+   private void startDisplayServices(String path, boolean create) {
+      logger.debug("Starting USB datasource");
+      Intent i = new Intent(ServiceConstants.USB_ACTION_INTENT);
+      i.putExtra(ServiceConstants.USB_PATH, new String[] { path });
+      i.putExtra(ServiceConstants.CREATE_PATH, create);
+      i.setFlags(Intent.FLAG_INCLUDE_STOPPED_PACKAGES);
+      getApplicationContext().sendBroadcast(i);
+   }
+
    private void updateListeners() {
-      logger.debug("updateListeners");
+      logger.debug("updateListeners, session: {}", session.toString());
       Iterator<Entry<String, IDataManagementListenerAIDL>> entries = listeners.entrySet().iterator();
       while (entries.hasNext()) {
          Entry<String, IDataManagementListenerAIDL> entry = entries.next();
@@ -174,11 +214,39 @@ public class DataManagementService extends RoboService {
       }
    }
 
+   public synchronized  DataManagementSession getSession() {
+      return session;
+   }
+
+   private Mediator.ProgressListener pListener = new Mediator.ProgressListener() {
+      @Override
+      public void onProgressPublished(String operation, int progress, int max) {
+         logger.debug(String.format("publishProgress(%s, %d, %d)", operation, progress, max));
+         final Double percent = ((progress * 1.0) / max) * 100;
+         eventManager.fire(new DataServiceConnectionImpl.ProgressEvent(operation, progress, max));
+      }
+
+      @Override
+      public void onSecondaryProgressPublished(String secondaryOperation, int secondaryProgress, int secondaryMax) { }
+
+      @Override
+      public void onViewAccepted(View newView) {
+         logger.debug("onViewAccepted");
+         try {
+            dsHelper.setSourceMap(newView);
+         }
+         catch (Exception e) {
+            logger.error("Error in updating sourceMap", e);
+         }
+      }
+   };
+
    private class ConnectTask extends AsyncTask<Void, Void, Void> {
 
       @Override
       protected Void doInBackground(Void... params) {
          try {
+            System.setProperty(Global.IPv4, "true");
             mediator.start();
          }
          catch (Exception e) {
@@ -188,84 +256,103 @@ public class DataManagementService extends RoboService {
       }
    }
 
-   private class DiscoveryTask extends SessionOperationTask<Void, Void, Void> {
+   private class DiscoveryTask extends SessionOperationTask<Void, Void, Integer> {
       @Override
-      protected Void doInBackground(Void... params) {
+      protected Integer doInBackground(Void... params) {
          try {
-            session.setObjectData(mediator.discovery(dsHelper.getAddressForSourceType(session.getSourceType())));
-            session.setSessionOperation(DataManagementSession.SessionOperation.CALCULATE_OPERATIONS);
+            logger.debug("Discovery for {}, address: {}", session.getSourceType(), dsHelper.getAddressForSourceType(session.getSourceType()));
+            Address[] addrs = dsHelper.getAddressForSourceType(session.getSourceType());
+            if (addrs == null || addrs.length > 0) {
+               session.setObjectData(mediator.discovery(addrs));
+            }
+            session.setSessionOperation(DataManagementSession.SessionOperation.DISCOVERY);
          }
          catch (Exception e) {
             logger.debug("error in discovery", e);
+            eventManager.fire(new DataServiceConnectionImpl.ErrorEvent(DataServiceConnectionImpl.ErrorEvent.DataError.DISCOVERY_ERROR, ""));
          }
-         return null;
+         return new Integer(0);
       }
    }
 
-   private class CalculateTargetsTask extends SessionOperationTask<Void, Void, Void> {
+   private class CalculateTargetsTask extends SessionOperationTask<Void, Void, Integer> {
       @Override
-      protected Void doInBackground(Void... params) {
+      protected Integer doInBackground(Void... params) {
          logger.debug("Calculate Targets...");
          try {
             Address[] addresses = dsHelper.getAddressForSourceType(session.getDestinationType());
             List<Operation> operations = new ArrayList<Operation>();
             for (Address address : addresses) {
-               logger.debug("Calculate Targets for Address:" +address);
+               logger.debug("Calculate Targets for Address: {}", address);
                operations.addAll(mediator.calculateOperations(address, session.getObjectData()));
             }
             session.setData(operations);
-            logger.debug("Got operation:" + session.getData());
-            session.setSessionOperation(DataManagementSession.SessionOperation.CALCULATE_CONFLICTS);
+            logger.debug("Got operation: {}", session.getData());
+            session.setSessionOperation(DataManagementSession.SessionOperation.CALCULATE_OPERATIONS);
          }
          catch (Exception e) {
             logger.error("Send exception in CalculateTargets: ", e);
+            eventManager.fire(new DataServiceConnectionImpl.ErrorEvent(DataServiceConnectionImpl.ErrorEvent.DataError.CALCULATE_TARGETS_ERROR, ""));
+            return new Integer(1);
          }
-         return null;
+         return new Integer(0);
       }
    }
 
-   private class CalculateConflictsTask extends SessionOperationTask<Void, Void, Void> {
+   private class CalculateConflictsTask extends SessionOperationTask<Void, Void, Integer> {
       @Override
-      protected Void doInBackground(Void... params) {
+      protected Integer doInBackground(Void... params) {
          logger.debug("Calculate Conflicts...");
          try {
             List<Operation> operations = new ArrayList<Operation>();
             for (Address address : dsHelper.getAddressForSourceType(session.getDestinationType())) {
-               logger.debug("Calculate Conflicts for Address:" + address);
+               logger.debug("Calculate Conflicts for Address: {}", address);
                operations.addAll(mediator.calculateConflicts(address, session.getData()));
             }
             session.setData(operations);
-            session.setSessionOperation(DataManagementSession.SessionOperation.PERFORM_OPERATIONS);
+            session.setSessionOperation(DataManagementSession.SessionOperation.CALCULATE_CONFLICTS);
          }
          catch (Exception e) {
             logger.error("Send exception", e);
+            eventManager.fire(new DataServiceConnectionImpl.ErrorEvent(DataServiceConnectionImpl.ErrorEvent.DataError.CALCULATE_CONFLICT_ERROR, ""));
+            return new Integer(1);
          }
-         return null;
+         return new Integer(0);
       }
    }
 
-   private class PerformOperationsTask extends SessionOperationTask<Void, Void, Void> {
+   private class PerformOperationsTask extends SessionOperationTask<Void, Void, Integer> {
       @Override
-      protected Void doInBackground(Void... params) {
+      protected Integer doInBackground(Void... params) {
          logger.debug("Performing Operations...");
          try {
-            for (Address address : dsHelper.getAddressForSourceType(session.getDestinationType())) {
-               logger.debug("Perform Operations for Address:" + address);
-               mediator.performOperations(address, session.getData());
+            Address[] addresses = dsHelper.getAddressForSourceType(session.getDevice().getType());
+            if (addresses != null && addresses.length > 0) {
+               for (Address address : dsHelper.getAddressForSourceType(session.getDestinationType())) {
+                  logger.debug("Perform Operations for Address: {}", address);
+                  mediator.performOperations(address, session.getData());
+                  session.setSessionOperation(DataManagementSession.SessionOperation.PERFORM_OPERATIONS);
+               }
+            }
+            else {
+               globalEventManager.fire(new DataServiceConnectionImpl.ErrorEvent(DataServiceConnectionImpl.ErrorEvent.DataError.NO_USB_DATASOURCE, "No USB Datasource"));
+               return new Integer(1);
             }
          }
          catch (Exception e) {
             logger.error("Send exception in PerformOperation:", e);
+            globalEventManager.fire(new DataServiceConnectionImpl.ErrorEvent(DataServiceConnectionImpl.ErrorEvent.DataError.NO_USB_DATASOURCE, "No USB Datasource"));
+            return new Integer(1);
          }
-         return null;
+         return new Integer(0);
       }
    }
 
-   private abstract class SessionOperationTask<Params, Progress, Result> extends AsyncTask<Params, Progress, Result> {
-      @Override
-      protected void onPostExecute(Result result) {
-         super.onPostExecute(result);
-         updateListeners();
+   private abstract class SessionOperationTask<Params, Progress, Integer> extends AsyncTask<Params, Progress, Integer> {
+      @Override protected void onPostExecute(Integer success) {
+         super.onPostExecute(success);
+         if (success.equals(0))
+            globalEventManager.fire(new DataServiceConnectionImpl.DataSessionEvent(session));
       }
    }
 }

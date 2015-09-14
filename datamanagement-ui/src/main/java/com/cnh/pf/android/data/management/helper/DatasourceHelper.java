@@ -43,8 +43,8 @@ import com.google.inject.Singleton;
    public void setSourceMap(View view) throws Exception {
       sourceMap = new ConcurrentHashMap<Datasource.Source, Map<Address, List<Datasource.DataType>>>();
       try {
-         RspList<Datasource.Source[]> rsp = mediator.getAllSources();
-         RspList<Datasource.DataType[]> rspType = mediator.getAllDatatypes();
+         RspList<Datasource.Source[]> rsp = mediator.getAllSources(null);
+         RspList<Datasource.DataType[]> rspType = mediator.getAllDatatypes(null);
          for (Map.Entry<Address, Rsp<Datasource.Source[]>> entry : rsp.entrySet()) {
             Rsp<Datasource.Source[]> response = entry.getValue();
             if (response.hasException()) {
