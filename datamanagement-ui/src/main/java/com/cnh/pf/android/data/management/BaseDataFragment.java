@@ -21,6 +21,7 @@ import android.view.ViewGroup;
 import android.widget.AbsListView;
 import android.widget.Button;
 import android.widget.LinearLayout;
+import android.widget.ScrollView;
 import android.widget.TextView;
 
 import com.cnh.android.dialog.DialogView;
@@ -68,13 +69,13 @@ public abstract class BaseDataFragment extends RoboFragment {
    @Inject private DataServiceConnection dataServiceConnection;
    @Inject protected LayoutInflater layoutInflater;
    /** Service shared global EventManager */
-   @Named(DefaultRoboModule.GLOBAL_EVENT_MANAGER_NAME)
-   @Inject EventManager globalEventManager;
+   @Named(DefaultRoboModule.GLOBAL_EVENT_MANAGER_NAME) @Inject EventManager globalEventManager;
    @Bind(R.id.path_tv) TextView pathTv;
    @Bind(R.id.select_all_btn) Button selectAllBtn;
    @Bind(R.id.tree_view_list) TreeViewList treeViewList;
    @Bind(R.id.tree_progress) protected ProgressBarView treeProgress;
-   LinearLayout leftPanel;
+   @Bind(R.id.start_text) protected TextView startText;
+   @Bind(R.id.scroll_area) ScrollView scrollArea;
 
    private TreeStateManager<ObjectGraph> manager;
    private TreeBuilder<ObjectGraph> treeBuilder;
@@ -97,7 +98,7 @@ public abstract class BaseDataFragment extends RoboFragment {
    @Override
    public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
       View layout = inflater.inflate(R.layout.import_layout, container, false);
-      leftPanel = (LinearLayout) layout.findViewById(R.id.left_panel_wrapper);
+      LinearLayout leftPanel = (LinearLayout) layout.findViewById(R.id.left_panel_wrapper);
       inflateViews(inflater, leftPanel);
       //TODO less listeners, one event cover multiple triggers
       globalEventManager.registerObserver(DataSessionEvent.class, updateListener);
@@ -197,7 +198,7 @@ public abstract class BaseDataFragment extends RoboFragment {
          logger.debug("Starting new session");
          getDataManagementService().resetSession();
          setSession(null);
-         treeViewList.setVisibility(View.GONE);
+         scrollArea.setVisibility(View.GONE);
          onNewSession();
       }
       else if (session.getObjectData() == null || session.getObjectData().size() < 1) {
@@ -214,10 +215,8 @@ public abstract class BaseDataFragment extends RoboFragment {
             //Import to existing parent if entity has parent
             List<Operation> operations = processPartialImports(getSession().getData());
             getSession().setData(operations);
-            processOperations();
          }
-         else if (op.equals(DataManagementSession.SessionOperation.CALCULATE_CONFLICTS)) {
-         }
+         processOperations();
       }
    }
 
@@ -254,8 +253,6 @@ public abstract class BaseDataFragment extends RoboFragment {
       enableButtons(true);
       manager = new InMemoryTreeStateManager<ObjectGraph>();
       treeBuilder = new TreeBuilder<ObjectGraph>(manager);
-      treeViewList.setVisibility(View.VISIBLE);
-      treeViewList.removeAllViewsInLayout();
       for (ObjectGraph graph : session.getObjectData()) {
          addToTree(null, graph);
       }
@@ -266,6 +263,8 @@ public abstract class BaseDataFragment extends RoboFragment {
          }
       };
       treeAdapter.setData(session.getObjectData());
+      treeViewList.removeAllViewsInLayout();
+      scrollArea.setVisibility(View.VISIBLE);
       treeViewList.setAdapter(treeAdapter);
       treeAdapter.setOnTreeItemSelectedListener(new SelectionTreeViewAdapter.OnTreeItemSelectedListener() {
          @Override
@@ -308,7 +307,14 @@ public abstract class BaseDataFragment extends RoboFragment {
 
    @OnClick(R.id.select_all_btn)
    void selectAll() {
-      treeAdapter.selectAll(treeViewList);
+      if (selectAllBtn.getText().equals(getResources().getString(R.string.select_all))) {
+         treeAdapter.selectAll(treeViewList, true);
+         selectAllBtn.setText(R.string.deselect_all);
+      }
+      else {
+         treeAdapter.selectAll(treeViewList, false);
+         selectAllBtn.setText(R.string.select_all);
+      }
    }
 
    public DataManagementSession getSession() {

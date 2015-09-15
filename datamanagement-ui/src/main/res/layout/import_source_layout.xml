@@ -20,22 +20,10 @@
       android:layout_height="wrap_content">
 
       <com.cnh.android.widget.control.SegmentedToggleButtonGroup
+         android:id="@+id/import_selection_group"
          android:layout_width="300dp"
          android:layout_height="wrap_content"
-         android:orientation="horizontal">
-
-         <com.cnh.android.widget.control.SegmentedToggleButton
-            android:id="@+id/usb_btn"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:text="@string/usb_string"/>
-
-         <com.cnh.android.widget.control.SegmentedToggleButton
-            android:id="@+id/display_button"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:text="@string/display_string"/>
-      </com.cnh.android.widget.control.SegmentedToggleButtonGroup>
+         android:orientation="horizontal"/>
    </LinearLayout>
 
    <ScrollView

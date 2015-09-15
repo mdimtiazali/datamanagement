@@ -78,6 +78,7 @@ public class ExportFragment extends BaseDataFragment {
    @Override
    public void onViewCreated(View view, Bundle savedInstanceState) {
       super.onViewCreated(view, savedInstanceState);
+      startText.setVisibility(View.GONE);
       populateExportToPickList();
    }
 

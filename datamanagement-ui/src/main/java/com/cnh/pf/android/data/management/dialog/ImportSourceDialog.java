@@ -9,22 +9,25 @@
 package com.cnh.pf.android.data.management.dialog;
 
 import java.io.File;
+import java.util.HashMap;
+import java.util.List;
 
 import android.app.Activity;
 import android.view.LayoutInflater;
 import android.view.View;
+import android.widget.RadioGroup;
 
 import com.cnh.android.dialog.DialogView;
 import com.cnh.android.dialog.DialogViewInterface;
 import com.cnh.android.widget.activity.TabActivity;
-import com.cnh.android.widget.control.SegmentedToggleButton;
+import com.cnh.android.widget.control.SegmentedToggleButtonGroup;
 import com.cnh.jgroups.Datasource;
 import com.cnh.pf.android.data.management.R;
 import com.cnh.pf.android.data.management.adapter.PathTreeViewAdapter;
+import com.cnh.pf.data.management.aidl.MediumDevice;
 
 import butterknife.Bind;
 import butterknife.ButterKnife;
-import butterknife.OnClick;
 import com.google.inject.Inject;
 import pl.polidea.treeview.InMemoryTreeStateManager;
 import pl.polidea.treeview.TreeBuilder;
@@ -39,47 +42,78 @@ import roboguice.event.EventManager;
  */
 public class ImportSourceDialog extends DialogView {
 
-   @Inject private File usbFile;
    @Inject private EventManager eventManager;
    @Inject LayoutInflater layoutInflater;
-   @Bind(R.id.usb_btn) SegmentedToggleButton usbBtn;
-   @Bind(R.id.display_button) SegmentedToggleButton displayButton;
+   @Bind(R.id.import_selection_group) SegmentedToggleButtonGroup importGroup;
    @Bind(R.id.source_path_tree_view) TreeViewList sourcePathTreeView;
    private TreeStateManager<File> manager;
    private PathTreeViewAdapter treeAdapter;
    private TreeBuilder<File> treeBuilder;
-
+   private HashMap<Integer, MediumDevice> devices;
    private PathTreeViewAdapter.OnPathSelectedListener listener = null;
+   private MediumDevice currentDevice;
 
-   private Datasource.Source selectedSource;
-   /** Default path is root */
-   private File selectedPath = null;
-
-   public ImportSourceDialog(Activity context) {
+   public ImportSourceDialog(Activity context, List<MediumDevice> mediums) {
       super(context);
       RoboGuice.getInjector(context).injectMembers(this);
-      init();
+      init(mediums);
    }
 
-   private void init() {
-      View view = layoutInflater.inflate(R.layout.import_source_layout, null);
-      ButterKnife.bind(this, view);
-      setBodyView(view);
-
+   private void init(List<MediumDevice> mediums) {
       setTitle(getResources().getString(R.string.select_source));
-      setFirstButtonText(getResources().getString(R.string.select_string));
-      showFirstButton(false);
-      setSecondButtonText(getResources().getString(R.string.cancel));
-      setOnButtonClickListener(new OnButtonClickListener() {
-         @Override public void onButtonClick(DialogViewInterface dialog, int which) {
-            if (which == DialogViewInterface.BUTTON_FIRST) {
-               //Select
-               eventManager.fire(new ImportSourceSelectedEvent(selectedSource, selectedPath));
+      if (mediums == null) {
+         //TODO inflate NO_IMPORT_SOURCE_DETECTED layout
+         View view = layoutInflater.inflate(R.layout.no_device_layout, null);
+         setBodyView(view);
+         setFirstButtonText(getResources().getString(R.string.ok));
+         showSecondButton(false);
+         showThirdButton(false);
+         setOnButtonClickListener(new OnButtonClickListener() {
+            @Override public void onButtonClick(DialogViewInterface dialog, int which) {
+               if (which == DialogViewInterface.BUTTON_FIRST) {
+                  ((TabActivity) getContext()).dismissPopup(ImportSourceDialog.this);
+               }
             }
-            ((TabActivity) getContext()).dismissPopup(ImportSourceDialog.this);
+         });
+      }
+      else {
+         View view = layoutInflater.inflate(R.layout.import_source_layout, null);
+         ButterKnife.bind(this, view);
+
+         devices = new HashMap<Integer, MediumDevice>();
+         int buttonId = 0;
+         for (MediumDevice device : mediums) {
+            if (device.getType().equals(Datasource.Source.USB)) {
+               importGroup.addButton(getContext().getResources().getString(R.string.usb_string), buttonId);
+               devices.put(buttonId, device);
+            }
+            else if (device.getType().equals(Datasource.Source.DISPLAY)) {
+               importGroup.addButton(getContext().getResources().getString(R.string.display_string), buttonId);
+               devices.put(buttonId, device);
+            }
+            buttonId++;
          }
-      });
-      showThirdButton(false);
+         importGroup.setOnCheckedChangeListener(new RadioGroup.OnCheckedChangeListener() {
+            @Override public void onCheckedChanged(RadioGroup group, int checkedId) {
+               onButtonSelectd(checkedId);
+            }
+         });
+         setBodyView(view);
+
+         setFirstButtonText(getResources().getString(R.string.select_string));
+         showFirstButton(false);
+         setSecondButtonText(getResources().getString(R.string.cancel));
+         setOnButtonClickListener(new OnButtonClickListener() {
+            @Override public void onButtonClick(DialogViewInterface dialog, int which) {
+               if (which == DialogViewInterface.BUTTON_FIRST) {
+                  //Select
+                  eventManager.fire(new ImportSourceSelectedEvent(currentDevice));
+               }
+               ((TabActivity) getContext()).dismissPopup(ImportSourceDialog.this);
+            }
+         });
+         showThirdButton(false);
+      }
    }
 
    private void populateTree(File parent, File dir) {
@@ -102,53 +136,47 @@ public class ImportSourceDialog extends DialogView {
       }
    }
 
-   @OnClick(R.id.usb_btn)
-   void usbSelected() {
-      selectedSource = Datasource.Source.USB;
+   private void onButtonSelectd(int buttonId) {
+      currentDevice = devices.get(buttonId);
+
       showFirstButton(true);
+      if (currentDevice.getType().equals(Datasource.Source.USB)) {
+         //Do this after usb, display selection
+         manager = new InMemoryTreeStateManager<File>();
+         treeBuilder = new TreeBuilder<File>(manager);
+         sourcePathTreeView.removeAllViewsInLayout();
+         sourcePathTreeView.setVisibility(VISIBLE);
 
-      //Do this after usb, display selection
-      manager = new InMemoryTreeStateManager<File>();
-      treeBuilder = new TreeBuilder<File>(manager);
-      sourcePathTreeView.removeAllViewsInLayout();
-      sourcePathTreeView.setVisibility(VISIBLE);
+         populateTree(null, currentDevice.getPath());
+         treeAdapter = new PathTreeViewAdapter((Activity) getContext(), manager, 1);
+         sourcePathTreeView.setAdapter(treeAdapter);
+         manager.collapseChildren(null); //Collapse all children
 
-      populateTree(null, usbFile);
-      treeAdapter = new PathTreeViewAdapter((Activity) getContext(), manager, 1);
-      sourcePathTreeView.setAdapter(treeAdapter);
-      manager.collapseChildren(null); //Collapse all children
-
-      treeAdapter.setOnPathSelectedListener(new PathTreeViewAdapter.OnPathSelectedListener() {
-         @Override public void onPathSelected(File path) {
-            selectedPath = path;
-            setFirstButtonEnabled(true);
-         }
-      });
-   }
-
-   @OnClick(R.id.display_button)
-   void displaySelected() {
-      selectedSource = Datasource.Source.DISPLAY;
-      showFirstButton(true);
-
-      sourcePathTreeView.setVisibility(GONE);
+         treeAdapter.setOnPathSelectedListener(new PathTreeViewAdapter.OnPathSelectedListener() {
+            @Override public void onPathSelected(File path) {
+               currentDevice.setPath(path);
+               setFirstButtonEnabled(true);
+            }
+         });
+      }
+      else if (currentDevice.getType().equals(Datasource.Source.DISPLAY)) {
+         sourcePathTreeView.setVisibility(GONE);
+      }
    }
 
    public class ImportSourceSelectedEvent {
-      private Datasource.Source sourceType;
-      private File path;
+      private MediumDevice device;
 
-      public ImportSourceSelectedEvent(Datasource.Source sourceType, File path) {
-         this.sourceType = sourceType;
-         this.path = path;
+      public ImportSourceSelectedEvent(MediumDevice device) {
+         this.device = device;
       }
 
-      public Datasource.Source getSourceType() {
-         return sourceType;
-      }
-
-      public File getPath() {
-         return path;
+      /**
+       * Returns the Device {USB/DISPLAY} selected by user
+       * @return
+       */
+      public MediumDevice getDevice() {
+         return device;
       }
    }
 }

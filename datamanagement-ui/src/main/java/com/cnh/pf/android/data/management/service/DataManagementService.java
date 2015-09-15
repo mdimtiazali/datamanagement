@@ -66,7 +66,7 @@ public class DataManagementService extends RoboService {
    private final IBinder localBinder = new LocalBinder();
 
    /* Time to wait for USB Datasource to register if the usb has valid data*/
-   private static int usbDelay = 4000;
+   private static int usbDelay = 6000;
 
    @Override public int onStartCommand(Intent intent, int flags, int startId) {
       logger.debug("onStartCommand");
@@ -119,7 +119,8 @@ public class DataManagementService extends RoboService {
       //TODO add string constant for action
       if (sessionOperation.equals(DataManagementSession.SessionOperation.DISCOVERY)) {
          int waitForDatasource = 0;
-         if (session.getSourceType().equals(Datasource.Source.USB)) {
+         if (session.getDestinationType().equals(Datasource.Source.INTERNAL) && session.getDevice().getType().equals(Datasource.Source.USB)) {
+            logger.debug("Starting USB Datasource");
             waitForDatasource = usbDelay;
             Intent i = new Intent(ServiceConstants.USB_ACTION_INTENT);
             i.putExtra(ServiceConstants.USB_PATH, new String[] { session.getDevice().getPath().getPath() });
@@ -130,6 +131,7 @@ public class DataManagementService extends RoboService {
          handler.postDelayed(new Runnable() {
             @Override
             public void run() {
+               logger.debug("Running discovery");
                new DiscoveryTask().execute();
             }
          }, waitForDatasource);
@@ -160,7 +162,7 @@ public class DataManagementService extends RoboService {
    private void performOperations() {
       try {
          int waitStart = 0;
-         if (session.getDevice().getType().equals(Datasource.Source.USB)) {
+         if (session.getSourceType().equals(Datasource.Source.INTERNAL) && session.getDevice().getType().equals(Datasource.Source.USB)) {
             String path = session.getDevice().getPath().getPath();
             startDisplayServices(path, true);
             waitStart = usbDelay;
@@ -223,7 +225,7 @@ public class DataManagementService extends RoboService {
       public void onProgressPublished(String operation, int progress, int max) {
          logger.debug(String.format("publishProgress(%s, %d, %d)", operation, progress, max));
          final Double percent = ((progress * 1.0) / max) * 100;
-         eventManager.fire(new DataServiceConnectionImpl.ProgressEvent(operation, progress, max));
+         globalEventManager.fire(new DataServiceConnectionImpl.ProgressEvent(operation, progress, max));
       }
 
       @Override
@@ -269,7 +271,7 @@ public class DataManagementService extends RoboService {
          }
          catch (Exception e) {
             logger.debug("error in discovery", e);
-            eventManager.fire(new DataServiceConnectionImpl.ErrorEvent(DataServiceConnectionImpl.ErrorEvent.DataError.DISCOVERY_ERROR, ""));
+            globalEventManager.fire(new DataServiceConnectionImpl.ErrorEvent(DataServiceConnectionImpl.ErrorEvent.DataError.DISCOVERY_ERROR, ""));
          }
          return new Integer(0);
       }
@@ -292,7 +294,7 @@ public class DataManagementService extends RoboService {
          }
          catch (Exception e) {
             logger.error("Send exception in CalculateTargets: ", e);
-            eventManager.fire(new DataServiceConnectionImpl.ErrorEvent(DataServiceConnectionImpl.ErrorEvent.DataError.CALCULATE_TARGETS_ERROR, ""));
+            globalEventManager.fire(new DataServiceConnectionImpl.ErrorEvent(DataServiceConnectionImpl.ErrorEvent.DataError.CALCULATE_TARGETS_ERROR, ""));
             return new Integer(1);
          }
          return new Integer(0);
@@ -314,7 +316,7 @@ public class DataManagementService extends RoboService {
          }
          catch (Exception e) {
             logger.error("Send exception", e);
-            eventManager.fire(new DataServiceConnectionImpl.ErrorEvent(DataServiceConnectionImpl.ErrorEvent.DataError.CALCULATE_CONFLICT_ERROR, ""));
+            globalEventManager.fire(new DataServiceConnectionImpl.ErrorEvent(DataServiceConnectionImpl.ErrorEvent.DataError.CALCULATE_CONFLICT_ERROR, ""));
             return new Integer(1);
          }
          return new Integer(0);

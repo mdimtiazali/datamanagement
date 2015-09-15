@@ -114,7 +114,9 @@ public class TargetProcessViewAdapter extends DataManagementBaseAdapter {
       }
    }
 
-
-
+   @Override
+   public OnActionSelectedListener getActionListener() {
+      return null;
+   }
 
 }

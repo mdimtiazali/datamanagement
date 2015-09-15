@@ -136,4 +136,9 @@ public class ConflictResolutionViewAdapter extends DataManagementBaseAdapter {
          onTargetSelectedListener.onTargetSelected(false, targetView);
       }
    }
+
+   @Override
+   public OnActionSelectedListener getActionListener() {
+      return null;
+   }
 }

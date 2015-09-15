@@ -13,23 +13,30 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
 
+import android.os.Bundle;
 import android.view.LayoutInflater;
 import android.view.View;
-import android.widget.*;
+import android.view.ViewGroup;
+import android.widget.Button;
+import android.widget.LinearLayout;
+import android.widget.TextView;
 
 import com.cnh.android.dialog.DialogView;
 import com.cnh.android.dialog.DialogViewInterface;
 import com.cnh.android.widget.activity.TabActivity;
+import com.cnh.android.widget.control.ProgressBarView;
 import com.cnh.jgroups.Datasource;
 import com.cnh.jgroups.ObjectGraph;
 import com.cnh.jgroups.Operation;
+import com.cnh.pf.android.data.management.adapter.DataConflictViewAdapter;
+import com.cnh.pf.android.data.management.adapter.DataManagementBaseAdapter;
 import com.cnh.pf.android.data.management.adapter.TargetProcessViewAdapter;
 import com.cnh.pf.android.data.management.dialog.ImportSourceDialog;
 import com.cnh.pf.android.data.management.dialog.ProcessDialog;
-import com.cnh.pf.android.data.management.service.DataManagementService;
 import com.cnh.pf.data.management.DataManagementSession;
 
 import butterknife.Bind;
+import butterknife.ButterKnife;
 import butterknife.OnClick;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -45,6 +52,10 @@ public class ImportFragment extends BaseDataFragment {
    @Bind(R.id.import_source_btn) Button importSourceBtn;
    @Bind(R.id.import_drop_zone) LinearLayout importDropZone;
    @Bind(R.id.import_selected_btn) Button importSelectedBtn;
+   @Bind(R.id.progress_bar) ProgressBarView progressBar;
+   @Bind(R.id.operation_name) TextView operationName;
+   @Bind(R.id.percent_tv) TextView percentTv;
+   @Bind(R.id.left_status) LinearLayout leftStatus;
    ProcessDialog processDialog;
 
    @Override public void inflateViews(LayoutInflater inflater, View leftPanel) {
@@ -52,22 +63,50 @@ public class ImportFragment extends BaseDataFragment {
    }
 
    @Override
+   public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
+      View rootView = super.onCreateView(inflater, container, savedInstanceState);
+      ButterKnife.bind(this, rootView);
+      return rootView;
+   }
+
+   @Override
+   public void onDestroyView() {
+      super.onDestroyView();
+      ButterKnife.unbind(this);
+   }
+
+   @Override
    public void enableButtons(boolean enable) {
       super.enableButtons(enable);
-      importSelectedBtn.setEnabled(enable);
+      checkImportButton();
+   }
+
+   private void checkImportButton() {
+      importSelectedBtn.setEnabled(getTreeAdapter() != null && getTreeAdapter().getSelected().size() > 0);
    }
 
    /**Called when user selects Import source, from Import Source Dialog*/
    private void onImportSourceSelected(@Observes ImportSourceDialog.ImportSourceSelectedEvent event) {
-      setSession(new DataManagementSession(event.getSourceType(), Datasource.Source.INTERNAL, null));
+      removeProgressPanel();
+      startText.setVisibility(View.GONE);
+      treeProgress.setVisibility(View.VISIBLE);
+      scrollArea.setVisibility(View.GONE);
+      if (event.getDevice().getType().equals(Datasource.Source.USB)) {
+         pathTv.setText(event.getDevice().getPath() == null ? "" : event.getDevice().getPath().getPath());
+      }
+      else {
+         pathTv.setText(R.string.display_string);
+      }
+      setSession(new DataManagementSession(event.getDevice().getType(), Datasource.Source.INTERNAL, event.getDevice()));
       getDataManagementService().processOperation(getSession(), DataManagementSession.SessionOperation.DISCOVERY);
    }
 
    @Override
-   public void onNewSession() { }
+   public void onNewSession() {
+      removeProgressPanel();
+   }
 
-   @Override
-   public void processOperations() {
+   @Override public void processOperations() {
       if (getSession().getSessionOperation().equals(DataManagementSession.SessionOperation.CALCULATE_OPERATIONS)) {
          logger.debug("Calculate Targets");
          boolean hasMultipleTargets = false;
@@ -104,11 +143,61 @@ public class ImportFragment extends BaseDataFragment {
             });
          }
          else {
-            //TODO jump to calculate Conflicts
-//            getDataServiceConnection().processOperation();
+            logger.debug("Found no targets with no parents, skipping to Calculate Conflicts");
+            processDialog.setTitle(getResources().getString(R.string.checking_conflicts));
+            getDataManagementService().processOperation(getSession(), DataManagementSession.SessionOperation.CALCULATE_CONFLICTS);
+         }
+      }
+      else if (getSession().getSessionOperation().equals(DataManagementSession.SessionOperation.CALCULATE_CONFLICTS)) {
+         logger.debug("Calculate Conflicts");
+         //Check for conflicts
+         boolean hasConflicts = false;
+         for (Operation operation : getSession().getData()) {
+            hasConflicts |= operation.isConflict();
+         }
+         if (hasConflicts) {
+            DataConflictViewAdapter adapter = new DataConflictViewAdapter(getActivity(), getSession().getData());
+            processDialog.setAdapter(adapter);
+            processDialog.clearLoading();
+            adapter.setOnTargetsSelectedListener(new DataManagementBaseAdapter.OnTargetsSelectedListener() {
+               @Override public void onCompletion(List<Operation> operations) {
+                  logger.debug("onCompletion");
+                  processDialog.hide();
+                  showProgressPanel();
+                  getSession().setData(operations);
+                  getDataManagementService().processOperation(getSession(), DataManagementSession.SessionOperation.PERFORM_OPERATIONS);
+               }
+            });
+            processDialog.setOnDismissListener(new DialogViewInterface.OnDismissListener() {
+               @Override public void onDismiss(DialogViewInterface dialog) {
+                  processDialog.hide();
+               }
+            });
+         }
+         else {
+            logger.debug("No conflicts found");
+            processDialog.hide();
+            showProgressPanel();
+            getDataManagementService().processOperation(getSession(), DataManagementSession.SessionOperation.PERFORM_OPERATIONS);
          }
       }
    }
+
+   /** Inflates left panel progress view */
+   private void showProgressPanel() {
+      leftStatus.setVisibility(View.VISIBLE);
+      importDropZone.setVisibility(View.GONE);
+      operationName.setText(getResources().getString(R.string.importing_data));
+      progressBar.setProgress(0);
+      percentTv.setText("0");
+   }
+
+   /** Removes left panel progress view and replaces with operation view */
+   private void removeProgressPanel() {
+      leftStatus.setVisibility(View.GONE);
+      importDropZone.setVisibility(View.VISIBLE);
+   }
+
 
    /** Check if session returned by service is an import operation*/
    @Override
@@ -118,11 +207,21 @@ public class ImportFragment extends BaseDataFragment {
 
    @Override
    public void onTreeItemSelected() {
-      //TODO check enableButton
+      checkImportButton();
    }
 
    @Override
-   public void onProgressPublished(String operation, int progress, int max) { }
+   public void onProgressPublished(String operation, int progress, int max) {
+      logger.debug("onProgressPublished: {}", progress);
+      final Double percent = ((progress * 1.0) / max) * 100;
+      if (progressBar.getVisibility() == View.VISIBLE) {
+         progressBar.setProgress(percent.intValue());
+         percentTv.setText(Integer.toString(percent.intValue()));
+      }
+      else {
+         processDialog.setProgress(percent.intValue());
+      }
+   }
 
    @OnClick(R.id.import_selected_btn)
    void importSelected() {
@@ -142,7 +241,7 @@ public class ImportFragment extends BaseDataFragment {
 
    @OnClick(R.id.import_source_btn)
    void selectSource() {
-      DialogView importSourceDialog = new ImportSourceDialog(getActivity());
+      DialogView importSourceDialog = new ImportSourceDialog(getActivity(), getDataManagementService().getMediums());
       ((TabActivity) getActivity()).showPopup(importSourceDialog, true);
    }
 }

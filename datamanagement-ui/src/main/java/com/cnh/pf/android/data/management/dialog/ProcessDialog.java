@@ -13,13 +13,17 @@ import android.app.Activity;
 import android.view.LayoutInflater;
 import android.view.View;
 
+import com.cnh.android.dialog.DialogViewInterface;
 import com.cnh.pf.android.data.management.R;
+import com.cnh.pf.android.data.management.adapter.DataConflictViewAdapter;
 import com.cnh.pf.android.data.management.adapter.DataManagementBaseAdapter;
 import com.cnh.android.dialog.DialogView;
 import com.cnh.android.widget.activity.TabActivity;
 import com.cnh.android.widget.control.ProgressBarView;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import roboguice.RoboGuice;
+import roboguice.inject.InjectResource;
 
 /**
  * Dialog showing overall import/export process and current step in full process
@@ -28,14 +32,21 @@ import org.slf4j.LoggerFactory;
 public class ProcessDialog extends DialogView {
    private static final Logger logger = LoggerFactory.getLogger(ProcessDialog.class);
 
+   @InjectResource(R.string.keep_both) String keepBothStr;
+   @InjectResource(R.string.copy_and_replace) String replaceStr;
+   @InjectResource(R.string.cancel) String cancelStr;
+   @InjectResource(R.string.data_conflict) String dataConflictStr;
    private DataManagementBaseAdapter adapter;
    private View activeView;
    private Activity context;
    private ProgressBarView pbBar;
 
+   private DataConflictViewAdapter.OnActionSelectedListener listener;
+
 
    public ProcessDialog(Activity context) {
       super(context);
+      RoboGuice.getInjector(context).injectMembersWithoutViews(this);
       this.context = context;
       init();
    }
@@ -58,6 +69,26 @@ public class ProcessDialog extends DialogView {
    public void clearLoading() {
       pbBar.setVisibility(GONE);
       setBodyView(adapter.getView(null));
+      listener = adapter.getActionListener();
+      setTitle(dataConflictStr);
+
+      setFirstButtonText(keepBothStr);
+      setSecondButtonText(replaceStr);
+      setThirdButtonText(cancelStr);
+      setOnButtonClickListener(new OnButtonClickListener() {
+         @Override
+         public void onButtonClick(DialogViewInterface dialog, int which) {
+            if (which == DialogViewInterface.BUTTON_FIRST) {
+               listener.onButtonSelected(DataManagementBaseAdapter.OnActionSelectedListener.Action.COPY_AND_KEEP_BOTH);
+            }
+            else if (which == DialogViewInterface.BUTTON_SECOND) {
+               listener.onButtonSelected(DataManagementBaseAdapter.OnActionSelectedListener.Action.REPLACE);
+            }
+            else if (which == DialogViewInterface.BUTTON_THIRD) {
+               ProcessDialog.this.hide();
+            }
+         }
+      });
 
       adapter.setOnTargetSelectedListener(new DataManagementBaseAdapter.OnTargetSelectedListener() {
          @Override
