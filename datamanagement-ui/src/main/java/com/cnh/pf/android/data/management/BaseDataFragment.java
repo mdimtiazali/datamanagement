@@ -307,7 +307,7 @@ public abstract class BaseDataFragment extends RoboFragment {
 
    @OnClick(R.id.select_all_btn)
    void selectAll() {
-      if (selectAllBtn.getText().equals(getResources().getString(R.string.select_all))) {
+      if (!selectAllBtn.isActivated()) {
          treeAdapter.selectAll(treeViewList, true);
          selectAllBtn.setText(R.string.deselect_all);
       }
@@ -315,6 +315,7 @@ public abstract class BaseDataFragment extends RoboFragment {
          treeAdapter.selectAll(treeViewList, false);
          selectAllBtn.setText(R.string.select_all);
       }
+      selectAllBtn.setActivated(!selectAllBtn.isActivated());
    }
 
    public DataManagementSession getSession() {
