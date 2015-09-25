@@ -28,6 +28,9 @@ import com.google.inject.Key;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import roboguice.RoboGuice;
+import roboguice.activity.event.OnPauseEvent;
+import roboguice.activity.event.OnResumeEvent;
+import roboguice.event.EventManager;
 import roboguice.util.RoboContext;
 
 /**
@@ -38,6 +41,7 @@ public class DataManagementActivity extends TabActivity implements RoboContext {
    private static final Logger logger = LoggerFactory.getLogger(DataManagementActivity.class);
 
    protected HashMap<Key<?>,Object> scopedObjects = new HashMap<Key<?>, Object>();
+   protected EventManager eventManager;
 
    private class DataManagementTabListener implements TabActivityListeners.TabListener {
       private final Activity a;
@@ -110,6 +114,7 @@ public class DataManagementActivity extends TabActivity implements RoboContext {
    @Override
    public void onCreate(Bundle savedInstanceState) {
       super.onCreate(savedInstanceState);
+      eventManager = RoboGuice.getInjector(this).getInstance(EventManager.class);
       TabActivityTab importTab = new TabActivityTab(R.string.tab_import, R.drawable.tab_import, getResources().getString(R.string.tab_import),
             new DataManagementTabListener(new ImportFragment(), this));
       addTab(importTab);
@@ -161,5 +166,17 @@ public class DataManagementActivity extends TabActivity implements RoboContext {
       } catch (Exception e) {
          throw new RuntimeException(e);
       }
+   }
+
+   @Override
+   public void onResume() {
+      super.onResume();
+      eventManager.fire(new OnResumeEvent(this));
+   }
+
+   @Override
+   protected void onPause() {
+      super.onPause();
+      eventManager.fire(new OnPauseEvent(this));
    }
 }

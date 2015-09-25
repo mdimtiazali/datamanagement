@@ -42,6 +42,7 @@ import com.cnh.pf.android.data.management.service.DataManagementService;
 import com.cnh.pf.data.management.DataManagementSession;
 
 import butterknife.Bind;
+import butterknife.BindString;
 import butterknife.ButterKnife;
 import butterknife.OnClick;
 import com.google.inject.Inject;
@@ -76,6 +77,7 @@ public abstract class BaseDataFragment extends RoboFragment {
    @Bind(R.id.tree_progress) protected ProgressBarView treeProgress;
    @Bind(R.id.start_text) protected TextView startText;
    @Bind(R.id.scroll_area) ScrollView scrollArea;
+   @BindString(R.string.done) String doneStr;
 
    private TreeStateManager<ObjectGraph> manager;
    private TreeBuilder<ObjectGraph> treeBuilder;
@@ -202,7 +204,7 @@ public abstract class BaseDataFragment extends RoboFragment {
          onNewSession();
       }
       else if (session.getObjectData() == null || session.getObjectData().size() < 1) {
-         //TODO NO data found dialog
+         displayEmptyDiscovery();
       }
       else {
          setSession(session);
@@ -246,6 +248,32 @@ public abstract class BaseDataFragment extends RoboFragment {
          });
       }
    };
+
+   private void displayEmptyDiscovery() {
+      getActivity().runOnUiThread(new Runnable() {
+         @Override
+         public void run() {
+            final DialogView emptyDialog = new DialogView(getActivity());
+            emptyDialog.setBodyView(layoutInflater.inflate(R.layout.empty_discovery, null));
+            emptyDialog.setFirstButtonText(doneStr);
+            emptyDialog.showSecondButton(false);
+            emptyDialog.showThirdButton(false);
+            emptyDialog.setTitle("");
+            emptyDialog.setOnButtonClickListener(new DialogViewInterface.OnButtonClickListener() {
+               @Override
+               public void onButtonClick(DialogViewInterface dialog, int which) {
+                  if (which == DialogViewInterface.BUTTON_FIRST) {
+                     startText.setVisibility(View.VISIBLE);
+                     pathTv.setText("");
+                     ((TabActivity) getActivity()).dismissPopup(emptyDialog);
+                  }
+               }
+            });
+            treeProgress.setVisibility(View.GONE);
+            ((TabActivity) getActivity()).showPopup(emptyDialog, true);
+         }
+      });
+   }
 
    private void initiateTree() {
       logger.debug("initateTree");

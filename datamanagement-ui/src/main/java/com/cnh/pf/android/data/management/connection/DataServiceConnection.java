@@ -15,18 +15,18 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.ServiceConnection;
 import android.os.IBinder;
-import android.os.RemoteException;
 
 import com.cnh.pf.android.data.management.service.DataManagementService;
-import com.cnh.pf.data.management.DataManagementSession;
-import com.cnh.pf.data.management.aidl.IDataManagementListenerAIDL;
 import com.cnh.pf.android.data.management.DataManagementActivity;
 
 import com.google.inject.Inject;
 import com.google.inject.Singleton;
+import com.google.inject.name.Named;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import roboguice.activity.event.OnPauseEvent;
+import roboguice.activity.event.OnResumeEvent;
+import roboguice.config.DefaultRoboModule;
 import roboguice.event.EventManager;
 import roboguice.event.Observes;
 
@@ -60,9 +60,12 @@ public class DataServiceConnection implements DataServiceConnectionImpl {
    };
 
    @Inject
-   public DataServiceConnection(Application context, EventManager eventManager) {
+   public DataServiceConnection(Application context, @Named(DefaultRoboModule.GLOBAL_EVENT_MANAGER_NAME) EventManager eventManager) {
       this.context = context;
       this.eventManager = eventManager;
+   }
+
+   private void connect(@Observes OnResumeEvent event) {
       logger.debug("bindService");
       context.bindService(new Intent(context, DataManagementService.class), serviceConnection, Context.BIND_AUTO_CREATE);
    }

@@ -37,6 +37,10 @@
            <type>aar</type>
             <exclusions>
                <exclusion>
+                  <groupId>android</groupId>
+                  <artifactId>android-parcelable</artifactId>
+               </exclusion>
+               <exclusion>
                   <groupId>org.codehaus.groovy</groupId>
                   <artifactId>groovy</artifactId>
                </exclusion>
@@ -52,9 +56,27 @@
         </dependency>
         <dependency>
             <groupId>com.cnh.pf</groupId>
-            <artifactId>widget</artifactId>
-            <version>6.1.1</version>
+            <artifactId>pfwidget</artifactId>
+            <version>${project.version}</version>
             <type>aar</type>
+           <exclusions>
+              <exclusion>
+                 <groupId>com.cnh.pf</groupId>
+                 <artifactId>pfmodel</artifactId>
+              </exclusion>
+              <exclusion>
+                 <groupId>com.cnh.pf</groupId>
+                 <artifactId>corelib</artifactId>
+              </exclusion>
+              <exclusion>
+                 <groupId>com.cnh.pf</groupId>
+                 <artifactId>libaidlpf</artifactId>
+              </exclusion>
+              <exclusion>
+                 <groupId>android</groupId>
+                 <artifactId>android-parcelable</artifactId>
+              </exclusion>
+           </exclusions>
         </dependency>
         <dependency>
             <groupId>com.github.tony19</groupId>
@@ -73,7 +95,6 @@
         <dependency>
             <groupId>org.roboguice</groupId>
             <artifactId>roboguice</artifactId>
-            <version>3.0.1</version>
             <exclusions>
                 <exclusion>
                     <groupId>android.support</groupId>
@@ -84,13 +105,39 @@
         <dependency>
             <groupId>org.roboguice</groupId>
             <artifactId>roboblender</artifactId>
-            <version>3.0.1</version>
             <scope>provided</scope>
         </dependency>
        <dependency>
           <groupId>com.jakewharton</groupId>
           <artifactId>butterknife</artifactId>
-          <version>7.0.1</version>
+       </dependency>
+       <dependency>
+          <groupId>junit</groupId>
+          <artifactId>junit</artifactId>
+          <scope>test</scope>
+       </dependency>
+       <dependency>
+          <groupId>org.robolectric</groupId>
+          <artifactId>robolectric-cnh</artifactId>
+          <version>3.0</version>
+          <scope>test</scope>
+          <exclusions>
+             <exclusion>
+                <groupId>org.robolectric</groupId>
+                <artifactId>robolectric-resources</artifactId>
+             </exclusion>
+          </exclusions>
+       </dependency>
+       <dependency>
+          <groupId>org.robolectric</groupId>
+          <artifactId>robolectric-resources-cnh</artifactId>
+          <version>3.0</version>
+          <scope>test</scope>
+       </dependency>
+       <dependency>
+          <groupId>org.mockito</groupId>
+          <artifactId>mockito-core</artifactId>
+          <scope>test</scope>
        </dependency>
     </dependencies>
 
@@ -110,6 +157,11 @@
                 <artifactId>android-maven-plugin</artifactId>
                 <extensions>true</extensions>
                 <configuration>
+                   <dex>
+                      <jvmArguments>
+                         <jvmArgument>-Xmx2096M</jvmArgument>
+                      </jvmArguments>
+                   </dex>
                     <sdk>
                         <platform>18</platform>
                     </sdk>

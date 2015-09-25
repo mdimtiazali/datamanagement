@@ -52,5 +52,6 @@
    <string name="data_conflict">Data Conflict</string>
    <string name="rename_file">Rename File</string>
    <string name="file_name">File Name</string>
+   <string name="empty_discovery">No data found</string>
 
 </resources>
