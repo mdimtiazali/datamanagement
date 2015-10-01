@@ -10,6 +10,8 @@
 package com.cnh.pf.android.data.management.adapter;
 
 import android.app.Activity;
+import android.content.res.ColorStateList;
+import android.content.res.XmlResourceParser;
 import android.graphics.drawable.Drawable;
 import android.view.View;
 import android.widget.AdapterView;
@@ -58,6 +60,7 @@ public abstract class ObjectTreeViewAdapter extends SelectionTreeViewAdapter<Obj
    }
 
    protected abstract boolean isGroupableEntity(ObjectGraph node);
+   public abstract boolean isSupportedEntitiy(ObjectGraph node);
 
    /**
     * Make a copy of this object traversing down (parent is not copied)
@@ -69,7 +72,7 @@ public abstract class ObjectTreeViewAdapter extends SelectionTreeViewAdapter<Obj
    public ObjectGraph filterSelected(ObjectGraph obj, SelectionType...types) {
       ObjectGraph node = new ObjectGraph(obj.getSource(), obj.getType(), obj.getName(), new HashMap<String, String>(obj.getData()), null);
       for(ObjectGraph child : obj.getChildren()) {
-         if(getSelectionMap().containsKey(child)) {
+         if(getSelectionMap().containsKey(child) && isSupportedEntitiy(child)) {
             if(Arrays.binarySearch(types, getSelectionMap().get(child))>=0) {
                node.addChild(filterSelected(child, types));
             }
@@ -90,6 +93,13 @@ public abstract class ObjectTreeViewAdapter extends SelectionTreeViewAdapter<Obj
       final TextView nameView = (TextView) view;
       ObjectGraph graph = (ObjectGraph) treeNodeInfo.getId();
       nameView.setText(graph.getName());
+      XmlResourceParser xrp = getActivity().getResources().getXml(R.drawable.tree_text_color);
+      try {
+         ColorStateList csl = ColorStateList.createFromXml(getActivity().getResources(), xrp);
+         nameView.setTextColor(csl);
+      } catch (Exception e) {
+         logger.error("error loading text color resource", e);
+      }
       nameView.setCompoundDrawablesWithIntrinsicBounds(((graph instanceof GroupObjectGraph || !isGroupableEntity(graph)) ? TYPE_ICONS.get(graph.getType()) : 0), 0, 0, 0);
       return view;
    }
@@ -127,7 +137,7 @@ public abstract class ObjectTreeViewAdapter extends SelectionTreeViewAdapter<Obj
    public Set<ObjectGraph> getSelected() {
       final List<ObjectGraph> stage1 = new LinkedList<ObjectGraph>();
       for(ObjectGraph root : data) {
-         if(!getSelectionMap().containsKey(root)) continue;
+         if(!getSelectionMap().containsKey(root) && !isSupportedEntitiy(root)) continue;
          //filter out unselected nodes from selected parents
          ObjectGraph filtered = filterSelected(root, SelectionType.FULL, SelectionType.IMPLICIT); //starting at top level, any selected nodes
          //find root level nodes FULL selected with IMPLICIT/null parent

@@ -54,4 +54,11 @@
    <string name="file_name">File Name</string>
    <string name="empty_discovery">No data found</string>
 
+   <string name="format_description">ISOXML:
+      \nAll files can be exported in ISOXML.
+      \n
+      \nShapefile:
+      \nPrescriptions.
+   </string>
+
 </resources>

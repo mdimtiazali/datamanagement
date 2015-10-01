@@ -1,0 +1,21 @@
+<?xml version="1.0"?>
+<!--
+  ~ Copyright (C) 2015 CNH Industrial NV. All rights reserved.
+  ~
+  ~ This software contains proprietary information of CNH Industrial NV. Neither
+  ~ receipt nor possession thereof confers any right to reproduce, use, or
+  ~ disclose in whole or in part any such information without written
+  ~ authorization from CNH Industrial NV.
+  -->
+
+<formats>
+
+   <format name="ISOXML">
+      <type>com.cnh.pf.model.pfds.Customer</type>
+      <type>com.cnh.pf.model.pfds.Farm</type>
+      <type>com.cnh.pf.model.pfds.Field</type>
+      <type>com.cnh.pf.model.pfds.RxPlan</type>
+      <type>com.cnh.pf.model.pfds.Prescription</type>
+   </format>
+
+</formats>

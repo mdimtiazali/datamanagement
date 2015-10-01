@@ -41,6 +41,10 @@
 		<attr name="draw_line" format="boolean" />
 		<attr name="line_color" format="color" />
 		<attr name="line_width" format="dimension" />
+
+		<!-- Object tree view selected, supported, not-supported states -->
+		<attr name="state_implicit" format="boolean"/>
+		<attr name="state_supported" format="boolean"/>
 	</declare-styleable>
-	<attr name="state_implicit" format="boolean"/>
+
 </resources>

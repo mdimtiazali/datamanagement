@@ -15,6 +15,7 @@
    <color name="bg_selected">#ff25a9ce</color>
    <color name="bg_implicit_stroke">#ff83b8db</color>
    <color name="bg_implicit_fill">#ffe0f3f8</color>
+   <color name="bg_notsupported_fill">#f9f6aa</color>
 
    <dimen name="selected_corner_radius">4dp</dimen>
 

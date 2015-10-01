@@ -11,20 +11,34 @@
 <selector xmlns:android="http://schemas.android.com/apk/res/android"
 xmlns:cnh="http://schemas.android.com/apk/res/com.cnh.pf.android.data.management">
 
-	<item android:state_selected="true" android:state_pressed="false">
+	<item android:state_selected="true" android:state_pressed="false" cnh:state_supported="false">
        <shape android:shape="rectangle">
            <corners android:radius="@dimen/selected_corner_radius"/>
-           <solid android:color="@color/bg_selected"/>
+           <solid android:color="@color/bg_notsupported_fill"/>
        </shape>
      </item>
 
-	<item cnh:state_implicit="true" android:state_pressed="false">
+   <item android:state_selected="true" android:state_pressed="false">
+      <shape android:shape="rectangle">
+         <corners android:radius="@dimen/selected_corner_radius"/>
+         <solid android:color="@color/bg_selected"/>
+      </shape>
+   </item>
+
+	<item cnh:state_implicit="true" android:state_pressed="false" cnh:state_supported="false">
        <shape android:shape="rectangle">
            <corners android:radius="@dimen/selected_corner_radius"/>
-           <solid android:color="@color/bg_implicit_fill"/>
-           <stroke android:color="@color/bg_implicit_stroke" android:width="2dp"/>
+           <solid android:color="@color/bg_notsupported_fill"/>
        </shape>
      </item>
+
+   <item cnh:state_implicit="true" android:state_pressed="false">
+      <shape android:shape="rectangle">
+         <corners android:radius="@dimen/selected_corner_radius"/>
+         <solid android:color="@color/bg_implicit_fill"/>
+         <stroke android:color="@color/bg_implicit_stroke" android:width="2dp"/>
+      </shape>
+   </item>
 
 	<item android:state_pressed="true" android:drawable="@drawable/list_selector_background_transition" />
 

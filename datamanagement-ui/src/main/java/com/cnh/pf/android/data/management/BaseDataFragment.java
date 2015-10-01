@@ -49,6 +49,7 @@ import com.google.inject.Inject;
 import com.google.inject.name.Named;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import pl.polidea.treeview.ImplicitSelectLinearLayout;
 import pl.polidea.treeview.InMemoryTreeStateManager;
 import pl.polidea.treeview.TreeBuilder;
 import pl.polidea.treeview.TreeStateManager;
@@ -96,7 +97,7 @@ public abstract class BaseDataFragment extends RoboFragment {
    public abstract boolean isCurrentOperation(DataManagementSession session);
    public abstract void onTreeItemSelected();
    public abstract void onProgressPublished(String operation, int progress, int max);
-
+   public abstract boolean supportedByFormat(ObjectGraph node);
    @Override
    public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
       View layout = inflater.inflate(R.layout.import_layout, container, false);
@@ -289,6 +290,11 @@ public abstract class BaseDataFragment extends RoboFragment {
          protected boolean isGroupableEntity(ObjectGraph node) {
             return TreeEntityHelper.groupables.contains(node.getType());
          }
+
+         @Override
+         public boolean isSupportedEntitiy(ObjectGraph node) {
+            return supportedByFormat(node);
+         }
       };
       treeAdapter.setData(session.getObjectData());
       treeViewList.removeAllViewsInLayout();
@@ -301,6 +307,17 @@ public abstract class BaseDataFragment extends RoboFragment {
             onTreeItemSelected();
          }
       });
+      setSupportedState();
+   }
+
+   public void setSupportedState () {
+      for(int i=0; i<treeViewList.getChildCount(); i++) {
+         View child = treeViewList.getChildAt(i);
+         ObjectGraph node = (ObjectGraph) child.getTag(); //tree associates ObjectGraph with each view
+         if(node==null) continue;
+         ImplicitSelectLinearLayout layout = (ImplicitSelectLinearLayout) child;
+         layout.setSupportedState(supportedByFormat(node));
+      }
    }
 
    private void addToTree(ObjectGraph parent, ObjectGraph object) {
