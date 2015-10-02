@@ -426,6 +426,11 @@ public class TestImportFragment extends RoboFragment implements Mediator.Progres
             protected boolean isGroupableEntity(ObjectGraph node) {
                return TreeEntityHelper.groupables.contains(node.getType());
             }
+
+            @Override
+            public boolean isSupportedEntitiy(ObjectGraph node) {
+               return true;
+            }
          };
          treeAdapter.setData(result.second);
          treeView.setAdapter(treeAdapter);

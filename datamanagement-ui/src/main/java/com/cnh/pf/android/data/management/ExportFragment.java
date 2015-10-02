@@ -28,12 +28,14 @@ import com.cnh.android.widget.control.PickListItem;
 import com.cnh.android.widget.control.ProgressBarView;
 import com.cnh.jgroups.Datasource;
 import com.cnh.jgroups.ObjectGraph;
+import com.cnh.pf.android.data.management.parser.FormatManager;
 import com.cnh.pf.data.management.DataManagementSession;
 import com.cnh.pf.data.management.aidl.MediumDevice;
 
 import butterknife.Bind;
 import butterknife.ButterKnife;
 import butterknife.OnClick;
+import com.google.inject.Inject;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -44,6 +46,7 @@ import org.slf4j.LoggerFactory;
 public class ExportFragment extends BaseDataFragment {
    private static final Logger logger = LoggerFactory.getLogger(ExportFragment.class);
 
+   @Inject protected FormatManager formatManager;
    @Bind(R.id.export_medium_picklist) PickListEditable exportMediumPicklist;
    @Bind(R.id.export_format_picklist) PickListEditable exportFormatPicklist;
    @Bind(R.id.export_drop_zone) LinearLayout exportDropZone;
@@ -80,6 +83,34 @@ public class ExportFragment extends BaseDataFragment {
       super.onViewCreated(view, savedInstanceState);
       startText.setVisibility(View.GONE);
       populateExportToPickList();
+      try {
+         formatManager.parseXml();
+      }
+      catch (Exception e) {
+         logger.error("Error parsing xml file", e);
+      }
+      populateFormatPickList();
+   }
+
+   private void populateFormatPickList() {
+      exportFormatPicklist.setAdapter(new PickListAdapter(exportFormatPicklist, getActivity().getApplicationContext()));
+      int formatId = 0;
+      for (String format : formatManager.getFormats()) {
+         exportFormatPicklist.addItem( new PickListItem(formatId, format));
+         formatId++;
+      }
+
+      exportFormatPicklist.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
+         @Override
+         public void onItemSelected(AdapterView<?> adapterView, View view, int position, long id) {
+            setSupportedState();
+            treeViewList.invalidate();
+         }
+
+         @Override
+         public void onNothingSelected(AdapterView<?> adapterView) {
+         }
+      });
    }
 
    private void populateExportToPickList() {
@@ -135,6 +166,15 @@ public class ExportFragment extends BaseDataFragment {
       final Double percent = ((progress * 1.0) / max) * 100;
       progressBar.setProgress(percent.intValue());
       percentTv.setText(percent.intValue());
+   }
+
+   @Override
+   public boolean supportedByFormat(ObjectGraph node) {
+      boolean supported = true;
+      if (exportFormatPicklist.getSelectedItemValue() != null) {
+         supported = formatManager.formatSupportsType(exportFormatPicklist.getSelectedItemValue(), node.getType());
+      }
+      return supported;
    }
 
    @Override public void enableButtons(boolean enable) {

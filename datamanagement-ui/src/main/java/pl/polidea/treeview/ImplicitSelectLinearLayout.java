@@ -21,7 +21,10 @@ public class ImplicitSelectLinearLayout extends LinearLayout implements Implicit
 
       private static final int[] DRAWABLE_STATE_IMPLICIT = { R.attr.state_implicit };
 
+      private static final int[] DRAWABLE_STATE_SUPPORTED = { R.attr.state_supported};
+
       private boolean implicitlySelected;
+      private boolean supportedState = true;
 
       public ImplicitSelectLinearLayout(Context context) {
             super(context);
@@ -41,6 +44,10 @@ public class ImplicitSelectLinearLayout extends LinearLayout implements Implicit
             refreshDrawableState();
       }
 
+      public void setSupportedState(boolean supported) {
+            supportedState = supported;
+      }
+
       @Override
       public boolean isImplicitlySelected() {
             return implicitlySelected;
@@ -48,9 +55,11 @@ public class ImplicitSelectLinearLayout extends LinearLayout implements Implicit
 
       @Override
       protected int[] onCreateDrawableState(int extraSpace) {
-            int[] state = super.onCreateDrawableState(extraSpace+1);
+            int[] state = super.onCreateDrawableState(extraSpace+2);
             if(implicitlySelected)
                   mergeDrawableStates(state, DRAWABLE_STATE_IMPLICIT);
+            if(supportedState)
+                  mergeDrawableStates(state, DRAWABLE_STATE_SUPPORTED);
             return state;
       }
 }

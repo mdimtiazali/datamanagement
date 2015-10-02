@@ -8,17 +8,26 @@
  */
 package com.cnh.pf.android.data.management;
 
+import java.io.IOException;
 import java.util.ArrayList;
+import java.util.List;
+import java.util.Set;
 
+import android.app.ActionBar;
 import android.content.ComponentName;
 import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
 import android.view.View;
 
+import com.cnh.android.widget.activity.TabActivity;
+import com.cnh.android.widget.control.PickListEditable;
 import com.cnh.jgroups.Datasource;
 import com.cnh.jgroups.Mediator;
 import com.cnh.jgroups.ObjectGraph;
+import com.cnh.pf.android.data.management.adapter.ObjectTreeViewAdapter;
+import com.cnh.pf.android.data.management.adapter.SelectionTreeViewAdapter;
 import com.cnh.pf.android.data.management.connection.DataServiceConnectionImpl;
+import com.cnh.pf.android.data.management.parser.FormatManager;
 import com.cnh.pf.android.data.management.service.DataManagementService;
 import com.cnh.pf.data.management.DataManagementSession;
 
@@ -28,6 +37,7 @@ import com.google.inject.Provides;
 import com.google.inject.Singleton;
 import com.google.inject.name.Named;
 import com.google.inject.name.Names;
+import org.bouncycastle.jce.provider.symmetric.ARC4;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
@@ -39,10 +49,12 @@ import org.robolectric.RobolectricMavenTestRunner;
 import org.robolectric.RuntimeEnvironment;
 import org.robolectric.annotation.Config;
 import org.robolectric.util.ActivityController;
+import org.xmlpull.v1.XmlPullParserException;
 import roboguice.RoboGuice;
 import roboguice.config.DefaultRoboModule;
 import roboguice.event.EventManager;
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 import static org.robolectric.Shadows.shadowOf;
@@ -59,6 +71,9 @@ public class DataManagementUITest {
    EventManager eventManager;
    @Mock DataManagementService service;
    @Mock DataManagementService.LocalBinder binder;
+   BaseDataFragment fragment;
+   ObjectGraph customer;
+   ObjectGraph testObject;
 
    @Before
    public void setUp() {
@@ -84,13 +99,97 @@ public class DataManagementUITest {
       session.setSessionOperation(DataManagementSession.SessionOperation.DISCOVERY);
       session.setObjectData(new ArrayList<ObjectGraph>());
       eventManager.fire(new DataServiceConnectionImpl.DataSessionEvent(session));
-      assertEquals(View.VISIBLE, activity.findViewById(R.id.empty_discovery_text).getVisibility());
+      assertEquals("Empty discovery dialog is visible", View.VISIBLE, activity.findViewById(R.id.empty_discovery_text).getVisibility());
+   }
+
+   @Test
+   public void testParseXml() throws IOException, XmlPullParserException {
+      FormatManager parser = RoboGuice.getInjector(RuntimeEnvironment.application).getInstance(FormatManager.class);
+      parser.parseXml();
+      Set<String> formats = parser.getFormats();
+      assertTrue("xml specifies isoxml format", formats.contains("ISOXML"));
+      assertTrue("isoxml supporrts customery type", parser.getFormat("ISOXML").contains("com.cnh.pf.model.pfds.Customer"));
+   }
+
+   @Test
+   public void testISOSupport() {
+      //Initialize export fragment
+      activateTab(1);
+      //Check export fragment visible
+      assertTrue("export drop zone is visible", activity.findViewById(R.id.export_drop_zone).getVisibility() == View.VISIBLE);
+      ExportFragment fragment = (ExportFragment) ((TabActivity) activity).getFragmentManager().findFragmentByTag("Export");
+      assertTrue("export fragment is visible", fragment != null);
+      //Start new discovery
+      fireDiscoveryEvent();
+      //Assert tree view shows results of discovery
+      assertEquals("Object Tree View is visible", View.VISIBLE, fragment.getView().findViewById(R.id.tree_view_list).getVisibility());
+      //Mock picklist, select ISOXML as export format$
+      fragment.exportFormatPicklist = mock(PickListEditable.class);
+      when(fragment.exportFormatPicklist.getSelectedItemValue()).thenReturn("ISOXML");
+      //Select non-supported format from tree to export, check to make sure its supported state is false
+      ObjectTreeViewAdapter adapter = (ObjectTreeViewAdapter) fragment.treeViewList.getAdapter();
+      assertTrue("isoxml does not support com.cnh.prescription.Shapefile type", !adapter.isSupportedEntitiy(testObject));
+      //Now check supported format
+      assertTrue("isoxml supports customer type", adapter.isSupportedEntitiy(customer));
+   }
+
+   /** Test to make sure that the data sent to destination datasource only has supported types */
+   @Test
+   public void testRecursiveFormatSupport() {
+      //Initialize export fragment
+      activateTab(1);  //0 - Import 1 - Export
+      //Mock picklist, select ISOXML as export format$
+      ExportFragment fragment = (ExportFragment) ((TabActivity) activity).getFragmentManager().findFragmentByTag("Export");
+      fireDiscoveryEvent();
+      fragment.exportFormatPicklist = mock(PickListEditable.class);
+      when(fragment.exportFormatPicklist.getSelectedItemValue()).thenReturn("ISOXML");
+      //Set selected item to top of tree, will import everything recursive
+      ObjectTreeViewAdapter adapter = (ObjectTreeViewAdapter) fragment.treeViewList.getAdapter();
+      adapter.getSelectionMap().put(testObject, SelectionTreeViewAdapter.SelectionType.FULL);
+      adapter.getSelectionMap().put(testObject.getParent(), SelectionTreeViewAdapter.SelectionType.FULL); // Field
+      adapter.getSelectionMap().put(testObject.getParent().getParent(), SelectionTreeViewAdapter.SelectionType.FULL); // Farm
+      adapter.getSelectionMap().put(testObject.getParent().getParent().getParent(), SelectionTreeViewAdapter.SelectionType.FULL); // Customer
+      Set<ObjectGraph> exportEntities = adapter.getSelected();
+      assertTrue("exported list does not contain unsupported types", !exportEntities.contains(testObject));
+      assertTrue("exported list contains supported type", exportEntities.contains(customer));
+   }
+
+   private void activateTab(int tabPosition) {
+      //Start activity
+      controller.create().start().resume();
+      //Select Tab at position
+      ((TabActivity) activity).selectTabAtPosition(tabPosition);
+   }
+
+   private void fireDiscoveryEvent() {
+      //Start new discovery
+      DataManagementSession session = new DataManagementSession(Datasource.Source.INTERNAL, Datasource.Source.INTERNAL, null);
+      session.setSessionOperation(DataManagementSession.SessionOperation.DISCOVERY);
+      session.setObjectData(getTestObjectData());
+      eventManager.fire(new DataServiceConnectionImpl.DataSessionEvent(session));
+   }
+
+   /* Generate Object tree for testing */
+   private List<ObjectGraph> getTestObjectData() {
+      customer = new ObjectGraph(null, "com.cnh.pf.model.pfds.Customer", "Oscar");
+      ObjectGraph farm = new ObjectGraph(null, "com.cnh.pf.model.pfds.Farm", "Dekalp");
+      ObjectGraph field = new ObjectGraph(null, "com.cnh.pf.model.pfds.Field", "North");
+      ObjectGraph task = new ObjectGraph(null, "com.cnh.pf.model.pfds.Task", "Task1");
+      ObjectGraph task2 = new ObjectGraph(null, "com.cnh.pf.model.pfds.Task", "Task2");
+      testObject = new ObjectGraph(null, "com.cnh.prescription.shapefile", "Shapefile Prescription"); // Not real object, used to demostrate format support
+      field.addChild(testObject);
+      field.addChild(task);
+      field.addChild(task2);
+      farm.addChild(field);
+      customer.addChild(farm);
+      return (new ArrayList<ObjectGraph>() {{add(customer);}});
    }
 
    public class MyTestModule extends AbstractModule {
 
       @Override
       protected void configure() {
+//         bind(DataManagementService.class).toInstance(service);
          bind(Mediator.class).toInstance(mock(Mediator.class));
       }
 

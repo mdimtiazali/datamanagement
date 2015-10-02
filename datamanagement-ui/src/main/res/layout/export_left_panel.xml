@@ -37,11 +37,27 @@
          cnh:allowItemEditing="false"
          cnh:allowItemManagement="false"/>
 
-      <TextView
-         android:layout_width="wrap_content"
+      <RelativeLayout
+         android:layout_width="match_parent"
          android:layout_height="wrap_content"
-         style="@style/TextAppearance.Import.Entity"
-         android:text="@string/export_format"/>
+         android:orientation="horizontal">
+
+         <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_centerVertical="true"
+            style="@style/TextAppearance.Import.Entity"
+            android:text="@string/export_format"/>
+
+         <com.cnh.android.widget.control.InfoButton
+            android:id="@+id/format_info_btn"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_alignParentRight="true"
+            android:layout_centerVertical="true"
+            cnh:popup_description="@string/format_description"
+            cnh:popup_title="@string/export_format"/>
+      </RelativeLayout>
 
       <com.cnh.android.widget.control.PickListEditable
          android:id="@+id/export_format_picklist"

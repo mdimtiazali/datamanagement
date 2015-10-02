@@ -9,6 +9,9 @@
  */
 package com.cnh.pf.android.data.management.adapter;
 
+import android.content.res.ColorStateList;
+import android.content.res.XmlResourceParser;
+import android.graphics.drawable.Drawable;
 import android.widget.AdapterView;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -49,6 +52,13 @@ public class PathTreeViewAdapter extends AbstractTreeViewAdapter<File> {
    @Override
    public View getNewChildView(TreeNodeInfo treeNodeInfo) {
       final TextView nameView = (TextView) getActivity().getLayoutInflater().inflate(R.layout.tree_list_item_simple, null);
+      XmlResourceParser xrp = getActivity().getResources().getXml(R.drawable.tree_text_color);
+      try {
+         ColorStateList csl = ColorStateList.createFromXml(getActivity().getResources(), xrp);
+         nameView.setTextColor(csl);
+      } catch (Exception e) {
+         logger.error("error loading text color resource", e);
+      }
       return updateView(nameView, treeNodeInfo);
    }
 
@@ -58,6 +68,11 @@ public class PathTreeViewAdapter extends AbstractTreeViewAdapter<File> {
       File path = (File) treeNodeInfo.getId();
       nameView.setText(path.getName());
       return nameView;
+   }
+
+   @Override
+   public Drawable getBackgroundDrawable(TreeNodeInfo<File> treeNodeInfo) {
+      return getActivity().getResources().getDrawable(R.drawable.path_item_selector);
    }
 
    @Override

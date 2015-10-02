@@ -223,6 +223,12 @@ public class ImportFragment extends BaseDataFragment {
       }
    }
 
+   @Override
+   public boolean supportedByFormat(ObjectGraph node) {
+      //For import, all formats supported
+      return true;
+   }
+
    @OnClick(R.id.import_selected_btn)
    void importSelected() {
       logger.debug("Import selected");
