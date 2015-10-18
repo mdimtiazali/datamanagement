@@ -283,13 +283,10 @@ public class DataManagementService extends RoboService {
          logger.debug("Calculate Targets...");
          try {
             Address[] addresses = dsHelper.getAddressForSourceType(session.getDestinationType());
-            List<Operation> operations = new ArrayList<Operation>();
-            for (Address address : addresses) {
-               logger.debug("Calculate Targets for Address: {}", address);
-               operations.addAll(mediator.calculateOperations(address, session.getObjectData()));
+            if (addresses == null || addresses.length > 0) {
+               session.setData(mediator.calculateOperations(session.getObjectData(), addresses));
+               logger.debug("Got operation: {}", session.getData());
             }
-            session.setData(operations);
-            logger.debug("Got operation: {}", session.getData());
             session.setSessionOperation(DataManagementSession.SessionOperation.CALCULATE_OPERATIONS);
          }
          catch (Exception e) {
@@ -306,12 +303,10 @@ public class DataManagementService extends RoboService {
       protected Integer doInBackground(Void... params) {
          logger.debug("Calculate Conflicts...");
          try {
-            List<Operation> operations = new ArrayList<Operation>();
-            for (Address address : dsHelper.getAddressForSourceType(session.getDestinationType())) {
-               logger.debug("Calculate Conflicts for Address: {}", address);
-               operations.addAll(mediator.calculateConflicts(address, session.getData()));
+            Address[] addresses = dsHelper.getAddressForSourceType(session.getDestinationType());
+            if (addresses == null || addresses.length > 0) {
+               session.setData(mediator.calculateConflicts(session.getData(), addresses));
             }
-            session.setData(operations);
             session.setSessionOperation(DataManagementSession.SessionOperation.CALCULATE_CONFLICTS);
          }
          catch (Exception e) {
@@ -328,13 +323,10 @@ public class DataManagementService extends RoboService {
       protected Integer doInBackground(Void... params) {
          logger.debug("Performing Operations...");
          try {
-            Address[] addresses = dsHelper.getAddressForSourceType(session.getDevice().getType());
+            Address[] addresses = dsHelper.getAddressForSourceType(session.getDestinationType());
             if (addresses != null && addresses.length > 0) {
-               for (Address address : dsHelper.getAddressForSourceType(session.getDestinationType())) {
-                  logger.debug("Perform Operations for Address: {}", address);
-                  mediator.performOperations(address, session.getData());
-                  session.setSessionOperation(DataManagementSession.SessionOperation.PERFORM_OPERATIONS);
-               }
+               mediator.performOperations(session.getData(), addresses);
+               session.setSessionOperation(DataManagementSession.SessionOperation.PERFORM_OPERATIONS);
             }
             else {
                globalEventManager.fire(new DataServiceConnectionImpl.ErrorEvent(DataServiceConnectionImpl.ErrorEvent.DataError.NO_USB_DATASOURCE, "No USB Datasource"));

@@ -73,12 +73,7 @@ import com.google.inject.Singleton;
    }
 
    private List<Datasource.DataType> getDataTypes(Address addr, RspList<Datasource.DataType[]> rsp) {
-      for (Map.Entry<Address, Rsp<Datasource.DataType[]>> entry : rsp.entrySet()) {
-         if (entry.getKey().equals(addr)) {
-            return Arrays.asList(entry.getValue().getValue());
-         }
-      }
-      return null;
+      return Arrays.asList(rsp.get(addr).getValue());
    }
 
    /**

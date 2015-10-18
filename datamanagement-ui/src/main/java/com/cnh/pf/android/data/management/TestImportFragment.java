@@ -555,7 +555,7 @@ public class TestImportFragment extends RoboFragment implements Mediator.Progres
          List<ObjectGraph> objs = params[0].second;
          logger.debug("Calculate Targets...");
          try {
-            return mediator.calculateOperations(destinationAddr, objs);
+            return mediator.calculateOperations(objs, destinationAddr);
          }
          catch (Exception e) {
             logger.error("Send exception", e);
@@ -657,7 +657,7 @@ public class TestImportFragment extends RoboFragment implements Mediator.Progres
          List<Operation> objs = params[0].second;
          logger.debug("Calculate Conflicts...");
          try {
-            return mediator.calculateConflicts(destinationAddr, objs);
+            return mediator.calculateConflicts(objs, destinationAddr);
          }
          catch (Exception e) {
             logger.error("Send exception", e);
@@ -729,7 +729,7 @@ public class TestImportFragment extends RoboFragment implements Mediator.Progres
          List<Operation> objs = params[0].second;
          logger.debug("Performing Operations...");
          try {
-            mediator.performOperations(params[0].first, objs);
+            mediator.performOperations(objs, params[0].first);
          }
          catch (Exception e) {
             logger.error("Send exception", e);
