@@ -16,6 +16,7 @@ import android.graphics.drawable.Drawable;
 import android.view.View;
 import android.widget.AdapterView;
 import android.widget.TextView;
+import com.cnh.jgroups.DataTypes;
 import com.cnh.pf.android.data.management.R;
 import com.cnh.pf.android.data.management.graph.GroupObjectGraph;
 import com.cnh.jgroups.Datasource;
@@ -43,13 +44,19 @@ public abstract class ObjectTreeViewAdapter extends SelectionTreeViewAdapter<Obj
    private static final Map<String, Integer> TYPE_ICONS = new HashMap<String, Integer>();
 
    static {
-      TYPE_ICONS.put("com.cnh.pf.model.pfds.Customer", R.drawable.ic_datatree_grower);
-      TYPE_ICONS.put("com.cnh.pf.model.pfds.Farm", R.drawable.ic_datatree_farm);
-      TYPE_ICONS.put("com.cnh.pf.model.pfds.Field", R.drawable.ic_datatree_field);
-      TYPE_ICONS.put("com.cnh.pf.model.pfds.Task", R.drawable.ic_datatree_tasks);
-      TYPE_ICONS.put("com.cnh.pf.model.pfds.Prescription", R.drawable.ic_datatree_prescription);
-      TYPE_ICONS.put("com.cnh.pf.model.pfds.RxPlan", R.drawable.ic_datatree_prescription);
-      TYPE_ICONS.put(Datasource.DataType.PFDS.name(), 0);
+      TYPE_ICONS.put(DataTypes.CUSTOMER, R.drawable.ic_datatree_grower);
+      TYPE_ICONS.put(DataTypes.FARM, R.drawable.ic_datatree_farm);
+      TYPE_ICONS.put(DataTypes.FIELD, R.drawable.ic_datatree_field);
+      TYPE_ICONS.put(DataTypes.TASK, R.drawable.ic_datatree_tasks);
+      TYPE_ICONS.put(DataTypes.TASK_PLAN, R.drawable.ic_datatree_tasks);
+      TYPE_ICONS.put(DataTypes.PRESCRIPTION, R.drawable.ic_datatree_prescription);
+      TYPE_ICONS.put(DataTypes.RX_PLAN, R.drawable.ic_datatree_prescription);
+      TYPE_ICONS.put(DataTypes.BOUNDARY, R.drawable.ic_datatree_boundaries);
+      TYPE_ICONS.put(DataTypes.VEHICLE, R.drawable.ic_datatree_boundaries);
+      TYPE_ICONS.put(DataTypes.VEHICLE_IMPLEMENT, R.drawable.ic_datatree_boundaries);
+      TYPE_ICONS.put(DataTypes.VEHICLE_IMPLEMENT_CONFIG, R.drawable.ic_datatree_boundaries);
+      TYPE_ICONS.put(DataTypes.IMPLEMENT, R.drawable.ic_datatree_boundaries);
+      TYPE_ICONS.put(DataTypes.IMPLEMENT_PRODUCT_CONFIG, R.drawable.ic_datatree_boundaries);
    }
 
    private List<ObjectGraph> data;

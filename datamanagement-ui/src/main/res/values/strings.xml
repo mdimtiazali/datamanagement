@@ -26,6 +26,8 @@
    <string name="continue_string">Continue</string>
 
     <string name="pfds">Grower / Farm / Field</string>
+    <string name="vehicles">Vehicles</string>
+    <string name="imps">Implements</string>
     <string name="prescriptions">Prescriptions</string>
     <string name="tasks">Tasks</string>
     <string name="boundaries">Boundaries</string>

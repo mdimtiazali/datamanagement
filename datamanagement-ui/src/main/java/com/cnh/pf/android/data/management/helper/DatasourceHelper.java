@@ -38,13 +38,13 @@ import com.google.inject.Singleton;
    private static final Logger logger = LoggerFactory.getLogger(DatasourceHelper.class);
 
    private @Inject Mediator mediator;
-   private ConcurrentHashMap<Datasource.Source, Map<Address, List<Datasource.DataType>>> sourceMap = null;
+   private ConcurrentHashMap<Datasource.Source, Map<Address, List<String>>> sourceMap = null;
 
    public void setSourceMap(View view) throws Exception {
-      sourceMap = new ConcurrentHashMap<Datasource.Source, Map<Address, List<Datasource.DataType>>>();
+      sourceMap = new ConcurrentHashMap<Datasource.Source, Map<Address, List<String>>>();
       try {
          RspList<Datasource.Source[]> rsp = mediator.getAllSources(null);
-         RspList<Datasource.DataType[]> rspType = mediator.getAllDatatypes(null);
+         RspList<String[]> rspType = mediator.getAllDatatypes(null);
          for (Map.Entry<Address, Rsp<Datasource.Source[]>> entry : rsp.entrySet()) {
             Rsp<Datasource.Source[]> response = entry.getValue();
             if (response.hasException()) {
@@ -55,9 +55,9 @@ import com.google.inject.Singleton;
                logger.info("addr: " + entry.getKey().toString() + " is valid datasource");
                for (Datasource.Source source : Arrays.asList(entry.getValue().getValue())) {
                   if (sourceMap.get(source) == null) {
-                     sourceMap.put(source, new HashMap<Address, List<Datasource.DataType>>());
+                     sourceMap.put(source, new HashMap<Address, List<String>>());
                   }
-                  List<Datasource.DataType> types = getDataTypes(entry.getKey(), rspType);
+                  List<String> types = getDataTypes(entry.getKey(), rspType);
                   sourceMap.get(source).put(entry.getKey(), types);
                }
             }
@@ -72,7 +72,7 @@ import com.google.inject.Singleton;
       logger.debug("sourceMap: {}", sourceMap.toString());
    }
 
-   private List<Datasource.DataType> getDataTypes(Address addr, RspList<Datasource.DataType[]> rsp) {
+   private List<String> getDataTypes(Address addr, RspList<String[]> rsp) {
       return Arrays.asList(rsp.get(addr).getValue());
    }
 
@@ -94,9 +94,9 @@ import com.google.inject.Singleton;
     * @param type {PFDS, VIP, User Layout}
     * @return Address of responsible datasource
     */
-   public Address[] getDestinationAddresses(Datasource.Source sourceType, Datasource.DataType type) throws Exception {
+   public Address[] getDestinationAddresses(Datasource.Source sourceType, String type) throws Exception {
       Set<Address> addresses = new HashSet<Address>();
-      for (Map.Entry<Address, List<Datasource.DataType>> map : sourceMap.get(sourceType).entrySet()) {
+      for (Map.Entry<Address, List<String>> map : sourceMap.get(sourceType).entrySet()) {
          if (map.getValue().contains(type)) {
             addresses.add(map.getKey());
          }

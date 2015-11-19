@@ -9,7 +9,6 @@
 package com.cnh.pf.android.data.management.service;
 
 import javax.inject.Inject;
-import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map.Entry;
@@ -30,16 +29,14 @@ import org.slf4j.LoggerFactory;
 
 import com.cnh.jgroups.Datasource;
 import com.cnh.jgroups.Mediator;
-import com.cnh.jgroups.Operation;
 import com.cnh.pf.android.data.management.connection.DataServiceConnectionImpl;
 import com.cnh.pf.android.data.management.helper.DatasourceHelper;
 import com.cnh.pf.data.management.DataManagementSession;
 import com.cnh.pf.data.management.MediumImpl;
-import com.cnh.pf.data.management.ServiceConstants;
+import com.cnh.pf.data.management.service.ServiceConstants;
 import com.cnh.pf.data.management.aidl.IDataManagementListenerAIDL;
 import com.cnh.pf.data.management.aidl.MediumDevice;
 
-import com.google.inject.Singleton;
 import org.jgroups.Global;
 import roboguice.config.DefaultRoboModule;
 import roboguice.event.EventManager;

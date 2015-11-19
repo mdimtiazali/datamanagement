@@ -52,6 +52,10 @@
                   <groupId>ch.qos.logback</groupId>
                   <artifactId>logback-classic</artifactId>
                </exclusion>
+                <exclusion>
+                    <groupId>com.cnh.pf</groupId>
+                    <artifactId>pfmodel</artifactId>
+                </exclusion>
             </exclusions>
         </dependency>
         <dependency>

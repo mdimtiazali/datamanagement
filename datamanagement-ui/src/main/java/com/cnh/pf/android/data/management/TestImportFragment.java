@@ -412,7 +412,7 @@ public class TestImportFragment extends RoboFragment implements Mediator.Progres
       }
    }
 
-   private void onNewObjectGraphReceived(final Pair<Datasource.DataType, List<ObjectGraph>> result) {
+   private void onNewObjectGraphReceived(final Pair<String, List<ObjectGraph>> result) {
       if (result != null && !result.second.isEmpty()) {
          manager = new InMemoryTreeStateManager<ObjectGraph>();
          treeBuilder = new TreeBuilder<ObjectGraph>(manager);
@@ -515,15 +515,15 @@ public class TestImportFragment extends RoboFragment implements Mediator.Progres
       }
    }
 
-   private class DiscoveryTask extends AsyncTask<Address, Void, Pair<Datasource.DataType, List<ObjectGraph>>> {
+   private class DiscoveryTask extends AsyncTask<Address, Void, Pair<String, List<ObjectGraph>>> {
 
       @Override
-      protected Pair<Datasource.DataType, List<ObjectGraph>> doInBackground(Address... params) {
+      protected Pair<String, List<ObjectGraph>> doInBackground(Address... params) {
          logger.debug("Discovery for " + params[0].toString() + " source...");
          try {
             List<ObjectGraph> data = mediator.discovery(params);
-            Datasource.DataType type = mediator.getDatatypes(params[0])[0];
-            return new Pair<Datasource.DataType, List<ObjectGraph>>(type, data);
+            String type = mediator.getDatatypes(params[0])[0];
+            return new Pair<String, List<ObjectGraph>>(type, data);
          }
          catch (Exception e) {
             showExceptionDialog(e);
@@ -532,7 +532,7 @@ public class TestImportFragment extends RoboFragment implements Mediator.Progres
       }
 
       @Override
-      protected void onPostExecute(Pair<Datasource.DataType, List<ObjectGraph>> result) {
+      protected void onPostExecute(Pair<String, List<ObjectGraph>> result) {
          super.onPostExecute(result);
          if (result == null)
             return;

@@ -9,6 +9,8 @@
 
 package com.cnh.pf.android.data.management;
 
+import com.cnh.jgroups.DataTypes;
+
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
@@ -24,12 +26,17 @@ public class TreeEntityHelper {
    this list will be grouped in ui.
     */
    public static Set<String> groupables = new HashSet<String>() {{
-      add("com.cnh.pf.model.pfds.Customer");
-      add("com.cnh.pf.model.pfds.Task");
-      add("com.cnh.pf.model.pfds.Prescription");
+      add(DataTypes.CUSTOMER);
+      add(DataTypes.TASK);
+      add(DataTypes.PRESCRIPTION);
+      add(DataTypes.BOUNDARY);
+      add(DataTypes.VEHICLE);
+      add(DataTypes.IMPLEMENT);
    }};
 
    public static Map<String, Integer> topLevelEntites = new HashMap<String, Integer>() {{
-      put("com.cnh.pf.model.pfds.Customer", R.string.pfds);
+      put(DataTypes.CUSTOMER, R.string.pfds);
+      put(DataTypes.VEHICLE, R.string.vehicles);
+      put(DataTypes.IMPLEMENT, R.string.imps);
    }};
 }
