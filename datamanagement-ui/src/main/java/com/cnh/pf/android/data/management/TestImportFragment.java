@@ -613,7 +613,7 @@ public class TestImportFragment extends RoboFragment implements Mediator.Progres
       }
    }
 
-   private void showExceptionDialog(Exception e) {
+   private void showExceptionDialog(Throwable e) {
       final DialogView dialogView = new DialogView(activity);
       TextView tv = new TextView(activity);
       tv.setText(String.format("Error: %s\nCause: %s\nStack Trace:\n%s",
@@ -731,7 +731,7 @@ public class TestImportFragment extends RoboFragment implements Mediator.Progres
          try {
             mediator.performOperations(objs, params[0].first);
          }
-         catch (Exception e) {
+         catch (Throwable e) {
             logger.error("Send exception", e);
             showExceptionDialog(e);
          }

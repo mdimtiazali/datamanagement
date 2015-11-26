@@ -8,7 +8,10 @@
  */
 package com.cnh.pf.android.data.management.service;
 
+import javax.annotation.Nullable;
 import javax.inject.Inject;
+import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map.Entry;
@@ -21,9 +24,15 @@ import android.os.Handler;
 import android.os.IBinder;
 import android.os.RemoteException;
 
+import com.cnh.jgroups.ObjectGraph;
+import com.cnh.jgroups.Operation;
+import com.google.common.base.Function;
+import com.google.common.base.Throwables;
+import com.google.common.collect.Collections2;
 import com.google.inject.name.Named;
 import org.jgroups.Address;
 import org.jgroups.View;
+import org.jgroups.util.UUID;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -119,11 +128,7 @@ public class DataManagementService extends RoboService {
          if (session.getDestinationType().equals(Datasource.Source.INTERNAL) && session.getDevice().getType().equals(Datasource.Source.USB)) {
             logger.debug("Starting USB Datasource");
             waitForDatasource = usbDelay;
-            Intent i = new Intent(ServiceConstants.USB_ACTION_INTENT);
-            i.putExtra(ServiceConstants.USB_PATH, new String[] { session.getDevice().getPath().getPath() });
-            i.putExtra(ServiceConstants.CREATE_PATH, false);
-            i.setFlags(Intent.FLAG_INCLUDE_STOPPED_PACKAGES);
-            DataManagementService.this.getApplicationContext().sendBroadcast(i);
+            startDisplayServices(session.getDevice().getPath().getPath(), false, session.getFormat());
          }
          handler.postDelayed(new Runnable() {
             @Override
@@ -134,7 +139,26 @@ public class DataManagementService extends RoboService {
          }, waitForDatasource);
       }
       else if (sessionOperation.equals(DataManagementSession.SessionOperation.CALCULATE_OPERATIONS)) {
-         new CalculateTargetsTask().execute();
+         int waitStart = 0;
+         if (session.getSourceType().equals(Datasource.Source.INTERNAL) && session.getDevice().getType().equals(Datasource.Source.USB)) {
+            logger.debug("Starting USB Datasource");
+            String path = session.getDevice().getPath().getPath();
+            startDisplayServices(path, true, session.getFormat());
+            waitStart = usbDelay;
+         }
+         handler.postDelayed(new Runnable() {
+            @Override
+            public void run() {
+               new CalculateTargetsTask() {
+                  @Override
+                  protected void onPostExecute(Integer result) {
+                     super.onPostExecute(result);
+                  }
+               }.execute();
+            }
+         }, waitStart);
+
+//         new CalculateTargetsTask().execute();
       }
       else if (sessionOperation.equals(DataManagementSession.SessionOperation.CALCULATE_CONFLICTS)) {
          new CalculateConflictsTask().execute();
@@ -161,7 +185,7 @@ public class DataManagementService extends RoboService {
          int waitStart = 0;
          if (session.getSourceType().equals(Datasource.Source.INTERNAL) && session.getDevice().getType().equals(Datasource.Source.USB)) {
             String path = session.getDevice().getPath().getPath();
-            startDisplayServices(path, true);
+            startDisplayServices(path, true, session.getFormat());
             waitStart = usbDelay;
          }
          handler.postDelayed(new Runnable() {
@@ -172,6 +196,7 @@ public class DataManagementService extends RoboService {
                   protected void onPostExecute(Integer result) {
                      super.onPostExecute(result);
                      session = null;
+                     stopDisplayServices();
                      stopSelf();
                   }
                }.execute();
@@ -183,12 +208,21 @@ public class DataManagementService extends RoboService {
       }
    }
 
-   private void startDisplayServices(String path, boolean create) {
+   private void startDisplayServices(String path, boolean create, String format) {
       logger.debug("Starting USB datasource");
       Intent i = new Intent(ServiceConstants.USB_ACTION_INTENT);
       i.putExtra(ServiceConstants.USB_PATH, new String[] { path });
       i.putExtra(ServiceConstants.CREATE_PATH, create);
+      if(format != null) {
+         i.putExtra(ServiceConstants.FORMAT, format);
+      }
       i.setFlags(Intent.FLAG_INCLUDE_STOPPED_PACKAGES);
+      getApplicationContext().sendBroadcast(i);
+   }
+
+   private void stopDisplayServices() {
+      logger.debug("Stopping USB datasource");
+      Intent i = new Intent(ServiceConstants.ACTION_STOP);
       getApplicationContext().sendBroadcast(i);
    }
 
@@ -221,7 +255,6 @@ public class DataManagementService extends RoboService {
       @Override
       public void onProgressPublished(String operation, int progress, int max) {
          logger.debug(String.format("publishProgress(%s, %d, %d)", operation, progress, max));
-         final Double percent = ((progress * 1.0) / max) * 100;
          globalEventManager.fire(new DataServiceConnectionImpl.ProgressEvent(operation, progress, max));
       }
 
@@ -230,7 +263,7 @@ public class DataManagementService extends RoboService {
 
       @Override
       public void onViewAccepted(View newView) {
-         logger.debug("onViewAccepted");
+         logger.debug("onViewAccepted {}", newView);
          try {
             dsHelper.setSourceMap(newView);
          }
@@ -255,11 +288,19 @@ public class DataManagementService extends RoboService {
       }
    }
 
+   static String addressToString(Address []addresses) {
+      return Collections2.transform(Arrays.asList(addresses), new Function<Address, String>() {
+         @Nullable @Override public String apply(@Nullable Address input) {
+            return UUID.get(input);
+         }
+      }).toString();
+   }
+
    private class DiscoveryTask extends SessionOperationTask<Void, Void, Integer> {
       @Override
       protected Integer doInBackground(Void... params) {
          try {
-            logger.debug("Discovery for {}, address: {}", session.getSourceType(), dsHelper.getAddressForSourceType(session.getSourceType()));
+            logger.debug("Discovery for {}, address: {}", session.getSourceType(), addressToString(dsHelper.getAddressForSourceType(session.getSourceType())));
             Address[] addrs = dsHelper.getAddressForSourceType(session.getSourceType());
             if (addrs == null || addrs.length > 0) {
                session.setObjectData(mediator.discovery(addrs));
@@ -268,7 +309,8 @@ public class DataManagementService extends RoboService {
          }
          catch (Exception e) {
             logger.debug("error in discovery", e);
-            globalEventManager.fire(new DataServiceConnectionImpl.ErrorEvent(DataServiceConnectionImpl.ErrorEvent.DataError.DISCOVERY_ERROR, ""));
+            globalEventManager.fire(new DataServiceConnectionImpl.ErrorEvent(DataServiceConnectionImpl.ErrorEvent.DataError.DISCOVERY_ERROR,
+               Throwables.getRootCause(e).getMessage()));
          }
          return new Integer(0);
       }
@@ -280,15 +322,19 @@ public class DataManagementService extends RoboService {
          logger.debug("Calculate Targets...");
          try {
             Address[] addresses = dsHelper.getAddressForSourceType(session.getDestinationType());
+            logger.debug("Calculate targets to address: {}", addressToString(addresses));
             if (addresses == null || addresses.length > 0) {
                session.setData(mediator.calculateOperations(session.getObjectData(), addresses));
                logger.debug("Got operation: {}", session.getData());
+            } else {
+               logger.warn("Skipping calculate targets");
             }
             session.setSessionOperation(DataManagementSession.SessionOperation.CALCULATE_OPERATIONS);
          }
          catch (Exception e) {
             logger.error("Send exception in CalculateTargets: ", e);
-            globalEventManager.fire(new DataServiceConnectionImpl.ErrorEvent(DataServiceConnectionImpl.ErrorEvent.DataError.CALCULATE_TARGETS_ERROR, ""));
+            globalEventManager.fire(new DataServiceConnectionImpl.ErrorEvent(DataServiceConnectionImpl.ErrorEvent.DataError.CALCULATE_TARGETS_ERROR,
+               Throwables.getRootCause(e).getMessage()));
             return new Integer(1);
          }
          return new Integer(0);
@@ -308,7 +354,8 @@ public class DataManagementService extends RoboService {
          }
          catch (Exception e) {
             logger.error("Send exception", e);
-            globalEventManager.fire(new DataServiceConnectionImpl.ErrorEvent(DataServiceConnectionImpl.ErrorEvent.DataError.CALCULATE_CONFLICT_ERROR, ""));
+            globalEventManager.fire(new DataServiceConnectionImpl.ErrorEvent(DataServiceConnectionImpl.ErrorEvent.DataError.CALCULATE_CONFLICT_ERROR,
+               Throwables.getRootCause(e).getMessage()));
             return new Integer(1);
          }
          return new Integer(0);
@@ -320,19 +367,27 @@ public class DataManagementService extends RoboService {
       protected Integer doInBackground(Void... params) {
          logger.debug("Performing Operations...");
          try {
+            if(session.getData() == null) {
+               session.setData(new ArrayList<Operation>());
+               for(ObjectGraph obj : session.getObjectData()) {
+                  session.getData().add(new Operation(obj, null));
+               }
+            }
             Address[] addresses = dsHelper.getAddressForSourceType(session.getDestinationType());
             if (addresses != null && addresses.length > 0) {
                mediator.performOperations(session.getData(), addresses);
                session.setSessionOperation(DataManagementSession.SessionOperation.PERFORM_OPERATIONS);
             }
             else {
-               globalEventManager.fire(new DataServiceConnectionImpl.ErrorEvent(DataServiceConnectionImpl.ErrorEvent.DataError.NO_USB_DATASOURCE, "No USB Datasource"));
+               globalEventManager.fire(new DataServiceConnectionImpl.ErrorEvent(DataServiceConnectionImpl.ErrorEvent.DataError.NO_USB_DATASOURCE,
+                  "No USB Datasource"));
                return new Integer(1);
             }
          }
-         catch (Exception e) {
+         catch (Throwable e) {
             logger.error("Send exception in PerformOperation:", e);
-            globalEventManager.fire(new DataServiceConnectionImpl.ErrorEvent(DataServiceConnectionImpl.ErrorEvent.DataError.NO_USB_DATASOURCE, "No USB Datasource"));
+            globalEventManager.fire(new DataServiceConnectionImpl.ErrorEvent(DataServiceConnectionImpl.ErrorEvent.DataError.PERFORM_ERROR,
+               Throwables.getRootCause(e).getMessage()));
             return new Integer(1);
          }
          return new Integer(0);

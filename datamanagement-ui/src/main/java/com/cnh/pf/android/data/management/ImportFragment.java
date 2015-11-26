@@ -126,6 +126,9 @@ public class ImportFragment extends BaseDataFragment {
                   logger.debug("onCompletion: {}", operations.toString());
                   processDialog.hide();
                   getSession().setData(operations);
+                  logger.debug("Going to Calculate Conflicts");
+                  processDialog.setTitle(getResources().getString(R.string.checking_conflicts));
+                  getDataManagementService().processOperation(getSession(), DataManagementSession.SessionOperation.CALCULATE_CONFLICTS);
                }
             });
             processDialog.setOnButtonClickListener(new DialogViewInterface.OnButtonClickListener() {
@@ -216,7 +219,7 @@ public class ImportFragment extends BaseDataFragment {
       final Double percent = ((progress * 1.0) / max) * 100;
       if (progressBar.getVisibility() == View.VISIBLE) {
          progressBar.setProgress(percent.intValue());
-         percentTv.setText(Integer.toString(percent.intValue()));
+         percentTv.setText(Integer.toString(percent.intValue()) + "%");
       }
       else {
          processDialog.setProgress(percent.intValue());

@@ -85,7 +85,7 @@ public interface DataServiceConnectionImpl {
       private DataError type;
 
       public enum DataError {
-         NO_USB_DATASOURCE, CALCULATE_CONFLICT_ERROR, CALCULATE_TARGETS_ERROR, DISCOVERY_ERROR;
+         NO_USB_DATASOURCE, CALCULATE_CONFLICT_ERROR, CALCULATE_TARGETS_ERROR, DISCOVERY_ERROR, PERFORM_ERROR;
       }
 
       public ErrorEvent(DataError type, String error) {

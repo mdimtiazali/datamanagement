@@ -90,14 +90,15 @@ public class ExportFragment extends BaseDataFragment {
          logger.error("Error parsing xml file", e);
       }
       populateFormatPickList();
+      checkExportButton();
    }
 
    private void populateFormatPickList() {
       exportFormatPicklist.setAdapter(new PickListAdapter(exportFormatPicklist, getActivity().getApplicationContext()));
       int formatId = 0;
       for (String format : formatManager.getFormats()) {
-         exportFormatPicklist.addItem( new PickListItem(formatId, format));
-         formatId++;
+         logger.debug("Format: {}", format);
+         exportFormatPicklist.addItem( new PickListItem(formatId++, format));
       }
 
       exportFormatPicklist.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
@@ -165,7 +166,7 @@ public class ExportFragment extends BaseDataFragment {
       logger.debug("onProgressPublished: {}", progress);
       final Double percent = ((progress * 1.0) / max) * 100;
       progressBar.setProgress(percent.intValue());
-      percentTv.setText(percent.intValue());
+      percentTv.setText(percent.intValue()+"%");
    }
 
    @Override
@@ -188,6 +189,8 @@ public class ExportFragment extends BaseDataFragment {
       getSession().setObjectData(new ArrayList<ObjectGraph>(getTreeAdapter().getSelected()));
       ObjectPickListItem<MediumDevice> device = (ObjectPickListItem<MediumDevice>) exportMediumPicklist.getSelectedItem();
       getSession().setDevice(device.getObject());
+      getSession().setFormat(exportFormatPicklist.getSelectedItemValue());
+//      getDataManagementService().processOperation(getSession(), DataManagementSession.SessionOperation.CALCULATE_OPERATIONS);
       getDataManagementService().processOperation(getSession(), DataManagementSession.SessionOperation.PERFORM_OPERATIONS);
       exportDropZone.setVisibility(View.GONE);
       leftStatusPanel.setVisibility(View.VISIBLE);
@@ -200,7 +203,7 @@ public class ExportFragment extends BaseDataFragment {
    private void checkExportButton() {
       logger.debug("checkExportButton, exportMedium: {}, selectedItems: {}",
             exportMediumPicklist.getSelectedItem() != null ? ((ObjectPickListItem<MediumDevice>) exportMediumPicklist.getSelectedItem()).getObject().getType() : "null",
-            getTreeAdapter() != null ? getTreeAdapter().getSelected().size() : "0");
+            getTreeAdapter() != null ? getTreeAdapter().getSelected().size() : "null");
       exportSelectedBtn.setEnabled(exportMediumPicklist.getSelectedItem() != null && (getTreeAdapter() != null && getTreeAdapter().getSelected().size() > 0));
    }
 

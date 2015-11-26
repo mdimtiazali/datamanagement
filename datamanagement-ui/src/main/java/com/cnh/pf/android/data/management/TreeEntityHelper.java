@@ -26,16 +26,20 @@ public class TreeEntityHelper {
    this list will be grouped in ui.
     */
    public static Set<String> groupables = new HashSet<String>() {{
-      add(DataTypes.CUSTOMER);
-      add(DataTypes.TASK);
-      add(DataTypes.PRESCRIPTION);
-      add(DataTypes.BOUNDARY);
+      add("com.cnh.pf.model.pfds.Customer");
+      add("com.cnh.pf.model.pfds.Task");
+      add("com.cnh.pf.model.pfds.Prescription");
+      add("com.cnh.pf.model.pfds.BoundaryItem");
+      add("com.cnh.pf.model.product.library.Product");
+      add("com.cnh.pf.model.product.library.ProductMix");
       add(DataTypes.VEHICLE);
       add(DataTypes.IMPLEMENT);
    }};
 
    public static Map<String, Integer> topLevelEntites = new HashMap<String, Integer>() {{
-      put(DataTypes.CUSTOMER, R.string.pfds);
+      put("com.cnh.pf.model.pfds.Customer", R.string.pfds);
+      put("com.cnh.pf.model.product.library.Product", R.string.products);
+      put("com.cnh.pf.model.product.library.ProductMix", R.string.product_mixes);
       put(DataTypes.VEHICLE, R.string.vehicles);
       put(DataTypes.IMPLEMENT, R.string.imps);
    }};

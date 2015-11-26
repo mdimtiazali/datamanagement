@@ -65,7 +65,7 @@
                 android:layout_height="wrap_content"
                 style="@style/EditText"
                 android:inputType="textCapSentences"
-                android:imeOptions="actionDone"
+                android:imeOptions="actionDone|flagNoFullscreen"
                 android:lines="1"
                 android:textSize="24dp"/>
         </LinearLayout>

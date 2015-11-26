@@ -109,6 +109,8 @@ public class DataManagementUITest {
       Set<String> formats = parser.getFormats();
       assertTrue("xml specifies isoxml format", formats.contains("ISOXML"));
       assertTrue("isoxml supporrts customery type", parser.getFormat("ISOXML").contains("com.cnh.pf.model.pfds.Customer"));
+      assertTrue("xml specifies xstream format", formats.contains("XSTREAM"));
+      assertTrue("xstream supports vehicle type", parser.getFormat("XSTREAM").contains("VEHICLE"));
    }
 
    @Test

@@ -56,7 +56,7 @@ import org.xmlpull.v1.XmlPullParserException;
    private List<String> parseFormat(XmlPullParser parser) throws IOException, XmlPullParserException {
       List<String> types = new ArrayList<String>();
       int eventType = parser.getEventType();
-      while (eventType != XmlPullParser.END_DOCUMENT || (eventType == XmlPullParser.END_TAG && !parser.getName().equals(FORMAT))) {
+      while (eventType != XmlPullParser.END_DOCUMENT && !(eventType == XmlPullParser.END_TAG && parser.getName().equals(FORMAT))) {
          if (eventType == XmlPullParser.START_TAG && parser.getName().equals(TYPE)) {
             if (parser.next() == XmlPullParser.TEXT) {
                types.add(parser.getText());

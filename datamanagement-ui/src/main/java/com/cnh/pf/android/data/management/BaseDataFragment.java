@@ -196,7 +196,7 @@ public abstract class BaseDataFragment extends RoboFragment {
    };
 
    private void onResumeSession(DataManagementSession session) {
-      logger.debug("onResumeSession");
+      logger.debug("onResumeSession {}", session);
       if (session == null || !isCurrentOperation(session)) {
          logger.debug("Starting new session");
          getDataManagementService().resetSession();

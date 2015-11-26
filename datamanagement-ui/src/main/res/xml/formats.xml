@@ -14,8 +14,20 @@
       <type>com.cnh.pf.model.pfds.Customer</type>
       <type>com.cnh.pf.model.pfds.Farm</type>
       <type>com.cnh.pf.model.pfds.Field</type>
+      <type>com.cnh.pf.model.pfds.Task</type>
       <type>com.cnh.pf.model.pfds.RxPlan</type>
       <type>com.cnh.pf.model.pfds.Prescription</type>
+      <type>com.cnh.pf.model.pfds.PrescriptionZone</type>
+      <type>com.cnh.pf.model.product.library.Product</type>
+      <type>com.cnh.pf.model.product.library.ProductMix</type>
+   </format>
+
+   <format name="XSTREAM">
+      <type>VEHICLE</type>
+      <type>VEHICLE_IMPLEMENT</type>
+      <type>VEHICLE_IMPLEMENT_CONFIG</type>
+      <type>IMPLEMENT</type>
+      <type>IMPLEMENT_PRODUCT_CONFIG</type>
    </format>
 
 </formats>
