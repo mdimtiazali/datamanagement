@@ -128,6 +128,7 @@ public class DataManagementService extends RoboService {
          if (session.getDestinationType().equals(Datasource.Source.INTERNAL) && session.getDevice().getType().equals(Datasource.Source.USB)) {
             logger.debug("Starting USB Datasource");
             waitForDatasource = usbDelay;
+            stopDisplayServices();
             startDisplayServices(session.getDevice().getPath().getPath(), false, session.getFormat());
          }
          handler.postDelayed(new Runnable() {
