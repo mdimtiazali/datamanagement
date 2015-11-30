@@ -130,14 +130,6 @@ public abstract class SelectionTreeViewAdapter<T> extends AbstractTreeViewAdapte
                   if (selectionMap.get(node) == null) {
                      selectionMap.put(node, SelectionType.IMPLICIT);
                   }
-                  boolean hasAllChildrenSelected = true;
-                  for (T child : getManager().getChildren(node)) {
-                     if (!selectionMap.containsKey(child) || selectionMap.get(child).equals(SelectionType.IMPLICIT) ) {
-                        hasAllChildrenSelected = false;
-                        break;
-                     }
-                  }
-                  if (hasAllChildrenSelected) selectionMap.put(node, SelectionType.FULL);
                   return true;
                }
             });
