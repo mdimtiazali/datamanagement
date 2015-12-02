@@ -71,20 +71,14 @@
          style="@style/ProgressBarBig.Indeterminate"
          android:visibility="gone"/>
 
-      <ScrollView
-         android:id="@+id/scroll_area"
-         android:layout_width="match_parent"
-         android:layout_height="wrap_content"
-         android:layout_marginLeft="10dp"
-         android:layout_marginTop="16dp"
-         android:layout_marginRight="10dp"
-         android:visibility="gone"
-         android:scrollbars="vertical">
-
          <pl.polidea.treeview.TreeViewList
             android:id="@+id/tree_view_list"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
+            android:layout_marginLeft="10dp"
+            android:layout_marginTop="16dp"
+            android:layout_marginRight="10dp"
+            android:visibility="gone"
             android:choiceMode="none"
             android:dividerHeight="8dp"
             android:divider="@android:color/transparent"
@@ -98,6 +92,5 @@
             cnh:draw_line="true"
             cnh:line_color="@color/tree_line"
             cnh:line_width="2dp"/>
-      </ScrollView>
    </LinearLayout>
 </LinearLayout>

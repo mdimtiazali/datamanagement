@@ -9,11 +9,6 @@
 
 package com.cnh.pf.android.data.management;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-
 import android.os.Bundle;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -21,9 +16,11 @@ import android.view.ViewGroup;
 import android.widget.AbsListView;
 import android.widget.Button;
 import android.widget.LinearLayout;
-import android.widget.ScrollView;
 import android.widget.TextView;
-
+import butterknife.Bind;
+import butterknife.BindString;
+import butterknife.ButterKnife;
+import butterknife.OnClick;
 import com.cnh.android.dialog.DialogView;
 import com.cnh.android.dialog.DialogViewInterface;
 import com.cnh.android.widget.activity.TabActivity;
@@ -40,11 +37,6 @@ import com.cnh.pf.android.data.management.dialog.ErrorDialog;
 import com.cnh.pf.android.data.management.graph.GroupObjectGraph;
 import com.cnh.pf.android.data.management.service.DataManagementService;
 import com.cnh.pf.data.management.DataManagementSession;
-
-import butterknife.Bind;
-import butterknife.BindString;
-import butterknife.ButterKnife;
-import butterknife.OnClick;
 import com.google.inject.Inject;
 import com.google.inject.name.Named;
 import org.slf4j.Logger;
@@ -58,6 +50,11 @@ import roboguice.config.DefaultRoboModule;
 import roboguice.event.EventListener;
 import roboguice.event.EventManager;
 import roboguice.fragment.provided.RoboFragment;
+
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
 /**
  * Base Import/Export Fragment, handles inflating TreeView area and selection. Import/Export source
@@ -77,7 +74,6 @@ public abstract class BaseDataFragment extends RoboFragment {
    @Bind(R.id.tree_view_list) TreeViewList treeViewList;
    @Bind(R.id.tree_progress) protected ProgressBarView treeProgress;
    @Bind(R.id.start_text) protected TextView startText;
-   @Bind(R.id.scroll_area) ScrollView scrollArea;
    @BindString(R.string.done) String doneStr;
 
    private TreeStateManager<ObjectGraph> manager;
@@ -149,7 +145,7 @@ public abstract class BaseDataFragment extends RoboFragment {
    EventListener errorListener = new EventListener<DataServiceConnectionImpl.ErrorEvent>() {
       @Override
       public void onEvent(final DataServiceConnectionImpl.ErrorEvent event) {
-         logger.debug("onErrorEvent");
+         logger.debug("onErrorEvent {}", event);
          getActivity().runOnUiThread(new Runnable() {
             @Override
             public void run() {
@@ -201,7 +197,7 @@ public abstract class BaseDataFragment extends RoboFragment {
          logger.debug("Starting new session");
          getDataManagementService().resetSession();
          setSession(null);
-         scrollArea.setVisibility(View.GONE);
+         treeViewList.setVisibility(View.GONE);
          onNewSession();
       }
       else if (session.getObjectData() == null || session.getObjectData().size() < 1) {
@@ -298,7 +294,7 @@ public abstract class BaseDataFragment extends RoboFragment {
       };
       treeAdapter.setData(session.getObjectData());
       treeViewList.removeAllViewsInLayout();
-      scrollArea.setVisibility(View.VISIBLE);
+      treeViewList.setVisibility(View.VISIBLE);
       treeViewList.setAdapter(treeAdapter);
       treeAdapter.setOnTreeItemSelectedListener(new SelectionTreeViewAdapter.OnTreeItemSelectedListener() {
          @Override

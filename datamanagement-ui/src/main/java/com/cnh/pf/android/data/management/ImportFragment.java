@@ -90,7 +90,7 @@ public class ImportFragment extends BaseDataFragment {
       removeProgressPanel();
       startText.setVisibility(View.GONE);
       treeProgress.setVisibility(View.VISIBLE);
-      scrollArea.setVisibility(View.GONE);
+      treeViewList.setVisibility(View.GONE);
       if (event.getDevice().getType().equals(Datasource.Source.USB)) {
          pathTv.setText(event.getDevice().getPath() == null ? "" : event.getDevice().getPath().getPath());
       }

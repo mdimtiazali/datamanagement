@@ -100,5 +100,12 @@ public interface DataServiceConnectionImpl {
       public DataError getType() {
          return type;
       }
+
+      @Override public String toString() {
+         return "ErrorEvent{" +
+            "error='" + error + '\'' +
+            ", type=" + type +
+            '}';
+      }
    }
 }

@@ -72,7 +72,7 @@ public class DataManagementService extends RoboService {
    private final IBinder localBinder = new LocalBinder();
 
    /* Time to wait for USB Datasource to register if the usb has valid data*/
-   private static int usbDelay = 6000;
+   private static int usbDelay = 7000;
 
    @Override public int onStartCommand(Intent intent, int flags, int startId) {
       logger.debug("onStartCommand");
@@ -128,7 +128,6 @@ public class DataManagementService extends RoboService {
          if (session.getDestinationType().equals(Datasource.Source.INTERNAL) && session.getDevice().getType().equals(Datasource.Source.USB)) {
             logger.debug("Starting USB Datasource");
             waitForDatasource = usbDelay;
-            stopDisplayServices();
             startDisplayServices(session.getDevice().getPath().getPath(), false, session.getFormat());
          }
          handler.postDelayed(new Runnable() {
@@ -140,26 +139,7 @@ public class DataManagementService extends RoboService {
          }, waitForDatasource);
       }
       else if (sessionOperation.equals(DataManagementSession.SessionOperation.CALCULATE_OPERATIONS)) {
-         int waitStart = 0;
-         if (session.getSourceType().equals(Datasource.Source.INTERNAL) && session.getDevice().getType().equals(Datasource.Source.USB)) {
-            logger.debug("Starting USB Datasource");
-            String path = session.getDevice().getPath().getPath();
-            startDisplayServices(path, true, session.getFormat());
-            waitStart = usbDelay;
-         }
-         handler.postDelayed(new Runnable() {
-            @Override
-            public void run() {
-               new CalculateTargetsTask() {
-                  @Override
-                  protected void onPostExecute(Integer result) {
-                     super.onPostExecute(result);
-                  }
-               }.execute();
-            }
-         }, waitStart);
-
-//         new CalculateTargetsTask().execute();
+         new CalculateTargetsTask().execute();
       }
       else if (sessionOperation.equals(DataManagementSession.SessionOperation.CALCULATE_CONFLICTS)) {
          new CalculateConflictsTask().execute();
