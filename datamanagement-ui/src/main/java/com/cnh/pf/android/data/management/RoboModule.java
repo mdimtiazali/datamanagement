@@ -38,8 +38,6 @@ import org.slf4j.LoggerFactory;
 public class RoboModule extends AbstractModule {
    private static final Logger logger = LoggerFactory.getLogger(RoboModule.class);
 
-   public static final String GLOBAL_PREFERENCES_PACKAGE = "com.cnh.pf.android.preference";
-
    private Application application;
 
    public RoboModule(Application ctx) {

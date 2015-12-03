@@ -107,7 +107,9 @@ public abstract class ObjectTreeViewAdapter extends SelectionTreeViewAdapter<Obj
       } catch (Exception e) {
          logger.error("error loading text color resource", e);
       }
-      nameView.setCompoundDrawablesWithIntrinsicBounds(((graph instanceof GroupObjectGraph || !isGroupableEntity(graph)) ? TYPE_ICONS.get(graph.getType()) : 0), 0, 0, 0);
+      if(TYPE_ICONS.containsKey(graph.getType())) {
+         nameView.setCompoundDrawablesWithIntrinsicBounds(((graph instanceof GroupObjectGraph || !isGroupableEntity(graph)) ? TYPE_ICONS.get(graph.getType()) : 0), 0, 0, 0);
+      }
       return view;
    }
 
