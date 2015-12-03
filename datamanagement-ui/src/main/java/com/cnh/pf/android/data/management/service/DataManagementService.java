@@ -18,6 +18,7 @@ import java.util.Map.Entry;
 import java.util.concurrent.ConcurrentHashMap;
 
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.os.AsyncTask;
 import android.os.Binder;
 import android.os.Handler;
@@ -57,7 +58,7 @@ import roboguice.service.RoboService;
  * Accepts operations from UI, and relays them to destination datasource.
  * @author oscar.salazar@cnhind.com
  */
-public class DataManagementService extends RoboService {
+public class DataManagementService extends RoboService implements SharedPreferences.OnSharedPreferenceChangeListener {
    private static final Logger logger = LoggerFactory.getLogger(DataManagementService.class);
 
    private @Inject Mediator mediator;
@@ -65,6 +66,8 @@ public class DataManagementService extends RoboService {
    private @Inject MediumImpl mediumProvider;
    @Named(DefaultRoboModule.GLOBAL_EVENT_MANAGER_NAME)
    @Inject EventManager globalEventManager;
+   @Named("global")
+   @Inject private SharedPreferences prefs;
 
    DataManagementSession session = null;
    ConcurrentHashMap<String, IDataManagementListenerAIDL> listeners = new ConcurrentHashMap<String, IDataManagementListenerAIDL>();
@@ -94,6 +97,7 @@ public class DataManagementService extends RoboService {
    public void onCreate() {
       super.onCreate();
       try {
+         prefs.registerOnSharedPreferenceChangeListener(this);
          mediator.setProgressListener(pListener);
          if (!mediator.getChannel().isConnected())
             new ConnectTask().execute();
@@ -105,6 +109,7 @@ public class DataManagementService extends RoboService {
 
    @Override
    public void onDestroy() {
+      prefs.unregisterOnSharedPreferenceChangeListener(this);
       super.onDestroy();
       new Thread(new Runnable() {
          @Override
@@ -219,6 +224,11 @@ public class DataManagementService extends RoboService {
             logger.debug("removing client:" + entry.getValue());
          }
       }
+   }
+
+   @Override public void onSharedPreferenceChanged(SharedPreferences sharedPreferences, String key) {
+      logger.info("Shared prefs changed {}.  Stopping DatamanagementService", key);
+      stopSelf();
    }
 
    public class LocalBinder extends Binder {

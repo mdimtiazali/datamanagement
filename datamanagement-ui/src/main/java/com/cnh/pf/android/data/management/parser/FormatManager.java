@@ -33,7 +33,7 @@ import org.xmlpull.v1.XmlPullParserException;
 @Singleton public class FormatManager {
 
    Context context;
-   Map<String, List<String>> formatMap;
+   Map<String, Format> formatMap;
 
    private static String FORMAT = "format";
    private static String FORMAT_NAME = "name";
@@ -45,33 +45,39 @@ import org.xmlpull.v1.XmlPullParserException;
       this.formatMap = null;
    }
 
-   /**
-    * Returns supported types by this format
-    * @return List of supported types
-    */
-   public List<String> getFormat(String format) throws XmlPullParserException, IOException {
-      return formatMap.containsKey(format) ? formatMap.get(format) : new ArrayList<String>();
-   }
-
-   private List<String> parseFormat(XmlPullParser parser) throws IOException, XmlPullParserException {
-      List<String> types = new ArrayList<String>();
+   private Format parseFormat(XmlPullParser parser) throws IOException, XmlPullParserException {
+      Format format = new Format();
       int eventType = parser.getEventType();
       while (eventType != XmlPullParser.END_DOCUMENT && !(eventType == XmlPullParser.END_TAG && parser.getName().equals(FORMAT))) {
          if (eventType == XmlPullParser.START_TAG && parser.getName().equals(TYPE)) {
             if (parser.next() == XmlPullParser.TEXT) {
-               types.add(parser.getText());
+               String text = parser.getText();
+               if(text.startsWith("!")) {
+                  format.excludes.add(text.substring(1));
+               } else {
+                  format.includes.add(text);
+               }
             }
          }
          eventType = parser.next();
       }
-      return types;
+      return format;
    }
 
    /**
     * Check if type supported by this format
     */
    public boolean formatSupportsType(String format, String type) {
-      return formatMap.containsKey(format) && formatMap.get(format).contains(type);
+      if(!formatMap.containsKey(format)) return false;
+      Format f = formatMap.get(format);
+
+      if(!f.includes.isEmpty() && f.includes.contains(type))
+         return true;
+
+      if(!f.excludes.isEmpty() && !f.excludes.contains(type))
+         return true;
+
+      return false;
    }
 
    /**
@@ -88,7 +94,7 @@ import org.xmlpull.v1.XmlPullParserException;
     */
    public void parseXml() throws IOException, XmlPullParserException {
       if (formatMap == null) {
-         formatMap = new HashMap<String, List<String>>();
+         formatMap = new HashMap<String, Format>();
          XmlPullParser xpp = context.getResources().getXml(R.xml.formats);
          int eventType = xpp.getEventType();
          while (eventType != XmlPullParser.END_DOCUMENT) {
@@ -102,5 +108,11 @@ import org.xmlpull.v1.XmlPullParserException;
             eventType = xpp.next();
          }
       }
+   }
+
+
+   public static class Format {
+      public List<String> includes = new ArrayList<String>();
+      public List<String> excludes = new ArrayList<String>();
    }
 }

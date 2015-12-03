@@ -54,6 +54,7 @@ import roboguice.RoboGuice;
 import roboguice.config.DefaultRoboModule;
 import roboguice.event.EventManager;
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
@@ -108,9 +109,11 @@ public class DataManagementUITest {
       parser.parseXml();
       Set<String> formats = parser.getFormats();
       assertTrue("xml specifies isoxml format", formats.contains("ISOXML"));
-      assertTrue("isoxml supporrts customery type", parser.getFormat("ISOXML").contains("com.cnh.pf.model.pfds.Customer"));
-      assertTrue("xml specifies xstream format", formats.contains("XSTREAM"));
-      assertTrue("xstream supports vehicle type", parser.getFormat("XSTREAM").contains("VEHICLE"));
+      assertTrue("isoxml supporrts customery type", parser.formatSupportsType("ISOXML", "com.cnh.pf.model.pfds.Customer"));
+      assertFalse("isoxml does not support VEHICLE type", parser.formatSupportsType("ISOXML", "VEHICLE"));
+      assertTrue("xml specifies cnh format", formats.contains("CNH"));
+      assertTrue("cnh supports vehicle type", parser.formatSupportsType("CNH", "VEHICLE"));
+      assertFalse("cnh does not support customer type", parser.formatSupportsType("CNH", "com.cnh.pf.model.pfds.Customer"));
    }
 
    @Test
