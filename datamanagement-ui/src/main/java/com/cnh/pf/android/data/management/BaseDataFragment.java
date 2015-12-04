@@ -284,7 +284,7 @@ public abstract class BaseDataFragment extends RoboFragment {
       treeAdapter = new ObjectTreeViewAdapter(getActivity(), manager, 1) {
          @Override
          protected boolean isGroupableEntity(ObjectGraph node) {
-            return TreeEntityHelper.groupables.contains(node.getType());
+            return TreeEntityHelper.groupables.containsKey(node.getType()) || node.getParent() != null;
          }
 
          @Override
@@ -318,7 +318,7 @@ public abstract class BaseDataFragment extends RoboFragment {
 
    private void addToTree(ObjectGraph parent, ObjectGraph object) {
       //Check if entity can be grouped
-      if (TreeEntityHelper.groupables.contains(object.getType())) {
+      if (TreeEntityHelper.groupables.containsKey(object.getType()) || object.getParent() == null) {
          GroupObjectGraph gparent = null;
          for (ObjectGraph child : manager.getChildren(parent)) {
             if (child instanceof GroupObjectGraph && child.getType().equals(object.getType())) {
@@ -326,14 +326,11 @@ public abstract class BaseDataFragment extends RoboFragment {
             }
          }
          if (gparent == null) {
-            if (TreeEntityHelper.topLevelEntites.containsKey(object.getType())) {
-               gparent = new GroupObjectGraph(null, object.getType(), getString(TreeEntityHelper.topLevelEntites.get(object.getType())));
-               treeBuilder.sequentiallyAddNextNode(gparent, 0);
-            }
-            else {
-               gparent = new GroupObjectGraph(null, object.getType(), object.getType().substring(object.getType().lastIndexOf('.') + 1) + "s", null, parent);
-               treeBuilder.addRelation(parent, gparent);
-            }
+            String name = TreeEntityHelper.groupables.get(object.getType()) != null ?
+                  getString(TreeEntityHelper.groupables.get(object.getType())) :
+                  object.getType().substring(object.getType().lastIndexOf('.') + 1) + "s";
+            gparent = new GroupObjectGraph(null, object.getType(), name, null, parent);
+            treeBuilder.addRelation(parent, gparent);
          }
          treeBuilder.addRelation(gparent, object);
       }
