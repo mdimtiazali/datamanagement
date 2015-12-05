@@ -144,7 +144,7 @@ public abstract class SelectionTreeViewAdapter<T> extends AbstractTreeViewAdapte
                return true;
             }
          });
-         //Traverse up, and unselect parent if this is the only selected item
+         //Traverse up, and unselect implicit parent if this is the only selected item
          traverseTree((T) id, TRAVERSE_UP, new Visitor<T>() {
             @Override
             public boolean visit(T node) {
@@ -155,13 +155,11 @@ public abstract class SelectionTreeViewAdapter<T> extends AbstractTreeViewAdapte
                      break;
                   }
                }
-               if (hasOtherSelectedChildren) {
-                  selectionMap.put(node, SelectionType.IMPLICIT);
-               }
-               else {
+               if (!hasOtherSelectedChildren && selectionMap.get(node).equals(SelectionType.IMPLICIT)) {
                   selectionMap.remove(node);
+                  return true;
                }
-               return true;
+               return false;
             }
          });
       }
