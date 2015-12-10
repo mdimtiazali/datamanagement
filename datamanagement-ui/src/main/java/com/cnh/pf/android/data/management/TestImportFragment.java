@@ -384,7 +384,7 @@ public class TestImportFragment extends RoboFragment implements Mediator.Progres
 
    private void addToTree(ObjectGraph parent, ObjectGraph object) {
       //Check if entity can be grouped
-      if (TreeEntityHelper.groupables.contains(object.getType())) {
+      if (TreeEntityHelper.groupables.containsKey(object.getType())) {
          GroupObjectGraph gparent = null;
          for (ObjectGraph child : manager.getChildren(parent)) {
             if (child instanceof GroupObjectGraph && child.getType().equals(object.getType())) {
@@ -424,7 +424,7 @@ public class TestImportFragment extends RoboFragment implements Mediator.Progres
          treeAdapter = new ObjectTreeViewAdapter(getActivity(), manager, 1) {
             @Override
             protected boolean isGroupableEntity(ObjectGraph node) {
-               return TreeEntityHelper.groupables.contains(node.getType());
+               return TreeEntityHelper.groupables.containsKey(node.getType());
             }
 
             @Override
