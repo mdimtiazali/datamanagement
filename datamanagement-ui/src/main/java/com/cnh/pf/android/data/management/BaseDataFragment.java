@@ -220,16 +220,16 @@ public abstract class BaseDataFragment extends RoboFragment {
    }
 
    private List<Operation> processPartialImports(List<Operation> operations) {
+      if(operations == null) {
+         logger.warn("calculate operations returned No operations");
+         return null;
+      }
       Map<ObjectGraph, Operation> operationMap = new HashMap<ObjectGraph, Operation>();
       for (Operation operation : operations) {
          operationMap.put(operation.getData(), operation);
+         operation.setTarget(operation.getData().getParent());
       }
-      for (ObjectGraph graph : treeAdapter.getSelected()) {
-         if (graph.getParent() != null) {
-            operationMap.get(graph).setTarget(graph.getParent());
-         }
-      }
-      return new ArrayList<Operation>(operationMap.values());
+      return operations;
    }
 
    /** Called when session was updated on backend */
