@@ -38,7 +38,6 @@ public class TreeBuilder<T> {
      *            child id
      */
     public synchronized void addRelation(final T parent, final T child) {
-        Log.d(TAG, "Adding relation parent:" + parent + " -> child: " + child);
         manager.addAfterChild(parent, child, null);
         lastAddedId = child;
         lastLevel = manager.getLevel(child);
@@ -49,7 +48,7 @@ public class TreeBuilder<T> {
      * building tree - if you have all the elements in the sequence as they
      * should be displayed in fully-expanded tree. You can combine it with add
      * relation - for example you can add information about few levels using
-     * {@link addRelation} and then after the right level is added as parent,
+     * {@link #addRelation} and then after the right level is added as parent,
      * you can continue adding them using sequential operation.
      * 
      * @param id

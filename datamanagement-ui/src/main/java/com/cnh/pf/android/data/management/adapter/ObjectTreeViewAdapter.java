@@ -51,12 +51,12 @@ public abstract class ObjectTreeViewAdapter extends SelectionTreeViewAdapter<Obj
       TYPE_ICONS.put("com.cnh.pf.model.pfds.TaskPlan", R.drawable.ic_datatree_tasks);
       TYPE_ICONS.put("com.cnh.pf.model.pfds.Prescription", R.drawable.ic_datatree_prescription);
       TYPE_ICONS.put("com.cnh.pf.model.pfds.RxPlan", R.drawable.ic_datatree_prescription);
-      TYPE_ICONS.put("com.cnh.pf.model.pfds.BoundaryItem", R.drawable.ic_datatree_boundaries);
-      TYPE_ICONS.put(DataTypes.VEHICLE, R.drawable.ic_datatree_boundaries);
-      TYPE_ICONS.put(DataTypes.VEHICLE_IMPLEMENT, R.drawable.ic_datatree_boundaries);
-      TYPE_ICONS.put(DataTypes.VEHICLE_IMPLEMENT_CONFIG, R.drawable.ic_datatree_boundaries);
-      TYPE_ICONS.put(DataTypes.IMPLEMENT, R.drawable.ic_datatree_boundaries);
-      TYPE_ICONS.put(DataTypes.IMPLEMENT_PRODUCT_CONFIG, R.drawable.ic_datatree_boundaries);
+      TYPE_ICONS.put("com.cnh.autoguidance.boundary.BoundaryItem", R.drawable.ic_datatree_boundaries);
+      TYPE_ICONS.put(DataTypes.VEHICLE, R.drawable.ic_datatree_copy);
+      TYPE_ICONS.put(DataTypes.VEHICLE_IMPLEMENT, R.drawable.ic_datatree_implements);
+      TYPE_ICONS.put(DataTypes.VEHICLE_IMPLEMENT_CONFIG, R.drawable.ic_datatree_swath);
+      TYPE_ICONS.put(DataTypes.IMPLEMENT, R.drawable.ic_datatree_implements);
+      TYPE_ICONS.put(DataTypes.IMPLEMENT_PRODUCT_CONFIG, R.drawable.ic_datatree_screenshots);
    }
 
    private List<ObjectGraph> data;
@@ -100,15 +100,12 @@ public abstract class ObjectTreeViewAdapter extends SelectionTreeViewAdapter<Obj
       final TextView nameView = (TextView) view;
       ObjectGraph graph = (ObjectGraph) treeNodeInfo.getId();
       nameView.setText(graph.getName());
-      XmlResourceParser xrp = getActivity().getResources().getXml(R.drawable.tree_text_color);
-      try {
-         ColorStateList csl = ColorStateList.createFromXml(getActivity().getResources(), xrp);
-         nameView.setTextColor(csl);
-      } catch (Exception e) {
-         logger.error("error loading text color resource", e);
+      nameView.setTextColor(getActivity().getResources().getColorStateList(R.drawable.tree_text_color));
+      if(TYPE_ICONS.containsKey(graph.getType()) && (graph instanceof GroupObjectGraph || !isGroupableEntity(graph)) ) {
+         nameView.setCompoundDrawablesWithIntrinsicBounds(TYPE_ICONS.get(graph.getType()), 0, 0, 0);
       }
-      if(TYPE_ICONS.containsKey(graph.getType())) {
-         nameView.setCompoundDrawablesWithIntrinsicBounds(((graph instanceof GroupObjectGraph || !isGroupableEntity(graph)) ? TYPE_ICONS.get(graph.getType()) : 0), 0, 0, 0);
+      else {
+         nameView.setCompoundDrawablesWithIntrinsicBounds(0, 0, 0, 0);
       }
       return view;
    }

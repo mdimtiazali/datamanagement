@@ -37,6 +37,7 @@ import com.cnh.pf.android.data.management.dialog.ErrorDialog;
 import com.cnh.pf.android.data.management.graph.GroupObjectGraph;
 import com.cnh.pf.android.data.management.service.DataManagementService;
 import com.cnh.pf.data.management.DataManagementSession;
+import com.google.inject.Guice;
 import com.google.inject.Inject;
 import com.google.inject.name.Named;
 import org.slf4j.Logger;
@@ -94,6 +95,11 @@ public abstract class BaseDataFragment extends RoboFragment {
    public abstract void onTreeItemSelected();
    public abstract void onProgressPublished(String operation, int progress, int max);
    public abstract boolean supportedByFormat(ObjectGraph node);
+
+   @Override public void onCreate(Bundle savedInstanceState) {
+      super.onCreate(savedInstanceState);
+   }
+
    @Override
    public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
       View layout = inflater.inflate(R.layout.import_layout, container, false);
@@ -284,7 +290,7 @@ public abstract class BaseDataFragment extends RoboFragment {
       treeAdapter = new ObjectTreeViewAdapter(getActivity(), manager, 1) {
          @Override
          protected boolean isGroupableEntity(ObjectGraph node) {
-            return TreeEntityHelper.groupables.containsKey(node.getType()) || node.getParent() != null;
+            return TreeEntityHelper.groupables.containsKey(node.getType()) || node.getParent() == null;
          }
 
          @Override
@@ -319,20 +325,19 @@ public abstract class BaseDataFragment extends RoboFragment {
    private void addToTree(ObjectGraph parent, ObjectGraph object) {
       //Check if entity can be grouped
       if (TreeEntityHelper.groupables.containsKey(object.getType()) || object.getParent() == null) {
-         GroupObjectGraph gparent = null;
-         for (ObjectGraph child : manager.getChildren(parent)) {
+         GroupObjectGraph group = null;
+         for (ObjectGraph child : manager.getChildren(parent)) { //find the group node
             if (child instanceof GroupObjectGraph && child.getType().equals(object.getType())) {
-               gparent = (GroupObjectGraph) child;
+               group = (GroupObjectGraph) child;
+               break;
             }
          }
-         if (gparent == null) {
-            String name = TreeEntityHelper.groupables.get(object.getType()) != null ?
-                  getString(TreeEntityHelper.groupables.get(object.getType())) :
-                  object.getType().substring(object.getType().lastIndexOf('.') + 1) + "s";
-            gparent = new GroupObjectGraph(null, object.getType(), name, null, parent);
-            treeBuilder.addRelation(parent, gparent);
+         if (group == null) { //if group node doesn't exist we gotta make it
+            String name = TreeEntityHelper.getGroupName(getActivity(), object.getType());
+            group = new GroupObjectGraph(null, object.getType(), name, null, parent);
+            treeBuilder.addRelation(parent, group);
          }
-         treeBuilder.addRelation(gparent, object);
+         treeBuilder.addRelation(group, object);
       }
       //Else just add to parent
       else {

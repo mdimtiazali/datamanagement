@@ -424,7 +424,7 @@ public class TestImportFragment extends RoboFragment implements Mediator.Progres
          treeAdapter = new ObjectTreeViewAdapter(getActivity(), manager, 1) {
             @Override
             protected boolean isGroupableEntity(ObjectGraph node) {
-               return TreeEntityHelper.groupables.containsKey(node.getType());
+               return TreeEntityHelper.groupables.containsKey(node.getType()) || node.getParent() == null;
             }
 
             @Override
