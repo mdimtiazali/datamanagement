@@ -37,6 +37,7 @@ import com.cnh.pf.android.data.management.dialog.ErrorDialog;
 import com.cnh.pf.android.data.management.graph.GroupObjectGraph;
 import com.cnh.pf.android.data.management.service.DataManagementService;
 import com.cnh.pf.data.management.DataManagementSession;
+import com.google.inject.Guice;
 import com.google.inject.Inject;
 import com.google.inject.name.Named;
 import org.slf4j.Logger;
@@ -94,6 +95,11 @@ public abstract class BaseDataFragment extends RoboFragment {
    public abstract void onTreeItemSelected();
    public abstract void onProgressPublished(String operation, int progress, int max);
    public abstract boolean supportedByFormat(ObjectGraph node);
+
+   @Override public void onCreate(Bundle savedInstanceState) {
+      super.onCreate(savedInstanceState);
+   }
+
    @Override
    public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
       View layout = inflater.inflate(R.layout.import_layout, container, false);
@@ -220,16 +226,16 @@ public abstract class BaseDataFragment extends RoboFragment {
    }
 
    private List<Operation> processPartialImports(List<Operation> operations) {
+      if(operations == null) {
+         logger.warn("calculate operations returned No operations");
+         return null;
+      }
       Map<ObjectGraph, Operation> operationMap = new HashMap<ObjectGraph, Operation>();
       for (Operation operation : operations) {
          operationMap.put(operation.getData(), operation);
+         operation.setTarget(operation.getData().getParent());
       }
-      for (ObjectGraph graph : treeAdapter.getSelected()) {
-         if (graph.getParent() != null) {
-            operationMap.get(graph).setTarget(graph.getParent());
-         }
-      }
-      return new ArrayList<Operation>(operationMap.values());
+      return operations;
    }
 
    /** Called when session was updated on backend */
@@ -284,7 +290,7 @@ public abstract class BaseDataFragment extends RoboFragment {
       treeAdapter = new ObjectTreeViewAdapter(getActivity(), manager, 1) {
          @Override
          protected boolean isGroupableEntity(ObjectGraph node) {
-            return TreeEntityHelper.groupables.contains(node.getType());
+            return TreeEntityHelper.groupables.containsKey(node.getType()) || node.getParent() == null;
          }
 
          @Override
@@ -318,24 +324,20 @@ public abstract class BaseDataFragment extends RoboFragment {
 
    private void addToTree(ObjectGraph parent, ObjectGraph object) {
       //Check if entity can be grouped
-      if (TreeEntityHelper.groupables.contains(object.getType())) {
-         GroupObjectGraph gparent = null;
-         for (ObjectGraph child : manager.getChildren(parent)) {
+      if (TreeEntityHelper.groupables.containsKey(object.getType()) || object.getParent() == null) {
+         GroupObjectGraph group = null;
+         for (ObjectGraph child : manager.getChildren(parent)) { //find the group node
             if (child instanceof GroupObjectGraph && child.getType().equals(object.getType())) {
-               gparent = (GroupObjectGraph) child;
+               group = (GroupObjectGraph) child;
+               break;
             }
          }
-         if (gparent == null) {
-            if (TreeEntityHelper.topLevelEntites.containsKey(object.getType())) {
-               gparent = new GroupObjectGraph(null, object.getType(), getString(TreeEntityHelper.topLevelEntites.get(object.getType())));
-               treeBuilder.sequentiallyAddNextNode(gparent, 0);
-            }
-            else {
-               gparent = new GroupObjectGraph(null, object.getType(), object.getType().substring(object.getType().lastIndexOf('.') + 1) + "s", null, parent);
-               treeBuilder.addRelation(parent, gparent);
-            }
+         if (group == null) { //if group node doesn't exist we gotta make it
+            String name = TreeEntityHelper.getGroupName(getActivity(), object.getType());
+            group = new GroupObjectGraph(null, object.getType(), name, null, parent);
+            treeBuilder.addRelation(parent, group);
          }
-         treeBuilder.addRelation(gparent, object);
+         treeBuilder.addRelation(group, object);
       }
       //Else just add to parent
       else {

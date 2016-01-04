@@ -161,6 +161,7 @@
                 <artifactId>android-maven-plugin</artifactId>
                 <extensions>true</extensions>
                 <configuration>
+                   <extractDuplicates>true</extractDuplicates>
                    <dex>
                       <jvmArguments>
                          <jvmArgument>-Xmx2096M</jvmArgument>

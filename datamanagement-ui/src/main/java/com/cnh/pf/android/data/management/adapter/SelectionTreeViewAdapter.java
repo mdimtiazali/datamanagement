@@ -144,26 +144,26 @@ public abstract class SelectionTreeViewAdapter<T> extends AbstractTreeViewAdapte
                return true;
             }
          });
-         //Traverse up, and unselect parent if this is the only selected item
-         traverseTree((T) id, TRAVERSE_UP, new Visitor<T>() {
-            @Override
-            public boolean visit(T node) {
-               boolean hasOtherSelectedChildren = false;
-               for (T child : getManager().getChildren(node)) {
-                  if (selectionMap.containsKey(child)) {
-                     hasOtherSelectedChildren = true;
-                     break;
+         //Traverse up, and unselect implicit parent if this is the only selected item
+         if (getManager().getParent((T) id) != null) {
+            traverseTree(getManager().getParent((T) id), TRAVERSE_UP, new Visitor<T>() {
+               @Override
+               public boolean visit(T node) {
+                  boolean hasOtherSelectedChildren = false;
+                  for (T child : getManager().getChildren(node)) {
+                     if (selectionMap.containsKey(child)) {
+                        hasOtherSelectedChildren = true;
+                        break;
+                     }
                   }
+                  if (!hasOtherSelectedChildren && SelectionType.IMPLICIT.equals(selectionMap.get(node))) {
+                     selectionMap.remove(node);
+                     return true;
+                  }
+                  return false;
                }
-               if (hasOtherSelectedChildren) {
-                  selectionMap.put(node, SelectionType.IMPLICIT);
-               }
-               else {
-                  selectionMap.remove(node);
-               }
-               return true;
-            }
-         });
+            });
+         }
       }
       updateViewSelection(parent);
       if (listener != null) {

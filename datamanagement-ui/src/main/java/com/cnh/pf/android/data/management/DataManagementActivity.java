@@ -9,29 +9,32 @@
  */
 package com.cnh.pf.android.data.management;
 
-import java.lang.reflect.Constructor;
-import java.util.HashMap;
-import java.util.Map;
-
 import android.app.Activity;
+import android.app.Application;
 import android.app.Fragment;
 import android.app.FragmentTransaction;
 import android.content.Context;
+import android.content.Intent;
 import android.os.Bundle;
 import android.util.AttributeSet;
 import android.view.View;
 import com.cnh.android.widget.activity.TabActivity;
 import com.cnh.android.widget.control.TabActivityListeners;
 import com.cnh.android.widget.control.TabActivityTab;
-
+import com.cnh.pf.jgroups.ChannelModule;
 import com.google.inject.Key;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import roboguice.RoboGuice;
+import roboguice.RoboGuiceHelper;
 import roboguice.activity.event.OnPauseEvent;
 import roboguice.activity.event.OnResumeEvent;
 import roboguice.event.EventManager;
 import roboguice.util.RoboContext;
+
+import java.lang.reflect.Constructor;
+import java.util.HashMap;
+import java.util.Map;
 
 /**
  * Data Management Tab Activity
@@ -113,7 +116,12 @@ public class DataManagementActivity extends TabActivity implements RoboContext {
 
    @Override
    public void onCreate(Bundle savedInstanceState) {
+      final Application app = getApplication();
+      //Phoenix Workaround (phoenix sometimes cannot read the manifest)
+      RoboGuiceHelper.help(app, new String[] { "com.cnh.pf.android.data.management", "com.cnh.pf.jgroups" },
+         new RoboModule(app), new ChannelModule(app));
       super.onCreate(savedInstanceState);
+
       eventManager = RoboGuice.getInjector(this).getInstance(EventManager.class);
       TabActivityTab importTab = new TabActivityTab(R.string.tab_import, R.drawable.tab_import, getResources().getString(R.string.tab_import),
             new DataManagementTabListener(new ImportFragment(), this));
@@ -172,6 +180,8 @@ public class DataManagementActivity extends TabActivity implements RoboContext {
    public void onResume() {
       super.onResume();
       eventManager.fire(new OnResumeEvent(this));
+      logger.debug("Sending INTERNAL_DATA broadcast");
+      sendBroadcast(new Intent("com.cnh.pf.data.INTERNAL_DATA").addFlags(Intent.FLAG_INCLUDE_STOPPED_PACKAGES));
    }
 
    @Override

@@ -9,7 +9,9 @@
 
 package com.cnh.pf.android.data.management;
 
+import android.content.Context;
 import com.cnh.jgroups.DataTypes;
+import com.google.common.base.CaseFormat;
 
 import java.util.HashMap;
 import java.util.HashSet;
@@ -22,25 +24,25 @@ import java.util.Set;
  */
 public class TreeEntityHelper {
 
-   /* Set lists all entities which are groupable in ui, entities with types specified in
+   /* Map lists all entities which are groupable in ui, entities with types specified in
    this list will be grouped in ui.
     */
-   public static Set<String> groupables = new HashSet<String>() {{
-      add("com.cnh.pf.model.pfds.Customer");
-      add("com.cnh.pf.model.pfds.Task");
-      add("com.cnh.pf.model.pfds.Prescription");
-      add("com.cnh.pf.model.pfds.BoundaryItem");
-      add("com.cnh.pf.model.product.library.Product");
-      add("com.cnh.pf.model.product.library.ProductMix");
-      add(DataTypes.VEHICLE);
-      add(DataTypes.IMPLEMENT);
-   }};
-
-   public static Map<String, Integer> topLevelEntites = new HashMap<String, Integer>() {{
+   public static Map<String, Integer> groupables = new HashMap<String, Integer>() {{
       put("com.cnh.pf.model.pfds.Customer", R.string.pfds);
+      put("com.cnh.pf.model.pfds.Task", R.string.tasks);
+      put("com.cnh.pf.model.pfds.Prescription", R.string.prescriptions);
+      put("com.cnh.autoguidance.boundary.BoundaryItem", R.string.boundaries);
       put("com.cnh.pf.model.product.library.Product", R.string.products);
       put("com.cnh.pf.model.product.library.ProductMix", R.string.product_mixes);
       put(DataTypes.VEHICLE, R.string.vehicles);
       put(DataTypes.IMPLEMENT, R.string.imps);
    }};
+
+   public static String getGroupName(Context context, String type) {
+      if(groupables.containsKey(type)) {
+         return context.getString(groupables.get(type));
+      }
+      String name = type.substring(type.lastIndexOf('.') + 1);
+      return CaseFormat.UPPER_UNDERSCORE.to(CaseFormat.UPPER_CAMEL, name) + "s";
+   }
 }
