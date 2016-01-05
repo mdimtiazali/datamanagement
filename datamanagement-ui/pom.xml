@@ -180,6 +180,7 @@
                     <androidManifestFile>${project.basedir}/src/main/AndroidManifest.xml</androidManifestFile>
                     <resourceDirectory>${project.basedir}/src/main/res</resourceDirectory>
                     <assetsDirectory>${project.basedir}/src/main/assets</assetsDirectory>
+                    <extractDuplicates>true</extractDuplicates>
                 </configuration>
                 <executions>
                     <execution>

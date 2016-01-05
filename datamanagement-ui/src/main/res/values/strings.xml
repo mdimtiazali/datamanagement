@@ -31,6 +31,9 @@
     <string name="prescriptions">Prescriptions</string>
     <string name="tasks">Tasks</string>
     <string name="boundaries">Boundaries</string>
+    <string name="guidance_groups">Swaths</string>
+    <string name="guidance_patterns">Guidance Patterns</string>
+
     <string name="products">Products</string>
     <string name="product_mixes">Product Mixes</string>
    <string name="select_source">Select Import Source</string>

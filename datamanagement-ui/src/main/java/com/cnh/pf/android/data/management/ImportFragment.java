@@ -164,7 +164,7 @@ public class ImportFragment extends BaseDataFragment {
             processDialog.clearLoading();
             adapter.setOnTargetsSelectedListener(new DataManagementBaseAdapter.OnTargetsSelectedListener() {
                @Override public void onCompletion(List<Operation> operations) {
-                  logger.debug("onCompletion");
+                  logger.debug("onCompletion {}", operations);
                   processDialog.hide();
                   showProgressPanel();
                   getSession().setData(operations);

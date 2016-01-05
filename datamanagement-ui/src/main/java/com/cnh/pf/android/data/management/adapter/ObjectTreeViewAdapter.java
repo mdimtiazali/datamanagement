@@ -51,10 +51,14 @@ public abstract class ObjectTreeViewAdapter extends SelectionTreeViewAdapter<Obj
       TYPE_ICONS.put("com.cnh.pf.model.pfds.TaskPlan", R.drawable.ic_datatree_tasks);
       TYPE_ICONS.put("com.cnh.pf.model.pfds.Prescription", R.drawable.ic_datatree_prescription);
       TYPE_ICONS.put("com.cnh.pf.model.pfds.RxPlan", R.drawable.ic_datatree_prescription);
+      TYPE_ICONS.put("com.cnh.pf.model.product.library.Product", R.drawable.ic_datatree_obstacles);
+      TYPE_ICONS.put("com.cnh.pf.model.product.library.ProductMix", R.drawable.ic_datatree_obstacles);
       TYPE_ICONS.put("com.cnh.autoguidance.boundary.BoundaryItem", R.drawable.ic_datatree_boundaries);
+      TYPE_ICONS.put("com.cnh.autoguidance.model.GuidanceGroup", R.drawable.ic_datatree_swath);
+      TYPE_ICONS.put("com.cnh.autoguidance.model.GuidancePattern", R.drawable.ic_datatree_swath);
       TYPE_ICONS.put(DataTypes.VEHICLE, R.drawable.ic_datatree_copy);
       TYPE_ICONS.put(DataTypes.VEHICLE_IMPLEMENT, R.drawable.ic_datatree_implements);
-      TYPE_ICONS.put(DataTypes.VEHICLE_IMPLEMENT_CONFIG, R.drawable.ic_datatree_swath);
+      TYPE_ICONS.put(DataTypes.VEHICLE_IMPLEMENT_CONFIG, R.drawable.ic_datatree_background_layers);
       TYPE_ICONS.put(DataTypes.IMPLEMENT, R.drawable.ic_datatree_implements);
       TYPE_ICONS.put(DataTypes.IMPLEMENT_PRODUCT_CONFIG, R.drawable.ic_datatree_screenshots);
    }
