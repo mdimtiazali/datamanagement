@@ -10,30 +10,41 @@ package com.cnh.pf.android.data.management.dialog;
 
 import java.io.File;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 import android.app.Activity;
 import android.view.LayoutInflater;
 import android.view.View;
+import android.widget.AdapterView;
 import android.widget.RadioGroup;
 
 import com.cnh.android.dialog.DialogView;
 import com.cnh.android.dialog.DialogViewInterface;
 import com.cnh.android.widget.activity.TabActivity;
+import com.cnh.android.widget.control.PickListAdapter;
+import com.cnh.android.widget.control.PickListEditable;
 import com.cnh.android.widget.control.SegmentedToggleButtonGroup;
 import com.cnh.jgroups.Datasource;
+import com.cnh.pf.android.data.management.ExportFragment;
 import com.cnh.pf.android.data.management.R;
+import com.cnh.pf.android.data.management.TestImportFragment;
 import com.cnh.pf.android.data.management.adapter.PathTreeViewAdapter;
 import com.cnh.pf.data.management.aidl.MediumDevice;
 
 import butterknife.Bind;
 import butterknife.ButterKnife;
 import com.google.inject.Inject;
+import com.google.inject.name.Named;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import pl.polidea.treeview.InMemoryTreeStateManager;
 import pl.polidea.treeview.TreeBuilder;
 import pl.polidea.treeview.TreeStateManager;
 import pl.polidea.treeview.TreeViewList;
 import roboguice.RoboGuice;
+import roboguice.config.DefaultRoboModule;
 import roboguice.event.EventManager;
 
 /**
@@ -41,11 +52,13 @@ import roboguice.event.EventManager;
  * @author oscar.salazar@cnhind.com
  */
 public class ImportSourceDialog extends DialogView {
+   private static final Logger log = LoggerFactory.getLogger(ImportSourceDialog.class);
 
    @Inject private EventManager eventManager;
    @Inject LayoutInflater layoutInflater;
    @Bind(R.id.import_selection_group) SegmentedToggleButtonGroup importGroup;
    @Bind(R.id.source_path_tree_view) TreeViewList sourcePathTreeView;
+   @Bind(R.id.display_picklist) PickListEditable displayPicklist;
    private TreeStateManager<File> manager;
    private PathTreeViewAdapter treeAdapter;
    private TreeBuilder<File> treeBuilder;
@@ -82,13 +95,16 @@ public class ImportSourceDialog extends DialogView {
 
          devices = new HashMap<Integer, MediumDevice>();
          int buttonId = 0;
+         Set<String> hosts = new HashSet<String>();
          for (MediumDevice device : mediums) {
             if (device.getType().equals(Datasource.Source.USB)) {
                importGroup.addButton(getContext().getResources().getString(R.string.usb_string), buttonId);
                devices.put(buttonId, device);
             }
             else if (device.getType().equals(Datasource.Source.DISPLAY)) {
-               importGroup.addButton(getContext().getResources().getString(R.string.display_string), buttonId);
+               if(hosts.add(device.getName())) { //one button per host
+                  importGroup.addButton(getContext().getResources().getString(R.string.display_named, device.getName()), buttonId);
+               }
                devices.put(buttonId, device);
             }
             buttonId++;
@@ -140,12 +156,14 @@ public class ImportSourceDialog extends DialogView {
       currentDevice = devices.get(buttonId);
 
       showFirstButton(true);
-      if (currentDevice.getType().equals(Datasource.Source.USB)) {
+
+      if (currentDevice.getType().equals(Datasource.Source.USB) && currentDevice.getPath()!=null) {
          //Do this after usb, display selection
          manager = new InMemoryTreeStateManager<File>();
          treeBuilder = new TreeBuilder<File>(manager);
          sourcePathTreeView.removeAllViewsInLayout();
          sourcePathTreeView.setVisibility(VISIBLE);
+         displayPicklist.setVisibility(GONE);
 
          populateTree(null, currentDevice.getPath());
          treeAdapter = new PathTreeViewAdapter((Activity) getContext(), manager, 1);
@@ -161,6 +179,28 @@ public class ImportSourceDialog extends DialogView {
       }
       else if (currentDevice.getType().equals(Datasource.Source.DISPLAY)) {
          sourcePathTreeView.setVisibility(GONE);
+         displayPicklist.setAdapter(new PickListAdapter(displayPicklist, getContext()));
+         String currentHost = currentDevice.getName();
+         int id = 0;
+         log.trace("current host {}", currentHost);
+         for(MediumDevice md : devices.values()) {
+            log.trace("Looking at device {}", md.getName());
+            if(currentHost.equals(md.getName())) {
+               log.trace("Adding device");
+               displayPicklist.addItem(new TestImportFragment.ObjectPickListItem<MediumDevice>(id++, md.getAddress().toString(), md));
+            }
+         }
+         displayPicklist.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
+            @Override public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
+               TestImportFragment.ObjectPickListItem<MediumDevice> item = (TestImportFragment.ObjectPickListItem<MediumDevice>) displayPicklist.findItemById(id);
+               currentDevice = item.getObject();
+               setFirstButtonEnabled(true);
+            }
+
+            @Override public void onNothingSelected(AdapterView<?> parent) {
+            }
+         });
+         displayPicklist.setVisibility(VISIBLE);
       }
    }
 

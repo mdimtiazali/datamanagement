@@ -27,12 +27,15 @@ import android.os.RemoteException;
 
 import com.cnh.jgroups.ObjectGraph;
 import com.cnh.jgroups.Operation;
+import com.cnh.pf.datamng.Process;
 import com.google.common.base.Function;
 import com.google.common.base.Throwables;
 import com.google.common.collect.Collections2;
 import com.google.inject.name.Named;
 import org.jgroups.Address;
 import org.jgroups.View;
+import org.jgroups.util.Rsp;
+import org.jgroups.util.RspList;
 import org.jgroups.util.UUID;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -61,9 +64,13 @@ import roboguice.service.RoboService;
 public class DataManagementService extends RoboService implements SharedPreferences.OnSharedPreferenceChangeListener {
    private static final Logger logger = LoggerFactory.getLogger(DataManagementService.class);
 
+   private static final int RETURN_SUCCESS = 0;
+   private static final int RETURN_ERROR = 1;
+   private static final int RETURN_NO_DATASOURCE = 2;
+   private static final int RETURN_CANCEL = 3;
+
    private @Inject Mediator mediator;
    private @Inject DatasourceHelper dsHelper;
-   private @Inject MediumImpl mediumProvider;
    @Named(DefaultRoboModule.GLOBAL_EVENT_MANAGER_NAME)
    @Inject EventManager globalEventManager;
    @Named("global")
@@ -130,7 +137,7 @@ public class DataManagementService extends RoboService implements SharedPreferen
       //TODO add string constant for action
       if (sessionOperation.equals(DataManagementSession.SessionOperation.DISCOVERY)) {
          int waitForDatasource = 0;
-         if (session.getDestinationType().equals(Datasource.Source.INTERNAL) && session.getDevice().getType().equals(Datasource.Source.USB)) {
+         if (Arrays.binarySearch(session.getDestinationTypes(), Datasource.Source.INTERNAL) > -1 && session.getDevice().getType().equals(Datasource.Source.USB)) {
             logger.debug("Starting USB Datasource");
             waitForDatasource = usbDelay;
             startDisplayServices(session.getDevice().getPath().getPath(), false, session.getFormat());
@@ -157,19 +164,23 @@ public class DataManagementService extends RoboService implements SharedPreferen
       }
    }
 
+   public void cancel() {
+      new CancelTask().execute();
+   }
+
    public void resetSession() {
       logger.debug("resetSession");
       session = null;
    }
 
    public List<MediumDevice> getMediums() {
-      return mediumProvider.getDevices();
+      return dsHelper.getDevices();
    }
 
    private void performOperations() {
       try {
          int waitStart = 0;
-         if (session.getSourceType().equals(Datasource.Source.INTERNAL) && session.getDevice().getType().equals(Datasource.Source.USB)) {
+         if (Arrays.binarySearch(session.getSourceTypes(), Datasource.Source.INTERNAL) > -1 && session.getDevice().getType().equals(Datasource.Source.USB)) {
             String path = session.getDevice().getPath().getPath();
             startDisplayServices(path, true, session.getFormat());
             waitStart = usbDelay;
@@ -182,8 +193,14 @@ public class DataManagementService extends RoboService implements SharedPreferen
                   protected void onPostExecute(Integer result) {
                      super.onPostExecute(result);
                      session = null;
-                     stopDisplayServices();
-                     stopSelf();
+                     if(result!=RETURN_CANCEL) {
+                        logger.info("perform ops finished good");
+                        stopDisplayServices();
+                        stopSelf();
+                     }
+                     else {
+                        logger.warn("perform ops finished not so good");
+                     }
                   }
                }.execute();
             }
@@ -291,8 +308,9 @@ public class DataManagementService extends RoboService implements SharedPreferen
       @Override
       protected Integer doInBackground(Void... params) {
          try {
-            logger.debug("Discovery for {}, address: {}", session.getSourceType(), addressToString(dsHelper.getAddressForSourceType(session.getSourceType())));
-            Address[] addrs = dsHelper.getAddressForSourceType(session.getSourceType());
+
+            Address[] addrs = (session.getDevice()!=null && session.getDevice().getAddress()!=null) ? new Address[]{session.getDevice().getAddress()} : dsHelper.getAddressForSourceType(session.getSourceTypes());
+            logger.debug("Discovery for {}, address: {}", Arrays.toString(session.getSourceTypes()), addressToString(addrs));
             if (addrs == null || addrs.length > 0) {
                session.setObjectData(mediator.discovery(addrs));
             }
@@ -312,7 +330,7 @@ public class DataManagementService extends RoboService implements SharedPreferen
       protected Integer doInBackground(Void... params) {
          logger.debug("Calculate Targets...");
          try {
-            Address[] addresses = dsHelper.getAddressForSourceType(session.getDestinationType());
+            Address[] addresses = dsHelper.getAddressForSourceType(session.getDestinationTypes());
             logger.debug("Calculate targets to address: {}", addressToString(addresses));
             if (addresses == null || addresses.length > 0) {
                session.setData(mediator.calculateOperations(session.getObjectData(), addresses));
@@ -337,7 +355,7 @@ public class DataManagementService extends RoboService implements SharedPreferen
       protected Integer doInBackground(Void... params) {
          logger.debug("Calculate Conflicts...");
          try {
-            Address[] addresses = dsHelper.getAddressForSourceType(session.getDestinationType());
+            Address[] addresses = dsHelper.getAddressForSourceType(session.getDestinationTypes());
             if (addresses == null || addresses.length > 0) {
                session.setData(mediator.calculateConflicts(session.getData(), addresses));
             }
@@ -364,19 +382,51 @@ public class DataManagementService extends RoboService implements SharedPreferen
                   session.getData().add(new Operation(obj, null));
                }
             }
-            Address[] addresses = dsHelper.getAddressForSourceType(session.getDestinationType());
+            Address[] addresses = dsHelper.getAddressForSourceType(session.getDestinationTypes());
             if (addresses != null && addresses.length > 0) {
-               mediator.performOperations(session.getData(), addresses);
+               RspList<com.cnh.pf.datamng.Process> retval = mediator.performOperations(session.getData(), addresses);
+               boolean hasIncomplete = false;
+               for(Rsp<Process> ret : retval) {
+                  if(ret.hasException()) throw ret.getException();
+                  if(ret.wasReceived() && ret.getValue()!=null) {
+                     hasIncomplete |= ret.getValue().getProgress().progress<ret.getValue().getProgress().max;
+                  }
+                  else {//suspect/unreachable
+                     globalEventManager.fire(
+                        new DataServiceConnectionImpl.ErrorEvent(DataServiceConnectionImpl.ErrorEvent.DataError.NO_USB_DATASOURCE, "No USB Datasource"));
+                     return RETURN_NO_DATASOURCE;
+                  }
+               }
                session.setSessionOperation(DataManagementSession.SessionOperation.PERFORM_OPERATIONS);
+               return hasIncomplete ? RETURN_CANCEL : RETURN_SUCCESS;
             }
             else {
-               globalEventManager.fire(new DataServiceConnectionImpl.ErrorEvent(DataServiceConnectionImpl.ErrorEvent.DataError.NO_USB_DATASOURCE,
-                  "No USB Datasource"));
-               return new Integer(1);
+               globalEventManager.fire(
+                  new DataServiceConnectionImpl.ErrorEvent(DataServiceConnectionImpl.ErrorEvent.DataError.NO_USB_DATASOURCE, "No USB Datasource"));
+               return RETURN_NO_DATASOURCE;
             }
          }
          catch (Throwable e) {
             logger.error("Send exception in PerformOperation:", e);
+            globalEventManager.fire(new DataServiceConnectionImpl.ErrorEvent(DataServiceConnectionImpl.ErrorEvent.DataError.PERFORM_ERROR,
+               Throwables.getRootCause(e).getMessage()));
+            return RETURN_ERROR;
+         }
+      }
+   }
+
+   private class CancelTask extends SessionOperationTask<Void, Void, Integer> {
+      @Override
+      protected Integer doInBackground(Void... params) {
+         logger.debug("Cancelling...");
+         try {
+            Address[] addresses = dsHelper.getAddressForSourceType(session.getDestinationTypes());
+            if (addresses == null || addresses.length > 0) {
+               mediator.cancel(addresses);
+            }
+         }
+         catch (Exception e) {
+            logger.error("Send exception", e);
             globalEventManager.fire(new DataServiceConnectionImpl.ErrorEvent(DataServiceConnectionImpl.ErrorEvent.DataError.PERFORM_ERROR,
                Throwables.getRootCause(e).getMessage()));
             return new Integer(1);

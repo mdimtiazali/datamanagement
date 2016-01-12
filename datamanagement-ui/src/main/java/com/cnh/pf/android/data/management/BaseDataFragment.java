@@ -14,6 +14,7 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.AbsListView;
+import android.widget.AdapterView;
 import android.widget.Button;
 import android.widget.LinearLayout;
 import android.widget.TextView;
@@ -35,6 +36,7 @@ import com.cnh.pf.android.data.management.connection.DataServiceConnectionImpl.C
 import com.cnh.pf.android.data.management.connection.DataServiceConnectionImpl.DataSessionEvent;
 import com.cnh.pf.android.data.management.dialog.ErrorDialog;
 import com.cnh.pf.android.data.management.graph.GroupObjectGraph;
+import com.cnh.pf.android.data.management.helper.TreeDragShadowBuilder;
 import com.cnh.pf.android.data.management.service.DataManagementService;
 import com.cnh.pf.data.management.DataManagementSession;
 import com.google.inject.Guice;
@@ -79,7 +81,7 @@ public abstract class BaseDataFragment extends RoboFragment {
 
    private TreeStateManager<ObjectGraph> manager;
    private TreeBuilder<ObjectGraph> treeBuilder;
-   private ObjectTreeViewAdapter treeAdapter;
+   protected ObjectTreeViewAdapter treeAdapter;
 
    private volatile DataManagementSession session = null;
 
@@ -119,6 +121,15 @@ public abstract class BaseDataFragment extends RoboFragment {
       super.onViewCreated(view, savedInstanceState);
       ButterKnife.bind(this, view);
       treeViewList.setChoiceMode(AbsListView.CHOICE_MODE_NONE);
+      treeViewList.setOnItemLongClickListener(new AdapterView.OnItemLongClickListener() {
+         @Override public boolean onItemLongClick(AdapterView<?> parent, View view, int position, long id) {
+            if(!treeAdapter.getSelectionMap().containsKey(view.getTag())) {
+               treeAdapter.handleItemClick(parent, view, position, id); //select it, and start the drag
+            }
+            view.startDrag(null, new TreeDragShadowBuilder(view, treeViewList, treeAdapter), treeAdapter.getSelected(), 0);
+            return false;
+         }
+      });
    }
 
    @Override

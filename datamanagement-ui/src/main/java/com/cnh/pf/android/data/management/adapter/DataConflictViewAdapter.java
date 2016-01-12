@@ -70,8 +70,8 @@ public class DataConflictViewAdapter extends DataManagementBaseAdapter {
 
    private OnActionSelectedListener actionListener = new OnActionSelectedListener() {
       @Override
-      public void onButtonSelected(Action action) {
-         if (action.equals(Action.COPY_AND_KEEP_BOTH)) {
+      public void onButtonSelected(Operation.Action action) {
+         if (action.equals(Operation.Action.COPY_AND_KEEP)) {
             logger.debug("Keep both");
             final DialogView newNameDialog = new DialogView(context);
             newNameDialog.setTitle(renameFileStr);
@@ -101,14 +101,11 @@ public class DataConflictViewAdapter extends DataManagementBaseAdapter {
             });
             ((TabActivity) newNameDialog.getContext()).showPopup(newNameDialog, true);
          }
-         else if (action.equals(Action.REPLACE)) {
+         else if (action.equals(Operation.Action.COPY_AND_REPLACE)) {
             logger.debug("replace");
             operationList.get(activeOperation).setAction(Operation.Action.COPY_AND_REPLACE);
             activeOperation++;
             checkAndUpdateActive();
-         }
-         else if (action.equals(Action.MERGE)) {
-            //TODO add MERGE functionality to backend
          }
       }
    };

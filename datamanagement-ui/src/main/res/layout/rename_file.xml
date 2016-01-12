@@ -18,7 +18,7 @@
       android:layout_width="wrap_content"
       android:layout_height="wrap_content"
       style="@style/TextAppearance.Data.File.Header"
-      android:text="@string/file_name"/>
+      android:text="@string/newName"/>
 
    <EditText
       android:id="@+id/file_name"

@@ -9,7 +9,10 @@
 
 package com.cnh.pf.android.data.management.helper;
 
+import java.io.File;
+import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
@@ -17,8 +20,17 @@ import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 
+import com.cnh.pf.data.management.MediumImpl;
+import com.cnh.pf.data.management.aidl.MediumDevice;
+import com.cnh.pf.datamng.DataUtils;
+import com.cnh.pf.datamng.HostnameAddressGenerator;
+import com.google.common.base.MoreObjects;
+import com.google.common.base.Predicate;
+import com.google.common.base.Strings;
+import com.google.common.collect.Collections2;
 import org.jgroups.Address;
 import org.jgroups.View;
+import org.jgroups.util.ExtendedUUID;
 import org.jgroups.util.Rsp;
 import org.jgroups.util.RspList;
 import org.jgroups.util.UUID;
@@ -30,15 +42,25 @@ import com.cnh.jgroups.Mediator;
 import com.google.inject.Inject;
 import com.google.inject.Singleton;
 
+import javax.annotation.Nullable;
+import javax.inject.Named;
+
 /**
  * Class that maps Datasource.Source types to actual datasource addresses
  * @author oscar.salazar@cnhind.com
  */
-@Singleton public class DatasourceHelper {
+@Singleton public class DatasourceHelper implements MediumImpl {
    private static final Logger logger = LoggerFactory.getLogger(DatasourceHelper.class);
 
-   private @Inject Mediator mediator;
+   private Mediator mediator;
+   private File usbFile;
    private ConcurrentHashMap<Datasource.Source, Map<Address, List<String>>> sourceMap = null;
+
+   @Inject
+   public DatasourceHelper(Mediator mediator, @Named("usb") File usbFile) {
+      this.mediator = mediator;
+      this.usbFile = usbFile;
+   }
 
    public void setSourceMap(View view) throws Exception {
       sourceMap = new ConcurrentHashMap<Datasource.Source, Map<Address, List<String>>>();
@@ -82,14 +104,41 @@ import com.google.inject.Singleton;
     * @return
     */
    public Address[] getAddressForSourceType(Datasource.Source sourceType) {
-      if (sourceMap != null) {
-         return sourceMap.get(sourceType) != null ? sourceMap.get(sourceType).keySet().toArray(new Address[sourceMap.get(sourceType).keySet().size()]) : new Address[0];
+      if (sourceMap != null && sourceMap.containsKey(sourceType)) {
+         return sourceMap.get(sourceType).keySet().toArray(new Address[0]);
       }
       return new Address[0];
    }
 
    /**
-    * Finds the datasource that handles Datatype depending on internal, usb, external source type
+    * Return list of address of these source types {INTERNAL, USB, DISPLAY} ONLY on this host.
+    * @param sourceTypes {@link Datasource.Source }
+    * @return
+    */
+   public Address[] getAddressForSourceType(Datasource.Source []sourceTypes) {
+      Collection<Address> addresses = new ArrayList<Address>();
+      final String myHostname = getHostname(mediator.getAddress());
+      if (sourceMap != null) {
+         for(Datasource.Source source : sourceTypes) {
+            if(!sourceMap.containsKey(source)) continue;
+            if(source.equals(Datasource.Source.DISPLAY)) { //filter display sources by host
+               addresses.addAll(Collections2.filter(sourceMap.get(source).keySet(), new Predicate<Address>() {
+                  @Override public boolean apply(@Nullable Address input) {
+                     return myHostname.equals(getHostname(input));
+                  }
+               }));
+            }
+            else {
+               addresses.addAll(sourceMap.get(source).keySet());
+            }
+         }
+      }
+
+      return addresses.toArray(new Address[addresses.size()]);
+   }
+
+   /**
+    * Finds the datasource that handles Datatype depending on internal, usb, external source type.
     * @param sourceType {Internal, USB}
     * @param type {PFDS, VIP, User Layout}
     * @return Address of responsible datasource
@@ -102,5 +151,33 @@ import com.google.inject.Singleton;
          }
       }
       return addresses.toArray(new Address[addresses.size()]);
+   }
+
+   @Override public List<MediumDevice> getDevices() {
+      List<MediumDevice> devs = new ArrayList<MediumDevice>();
+      if(usbFile != null) {
+         devs.add(new MediumDevice(Datasource.Source.USB, usbFile, "USB"));
+      }
+      String myHostname = getHostname(mediator.getAddress());
+      if(Strings.isNullOrEmpty(myHostname)) {
+         throw new IllegalStateException("No hostname for mediator connection");
+      }
+      for(Address addr : getAddressForSourceType(Datasource.Source.DISPLAY)) {
+         String name = getHostname(addr);
+         if(Strings.isNullOrEmpty(name)) {
+            logger.warn("Datasource without machine name");
+            continue;
+         }
+         if(myHostname.equals(name)) continue;
+         devs.add(new MediumDevice(Datasource.Source.DISPLAY, addr, name));
+      }
+      return devs;
+   }
+
+   public static String getHostname(Address addr) {
+      String name = DataUtils.getHostname(addr);
+      if(Strings.isNullOrEmpty(name)) name = DataUtils.getProperty(addr, HostnameAddressGenerator.INET4);
+      if(Strings.isNullOrEmpty(name)) name = DataUtils.getInetAddress(addr);
+      return name;
    }
 }

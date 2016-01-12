@@ -15,21 +15,30 @@
         android:layout_height="match_parent"
         android:orientation="vertical">
 
-   <LinearLayout
-           android:layout_width="match_parent"
-           android:layout_height="wrap_content">
-
-      <com.cnh.android.widget.control.SegmentedToggleButtonGroup
+   <com.cnh.android.widget.control.SegmentedToggleButtonGroup
               android:id="@+id/import_selection_group"
               android:layout_width="300dp"
               android:layout_height="wrap_content"
+              android:layout_marginBottom="20dp"
               android:orientation="horizontal"/>
-   </LinearLayout>
+
+   <com.cnh.android.widget.control.PickListEditable
+           android:id="@+id/display_picklist"
+           android:layout_width="match_parent"
+           android:layout_height="wrap_content"
+           android:visibility="gone"
+           android:background="#FFFF00"
+           cnh:allowItemCopying="false"
+           cnh:allowItemDeletion="false"
+           cnh:allowItemCreation="false"
+           cnh:allowItemEditing="false"
+           cnh:allowItemManagement="false"/>
 
    <pl.polidea.treeview.TreeViewList
            android:id="@+id/source_path_tree_view"
            android:layout_width="match_parent"
            android:layout_height="300dp"
+           android:visibility="gone"
            android:divider="@android:color/transparent"
            android:dividerHeight="8dp"
            cnh:collapsible="true"
@@ -41,4 +50,5 @@
            cnh:line_width="2dp"
            cnh:src_collapsed="@drawable/ic_action_expand"
            cnh:src_expanded="@drawable/ic_action_collapse"/>
+   '
 </LinearLayout>

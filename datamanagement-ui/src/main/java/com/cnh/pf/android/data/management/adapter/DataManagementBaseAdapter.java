@@ -94,7 +94,6 @@ public abstract class DataManagementBaseAdapter {
    public abstract OnActionSelectedListener getActionListener();
 
    public interface OnActionSelectedListener {
-      enum Action { COPY_AND_KEEP_BOTH, REPLACE, MERGE};
-      public void onButtonSelected(Action action);
+      void onButtonSelected(Operation.Action action);
    }
 }

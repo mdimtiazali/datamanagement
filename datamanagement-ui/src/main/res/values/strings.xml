@@ -17,7 +17,7 @@
    <string name="dont_copy">Don\'t Copy</string>
    <string name="keep_both">Keep Both</string>
    <string name="conflict">Conflict</string>
-   <string name="newName">New Filename:</string>
+   <string name="newName">New name:</string>
    <string name="calculating_targets">Calculating Targets</string>
    <string name="checking_targets">Checking Potential Targets...</string>
    <string name="checking_conflicts">Checking Conflicts...</string>
@@ -42,6 +42,8 @@
    <string name="select_all">Select All</string>
    <string name="usb_string">USB</string>
    <string name="display_string">Display</string>
+   <string name="display_numbered">Display %d</string>
+   <string name="display_named">Display %s</string>
    <string name="select_string">Select</string>
    <string name="export_to">Export To:</string>
    <string name="export_format">Export Format:</string>

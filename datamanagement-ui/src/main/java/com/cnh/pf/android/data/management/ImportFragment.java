@@ -10,14 +10,17 @@
 package com.cnh.pf.android.data.management;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Set;
 
 import android.os.Bundle;
+import android.view.DragEvent;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
+import android.widget.ImageButton;
 import android.widget.LinearLayout;
 import android.widget.TextView;
 
@@ -40,6 +43,7 @@ import butterknife.ButterKnife;
 import butterknife.OnClick;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import roboguice.event.EventThread;
 import roboguice.event.Observes;
 
 /**
@@ -52,6 +56,8 @@ public class ImportFragment extends BaseDataFragment {
    @Bind(R.id.import_source_btn) Button importSourceBtn;
    @Bind(R.id.import_drop_zone) LinearLayout importDropZone;
    @Bind(R.id.import_selected_btn) Button importSelectedBtn;
+   @Bind(R.id.pause_button) ImageButton pauseBtn;
+   @Bind(R.id.stop_button) ImageButton stopBtn;
    @Bind(R.id.progress_bar) ProgressBarView progressBar;
    @Bind(R.id.operation_name) TextView operationName;
    @Bind(R.id.percent_tv) TextView percentTv;
@@ -66,6 +72,39 @@ public class ImportFragment extends BaseDataFragment {
    public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
       View rootView = super.onCreateView(inflater, container, savedInstanceState);
       ButterKnife.bind(this, rootView);
+      pauseBtn.setOnClickListener(new View.OnClickListener() {
+         @Override public void onClick(View v) {
+            getDataManagementService().cancel();
+         }
+      });
+      stopBtn.setOnClickListener(new View.OnClickListener() {
+         @Override public void onClick(View v) {
+            getDataManagementService().cancel();
+         }
+      });
+      importDropZone.setOnDragListener(new View.OnDragListener() {
+         @Override public boolean onDrag(View v, DragEvent event) {
+            switch(event.getAction()) {
+            case DragEvent.ACTION_DRAG_STARTED:
+               importDropZone.setBackgroundColor(getResources().getColor(R.color.drag_accept));
+               return true;
+            case DragEvent.ACTION_DRAG_ENDED:
+               importDropZone.setBackgroundColor(getResources().getColor(android.R.color.transparent));
+               return true;
+            case DragEvent.ACTION_DRAG_ENTERED:
+               importDropZone.setBackgroundColor(getResources().getColor(R.color.drag_enter));
+               return true;
+            case DragEvent.ACTION_DRAG_EXITED:
+               importDropZone.setBackgroundColor(getResources().getColor(R.color.drag_accept));
+               return true;
+            case DragEvent.ACTION_DROP:
+               logger.info("Dropped");
+               importSelected();
+               return true;
+            }
+            return false;
+         }
+      });
       return rootView;
    }
 
@@ -86,19 +125,23 @@ public class ImportFragment extends BaseDataFragment {
    }
 
    /**Called when user selects Import source, from Import Source Dialog*/
-   private void onImportSourceSelected(@Observes ImportSourceDialog.ImportSourceSelectedEvent event) {
+   private void onImportSourceSelected(@Observes(EventThread.UI) ImportSourceDialog.ImportSourceSelectedEvent event) {
       removeProgressPanel();
       startText.setVisibility(View.GONE);
       treeProgress.setVisibility(View.VISIBLE);
       treeViewList.setVisibility(View.GONE);
+
       if (event.getDevice().getType().equals(Datasource.Source.USB)) {
          pathTv.setText(event.getDevice().getPath() == null ? "" : event.getDevice().getPath().getPath());
       }
       else {
-         pathTv.setText(R.string.display_string);
+         pathTv.setText(getString(R.string.display_named, event.getDevice().getName()));
       }
-      setSession(new DataManagementSession(event.getDevice().getType(), Datasource.Source.INTERNAL, event.getDevice()));
+      setSession(new DataManagementSession(new Datasource.Source[] { event.getDevice().getType() },
+         event.getDevice(),
+         new Datasource.Source[] { Datasource.Source.INTERNAL, Datasource.Source.DISPLAY }));
       getDataManagementService().processOperation(getSession(), DataManagementSession.SessionOperation.DISCOVERY);
+      if(getTreeAdapter()!=null) getTreeAdapter().selectAll(treeViewList, false);  //clear out the selection
    }
 
    @Override
@@ -205,7 +248,7 @@ public class ImportFragment extends BaseDataFragment {
    /** Check if session returned by service is an import operation*/
    @Override
    public boolean isCurrentOperation(DataManagementSession session) {
-      return session.getDestinationType().equals(Datasource.Source.INTERNAL);
+      return Arrays.binarySearch(session.getDestinationTypes(), Datasource.Source.INTERNAL) > -1;
    }
 
    @Override
@@ -216,7 +259,13 @@ public class ImportFragment extends BaseDataFragment {
    @Override
    public void onProgressPublished(String operation, int progress, int max) {
       logger.debug("onProgressPublished: {}", progress);
+      if(progress == max) {
+         logger.info("Process completed.  {}/{} objects", progress, max);
+         getTreeAdapter().selectAll(treeViewList, false);
+         removeProgressPanel();
+      }
       final Double percent = ((progress * 1.0) / max) * 100;
+
       if (progressBar.getVisibility() == View.VISIBLE) {
          progressBar.setProgress(percent.intValue());
          percentTv.setText(Integer.toString(percent.intValue()) + "%");

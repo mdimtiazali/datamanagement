@@ -9,6 +9,7 @@
 
 package com.cnh.pf.android.data.management;
 
+import javax.inject.Inject;
 import javax.inject.Named;
 import javax.inject.Singleton;
 
@@ -21,10 +22,12 @@ import android.os.Environment;
 
 import com.cnh.jgroups.Datasource;
 import com.cnh.jgroups.Mediator;
+import com.cnh.pf.android.data.management.helper.DatasourceHelper;
 import com.cnh.pf.data.management.MediumImpl;
 import com.cnh.pf.data.management.aidl.MediumDevice;
 
 import com.google.inject.AbstractModule;
+import com.google.inject.Provider;
 import com.google.inject.Provides;
 import org.jgroups.Global;
 import org.jgroups.JChannel;
@@ -47,6 +50,7 @@ public class RoboModule extends AbstractModule {
    @Override
    protected void configure() {
       System.setProperty(Global.IPv4, "true");
+      bind(DatasourceHelper.class).toProvider(DatasourceHelperProvider.class).in(Singleton.class);
    }
 
    @Provides
@@ -57,18 +61,23 @@ public class RoboModule extends AbstractModule {
    }
 
    @Provides
+   @Named("usb")
    public File getUsbFile() {
       //Mock until USB support, uses internal sdcard
       return Environment.getExternalStorageDirectory();
    }
 
-   @Provides
-   public MediumImpl getMediums() {
-      //TODO add functionality to detect other displays, use mediator to getType of other datasources in combination with ip to detect other displays
-      return new MediumImpl() {
-         @Override public List<MediumDevice> getDevices() {
-            return getUsbFile() != null ? new ArrayList<MediumDevice>() {{add(new MediumDevice(Datasource.Source.USB, getUsbFile()));}} : null;
-         }
-      };
+   @Singleton
+   private static class DatasourceHelperProvider implements Provider<DatasourceHelper> {
+
+      @Inject
+      private Mediator mediator;
+      @Inject
+      @Named("usb")
+      private File usbFile;
+
+      @Override public DatasourceHelper get() {
+         return new DatasourceHelper(mediator, usbFile);
+      }
    }
 }

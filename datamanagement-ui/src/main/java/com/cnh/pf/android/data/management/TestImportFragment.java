@@ -683,7 +683,7 @@ public class TestImportFragment extends RoboFragment implements Mediator.Progres
             adapter.setOnTargetsSelectedListener(new DataManagementBaseAdapter.OnTargetsSelectedListener() {
                @Override
                public void onCompletion(List<Operation> operations) {
-                  logger.debug("onCompletion");
+                  logger.debug("Finished picking conflict strategies, calling perform ops...");
                   processDialog.hide();
                   if (operations.size() > 0) {
                      new PerformOperationsTask().execute(Pair.create(destinationAddr, operations));

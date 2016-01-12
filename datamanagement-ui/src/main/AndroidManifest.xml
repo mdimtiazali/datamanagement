@@ -5,6 +5,7 @@
    <uses-permission android:name="android.permission.INTERNET"/>
    <uses-permission android:name="android.permission.CHANGE_WIFI_MULTICAST_STATE"/>
    <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE"/>
+   <uses-permission android:name="android.permission.RECEIVE_BOOT_COMPLETED"/>
 
    <application android:allowBackup="true" android:debuggable="true" android:icon="@drawable/ic_launcher" android:label="@string/app_name" android:theme="@style/AppTheme">
       <meta-data android:name="roboguice.modules" android:value="com.cnh.pf.android.data.management.RoboModule, com.cnh.pf.jgroups.ChannelModule"/>
@@ -17,5 +18,14 @@
          </intent-filter>
       </activity>
       <service android:name=".service.DataManagementService"/>
+
+      <receiver android:enabled="true" android:exported="true" android:name=".service.BootReceiver">
+         <intent-filter>
+            <action android:name="com.cnh.android.intent.action.BOOT_COMPLETED"/>
+            <action android:name="com.cnh.pf.data.INTERNAL_DATA"/>
+         </intent-filter>
+      </receiver>
+
+      <service android:name=".service.GossipRouterService"/>
    </application>
 </manifest>

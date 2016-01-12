@@ -96,7 +96,7 @@ public class DataManagementUITest {
    @Test
    public void testEmptyDiscovery() {
       controller.create().start().resume();
-      DataManagementSession session = new DataManagementSession(Datasource.Source.INTERNAL, Datasource.Source.INTERNAL, null);
+      DataManagementSession session = new DataManagementSession(new Datasource.Source[] { Datasource.Source.INTERNAL}, null, new Datasource.Source[] {Datasource.Source.INTERNAL});
       session.setSessionOperation(DataManagementSession.SessionOperation.DISCOVERY);
       session.setObjectData(new ArrayList<ObjectGraph>());
       eventManager.fire(new DataServiceConnectionImpl.DataSessionEvent(session));
@@ -168,7 +168,7 @@ public class DataManagementUITest {
 
    private void fireDiscoveryEvent() {
       //Start new discovery
-      DataManagementSession session = new DataManagementSession(Datasource.Source.INTERNAL, Datasource.Source.INTERNAL, null);
+      DataManagementSession session = new DataManagementSession(new Datasource.Source[] { Datasource.Source.INTERNAL }, null, new Datasource.Source[] { Datasource.Source.INTERNAL});
       session.setSessionOperation(DataManagementSession.SessionOperation.DISCOVERY);
       session.setObjectData(getTestObjectData());
       eventManager.fire(new DataServiceConnectionImpl.DataSessionEvent(session));

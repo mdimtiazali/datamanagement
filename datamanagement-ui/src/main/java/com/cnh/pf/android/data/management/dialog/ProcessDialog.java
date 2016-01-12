@@ -14,6 +14,7 @@ import android.view.LayoutInflater;
 import android.view.View;
 
 import com.cnh.android.dialog.DialogViewInterface;
+import com.cnh.jgroups.Operation;
 import com.cnh.pf.android.data.management.R;
 import com.cnh.pf.android.data.management.adapter.DataConflictViewAdapter;
 import com.cnh.pf.android.data.management.adapter.DataManagementBaseAdapter;
@@ -79,10 +80,10 @@ public class ProcessDialog extends DialogView {
          @Override
          public void onButtonClick(DialogViewInterface dialog, int which) {
             if (which == DialogViewInterface.BUTTON_FIRST) {
-               listener.onButtonSelected(DataManagementBaseAdapter.OnActionSelectedListener.Action.COPY_AND_KEEP_BOTH);
+               listener.onButtonSelected(Operation.Action.COPY_AND_KEEP);
             }
             else if (which == DialogViewInterface.BUTTON_SECOND) {
-               listener.onButtonSelected(DataManagementBaseAdapter.OnActionSelectedListener.Action.REPLACE);
+               listener.onButtonSelected(Operation.Action.COPY_AND_REPLACE);
             }
             else if (which == DialogViewInterface.BUTTON_THIRD) {
                ProcessDialog.this.hide();

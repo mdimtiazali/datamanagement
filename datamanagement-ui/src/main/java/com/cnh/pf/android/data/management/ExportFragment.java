@@ -10,6 +10,7 @@
 package com.cnh.pf.android.data.management;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Set;
 
@@ -144,7 +145,8 @@ public class ExportFragment extends BaseDataFragment {
       leftStatusPanel.setVisibility(View.GONE);
       exportDropZone.setVisibility(View.VISIBLE);
       treeProgress.setVisibility(View.VISIBLE);
-      setSession(new DataManagementSession(Datasource.Source.INTERNAL, Datasource.Source.USB, null));
+      setSession(new DataManagementSession(new Datasource.Source[] { Datasource.Source.INTERNAL, Datasource.Source.DISPLAY }, null,
+         new Datasource.Source[] { Datasource.Source.USB }));
       getDataManagementService().processOperation(getSession(), DataManagementSession.SessionOperation.DISCOVERY);
    }
 
@@ -153,7 +155,7 @@ public class ExportFragment extends BaseDataFragment {
 
    @Override
    public boolean isCurrentOperation(DataManagementSession session) {
-      return session.getSourceType().equals(Datasource.Source.INTERNAL);
+      return Arrays.binarySearch(session.getSourceTypes(), Datasource.Source.INTERNAL) > -1;
    }
 
    @Override
