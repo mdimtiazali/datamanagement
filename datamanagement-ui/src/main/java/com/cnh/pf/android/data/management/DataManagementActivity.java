@@ -129,9 +129,9 @@ public class DataManagementActivity extends TabActivity implements RoboContext {
       TabActivityTab exportTab = new TabActivityTab(R.string.tab_export, R.drawable.tab_export, getResources().getString(R.string.tab_export),
               new DataManagementTabListener(new ExportFragment(), this));
       addTab(exportTab);
-      TabActivityTab importExportTestTab = new TabActivityTab(R.string.tab_import_test, R.drawable.tab_import, "import_export_test_tab",
-            new DataManagementTabListener(new TestImportFragment(), this));
-      addTab(importExportTestTab);
+//      TabActivityTab importExportTestTab = new TabActivityTab(R.string.tab_import_test, R.drawable.tab_import, "import_export_test_tab",
+//            new DataManagementTabListener(new TestImportFragment(), this));
+//      addTab(importExportTestTab);
       setTabActivityTitle(getString(R.string.app_name));
       selectTabAtPosition(0);
    }

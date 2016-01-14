@@ -207,7 +207,7 @@ public class TestImportFragment extends RoboFragment implements Mediator.Progres
 
             for (int i = 0; i < members.size(); i++) {
                if (!members.get(i).equals(mediator.getAddress())) {
-                  sourcePick.addItem(new ObjectPickListItem<Address>(i, members.get(i).toString(), members.get(i)));
+                  sourcePick.addItem(new ExportFragment.ObjectPickListItem<Address>(i, members.get(i).toString(), members.get(i)));
                }
             }
 
@@ -256,7 +256,7 @@ public class TestImportFragment extends RoboFragment implements Mediator.Progres
                         });
                      }
                      else {
-                        ObjectPickListItem<Address> item = (ObjectPickListItem<Address>) sourcePick.findItemById(id);
+                        ExportFragment.ObjectPickListItem<Address> item = (ExportFragment.ObjectPickListItem<Address>) sourcePick.findItemById(id);
                         logger.debug("Selected DataSource:" + item.getObject().toString());
                         ignoreNewViews = false;
                         sourceDir.setVisibility(View.GONE);
@@ -308,7 +308,7 @@ public class TestImportFragment extends RoboFragment implements Mediator.Progres
       for (int i = 0; i < members.size(); i++) {
          Address addr = members.get(i);
          if (!addr.equals(mediator.getAddress())) {
-            destinationPick.addItem(new ObjectPickListItem<Address>(i, addr.toString(), addr));
+            destinationPick.addItem(new ExportFragment.ObjectPickListItem<Address>(i, addr.toString(), addr));
          }
       }
 
@@ -360,7 +360,7 @@ public class TestImportFragment extends RoboFragment implements Mediator.Progres
             else {
                destDir.setVisibility(View.GONE);
                if (id != PickListEditable.NO_ID) {
-                  ObjectPickListItem<Address> item = (ObjectPickListItem<Address>) destinationPick.findItemById(id);
+                  ExportFragment.ObjectPickListItem<Address> item = (ExportFragment.ObjectPickListItem<Address>) destinationPick.findItemById(id);
                   logger.debug("Selected Destination DataSource:" + item.getObject().toString());
                   destinationAddr = item.getObject();
                }
@@ -481,20 +481,6 @@ public class TestImportFragment extends RoboFragment implements Mediator.Progres
          }
       }
       return new ArrayList<Operation>(operationMap.values());
-   }
-
-   public static class ObjectPickListItem<T> extends PickListItem {
-
-      private T object;
-
-      public ObjectPickListItem(long id, String value, T object) {
-         super(id, value);
-         this.object = object;
-      }
-
-      public T getObject() {
-         return object;
-      }
    }
 
    private class ConnectTask extends AsyncTask<Void, Void, Void> {

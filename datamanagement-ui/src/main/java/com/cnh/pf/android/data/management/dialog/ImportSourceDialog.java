@@ -187,12 +187,12 @@ public class ImportSourceDialog extends DialogView {
             log.trace("Looking at device {}", md.getName());
             if(currentHost.equals(md.getName())) {
                log.trace("Adding device");
-               displayPicklist.addItem(new TestImportFragment.ObjectPickListItem<MediumDevice>(id++, md.getAddress().toString(), md));
+               displayPicklist.addItem(new ExportFragment.ObjectPickListItem<MediumDevice>(id++, md.getAddress().toString(), md));
             }
          }
          displayPicklist.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
             @Override public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
-               TestImportFragment.ObjectPickListItem<MediumDevice> item = (TestImportFragment.ObjectPickListItem<MediumDevice>) displayPicklist.findItemById(id);
+               ExportFragment.ObjectPickListItem<MediumDevice> item = (ExportFragment.ObjectPickListItem<MediumDevice>) displayPicklist.findItemById(id);
                currentDevice = item.getObject();
                setFirstButtonEnabled(true);
             }

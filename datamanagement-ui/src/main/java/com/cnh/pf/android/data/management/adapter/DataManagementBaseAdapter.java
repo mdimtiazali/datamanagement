@@ -9,14 +9,12 @@
  */
 package com.cnh.pf.android.data.management.adapter;
 
-import java.util.ArrayList;
-import java.util.List;
-
-import android.widget.TextView;
 import android.app.Activity;
 import android.view.View;
-
+import android.widget.TextView;
 import com.cnh.jgroups.Operation;
+
+import java.util.List;
 
 /**
  * Adapter for ProcessDialog View
@@ -24,7 +22,7 @@ import com.cnh.jgroups.Operation;
  */
 public abstract class DataManagementBaseAdapter {
 
-   protected ArrayList<Operation> operationList;
+   protected List<Operation> operationList;
    protected final Activity context;
    protected OnTargetSelectedListener onTargetSelectedListener;
    protected int activeOperation = 0;
@@ -35,7 +33,7 @@ public abstract class DataManagementBaseAdapter {
 
    public DataManagementBaseAdapter(Activity context, List<Operation> operations) {
       this.context = context;
-      operationList = (ArrayList<Operation>) operations;
+      operationList = operations;
       totalOperation = operations.size();
    }
 

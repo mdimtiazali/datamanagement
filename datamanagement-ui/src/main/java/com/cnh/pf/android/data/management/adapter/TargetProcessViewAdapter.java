@@ -10,9 +10,11 @@
 package com.cnh.pf.android.data.management.adapter;
 
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.List;
 
 import com.cnh.jgroups.MultiSetObjectGraph;
+import com.cnh.pf.android.data.management.ExportFragment;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -35,8 +37,6 @@ import com.cnh.jgroups.Operation;
  */
 public class TargetProcessViewAdapter extends DataManagementBaseAdapter {
    private static final Logger logger = LoggerFactory.getLogger(TargetProcessViewAdapter.class);
-
-   private ArrayList<ObjectGraph> targets;
 
    public TargetProcessViewAdapter(Activity context, List<Operation> operations) {
       super(context, operations);
@@ -63,8 +63,9 @@ public class TargetProcessViewAdapter extends DataManagementBaseAdapter {
                @Override
                public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
                   if (id != PickListEditable.NO_ID) {
-                     operationList.get(activeOperation).setTarget(targets.get((int) id));
-                     activeOperation++;
+                     ExportFragment.ObjectPickListItem<ObjectGraph> pickItem = (ExportFragment.ObjectPickListItem<ObjectGraph>)
+                        viewHolder.targetList.getAdapter().getItem(position);
+                     operationList.get(activeOperation++).setTarget(pickItem.getObject());
                      checkAndUpdateActive();
                   }
                }
@@ -93,9 +94,9 @@ public class TargetProcessViewAdapter extends DataManagementBaseAdapter {
          viewHolder.typeView.setText(operation.getData().getType());
          viewHolder.nameView.setText(operation.getData().getName());
          viewHolder.targetList.clearList();
-         targets = (ArrayList<ObjectGraph>) operation.getPotentialTargets();
-         for (int i=0; i<targets.size(); i++) {
-            viewHolder.targetList.addItem(new PickListItem(i, targets.get(i).getName()));
+         int i=0;
+         for (ObjectGraph target : operation.getPotentialTargets()) {
+            viewHolder.targetList.addItem(new ExportFragment.ObjectPickListItem<ObjectGraph>(i++, target.getName(), target));
          }
       }
       targetView = newView;

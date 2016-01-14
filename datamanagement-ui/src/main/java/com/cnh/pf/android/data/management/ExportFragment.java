@@ -220,7 +220,7 @@ public class ExportFragment extends BaseDataFragment {
       //TODO add stop method to base datasource
    }
 
-   public class ObjectPickListItem<T> extends PickListItem {
+   public static class ObjectPickListItem<T> extends PickListItem {
       private T object;
 
       public ObjectPickListItem(long id, String value, T object) {
