@@ -138,7 +138,7 @@ public class ImportFragment extends BaseDataFragment {
          pathTv.setText(getString(R.string.display_named, event.getDevice().getName()));
       }
       setSession(new DataManagementSession(new Datasource.Source[] { event.getDevice().getType() },
-         event.getDevice(),
+         event.getDevices(),
          new Datasource.Source[] { Datasource.Source.INTERNAL, Datasource.Source.DISPLAY }));
       getDataManagementService().processOperation(getSession(), DataManagementSession.SessionOperation.DISCOVERY);
       if(getTreeAdapter()!=null) getTreeAdapter().selectAll(treeViewList, false);  //clear out the selection

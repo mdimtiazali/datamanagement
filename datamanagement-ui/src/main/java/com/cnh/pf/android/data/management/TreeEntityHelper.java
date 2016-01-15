@@ -33,6 +33,7 @@ public class TreeEntityHelper {
       put("com.cnh.pf.model.pfds.Prescription", R.string.prescriptions);
       put("com.cnh.autoguidance.boundary.BoundaryItem", R.string.boundaries);
       put("com.cnh.autoguidance.model.GuidanceGroup", R.string.guidance_groups);
+      put("com.cnh.autoguidance.boundary.LandmarkItem", R.string.obstacles);
       put("com.cnh.pf.model.product.library.Product", R.string.products);
       put("com.cnh.pf.model.product.library.ProductMix", R.string.product_mixes);
       put(DataTypes.VEHICLE, R.string.vehicles);

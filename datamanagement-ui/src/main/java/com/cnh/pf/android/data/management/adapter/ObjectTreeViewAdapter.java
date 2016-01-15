@@ -54,6 +54,7 @@ public abstract class ObjectTreeViewAdapter extends SelectionTreeViewAdapter<Obj
       TYPE_ICONS.put("com.cnh.pf.model.product.library.Product", R.drawable.ic_datatree_obstacles);
       TYPE_ICONS.put("com.cnh.pf.model.product.library.ProductMix", R.drawable.ic_datatree_obstacles);
       TYPE_ICONS.put("com.cnh.autoguidance.boundary.BoundaryItem", R.drawable.ic_datatree_boundaries);
+      TYPE_ICONS.put("com.cnh.autoguidance.boundary.LandmarkItem", R.drawable.ic_datatree_obstacles);
       TYPE_ICONS.put("com.cnh.autoguidance.model.GuidanceGroup", R.drawable.ic_datatree_swath);
       TYPE_ICONS.put("com.cnh.autoguidance.model.GuidancePattern", R.drawable.ic_datatree_swath);
       TYPE_ICONS.put(DataTypes.VEHICLE, R.drawable.ic_datatree_copy);

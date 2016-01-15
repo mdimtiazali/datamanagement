@@ -127,7 +127,7 @@ public class ExportFragment extends BaseDataFragment {
          exportMediumPicklist.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
             @Override public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
                ObjectPickListItem<MediumDevice> item = (ObjectPickListItem<MediumDevice>) exportMediumPicklist.findItemById(id);
-               getSession().setDevice(item.getObject());
+               getSession().setDevice(Arrays.asList(item.getObject()));
                checkExportButton();
             }
 
@@ -169,6 +169,11 @@ public class ExportFragment extends BaseDataFragment {
       final Double percent = ((progress * 1.0) / max) * 100;
       progressBar.setProgress(percent.intValue());
       percentTv.setText(percent.intValue()+"%");
+      if(progress == max) {
+         logger.info("Process completed.  {}/{} objects", progress, max);
+         getTreeAdapter().selectAll(treeViewList, false);
+         removeProgressPanel();
+      }
    }
 
    @Override
@@ -190,16 +195,26 @@ public class ExportFragment extends BaseDataFragment {
       Set<ObjectGraph> selected = getTreeAdapter().getSelected();
       getSession().setObjectData(new ArrayList<ObjectGraph>(getTreeAdapter().getSelected()));
       ObjectPickListItem<MediumDevice> device = (ObjectPickListItem<MediumDevice>) exportMediumPicklist.getSelectedItem();
-      getSession().setDevice(device.getObject());
+      getSession().setDevice(Arrays.asList(device.getObject()));
       getSession().setFormat(exportFormatPicklist.getSelectedItemValue());
 //      getDataManagementService().processOperation(getSession(), DataManagementSession.SessionOperation.CALCULATE_OPERATIONS);
       getDataManagementService().processOperation(getSession(), DataManagementSession.SessionOperation.PERFORM_OPERATIONS);
-      exportDropZone.setVisibility(View.GONE);
-      leftStatusPanel.setVisibility(View.VISIBLE);
+      showProgressPanel();
+   }
 
+   /** Inflates left panel progress view */
+   private void showProgressPanel() {
+      leftStatusPanel.setVisibility(View.VISIBLE);
+      exportDropZone.setVisibility(View.GONE);
       operationName.setText(getResources().getString(R.string.exporting_data));
       progressBar.setProgress(0);
       percentTv.setText("0");
+   }
+
+   /** Removes left panel progress view and replaces with operation view */
+   private void removeProgressPanel() {
+      leftStatusPanel.setVisibility(View.GONE);
+      exportDropZone.setVisibility(View.VISIBLE);
    }
 
    private void checkExportButton() {
@@ -217,7 +232,7 @@ public class ExportFragment extends BaseDataFragment {
 
    @OnClick(R.id.stop_button)
    void onStopButton() {
-      //TODO add stop method to base datasource
+      getDataManagementService().cancel();
    }
 
    public static class ObjectPickListItem<T> extends PickListItem {

@@ -309,7 +309,11 @@ public class DataManagementService extends RoboService implements SharedPreferen
       protected Integer doInBackground(Void... params) {
          try {
 
-            Address[] addrs = (session.getDevice()!=null && session.getDevice().getAddress()!=null) ? new Address[]{session.getDevice().getAddress()} : dsHelper.getAddressForSourceType(session.getSourceTypes());
+            Address[] addrs = (session.getDevice()!=null && session.getDevice().getAddress()!=null) ? Collections2.transform(session.getDevices(), new Function<MediumDevice, Address>() {
+               @Nullable @Override public Address apply(@Nullable MediumDevice input) {
+                  return input.getAddress();
+               }
+            }).toArray(new Address[0]) : dsHelper.getAddressForSourceType(session.getSourceTypes());
             logger.debug("Discovery for {}, address: {}", Arrays.toString(session.getSourceTypes()), addressToString(addrs));
             if (addrs == null || addrs.length > 0) {
                session.setObjectData(mediator.discovery(addrs));

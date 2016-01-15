@@ -8,18 +8,13 @@
  */
 package com.cnh.pf.android.data.management.dialog;
 
-import java.io.File;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
-
 import android.app.Activity;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.widget.AdapterView;
 import android.widget.RadioGroup;
-
+import butterknife.Bind;
+import butterknife.ButterKnife;
 import com.cnh.android.dialog.DialogView;
 import com.cnh.android.dialog.DialogViewInterface;
 import com.cnh.android.widget.activity.TabActivity;
@@ -27,16 +22,14 @@ import com.cnh.android.widget.control.PickListAdapter;
 import com.cnh.android.widget.control.PickListEditable;
 import com.cnh.android.widget.control.SegmentedToggleButtonGroup;
 import com.cnh.jgroups.Datasource;
-import com.cnh.pf.android.data.management.ExportFragment;
+import com.cnh.jgroups.Datasource.Source;
+import com.cnh.pf.android.data.management.ExportFragment.ObjectPickListItem;
 import com.cnh.pf.android.data.management.R;
-import com.cnh.pf.android.data.management.TestImportFragment;
 import com.cnh.pf.android.data.management.adapter.PathTreeViewAdapter;
 import com.cnh.pf.data.management.aidl.MediumDevice;
-
-import butterknife.Bind;
-import butterknife.ButterKnife;
+import com.cnh.pf.datamng.DataUtils;
+import com.google.common.io.Files;
 import com.google.inject.Inject;
-import com.google.inject.name.Named;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import pl.polidea.treeview.InMemoryTreeStateManager;
@@ -44,8 +37,15 @@ import pl.polidea.treeview.TreeBuilder;
 import pl.polidea.treeview.TreeStateManager;
 import pl.polidea.treeview.TreeViewList;
 import roboguice.RoboGuice;
-import roboguice.config.DefaultRoboModule;
 import roboguice.event.EventManager;
+
+import java.io.File;
+import java.io.FileFilter;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
 
 /**
  * Dialog allows user to select an import source and directory path
@@ -75,7 +75,6 @@ public class ImportSourceDialog extends DialogView {
    private void init(List<MediumDevice> mediums) {
       setTitle(getResources().getString(R.string.select_source));
       if (mediums == null) {
-         //TODO inflate NO_IMPORT_SOURCE_DETECTED layout
          View view = layoutInflater.inflate(R.layout.no_device_layout, null);
          setBodyView(view);
          setFirstButtonText(getResources().getString(R.string.ok));
@@ -123,7 +122,18 @@ public class ImportSourceDialog extends DialogView {
             @Override public void onButtonClick(DialogViewInterface dialog, int which) {
                if (which == DialogViewInterface.BUTTON_FIRST) {
                   //Select
-                  eventManager.fire(new ImportSourceSelectedEvent(currentDevice));
+                  List<MediumDevice> hostDevices = new ArrayList<MediumDevice>();
+                  if(currentDevice.getType().equals(Source.DISPLAY)) {
+                     String currentHostname = DataUtils.getHostnameOrIp(currentDevice.getAddress());
+                     for(MediumDevice md : devices.values()) {
+                        if(DataUtils.getHostnameOrIp(md.getAddress()).equals(currentHostname)) {
+                           hostDevices.add(md);
+                        }
+                     }
+                  } else {
+                     hostDevices.add(currentDevice);
+                  }
+                  eventManager.fire(new ImportSourceSelectedEvent(hostDevices));
                }
                ((TabActivity) getContext()).dismissPopup(ImportSourceDialog.this);
             }
@@ -139,15 +149,15 @@ public class ImportSourceDialog extends DialogView {
       else {
          treeBuilder.addRelation(parent, dir);
       }
-      //TODO make cnh1 and TASKDATA constants in libdatamng
-      if (!dir.getName().contains("cn1") && !dir.getName().contains("TASKDATA")) {
-         File[] files = dir.listFiles();
-         if (files != null) {
-            for (File file : files) {
-               if (file.isDirectory()) {
-                  populateTree(dir, file);
-               }
-            }
+      File[] files = dir.listFiles(new FileFilter() {
+         @Override
+         public boolean accept(File file) {
+            return file.isDirectory() || "shp".equalsIgnoreCase(Files.getFileExtension(file.getName()));
+         }
+      });
+      if (files != null) {
+         for (File file : files) {
+            populateTree(dir, file);
          }
       }
    }
@@ -169,6 +179,7 @@ public class ImportSourceDialog extends DialogView {
          treeAdapter = new PathTreeViewAdapter((Activity) getContext(), manager, 1);
          sourcePathTreeView.setAdapter(treeAdapter);
          manager.collapseChildren(null); //Collapse all children
+         manager.expandDirectChildren(currentDevice.getPath()); //expand top node only
 
          treeAdapter.setOnPathSelectedListener(new PathTreeViewAdapter.OnPathSelectedListener() {
             @Override public void onPathSelected(File path) {
@@ -183,16 +194,16 @@ public class ImportSourceDialog extends DialogView {
          String currentHost = currentDevice.getName();
          int id = 0;
          log.trace("current host {}", currentHost);
+         log.trace("Medium devices {}", devices);
          for(MediumDevice md : devices.values()) {
-            log.trace("Looking at device {}", md.getName());
             if(currentHost.equals(md.getName())) {
-               log.trace("Adding device");
-               displayPicklist.addItem(new ExportFragment.ObjectPickListItem<MediumDevice>(id++, md.getAddress().toString(), md));
+               log.trace("Adding device {}", md);
+               displayPicklist.addItem(new ObjectPickListItem<MediumDevice>(id++, md.getAddress().toString(), md));
             }
          }
          displayPicklist.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
             @Override public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
-               ExportFragment.ObjectPickListItem<MediumDevice> item = (ExportFragment.ObjectPickListItem<MediumDevice>) displayPicklist.findItemById(id);
+               ObjectPickListItem<MediumDevice> item = (ObjectPickListItem<MediumDevice>) displayPicklist.findItemById(id);
                currentDevice = item.getObject();
                setFirstButtonEnabled(true);
             }
@@ -205,9 +216,9 @@ public class ImportSourceDialog extends DialogView {
    }
 
    public class ImportSourceSelectedEvent {
-      private MediumDevice device;
+      private List<MediumDevice> device;
 
-      public ImportSourceSelectedEvent(MediumDevice device) {
+      public ImportSourceSelectedEvent(List<MediumDevice> device) {
          this.device = device;
       }
 
@@ -215,8 +226,16 @@ public class ImportSourceDialog extends DialogView {
        * Returns the Device {USB/DISPLAY} selected by user
        * @return
        */
-      public MediumDevice getDevice() {
+      public List<MediumDevice> getDevices() {
          return device;
+      }
+
+      /**
+       * Returns the Device {USB/DISPLAY} selected by user
+       * @return
+       */
+      public MediumDevice getDevice() {
+         return (device != null && device.size()>0) ? device.get(0) : null;
       }
    }
 }

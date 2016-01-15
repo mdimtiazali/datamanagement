@@ -10,6 +10,7 @@ package com.cnh.pf.android.data.management;
 
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.Set;
 
@@ -31,6 +32,8 @@ import com.cnh.pf.android.data.management.parser.FormatManager;
 import com.cnh.pf.android.data.management.service.DataManagementService;
 import com.cnh.pf.data.management.DataManagementSession;
 
+import com.cnh.pf.data.management.aidl.MediumDevice;
+import com.google.common.collect.Collections2;
 import com.google.inject.AbstractModule;
 import com.google.inject.Key;
 import com.google.inject.Provides;
@@ -96,7 +99,7 @@ public class DataManagementUITest {
    @Test
    public void testEmptyDiscovery() {
       controller.create().start().resume();
-      DataManagementSession session = new DataManagementSession(new Datasource.Source[] { Datasource.Source.INTERNAL}, null, new Datasource.Source[] {Datasource.Source.INTERNAL});
+      DataManagementSession session = new DataManagementSession(new Datasource.Source[] { Datasource.Source.INTERNAL}, new ArrayList<MediumDevice>(0), new Datasource.Source[] {Datasource.Source.INTERNAL});
       session.setSessionOperation(DataManagementSession.SessionOperation.DISCOVERY);
       session.setObjectData(new ArrayList<ObjectGraph>());
       eventManager.fire(new DataServiceConnectionImpl.DataSessionEvent(session));
@@ -168,7 +171,7 @@ public class DataManagementUITest {
 
    private void fireDiscoveryEvent() {
       //Start new discovery
-      DataManagementSession session = new DataManagementSession(new Datasource.Source[] { Datasource.Source.INTERNAL }, null, new Datasource.Source[] { Datasource.Source.INTERNAL});
+      DataManagementSession session = new DataManagementSession(new Datasource.Source[] { Datasource.Source.INTERNAL }, (List<MediumDevice>)null, new Datasource.Source[] { Datasource.Source.INTERNAL});
       session.setSessionOperation(DataManagementSession.SessionOperation.DISCOVERY);
       session.setObjectData(getTestObjectData());
       eventManager.fire(new DataServiceConnectionImpl.DataSessionEvent(session));
