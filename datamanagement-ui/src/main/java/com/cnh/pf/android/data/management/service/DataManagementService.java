@@ -17,6 +17,7 @@ import java.util.List;
 import java.util.Map.Entry;
 import java.util.concurrent.ConcurrentHashMap;
 
+import android.app.Application;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.os.AsyncTask;
@@ -27,7 +28,9 @@ import android.os.RemoteException;
 
 import com.cnh.jgroups.ObjectGraph;
 import com.cnh.jgroups.Operation;
+import com.cnh.pf.android.data.management.RoboModule;
 import com.cnh.pf.datamng.Process;
+import com.cnh.pf.jgroups.ChannelModule;
 import com.google.common.base.Function;
 import com.google.common.base.Throwables;
 import com.google.common.collect.Collections2;
@@ -51,6 +54,7 @@ import com.cnh.pf.data.management.aidl.IDataManagementListenerAIDL;
 import com.cnh.pf.data.management.aidl.MediumDevice;
 
 import org.jgroups.Global;
+import roboguice.RoboGuiceHelper;
 import roboguice.config.DefaultRoboModule;
 import roboguice.event.EventManager;
 import roboguice.service.RoboService;
@@ -102,6 +106,10 @@ public class DataManagementService extends RoboService implements SharedPreferen
 
    @Override
    public void onCreate() {
+      final Application app = getApplication();
+      //Phoenix Workaround (phoenix sometimes cannot read the manifest)
+      RoboGuiceHelper.help(app, new String[] { "com.cnh.pf.android.data.management", "com.cnh.pf.jgroups" },
+         new RoboModule(app), new ChannelModule(app));
       super.onCreate();
       try {
          prefs.registerOnSharedPreferenceChangeListener(this);
