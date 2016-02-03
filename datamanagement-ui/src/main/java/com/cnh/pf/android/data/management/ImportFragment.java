@@ -162,21 +162,21 @@ public class ImportFragment extends BaseDataFragment {
          if (hasMultipleTargets) {
             TargetProcessViewAdapter adapter = new TargetProcessViewAdapter(getActivity(), getSession().getData());
             processDialog.setAdapter(adapter);
-            processDialog.setTitle(getResources().getString(R.string.select_target));
             processDialog.clearLoading();
+            processDialog.setTitle(getResources().getString(R.string.select_target));
             adapter.setOnTargetsSelectedListener(new TargetProcessViewAdapter.OnTargetsSelectedListener() {
                @Override public void onCompletion(List<Operation> operations) {
                   logger.debug("onCompletion: {}", operations.toString());
                   processDialog.hide();
                   getSession().setData(operations);
                   logger.debug("Going to Calculate Conflicts");
-                  processDialog.setTitle(getResources().getString(R.string.checking_conflicts));
+                  showConflictDialog();
                   getDataManagementService().processOperation(getSession(), DataManagementSession.SessionOperation.CALCULATE_CONFLICTS);
                }
             });
             processDialog.setOnButtonClickListener(new DialogViewInterface.OnButtonClickListener() {
                @Override public void onButtonClick(DialogViewInterface dialog, int which) {
-                  if (which == DialogViewInterface.BUTTON_FIRST) {
+                  if (which == DialogViewInterface.BUTTON_THIRD) {
                      // user pressed "Cancel" button
                      dialog.dismiss();
                   }
@@ -190,7 +190,7 @@ public class ImportFragment extends BaseDataFragment {
          }
          else {
             logger.debug("Found no targets with no parents, skipping to Calculate Conflicts");
-            processDialog.setTitle(getResources().getString(R.string.checking_conflicts));
+            showConflictDialog();
             getDataManagementService().processOperation(getSession(), DataManagementSession.SessionOperation.CALCULATE_CONFLICTS);
          }
       }
@@ -204,6 +204,8 @@ public class ImportFragment extends BaseDataFragment {
          if (hasConflicts) {
             DataConflictViewAdapter adapter = new DataConflictViewAdapter(getActivity(), getSession().getData());
             processDialog.setAdapter(adapter);
+            processDialog.showFirstButton(true);
+            processDialog.showSecondButton(true);
             processDialog.clearLoading();
             adapter.setOnTargetsSelectedListener(new DataManagementBaseAdapter.OnTargetsSelectedListener() {
                @Override public void onCompletion(List<Operation> operations) {
@@ -227,6 +229,13 @@ public class ImportFragment extends BaseDataFragment {
             getDataManagementService().processOperation(getSession(), DataManagementSession.SessionOperation.PERFORM_OPERATIONS);
          }
       }
+   }
+
+   /** Shows conflict resolution dialog */
+   private void showConflictDialog() {
+      processDialog = new ProcessDialog(getActivity());
+      processDialog.setTitle(getResources().getString(R.string.checking_conflicts));
+      processDialog.show();
    }
 
    /** Inflates left panel progress view */

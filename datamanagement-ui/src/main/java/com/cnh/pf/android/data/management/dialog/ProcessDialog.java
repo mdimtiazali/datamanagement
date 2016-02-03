@@ -53,9 +53,11 @@ public class ProcessDialog extends DialogView {
    }
 
    private void init() {
-      setFirstButtonText(context.getResources().getString(R.string.cancel));
+      setFirstButtonText(keepBothStr);
+      setSecondButtonText(replaceStr);
+      setThirdButtonText(cancelStr);
       showSecondButton(false);
-      showThirdButton(false);
+      showFirstButton(false);
 
       LayoutInflater inflater = ((Activity)getContext()).getLayoutInflater();
       View view = inflater.inflate(R.layout.progress_layout, null);
@@ -73,9 +75,6 @@ public class ProcessDialog extends DialogView {
       listener = adapter.getActionListener();
       setTitle(dataConflictStr);
 
-      setFirstButtonText(keepBothStr);
-      setSecondButtonText(replaceStr);
-      setThirdButtonText(cancelStr);
       setOnButtonClickListener(new OnButtonClickListener() {
          @Override
          public void onButtonClick(DialogViewInterface dialog, int which) {
