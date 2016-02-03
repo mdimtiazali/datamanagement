@@ -24,6 +24,7 @@ import android.widget.ImageButton;
 import android.widget.LinearLayout;
 import android.widget.TextView;
 
+import android.widget.Toast;
 import com.cnh.android.dialog.DialogView;
 import com.cnh.android.dialog.DialogViewInterface;
 import com.cnh.android.widget.activity.TabActivity;
@@ -243,6 +244,7 @@ public class ImportFragment extends BaseDataFragment {
       leftStatus.setVisibility(View.VISIBLE);
       importDropZone.setVisibility(View.GONE);
       operationName.setText(getResources().getString(R.string.importing_data));
+      progressBar.setTitle(getResources().getString(R.string.importing_string));
       progressBar.setProgress(0);
       percentTv.setText("0");
    }
@@ -272,12 +274,13 @@ public class ImportFragment extends BaseDataFragment {
          logger.info("Process completed.  {}/{} objects", progress, max);
          getTreeAdapter().selectAll(treeViewList, false);
          removeProgressPanel();
+         Toast.makeText(getActivity(), "Import Completed", Toast.LENGTH_LONG).show();
       }
       final Double percent = ((progress * 1.0) / max) * 100;
 
       if (progressBar.getVisibility() == View.VISIBLE) {
          progressBar.setProgress(percent.intValue());
-         percentTv.setText(Integer.toString(percent.intValue()) + "%");
+         percentTv.setText(Integer.toString(percent.intValue()));
       }
       else {
          processDialog.setProgress(percent.intValue());

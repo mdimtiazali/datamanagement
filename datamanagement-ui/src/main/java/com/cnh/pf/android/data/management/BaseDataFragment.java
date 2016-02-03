@@ -124,7 +124,7 @@ public abstract class BaseDataFragment extends RoboFragment {
       treeViewList.setOnItemLongClickListener(new AdapterView.OnItemLongClickListener() {
          @Override public boolean onItemLongClick(AdapterView<?> parent, View view, int position, long id) {
             if(!treeAdapter.getSelectionMap().containsKey(view.getTag())) {
-               treeAdapter.handleItemClick(parent, view, position, id); //select it, and start the drag
+               treeAdapter.handleItemClick(parent, view, position, view.getTag()); //select it, and start the drag
             }
             view.startDrag(null, new TreeDragShadowBuilder(view, treeViewList, treeAdapter), treeAdapter.getSelected(), 0);
             return false;

@@ -29,7 +29,7 @@ public class TreeDragShadowBuilder extends View.DragShadowBuilder {
    private ObjectTreeViewAdapter treeAdapter;
 
    public TreeDragShadowBuilder(View view, TreeViewList listView, ObjectTreeViewAdapter treeAdapter) {
-      super(listView);
+      super(view);
       this.listView = listView;
       this.treeAdapter = treeAdapter;
    }
@@ -60,9 +60,11 @@ public class TreeDragShadowBuilder extends View.DragShadowBuilder {
    }
 
    @Override public void onDrawShadow(Canvas canvas) {
+      canvas.save();
       for(View view : getViews()) {
          view.draw(canvas);
          canvas.translate(0f, view.getHeight());
       }
+      canvas.restore();
    }
 }

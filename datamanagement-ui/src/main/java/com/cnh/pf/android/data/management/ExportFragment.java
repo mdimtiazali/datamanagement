@@ -15,6 +15,7 @@ import java.util.List;
 import java.util.Set;
 
 import android.os.Bundle;
+import android.view.DragEvent;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -23,6 +24,7 @@ import android.widget.Button;
 import android.widget.LinearLayout;
 import android.widget.TextView;
 
+import android.widget.Toast;
 import com.cnh.android.widget.control.PickListAdapter;
 import com.cnh.android.widget.control.PickListEditable;
 import com.cnh.android.widget.control.PickListItem;
@@ -71,6 +73,29 @@ public class ExportFragment extends BaseDataFragment {
       // TODO: inflate a fragment view
       View rootView = super.onCreateView(inflater, container, savedInstanceState);
       ButterKnife.bind(this, rootView);
+      exportDropZone.setOnDragListener(new View.OnDragListener() {
+         @Override public boolean onDrag(View v, DragEvent event) {
+            switch(event.getAction()) {
+            case DragEvent.ACTION_DRAG_STARTED:
+               exportDropZone.setBackgroundColor(getResources().getColor(R.color.drag_accept));
+               return true;
+            case DragEvent.ACTION_DRAG_ENDED:
+               exportDropZone.setBackgroundColor(getResources().getColor(android.R.color.transparent));
+               return true;
+            case DragEvent.ACTION_DRAG_ENTERED:
+               exportDropZone.setBackgroundColor(getResources().getColor(R.color.drag_enter));
+               return true;
+            case DragEvent.ACTION_DRAG_EXITED:
+               exportDropZone.setBackgroundColor(getResources().getColor(R.color.drag_accept));
+               return true;
+            case DragEvent.ACTION_DROP:
+               logger.info("Dropped");
+               exportSelected();
+               return true;
+            }
+            return false;
+         }
+      });
       return rootView;
    }
 
@@ -168,11 +193,12 @@ public class ExportFragment extends BaseDataFragment {
       logger.debug("onProgressPublished: {}", progress);
       final Double percent = ((progress * 1.0) / max) * 100;
       progressBar.setProgress(percent.intValue());
-      percentTv.setText(percent.intValue()+"%");
+      percentTv.setText(percent.intValue()+"");
       if(progress == max) {
          logger.info("Process completed.  {}/{} objects", progress, max);
          getTreeAdapter().selectAll(treeViewList, false);
          removeProgressPanel();
+         Toast.makeText(getActivity(), "Export Completed", Toast.LENGTH_LONG).show();
       }
    }
 
@@ -192,7 +218,7 @@ public class ExportFragment extends BaseDataFragment {
 
    @OnClick(R.id.export_selected_btn)
    void exportSelected() {
-      Set<ObjectGraph> selected = getTreeAdapter().getSelected();
+      getSession().setData(null);
       getSession().setObjectData(new ArrayList<ObjectGraph>(getTreeAdapter().getSelected()));
       ObjectPickListItem<MediumDevice> device = (ObjectPickListItem<MediumDevice>) exportMediumPicklist.getSelectedItem();
       getSession().setDevice(Arrays.asList(device.getObject()));
@@ -206,6 +232,7 @@ public class ExportFragment extends BaseDataFragment {
    private void showProgressPanel() {
       leftStatusPanel.setVisibility(View.VISIBLE);
       exportDropZone.setVisibility(View.GONE);
+      progressBar.setTitle(getResources().getString(R.string.exporting_string));
       operationName.setText(getResources().getString(R.string.exporting_data));
       progressBar.setProgress(0);
       percentTv.setText("0");
