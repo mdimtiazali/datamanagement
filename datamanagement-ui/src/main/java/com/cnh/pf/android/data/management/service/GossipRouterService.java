@@ -9,15 +9,19 @@
 
 package com.cnh.pf.android.data.management.service;
 
+import android.app.Application;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.os.IBinder;
 import com.cnh.android.util.prefs.GlobalPreferences;
+import com.cnh.pf.android.data.management.RoboModule;
+import com.cnh.pf.jgroups.ChannelModule;
 import com.google.inject.name.Named;
 import org.jgroups.stack.GossipRouter;
 import org.jgroups.util.Util;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import roboguice.RoboGuiceHelper;
 import roboguice.service.RoboService;
 
 import javax.inject.Inject;
@@ -36,6 +40,15 @@ public class GossipRouterService extends RoboService {
 
    private GossipRouter gossip;
 
+   @Override
+   public void onCreate() {
+      final Application app = getApplication();
+      //Phoenix Workaround (phoenix sometimes cannot read the manifest)
+      RoboGuiceHelper.help(app, new String[] { "com.cnh.pf.android.data.management", "com.cnh.pf.jgroups" },
+            new RoboModule(app), new ChannelModule(app));
+      super.onCreate();
+   }
+
    @Override public int onStartCommand(Intent intent, int flags, int startId) {
       if (gossip != null) {
          return START_STICKY;
@@ -50,7 +63,7 @@ public class GossipRouterService extends RoboService {
          catch (IOException e) {
             log.error("Error", e);
          }
-         //keep this in case we wish to return to using a gossip router on display.
+         // keep this in case we wish to return to using a gossip router on display.
 //         new Thread() {
 //            public void run() {
 //               try {
