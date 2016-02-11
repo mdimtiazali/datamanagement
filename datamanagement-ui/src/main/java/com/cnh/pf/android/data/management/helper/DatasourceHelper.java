@@ -20,6 +20,7 @@ import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 
+import android.os.Environment;
 import com.cnh.pf.data.management.MediumImpl;
 import com.cnh.pf.data.management.aidl.MediumDevice;
 import com.cnh.pf.datamng.DataUtils;
@@ -53,13 +54,11 @@ import javax.inject.Named;
    private static final Logger logger = LoggerFactory.getLogger(DatasourceHelper.class);
 
    private Mediator mediator;
-   private File usbFile;
    private ConcurrentHashMap<Datasource.Source, Map<Address, List<String>>> sourceMap = null;
 
    @Inject
-   public DatasourceHelper(Mediator mediator, @Named("usb") File usbFile) {
+   public DatasourceHelper(Mediator mediator) {
       this.mediator = mediator;
-      this.usbFile = usbFile;
    }
 
    public void setSourceMap(View view) throws Exception {
@@ -95,7 +94,8 @@ import javax.inject.Named;
    }
 
    private List<String> getDataTypes(Address addr, RspList<String[]> rsp) {
-      return Arrays.asList(rsp.get(addr).getValue());
+      String[] val = rsp.get(addr).getValue();
+      return val == null ? new ArrayList<String>() : Arrays.asList(rsp.get(addr).getValue());
    }
 
    /**
@@ -155,8 +155,9 @@ import javax.inject.Named;
 
    @Override public List<MediumDevice> getDevices() {
       List<MediumDevice> devs = new ArrayList<MediumDevice>();
-      if(usbFile != null) {
-         devs.add(new MediumDevice(Datasource.Source.USB, usbFile, "USB"));
+      //temporarily always add usb for testing
+      if(true || Environment.getExternalStorageState() == Environment.MEDIA_MOUNTED) {
+         devs.add(new MediumDevice(Datasource.Source.USB, Environment.getExternalStorageDirectory(), "USB"));
       }
       String myHostname = getHostname(mediator.getAddress());
       if(Strings.isNullOrEmpty(myHostname)) {

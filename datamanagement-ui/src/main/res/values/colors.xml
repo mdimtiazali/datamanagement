@@ -30,6 +30,7 @@
    <color name="data_header_background">#e8e8e8</color>
 
    <color name="drag_accept">#FFFF00</color>
+   <color name="drag_reject">#FF0000</color>
    <color name="drag_enter">#00FF00</color>
 
 </resources>

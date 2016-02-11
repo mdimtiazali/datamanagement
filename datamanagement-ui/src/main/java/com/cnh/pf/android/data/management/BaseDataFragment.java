@@ -53,6 +53,8 @@ import roboguice.config.DefaultRoboModule;
 import roboguice.event.EventListener;
 import roboguice.event.EventManager;
 import roboguice.fragment.provided.RoboFragment;
+import roboguice.inject.InjectResource;
+import roboguice.inject.InjectView;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -72,18 +74,18 @@ public abstract class BaseDataFragment extends RoboFragment {
    @Inject protected LayoutInflater layoutInflater;
    /** Service shared global EventManager */
    @Named(DefaultRoboModule.GLOBAL_EVENT_MANAGER_NAME) @Inject EventManager globalEventManager;
-   @Bind(R.id.path_tv) TextView pathTv;
-   @Bind(R.id.select_all_btn) Button selectAllBtn;
-   @Bind(R.id.tree_view_list) TreeViewList treeViewList;
-   @Bind(R.id.tree_progress) protected ProgressBarView treeProgress;
-   @Bind(R.id.start_text) protected TextView startText;
-   @BindString(R.string.done) String doneStr;
+   @InjectView(R.id.path_tv) TextView pathTv;
+   @InjectView(R.id.select_all_btn) Button selectAllBtn;
+   @InjectView(R.id.tree_view_list) TreeViewList treeViewList;
+   @InjectView(R.id.tree_progress) protected ProgressBarView treeProgress;
+   @InjectView(R.id.start_text) protected TextView startText;
+   @InjectResource(R.string.done) String doneStr;
 
    private TreeStateManager<ObjectGraph> manager;
    private TreeBuilder<ObjectGraph> treeBuilder;
    protected ObjectTreeViewAdapter treeAdapter;
 
-   private volatile DataManagementSession session = null;
+   protected volatile DataManagementSession session = null;
 
    /**
     * Extending class must inflate layout to be populated on the left panel
@@ -112,14 +114,12 @@ public abstract class BaseDataFragment extends RoboFragment {
       globalEventManager.registerObserver(ConnectionEvent.class, connectionListener);
       globalEventManager.registerObserver(DataServiceConnectionImpl.ErrorEvent.class, errorListener);
       globalEventManager.registerObserver(DataServiceConnectionImpl.ProgressEvent.class, progressListener);
-      ButterKnife.bind(this, layout);
       return layout;
    }
 
    @Override
    public void onViewCreated(View view, Bundle savedInstanceState) {
       super.onViewCreated(view, savedInstanceState);
-      ButterKnife.bind(this, view);
       treeViewList.setChoiceMode(AbsListView.CHOICE_MODE_NONE);
       treeViewList.setOnItemLongClickListener(new AdapterView.OnItemLongClickListener() {
          @Override public boolean onItemLongClick(AdapterView<?> parent, View view, int position, long id) {
@@ -135,7 +135,6 @@ public abstract class BaseDataFragment extends RoboFragment {
    @Override
    public void onDestroyView() {
       super.onDestroyView();
-      ButterKnife.unbind(this);
       globalEventManager.unregisterObserver(DataSessionEvent.class, updateListener);
       globalEventManager.unregisterObserver(ConnectionEvent.class, connectionListener);
       globalEventManager.unregisterObserver(DataServiceConnectionImpl.ErrorEvent.class, errorListener);
@@ -146,7 +145,7 @@ public abstract class BaseDataFragment extends RoboFragment {
    public void onResume() {
       super.onResume();
       if (dataServiceConnection.isConnected()) {
-         onResumeSession(dataServiceConnection.getService().getSession());
+         onResumeSession(null);
       }
    }
 
@@ -186,7 +185,7 @@ public abstract class BaseDataFragment extends RoboFragment {
       public void onEvent(ConnectionEvent event) {
          logger.debug("onConnected");
          if (event.isConnected()) {
-            onResumeSession(dataServiceConnection.getService().getSession());
+            onResumeSession(session);
          }
          else {
             //Disable all buttons for now
@@ -212,7 +211,6 @@ public abstract class BaseDataFragment extends RoboFragment {
       logger.debug("onResumeSession {}", session);
       if (session == null || !isCurrentOperation(session)) {
          logger.debug("Starting new session");
-         getDataManagementService().resetSession();
          setSession(null);
          treeViewList.setVisibility(View.GONE);
          onNewSession();

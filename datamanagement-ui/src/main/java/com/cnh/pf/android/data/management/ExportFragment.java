@@ -12,19 +12,18 @@ package com.cnh.pf.android.data.management;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
-import java.util.Set;
 
 import android.os.Bundle;
 import android.view.DragEvent;
 import android.view.LayoutInflater;
 import android.view.View;
-import android.view.ViewGroup;
 import android.widget.AdapterView;
 import android.widget.Button;
+import android.widget.ImageButton;
 import android.widget.LinearLayout;
 import android.widget.TextView;
-
 import android.widget.Toast;
+import butterknife.OnClick;
 import com.cnh.android.widget.control.PickListAdapter;
 import com.cnh.android.widget.control.PickListEditable;
 import com.cnh.android.widget.control.PickListItem;
@@ -34,13 +33,10 @@ import com.cnh.jgroups.ObjectGraph;
 import com.cnh.pf.android.data.management.parser.FormatManager;
 import com.cnh.pf.data.management.DataManagementSession;
 import com.cnh.pf.data.management.aidl.MediumDevice;
-
-import butterknife.Bind;
-import butterknife.ButterKnife;
-import butterknife.OnClick;
 import com.google.inject.Inject;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import roboguice.inject.InjectView;
 
 /**
  * Export Tab Fragment, handles export to external mediums {USB, External Display}.
@@ -50,63 +46,78 @@ public class ExportFragment extends BaseDataFragment {
    private static final Logger logger = LoggerFactory.getLogger(ExportFragment.class);
 
    @Inject protected FormatManager formatManager;
-   @Bind(R.id.export_medium_picklist) PickListEditable exportMediumPicklist;
-   @Bind(R.id.export_format_picklist) PickListEditable exportFormatPicklist;
-   @Bind(R.id.export_drop_zone) LinearLayout exportDropZone;
-   @Bind(R.id.export_selected_btn) Button exportSelectedBtn;
-   @Bind(R.id.status_panel) LinearLayout leftStatusPanel;
-   @Bind(R.id.progress_bar) ProgressBarView progressBar;
-   @Bind(R.id.operation_name) TextView operationName;
-   @Bind(R.id.percent_tv) TextView percentTv;
+   @InjectView(R.id.export_medium_picklist) PickListEditable exportMediumPicklist;
+   @InjectView(R.id.export_format_picklist) PickListEditable exportFormatPicklist;
+   @InjectView(R.id.export_drop_zone) LinearLayout exportDropZone;
+   @InjectView(R.id.export_selected_btn) Button exportSelectedBtn;
+   @InjectView(R.id.stop_button) ImageButton stopButton;
+   @InjectView(R.id.status_panel) LinearLayout leftStatusPanel;
+   @InjectView(R.id.progress_bar) ProgressBarView progressBar;
+   @InjectView(R.id.operation_name) TextView operationName;
+   @InjectView(R.id.percent_tv) TextView percentTv;
+
+   private int dragAcceptColor;
+   private int dragRejectColor;
+   private int dragEnterColor;
+   private int transparentColor;
+
+   @Override
+   public void onCreate(Bundle savedInstanceState) {
+      super.onCreate(savedInstanceState);
+      dragAcceptColor = getResources().getColor(R.color.drag_accept);
+      dragRejectColor = getResources().getColor(R.color.drag_reject);
+      dragEnterColor = getResources().getColor(R.color.drag_enter);
+      transparentColor = getResources().getColor(android.R.color.transparent);
+   }
 
    @Override public void inflateViews(LayoutInflater inflater, View leftPanel) {
       inflater.inflate(R.layout.export_left_panel, (LinearLayout) leftPanel);
    }
 
    @Override
-   public void onActivityCreated(Bundle savedInstanceState) {
-      super.onActivityCreated(savedInstanceState);
-   }
-
-   @Override
-   public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
-      // TODO: inflate a fragment view
-      View rootView = super.onCreateView(inflater, container, savedInstanceState);
-      ButterKnife.bind(this, rootView);
+   public void onViewCreated(View view, Bundle savedInstanceState) {
+      super.onViewCreated(view, savedInstanceState);
+      exportSelectedBtn.setOnClickListener(new View.OnClickListener() {
+         @Override
+         public void onClick(View v) {
+            exportSelected();
+         }
+      });
+      stopButton.setOnClickListener(new View.OnClickListener() {
+         @Override
+         public void onClick(View v) {
+            getDataManagementService().cancel(session);
+         }
+      });
       exportDropZone.setOnDragListener(new View.OnDragListener() {
          @Override public boolean onDrag(View v, DragEvent event) {
             switch(event.getAction()) {
             case DragEvent.ACTION_DRAG_STARTED:
-               exportDropZone.setBackgroundColor(getResources().getColor(R.color.drag_accept));
+               if(exportSelectedBtn.isEnabled()) {
+                  exportDropZone.setBackgroundColor(dragAcceptColor);
+               }
                return true;
             case DragEvent.ACTION_DRAG_ENDED:
-               exportDropZone.setBackgroundColor(getResources().getColor(android.R.color.transparent));
+               exportDropZone.setBackgroundColor(transparentColor);
                return true;
             case DragEvent.ACTION_DRAG_ENTERED:
-               exportDropZone.setBackgroundColor(getResources().getColor(R.color.drag_enter));
+               exportDropZone.setBackgroundColor(
+                  exportSelectedBtn.isEnabled() ? dragEnterColor : dragRejectColor);
                return true;
             case DragEvent.ACTION_DRAG_EXITED:
-               exportDropZone.setBackgroundColor(getResources().getColor(R.color.drag_accept));
+                  exportDropZone.setBackgroundColor(
+                        exportSelectedBtn.isEnabled() ? dragAcceptColor : transparentColor);
                return true;
             case DragEvent.ACTION_DROP:
                logger.info("Dropped");
-               exportSelected();
+               if(exportSelectedBtn.isEnabled()) {
+                  exportSelected();
+               }
                return true;
             }
             return false;
          }
       });
-      return rootView;
-   }
-
-   @Override public void onDestroyView() {
-      super.onDestroyView();
-      ButterKnife.unbind(this);
-   }
-
-   @Override
-   public void onViewCreated(View view, Bundle savedInstanceState) {
-      super.onViewCreated(view, savedInstanceState);
       startText.setVisibility(View.GONE);
       populateExportToPickList();
       try {
@@ -116,7 +127,6 @@ public class ExportFragment extends BaseDataFragment {
          logger.error("Error parsing xml file", e);
       }
       populateFormatPickList();
-      checkExportButton();
    }
 
    private void populateFormatPickList() {
@@ -172,11 +182,18 @@ public class ExportFragment extends BaseDataFragment {
       treeProgress.setVisibility(View.VISIBLE);
       setSession(new DataManagementSession(new Datasource.Source[] { Datasource.Source.INTERNAL, Datasource.Source.DISPLAY }, null,
          new Datasource.Source[] { Datasource.Source.USB }));
+      if (exportMediumPicklist.getSelectedItemValue() != null) {
+         ObjectPickListItem<MediumDevice> item = (ObjectPickListItem<MediumDevice>) exportMediumPicklist.getSelectedItem();
+         getSession().setDevice(Arrays.asList(item.getObject()));
+         setSupportedState();
+      }
+      checkExportButton();
       getDataManagementService().processOperation(getSession(), DataManagementSession.SessionOperation.DISCOVERY);
    }
 
    @Override
-   public void processOperations() { }
+   public void processOperations() {
+   }
 
    @Override
    public boolean isCurrentOperation(DataManagementSession session) {
@@ -194,7 +211,8 @@ public class ExportFragment extends BaseDataFragment {
       final Double percent = ((progress * 1.0) / max) * 100;
       progressBar.setProgress(percent.intValue());
       percentTv.setText(percent.intValue()+"");
-      if(progress == max) {
+      if(getSession().getSessionOperation().equals(DataManagementSession.SessionOperation.PERFORM_OPERATIONS)
+            && progress == max) {
          logger.info("Process completed.  {}/{} objects", progress, max);
          getTreeAdapter().selectAll(treeViewList, false);
          removeProgressPanel();
@@ -216,14 +234,12 @@ public class ExportFragment extends BaseDataFragment {
       checkExportButton();
    }
 
-   @OnClick(R.id.export_selected_btn)
    void exportSelected() {
       getSession().setData(null);
       getSession().setObjectData(new ArrayList<ObjectGraph>(getTreeAdapter().getSelected()));
       ObjectPickListItem<MediumDevice> device = (ObjectPickListItem<MediumDevice>) exportMediumPicklist.getSelectedItem();
       getSession().setDevice(Arrays.asList(device.getObject()));
       getSession().setFormat(exportFormatPicklist.getSelectedItemValue());
-//      getDataManagementService().processOperation(getSession(), DataManagementSession.SessionOperation.CALCULATE_OPERATIONS);
       getDataManagementService().processOperation(getSession(), DataManagementSession.SessionOperation.PERFORM_OPERATIONS);
       showProgressPanel();
    }
@@ -249,17 +265,6 @@ public class ExportFragment extends BaseDataFragment {
             exportMediumPicklist.getSelectedItem() != null ? ((ObjectPickListItem<MediumDevice>) exportMediumPicklist.getSelectedItem()).getObject().getType() : "null",
             getTreeAdapter() != null ? getTreeAdapter().getSelected().size() : "null");
       exportSelectedBtn.setEnabled(exportMediumPicklist.getSelectedItem() != null && (getTreeAdapter() != null && getTreeAdapter().getSelected().size() > 0));
-   }
-
-   @OnClick(R.id.pause_button)
-   void onPauseButton() {
-      logger.debug("OnPause");
-      //TODO add pause method to base datasource
-   }
-
-   @OnClick(R.id.stop_button)
-   void onStopButton() {
-      getDataManagementService().cancel();
    }
 
    public static class ObjectPickListItem<T> extends PickListItem {

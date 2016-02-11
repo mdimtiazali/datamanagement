@@ -85,7 +85,31 @@ public interface DataServiceConnectionImpl {
       private DataError type;
 
       public enum DataError {
-         NO_USB_DATASOURCE, CALCULATE_CONFLICT_ERROR, CALCULATE_TARGETS_ERROR, DISCOVERY_ERROR, PERFORM_ERROR;
+         NO_SOURCE_DATASOURCE("No Source Datasource"),
+         NO_TARGET_DATASOURCE("No Target Datasource"),
+         CALCULATE_CONFLICT_ERROR("Calculate Conflict Error"),
+         CALCULATE_TARGETS_ERROR("Calculate Targets Error"),
+         DISCOVERY_ERROR("Discovery Error"),
+         PERFORM_ERROR("Perform Operations Error");
+
+         private String value;
+
+         DataError(String v) {
+            this.value = v;
+         }
+
+         public String value() {
+            return value;
+         }
+
+         @Override
+         public String toString() {
+            return value;
+         }
+      }
+
+      public ErrorEvent(DataError type) {
+         this(type, type.value());
       }
 
       public ErrorEvent(DataError type, String error) {

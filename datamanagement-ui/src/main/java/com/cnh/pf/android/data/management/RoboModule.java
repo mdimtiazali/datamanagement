@@ -60,24 +60,14 @@ public class RoboModule extends AbstractModule {
       return new Mediator(channel, "DataManagementService");
    }
 
-   @Provides
-   @Named("usb")
-   public File getUsbFile() {
-      //Mock until USB support, uses internal sdcard
-      return Environment.getExternalStorageDirectory();
-   }
-
    @Singleton
    private static class DatasourceHelperProvider implements Provider<DatasourceHelper> {
 
       @Inject
       private Mediator mediator;
-      @Inject
-      @Named("usb")
-      private File usbFile;
 
       @Override public DatasourceHelper get() {
-         return new DatasourceHelper(mediator, usbFile);
+         return new DatasourceHelper(mediator);
       }
    }
 }

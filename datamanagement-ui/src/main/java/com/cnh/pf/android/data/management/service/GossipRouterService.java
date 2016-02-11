@@ -28,7 +28,7 @@ import javax.inject.Inject;
 import java.io.IOException;
 
 /**
- * Starts Gossip Router in standalone mode.
+ * Starts network routes in standalone mode.
  *
  * Created by mkedzierski on 12/2/15.
  */
@@ -37,8 +37,6 @@ public class GossipRouterService extends RoboService {
 
    @Named("global")
    @Inject private SharedPreferences prefs;
-
-   private GossipRouter gossip;
 
    @Override
    public void onCreate() {
@@ -50,10 +48,6 @@ public class GossipRouterService extends RoboService {
    }
 
    @Override public int onStartCommand(Intent intent, int flags, int startId) {
-      if (gossip != null) {
-         return START_STICKY;
-      }
-
       if(!prefs.getBoolean(GlobalPreferences.PREF_PCM, false)) {
          try {
             Runtime.getRuntime().exec("su busybox ifconfig lo multicast".split(" "));
@@ -63,39 +57,10 @@ public class GossipRouterService extends RoboService {
          catch (IOException e) {
             log.error("Error", e);
          }
-         // keep this in case we wish to return to using a gossip router on display.
-//         new Thread() {
-//            public void run() {
-//               try {
-//                  gossip = new GossipRouter("127.0.0.1", 12001) {
-//                     @Override public void stop() {
-//                        if(gossip.running()) {
-////                           Util.close(gossip);
-//                        }
-//                        super.stop();
-//                     }
-//                  };
-//                  gossip.useNio(false);
-//                  gossip.jmx(false);
-//                  gossip.start();
-//               }
-//               catch (Exception e) {
-//                  log.error("Error starting gossip router", e);
-//               }
-//            }
-//         }.start();
          return START_NOT_STICKY;
       }else {
          return START_NOT_STICKY;
       }
-   }
-
-   @Override public void onDestroy() {
-      if (gossip != null) {
-         gossip.stop();
-         gossip = null;
-      }
-      super.onDestroy();
    }
 
    @Override public IBinder onBind(Intent intent) {

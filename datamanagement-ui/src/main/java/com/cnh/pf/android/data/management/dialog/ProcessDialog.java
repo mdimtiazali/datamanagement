@@ -26,6 +26,8 @@ import org.slf4j.LoggerFactory;
 import roboguice.RoboGuice;
 import roboguice.inject.InjectResource;
 
+import static org.jgroups.conf.ProtocolConfiguration.log;
+
 /**
  * Dialog showing overall import/export process and current step in full process
  * Created by oscar.salazar@cnhind.com
@@ -58,6 +60,7 @@ public class ProcessDialog extends DialogView {
       setThirdButtonText(cancelStr);
       showSecondButton(false);
       showFirstButton(false);
+      setDismissOnButtonClick(false);
 
       LayoutInflater inflater = ((Activity)getContext()).getLayoutInflater();
       View view = inflater.inflate(R.layout.progress_layout, null);
@@ -93,6 +96,7 @@ public class ProcessDialog extends DialogView {
       adapter.setOnTargetSelectedListener(new DataManagementBaseAdapter.OnTargetSelectedListener() {
          @Override
          public void onTargetSelected(boolean done, View convertView) {
+            log.trace("onTargetSelected({}, {})", done, convertView);
             if (!done) {
                View targetView = adapter.getView(convertView);
                if (targetView == null) {
