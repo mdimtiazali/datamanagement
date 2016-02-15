@@ -9,7 +9,7 @@
 
 package com.cnh.pf.android.data.management.helper;
 
-import java.io.File;
+import javax.annotation.Nullable;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
@@ -21,30 +21,24 @@ import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 
 import android.os.Environment;
+import com.cnh.jgroups.Datasource;
+import com.cnh.jgroups.Mediator;
 import com.cnh.pf.data.management.MediumImpl;
 import com.cnh.pf.data.management.aidl.MediumDevice;
 import com.cnh.pf.datamng.DataUtils;
 import com.cnh.pf.datamng.HostnameAddressGenerator;
-import com.google.common.base.MoreObjects;
 import com.google.common.base.Predicate;
 import com.google.common.base.Strings;
 import com.google.common.collect.Collections2;
+import com.google.inject.Inject;
+import com.google.inject.Singleton;
 import org.jgroups.Address;
 import org.jgroups.View;
-import org.jgroups.util.ExtendedUUID;
 import org.jgroups.util.Rsp;
 import org.jgroups.util.RspList;
 import org.jgroups.util.UUID;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
-import com.cnh.jgroups.Datasource;
-import com.cnh.jgroups.Mediator;
-import com.google.inject.Inject;
-import com.google.inject.Singleton;
-
-import javax.annotation.Nullable;
-import javax.inject.Named;
 
 /**
  * Class that maps Datasource.Source types to actual datasource addresses
@@ -156,10 +150,12 @@ import javax.inject.Named;
    @Override public List<MediumDevice> getDevices() {
       List<MediumDevice> devs = new ArrayList<MediumDevice>();
       //temporarily always add usb for testing
-      if(true || Environment.getExternalStorageState() == Environment.MEDIA_MOUNTED) {
+      logger.debug("getDevices external storage state = {}", Environment.getExternalStorageState());
+      if(Environment.getExternalStorageState().equals(Environment.MEDIA_MOUNTED)) {
          devs.add(new MediumDevice(Datasource.Source.USB, Environment.getExternalStorageDirectory(), "USB"));
       }
       String myHostname = getHostname(mediator.getAddress());
+      logger.trace("My HOSTNAME {}", myHostname);
       if(Strings.isNullOrEmpty(myHostname)) {
          throw new IllegalStateException("No hostname for mediator connection");
       }
@@ -169,6 +165,7 @@ import javax.inject.Named;
             logger.warn("Datasource without machine name");
             continue;
          }
+         logger.trace("Display hostname {}", name);
          if(myHostname.equals(name)) continue;
          devs.add(new MediumDevice(Datasource.Source.DISPLAY, addr, name));
       }
