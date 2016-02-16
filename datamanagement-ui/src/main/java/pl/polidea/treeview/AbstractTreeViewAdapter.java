@@ -17,6 +17,8 @@ import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.ListAdapter;
 import com.cnh.pf.android.data.management.R;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * Adapter used to feed the table view.
@@ -26,8 +28,8 @@ import com.cnh.pf.android.data.management.R;
  */
 public abstract class AbstractTreeViewAdapter<T> extends BaseAdapter implements
                                                                      ListAdapter {
-    private static final String TAG = AbstractTreeViewAdapter.class
-          .getSimpleName();
+    protected static final Logger log = LoggerFactory.getLogger(AbstractTreeViewAdapter.class);
+
     private final TreeStateManager<T> treeStateManager;
     private final int numberOfLevels;
     private final LayoutInflater layoutInflater;

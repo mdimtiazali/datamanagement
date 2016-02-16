@@ -15,15 +15,13 @@ import com.facebook.stetho.Stetho;
 import roboguice.RoboGuiceHelper;
 
 /**
+ * Test application without the roboguice phoenix workaround or stetho
  * @author kedzie
  */
-public class App extends Application {
+public class TestApp extends Application {
 
    @Override
    public void onCreate() {
       super.onCreate();
-      RoboGuiceHelper.help(this, new String[] { "com.cnh.pf.android.data.management", "com.cnh.pf.jgroups" },
-            new RoboModule(this), new ChannelModule(this));
-      Stetho.initializeWithDefaults(this);
    }
 }

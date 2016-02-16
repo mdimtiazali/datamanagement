@@ -18,10 +18,6 @@ import android.widget.AdapterView;
 import android.widget.Button;
 import android.widget.LinearLayout;
 import android.widget.TextView;
-import butterknife.Bind;
-import butterknife.BindString;
-import butterknife.ButterKnife;
-import butterknife.OnClick;
 import com.cnh.android.dialog.DialogView;
 import com.cnh.android.dialog.DialogViewInterface;
 import com.cnh.android.widget.activity.TabActivity;
@@ -39,7 +35,6 @@ import com.cnh.pf.android.data.management.graph.GroupObjectGraph;
 import com.cnh.pf.android.data.management.helper.TreeDragShadowBuilder;
 import com.cnh.pf.android.data.management.service.DataManagementService;
 import com.cnh.pf.data.management.DataManagementSession;
-import com.google.inject.Guice;
 import com.google.inject.Inject;
 import com.google.inject.name.Named;
 import org.slf4j.Logger;
@@ -56,10 +51,7 @@ import roboguice.fragment.provided.RoboFragment;
 import roboguice.inject.InjectResource;
 import roboguice.inject.InjectView;
 
-import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 
 /**
  * Base Import/Export Fragment, handles inflating TreeView area and selection. Import/Export source
@@ -68,7 +60,7 @@ import java.util.Map;
  * @author oscar.salazar@cnhind.com
  */
 public abstract class BaseDataFragment extends RoboFragment {
-   private static final Logger logger = LoggerFactory.getLogger(BaseDataFragment.class);
+   private final Logger logger = LoggerFactory.getLogger(getClass());
 
    @Inject private DataServiceConnection dataServiceConnection;
    @Inject protected LayoutInflater layoutInflater;
@@ -120,6 +112,12 @@ public abstract class BaseDataFragment extends RoboFragment {
    @Override
    public void onViewCreated(View view, Bundle savedInstanceState) {
       super.onViewCreated(view, savedInstanceState);
+      selectAllBtn.setOnClickListener(new View.OnClickListener() {
+         @Override
+         public void onClick(View v) {
+            selectAll();
+         }
+      });
       treeViewList.setChoiceMode(AbsListView.CHOICE_MODE_NONE);
       treeViewList.setOnItemLongClickListener(new AdapterView.OnItemLongClickListener() {
          @Override public boolean onItemLongClick(AdapterView<?> parent, View view, int position, long id) {
@@ -169,7 +167,8 @@ public abstract class BaseDataFragment extends RoboFragment {
                errorDialog.setOnButtonClickListener(new DialogViewInterface.OnButtonClickListener() {
                   @Override
                   public void onButtonClick(DialogViewInterface dialog, int which) {
-                     if (which == DialogViewInterface.BUTTON_FIRST)
+                     if (which == DialogViewInterface.BUTTON_FIRST
+                           && !event.getType().equals(DataServiceConnectionImpl.ErrorEvent.DataError.NO_SOURCE_DATASOURCE))
                         onResumeSession(null);
                   }
                });
@@ -227,8 +226,7 @@ public abstract class BaseDataFragment extends RoboFragment {
          }
          else if (op.equals(DataManagementSession.SessionOperation.CALCULATE_OPERATIONS)) {
             //Import to existing parent if entity has parent
-            List<Operation> operations = processPartialImports(getSession().getData());
-            getSession().setData(operations);
+            getSession().setData(processPartialImports(getSession().getData()));
          }
          processOperations();
       }
@@ -239,9 +237,7 @@ public abstract class BaseDataFragment extends RoboFragment {
          logger.warn("calculate operations returned No operations");
          return null;
       }
-      Map<ObjectGraph, Operation> operationMap = new HashMap<ObjectGraph, Operation>();
       for (Operation operation : operations) {
-         operationMap.put(operation.getData(), operation);
          operation.setTarget(operation.getData().getParent());
       }
       return operations;
@@ -318,17 +314,6 @@ public abstract class BaseDataFragment extends RoboFragment {
             onTreeItemSelected();
          }
       });
-      setSupportedState();
-   }
-
-   public void setSupportedState () {
-      for(int i=0; i<treeViewList.getChildCount(); i++) {
-         View child = treeViewList.getChildAt(i);
-         ObjectGraph node = (ObjectGraph) child.getTag(); //tree associates ObjectGraph with each view
-         if(node==null) continue;
-         ImplicitSelectLinearLayout layout = (ImplicitSelectLinearLayout) child;
-         layout.setSupportedState(supportedByFormat(node));
-      }
    }
 
    private void addToTree(ObjectGraph parent, ObjectGraph object) {
@@ -357,7 +342,6 @@ public abstract class BaseDataFragment extends RoboFragment {
       }
    }
 
-   @OnClick(R.id.select_all_btn)
    void selectAll() {
       if (!selectAllBtn.isActivated()) {
          treeAdapter.selectAll(treeViewList, true);

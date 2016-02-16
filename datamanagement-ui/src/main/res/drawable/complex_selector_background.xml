@@ -9,30 +9,32 @@
   -->
 
 <selector xmlns:android="http://schemas.android.com/apk/res/android"
-xmlns:cnh="http://schemas.android.com/apk/res/com.cnh.pf.android.data.management">
+          xmlns:cnh="http://schemas.android.com/apk/res/com.cnh.pf.android.data.management">
 
-	<item android:state_selected="true" android:state_pressed="false" cnh:state_supported="false">
-       <shape android:shape="rectangle">
-           <corners android:radius="@dimen/selected_corner_radius"/>
-           <solid android:color="@color/bg_notsupported_fill"/>
-       </shape>
-     </item>
+   <item android:state_pressed="true" android:drawable="@drawable/list_selector_background_transition" />
 
-   <item android:state_selected="true" android:state_pressed="false">
+   <item android:state_selected="true" cnh:state_supported="false">
+      <shape android:shape="rectangle">
+         <corners android:radius="@dimen/selected_corner_radius"/>
+         <solid android:color="@color/bg_notsupported_fill"/>
+      </shape>
+   </item>
+
+   <item cnh:state_implicit="true" cnh:state_supported="false">
+      <shape android:shape="rectangle">
+         <corners android:radius="@dimen/selected_corner_radius"/>
+         <solid android:color="@color/bg_notsupported_fill"/>
+      </shape>
+   </item>
+
+   <item android:state_selected="true" cnh:state_supported="true" android:state_pressed="false">
       <shape android:shape="rectangle">
          <corners android:radius="@dimen/selected_corner_radius"/>
          <solid android:color="@color/bg_selected"/>
       </shape>
    </item>
 
-	<item cnh:state_implicit="true" android:state_pressed="false" cnh:state_supported="false">
-       <shape android:shape="rectangle">
-           <corners android:radius="@dimen/selected_corner_radius"/>
-           <solid android:color="@color/bg_notsupported_fill"/>
-       </shape>
-     </item>
-
-   <item cnh:state_implicit="true" android:state_pressed="false">
+   <item cnh:state_implicit="true" cnh:state_supported="true" android:state_pressed="false">
       <shape android:shape="rectangle">
          <corners android:radius="@dimen/selected_corner_radius"/>
          <solid android:color="@color/bg_implicit_fill"/>
@@ -40,7 +42,5 @@ xmlns:cnh="http://schemas.android.com/apk/res/com.cnh.pf.android.data.management
       </shape>
    </item>
 
-	<item android:state_pressed="true" android:drawable="@drawable/list_selector_background_transition" />
-
-	<item android:drawable="@android:color/transparent" />
+   <item android:drawable="@android:color/transparent" />
 </selector>

@@ -10,6 +10,7 @@ package com.cnh.pf.android.data.management.service;
 
 import javax.annotation.Nullable;
 import javax.inject.Inject;
+import java.lang.reflect.Field;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -21,11 +22,15 @@ import android.app.NotificationManager;
 import android.app.PendingIntent;
 import android.content.Intent;
 import android.content.SharedPreferences;
+import android.graphics.Bitmap;
+import android.graphics.drawable.BitmapDrawable;
+import android.graphics.drawable.Drawable;
 import android.os.AsyncTask;
 import android.os.Binder;
 import android.os.Handler;
 import android.os.IBinder;
 import android.support.v4.app.NotificationCompat;
+import com.cnh.android.status.Status;
 import com.cnh.jgroups.Datasource;
 import com.cnh.jgroups.Mediator;
 import com.cnh.jgroups.ObjectGraph;
@@ -58,6 +63,7 @@ import roboguice.event.EventManager;
 import roboguice.service.RoboService;
 
 import static com.cnh.pf.data.management.service.ServiceConstants.ACTION_STOP;
+import static org.jgroups.conf.ProtocolConfiguration.log;
 
 /**
  * Service manages a DataManagementSession. Keeps one session alive until completion.
@@ -70,12 +76,16 @@ public class DataManagementService extends RoboService implements SharedPreferen
 
    public static final String ACTION_CANCEL = "com.cnh.pf.data.management.CANCEL";
 
+   private static final boolean SEND_NOTIFICATION = false;
+
    private @Inject Mediator mediator;
    private @Inject DatasourceHelper dsHelper;
    @Named(DefaultRoboModule.GLOBAL_EVENT_MANAGER_NAME)
    @Inject EventManager globalEventManager;
    @Named("global")
    @Inject private SharedPreferences prefs;
+
+   private BitmapDrawable statusDrawable;
 
    @Inject
    NotificationManager notifyManager;
@@ -87,6 +97,18 @@ public class DataManagementService extends RoboService implements SharedPreferen
 
    /* Time to wait for USB Datasource to register if the usb has valid data*/
    private static int usbDelay = 7000;
+
+   private static Field fStatusId;
+
+   static {
+      try {
+         fStatusId = Status.class.getField("mStatusId");
+         fStatusId.setAccessible(true);
+      }
+      catch (Exception e) {
+         logger.error("", e);
+      }
+   }
 
    @Override public int onStartCommand(Intent intent, int flags, int startId) {
       logger.debug("onStartCommand {}", intent);
@@ -115,6 +137,7 @@ public class DataManagementService extends RoboService implements SharedPreferen
       RoboGuiceHelper.help(app, new String[] { "com.cnh.pf.android.data.management", "com.cnh.pf.jgroups" },
          new RoboModule(app), new ChannelModule(app));
       super.onCreate();
+      statusDrawable = (BitmapDrawable)getResources().getDrawable(R.drawable.button_info);
       try {
          prefs.registerOnSharedPreferenceChangeListener(this);
          mediator.setProgressListener(pListener);
@@ -255,16 +278,27 @@ public class DataManagementService extends RoboService implements SharedPreferen
       public void onProgressPublished(String operation, int progress, int max) {
          logger.debug(String.format("publishProgress(%s, %d, %d)", operation, progress, max));
          //TODO send notification
-         Notification n = new NotificationCompat.Builder(DataManagementService.this)
-               .setContentTitle("Data Operation")
-               .setContentText(operation)
-               .setSmallIcon(android.R.drawable.ic_dialog_info)
-               .setProgress(max, progress, false)
-               .setContentIntent(PendingIntent.getActivity(DataManagementService.this, 0, new Intent(DataManagementService.this, DataManagementActivity.class), 0))
-               .addAction(R.drawable.button_stop, "Stop", PendingIntent.getService(DataManagementService.this, 0, new Intent(ACTION_CANCEL),0 ))
-               .build();
-         notifyManager.notify(0, n);
+         if(SEND_NOTIFICATION) {
+            Notification n = new NotificationCompat.Builder(DataManagementService.this)
+                  .setContentTitle("Data Operation")
+                  .setContentText(operation)
+                  .setSmallIcon(android.R.drawable.ic_dialog_info)
+                  .setProgress(max, progress, false)
+                  .setContentIntent(PendingIntent.getActivity(DataManagementService.this, 0, new Intent(DataManagementService.this, DataManagementActivity.class), 0))
+                  .addAction(R.drawable.button_stop, "Stop", PendingIntent.getService(DataManagementService.this, 0, new Intent(ACTION_CANCEL), 0))
+                  .build();
+            notifyManager.notify(0, n);
+         }
+         Status status = new Status(String.format("%s %d/%d", operation, progress, max),
+               statusDrawable, getApplicationContext().getPackageName());
+         try {
+            fStatusId.set(status, "data");
+         }
+         catch (Exception e) {
+            log.error("", e);
+         }
 
+         sendBroadcast(new Intent(Status.ACTION_STATUS_DISPLAY).putExtra(Status.NAME, status));
          globalEventManager.fire(new DataServiceConnectionImpl.ProgressEvent(operation, progress, max));
       }
 

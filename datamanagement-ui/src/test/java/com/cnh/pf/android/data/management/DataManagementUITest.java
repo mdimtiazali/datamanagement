@@ -68,7 +68,7 @@ import static org.robolectric.Shadows.shadowOf;
  * @author oscar.salazar@cnhind.com
  */
 @RunWith(RobolectricMavenTestRunner.class)
-@Config(manifest = "src/main/AndroidManifest.xml")
+@Config(manifest = "src/main/AndroidManifest.xml", application = TestApp.class)
 public class DataManagementUITest {
    ActivityController<DataManagementActivity> controller;
    DataManagementActivity activity;

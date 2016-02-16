@@ -9,6 +9,8 @@
  */
 package com.cnh.pf.android.data.management.adapter;
 
+import javax.annotation.Nullable;
+
 import android.app.Activity;
 import android.content.res.ColorStateList;
 import android.content.res.XmlResourceParser;
@@ -20,6 +22,7 @@ import com.cnh.jgroups.DataTypes;
 import com.cnh.pf.android.data.management.R;
 import com.cnh.pf.android.data.management.graph.GroupObjectGraph;
 import com.cnh.jgroups.Datasource;
+import com.google.common.base.Predicate;
 import pl.polidea.treeview.TreeNodeInfo;
 import pl.polidea.treeview.TreeStateManager;
 import com.cnh.jgroups.ObjectGraph;
@@ -72,7 +75,25 @@ public abstract class ObjectTreeViewAdapter extends SelectionTreeViewAdapter<Obj
    }
 
    protected abstract boolean isGroupableEntity(ObjectGraph node);
-   public abstract boolean isSupportedEntitiy(ObjectGraph node);
+
+   /**
+    * Make a copy of this object traversing down (parent is not copied)
+    * Filter only objects which match predicate
+    * @param obj  the object to filter
+    * @param predicate   the predicate
+    * @return  copy of this object with children filtered, could be null
+    */
+   public static ObjectGraph filter(ObjectGraph obj, Predicate<ObjectGraph> predicate) {
+      if(!predicate.apply(obj)) return null;
+      ObjectGraph node = new ObjectGraph(obj.getSources(), obj.getType(), obj.getId(), obj.getName(), new HashMap<String, String>(obj.getData()), null);
+      for(ObjectGraph child : obj.getChildren()) {
+         ObjectGraph fc = filter(child, predicate);
+         if(fc != null) {
+            node.addChild(fc);
+         }
+      }
+      return node;
+   }
 
    /**
     * Make a copy of this object traversing down (parent is not copied)
@@ -81,16 +102,15 @@ public abstract class ObjectTreeViewAdapter extends SelectionTreeViewAdapter<Obj
     * @param types   the acceptible {@link SelectionType}(s)
     * @return  copy of this object with children
     */
-   public ObjectGraph filterSelected(ObjectGraph obj, SelectionType...types) {
-      ObjectGraph node = new ObjectGraph(obj.getSources(), obj.getType(), obj.getId(), obj.getName(), new HashMap<String, String>(obj.getData()), null);
-      for(ObjectGraph child : obj.getChildren()) {
-         if(getSelectionMap().containsKey(child) && isSupportedEntitiy(child)) {
-            if(Arrays.binarySearch(types, getSelectionMap().get(child))>=0) {
-               node.addChild(filterSelected(child, types));
-            }
+   public ObjectGraph filterSelected(ObjectGraph obj, final SelectionType...types) {
+      return filter(obj, new Predicate<ObjectGraph>() {
+         @Override
+         public boolean apply(@Nullable ObjectGraph input) {
+            return getSelectionMap().containsKey(input)
+                  && isSupportedEntitiy(input)
+                  && (Arrays.binarySearch(types, getSelectionMap().get(input))>=0);
          }
-      }
-      return node;
+      });
    }
 
    @Override
@@ -148,9 +168,9 @@ public abstract class ObjectTreeViewAdapter extends SelectionTreeViewAdapter<Obj
    public Set<ObjectGraph> getSelected() {
       final List<ObjectGraph> stage1 = new LinkedList<ObjectGraph>();
       for(ObjectGraph root : data) {
-         if(!getSelectionMap().containsKey(root) && !isSupportedEntitiy(root)) continue;
          //filter out unselected nodes from selected parents
          ObjectGraph filtered = filterSelected(root, SelectionType.FULL, SelectionType.IMPLICIT); //starting at top level, any selected nodes
+         if(filtered == null) continue;
          //find root level nodes FULL selected with IMPLICIT/null parent
          ObjectGraph.traverse(filtered, ObjectGraph.TRAVERSE_DOWN, new ObjectGraph.Visitor<ObjectGraph>() {
             @Override
