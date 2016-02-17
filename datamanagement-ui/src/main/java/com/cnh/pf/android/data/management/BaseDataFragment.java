@@ -18,10 +18,6 @@ import android.widget.AdapterView;
 import android.widget.Button;
 import android.widget.LinearLayout;
 import android.widget.TextView;
-import butterknife.Bind;
-import butterknife.BindString;
-import butterknife.ButterKnife;
-import butterknife.OnClick;
 import com.cnh.android.dialog.DialogView;
 import com.cnh.android.dialog.DialogViewInterface;
 import com.cnh.android.widget.activity.TabActivity;
@@ -39,7 +35,6 @@ import com.cnh.pf.android.data.management.graph.GroupObjectGraph;
 import com.cnh.pf.android.data.management.helper.TreeDragShadowBuilder;
 import com.cnh.pf.android.data.management.service.DataManagementService;
 import com.cnh.pf.data.management.DataManagementSession;
-import com.google.inject.Guice;
 import com.google.inject.Inject;
 import com.google.inject.name.Named;
 import org.slf4j.Logger;
@@ -53,11 +48,10 @@ import roboguice.config.DefaultRoboModule;
 import roboguice.event.EventListener;
 import roboguice.event.EventManager;
 import roboguice.fragment.provided.RoboFragment;
+import roboguice.inject.InjectResource;
+import roboguice.inject.InjectView;
 
-import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 
 /**
  * Base Import/Export Fragment, handles inflating TreeView area and selection. Import/Export source
@@ -66,24 +60,24 @@ import java.util.Map;
  * @author oscar.salazar@cnhind.com
  */
 public abstract class BaseDataFragment extends RoboFragment {
-   private static final Logger logger = LoggerFactory.getLogger(BaseDataFragment.class);
+   private final Logger logger = LoggerFactory.getLogger(getClass());
 
    @Inject private DataServiceConnection dataServiceConnection;
    @Inject protected LayoutInflater layoutInflater;
    /** Service shared global EventManager */
    @Named(DefaultRoboModule.GLOBAL_EVENT_MANAGER_NAME) @Inject EventManager globalEventManager;
-   @Bind(R.id.path_tv) TextView pathTv;
-   @Bind(R.id.select_all_btn) Button selectAllBtn;
-   @Bind(R.id.tree_view_list) TreeViewList treeViewList;
-   @Bind(R.id.tree_progress) protected ProgressBarView treeProgress;
-   @Bind(R.id.start_text) protected TextView startText;
-   @BindString(R.string.done) String doneStr;
+   @InjectView(R.id.path_tv) TextView pathTv;
+   @InjectView(R.id.select_all_btn) Button selectAllBtn;
+   @InjectView(R.id.tree_view_list) TreeViewList treeViewList;
+   @InjectView(R.id.tree_progress) protected ProgressBarView treeProgress;
+   @InjectView(R.id.start_text) protected TextView startText;
+   @InjectResource(R.string.done) String doneStr;
 
    private TreeStateManager<ObjectGraph> manager;
    private TreeBuilder<ObjectGraph> treeBuilder;
    protected ObjectTreeViewAdapter treeAdapter;
 
-   private volatile DataManagementSession session = null;
+   protected volatile DataManagementSession session = null;
 
    /**
     * Extending class must inflate layout to be populated on the left panel
@@ -112,14 +106,18 @@ public abstract class BaseDataFragment extends RoboFragment {
       globalEventManager.registerObserver(ConnectionEvent.class, connectionListener);
       globalEventManager.registerObserver(DataServiceConnectionImpl.ErrorEvent.class, errorListener);
       globalEventManager.registerObserver(DataServiceConnectionImpl.ProgressEvent.class, progressListener);
-      ButterKnife.bind(this, layout);
       return layout;
    }
 
    @Override
    public void onViewCreated(View view, Bundle savedInstanceState) {
       super.onViewCreated(view, savedInstanceState);
-      ButterKnife.bind(this, view);
+      selectAllBtn.setOnClickListener(new View.OnClickListener() {
+         @Override
+         public void onClick(View v) {
+            selectAll();
+         }
+      });
       treeViewList.setChoiceMode(AbsListView.CHOICE_MODE_NONE);
       treeViewList.setOnItemLongClickListener(new AdapterView.OnItemLongClickListener() {
          @Override public boolean onItemLongClick(AdapterView<?> parent, View view, int position, long id) {
@@ -135,7 +133,6 @@ public abstract class BaseDataFragment extends RoboFragment {
    @Override
    public void onDestroyView() {
       super.onDestroyView();
-      ButterKnife.unbind(this);
       globalEventManager.unregisterObserver(DataSessionEvent.class, updateListener);
       globalEventManager.unregisterObserver(ConnectionEvent.class, connectionListener);
       globalEventManager.unregisterObserver(DataServiceConnectionImpl.ErrorEvent.class, errorListener);
@@ -146,7 +143,7 @@ public abstract class BaseDataFragment extends RoboFragment {
    public void onResume() {
       super.onResume();
       if (dataServiceConnection.isConnected()) {
-         onResumeSession(dataServiceConnection.getService().getSession());
+         onResumeSession(null);
       }
    }
 
@@ -170,7 +167,8 @@ public abstract class BaseDataFragment extends RoboFragment {
                errorDialog.setOnButtonClickListener(new DialogViewInterface.OnButtonClickListener() {
                   @Override
                   public void onButtonClick(DialogViewInterface dialog, int which) {
-                     if (which == DialogViewInterface.BUTTON_FIRST)
+                     if (which == DialogViewInterface.BUTTON_FIRST
+                           && !event.getType().equals(DataServiceConnectionImpl.ErrorEvent.DataError.NO_SOURCE_DATASOURCE))
                         onResumeSession(null);
                   }
                });
@@ -186,7 +184,7 @@ public abstract class BaseDataFragment extends RoboFragment {
       public void onEvent(ConnectionEvent event) {
          logger.debug("onConnected");
          if (event.isConnected()) {
-            onResumeSession(dataServiceConnection.getService().getSession());
+            onResumeSession(session);
          }
          else {
             //Disable all buttons for now
@@ -212,7 +210,6 @@ public abstract class BaseDataFragment extends RoboFragment {
       logger.debug("onResumeSession {}", session);
       if (session == null || !isCurrentOperation(session)) {
          logger.debug("Starting new session");
-         getDataManagementService().resetSession();
          setSession(null);
          treeViewList.setVisibility(View.GONE);
          onNewSession();
@@ -229,8 +226,7 @@ public abstract class BaseDataFragment extends RoboFragment {
          }
          else if (op.equals(DataManagementSession.SessionOperation.CALCULATE_OPERATIONS)) {
             //Import to existing parent if entity has parent
-            List<Operation> operations = processPartialImports(getSession().getData());
-            getSession().setData(operations);
+            getSession().setData(processPartialImports(getSession().getData()));
          }
          processOperations();
       }
@@ -241,9 +237,7 @@ public abstract class BaseDataFragment extends RoboFragment {
          logger.warn("calculate operations returned No operations");
          return null;
       }
-      Map<ObjectGraph, Operation> operationMap = new HashMap<ObjectGraph, Operation>();
       for (Operation operation : operations) {
-         operationMap.put(operation.getData(), operation);
          operation.setTarget(operation.getData().getParent());
       }
       return operations;
@@ -320,17 +314,6 @@ public abstract class BaseDataFragment extends RoboFragment {
             onTreeItemSelected();
          }
       });
-      setSupportedState();
-   }
-
-   public void setSupportedState () {
-      for(int i=0; i<treeViewList.getChildCount(); i++) {
-         View child = treeViewList.getChildAt(i);
-         ObjectGraph node = (ObjectGraph) child.getTag(); //tree associates ObjectGraph with each view
-         if(node==null) continue;
-         ImplicitSelectLinearLayout layout = (ImplicitSelectLinearLayout) child;
-         layout.setSupportedState(supportedByFormat(node));
-      }
    }
 
    private void addToTree(ObjectGraph parent, ObjectGraph object) {
@@ -359,7 +342,6 @@ public abstract class BaseDataFragment extends RoboFragment {
       }
    }
 
-   @OnClick(R.id.select_all_btn)
    void selectAll() {
       if (!selectAllBtn.isActivated()) {
          treeAdapter.selectAll(treeViewList, true);

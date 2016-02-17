@@ -18,13 +18,12 @@ import android.os.Bundle;
 import android.view.DragEvent;
 import android.view.LayoutInflater;
 import android.view.View;
-import android.view.ViewGroup;
 import android.widget.Button;
 import android.widget.ImageButton;
 import android.widget.LinearLayout;
 import android.widget.TextView;
-
 import android.widget.Toast;
+import butterknife.OnClick;
 import com.cnh.android.dialog.DialogView;
 import com.cnh.android.dialog.DialogViewInterface;
 import com.cnh.android.widget.activity.TabActivity;
@@ -38,14 +37,11 @@ import com.cnh.pf.android.data.management.adapter.TargetProcessViewAdapter;
 import com.cnh.pf.android.data.management.dialog.ImportSourceDialog;
 import com.cnh.pf.android.data.management.dialog.ProcessDialog;
 import com.cnh.pf.data.management.DataManagementSession;
-
-import butterknife.Bind;
-import butterknife.ButterKnife;
-import butterknife.OnClick;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import roboguice.event.EventThread;
 import roboguice.event.Observes;
+import roboguice.inject.InjectView;
 
 /**
  * Import Tab Fragment, Handles import from external mediums {USB, External Display}.
@@ -54,15 +50,14 @@ import roboguice.event.Observes;
 public class ImportFragment extends BaseDataFragment {
    private static final Logger logger = LoggerFactory.getLogger(ImportFragment.class);
 
-   @Bind(R.id.import_source_btn) Button importSourceBtn;
-   @Bind(R.id.import_drop_zone) LinearLayout importDropZone;
-   @Bind(R.id.import_selected_btn) Button importSelectedBtn;
-   @Bind(R.id.pause_button) ImageButton pauseBtn;
-   @Bind(R.id.stop_button) ImageButton stopBtn;
-   @Bind(R.id.progress_bar) ProgressBarView progressBar;
-   @Bind(R.id.operation_name) TextView operationName;
-   @Bind(R.id.percent_tv) TextView percentTv;
-   @Bind(R.id.left_status) LinearLayout leftStatus;
+   @InjectView(R.id.import_source_btn) Button importSourceBtn;
+   @InjectView(R.id.import_drop_zone) LinearLayout importDropZone;
+   @InjectView(R.id.import_selected_btn) Button importSelectedBtn;
+   @InjectView(R.id.stop_button) ImageButton stopBtn;
+   @InjectView(R.id.progress_bar) ProgressBarView progressBar;
+   @InjectView(R.id.operation_name) TextView operationName;
+   @InjectView(R.id.percent_tv) TextView percentTv;
+   @InjectView(R.id.left_status) LinearLayout leftStatus;
    ProcessDialog processDialog;
 
    @Override public void inflateViews(LayoutInflater inflater, View leftPanel) {
@@ -70,17 +65,23 @@ public class ImportFragment extends BaseDataFragment {
    }
 
    @Override
-   public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
-      View rootView = super.onCreateView(inflater, container, savedInstanceState);
-      ButterKnife.bind(this, rootView);
-      pauseBtn.setOnClickListener(new View.OnClickListener() {
-         @Override public void onClick(View v) {
-            getDataManagementService().cancel();
+   public void onViewCreated(View view, Bundle savedInstanceState) {
+      super.onViewCreated(view, savedInstanceState);
+      importSelectedBtn.setOnClickListener(new View.OnClickListener() {
+         @Override
+         public void onClick(View v) {
+            importSelected();
+         }
+      });
+      importSourceBtn.setOnClickListener(new View.OnClickListener() {
+         @Override
+         public void onClick(View v) {
+            selectSource();
          }
       });
       stopBtn.setOnClickListener(new View.OnClickListener() {
          @Override public void onClick(View v) {
-            getDataManagementService().cancel();
+            getDataManagementService().cancel(session);
          }
       });
       importDropZone.setOnDragListener(new View.OnDragListener() {
@@ -106,13 +107,6 @@ public class ImportFragment extends BaseDataFragment {
             return false;
          }
       });
-      return rootView;
-   }
-
-   @Override
-   public void onDestroyView() {
-      super.onDestroyView();
-      ButterKnife.unbind(this);
    }
 
    @Override
@@ -155,7 +149,7 @@ public class ImportFragment extends BaseDataFragment {
          logger.debug("Calculate Targets");
          boolean hasMultipleTargets = false;
          for (Operation operation : getSession().getData()) {
-            if (operation.getPotentialTargets() != null && operation.getPotentialTargets().size() > 1) {
+            if (operation.getPotentialTargets() != null && operation.getPotentialTargets().size() > 1 && operation.getData().getParent()==null) {
                hasMultipleTargets = true;
                break;
             }
@@ -191,6 +185,7 @@ public class ImportFragment extends BaseDataFragment {
          }
          else {
             logger.debug("Found no targets with no parents, skipping to Calculate Conflicts");
+            processDialog.hide();
             showConflictDialog();
             getDataManagementService().processOperation(getSession(), DataManagementSession.SessionOperation.CALCULATE_CONFLICTS);
          }
@@ -270,7 +265,8 @@ public class ImportFragment extends BaseDataFragment {
    @Override
    public void onProgressPublished(String operation, int progress, int max) {
       logger.debug("onProgressPublished: {}", progress);
-      if(progress == max) {
+      if(getSession().getSessionOperation().equals(DataManagementSession.SessionOperation.PERFORM_OPERATIONS)
+            && progress == max) {
          logger.info("Process completed.  {}/{} objects", progress, max);
          getTreeAdapter().selectAll(treeViewList, false);
          removeProgressPanel();
@@ -293,7 +289,6 @@ public class ImportFragment extends BaseDataFragment {
       return true;
    }
 
-   @OnClick(R.id.import_selected_btn)
    void importSelected() {
       logger.debug("Import selected");
       Set<ObjectGraph> selected = getTreeAdapter().getSelected();
@@ -309,7 +304,6 @@ public class ImportFragment extends BaseDataFragment {
       }
    }
 
-   @OnClick(R.id.import_source_btn)
    void selectSource() {
       DialogView importSourceDialog = new ImportSourceDialog(getActivity(), getDataManagementService().getMediums());
       ((TabActivity) getActivity()).showPopup(importSourceDialog, true);

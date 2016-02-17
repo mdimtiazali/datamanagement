@@ -14,6 +14,7 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.AbsListView;
 import android.widget.AdapterView;
+import com.cnh.pf.android.data.management.ExportFragment;
 import pl.polidea.treeview.AbstractTreeViewAdapter;
 import pl.polidea.treeview.ImplicitSelectLinearLayout;
 import pl.polidea.treeview.TreeStateManager;
@@ -89,28 +90,7 @@ public abstract class SelectionTreeViewAdapter<T> extends AbstractTreeViewAdapte
    @Override
    public void handleItemClick(final AdapterView<?> parent, View view, int position, Object id) {
       super.handleItemClick(parent, view, position, id);
-      ((TreeViewList)parent).setOnScrollListener(new AbsListView.OnScrollListener() {
-         @Override
-         public void onScrollStateChanged(AbsListView view, int scrollState) {
-
-         }
-
-         @Override
-         public void onScroll(AbsListView view, int firstVisibleItem, int visibleItemCount, int totalItemCount) {
-            updateViewSelection(view);
-         }
-      });
-      parent.setOnHierarchyChangeListener(new ViewGroup.OnHierarchyChangeListener() {
-         @Override
-         public void onChildViewAdded(View p, View child) {
-            updateViewSelection(parent);
-         }
-
-         @Override
-         public void onChildViewRemoved(View p, View child) {
-            updateViewSelection(parent);
-         }
-      });
+      setListeners(parent);
 
       if (!selectionMap.containsKey(id)) {
          //Traverse down, select everything
@@ -175,33 +155,63 @@ public abstract class SelectionTreeViewAdapter<T> extends AbstractTreeViewAdapte
       return selectionMap;
    }
 
+   public abstract boolean isSupportedEntitiy(T node);
+
    /**
     * Makes view state match selection state
     * @param parent  the tree view
     */
-   protected void updateViewSelection(final AdapterView< ? > parent) {
+   public void updateViewSelection(final AdapterView< ? > parent) {
       for(int i=0; i<parent.getChildCount(); i++) {
          View child = parent.getChildAt(i);
          T node = (T) child.getTag(); //tree associates ObjectGraph with each view
          if(node==null) continue;
          ImplicitSelectLinearLayout layout = (ImplicitSelectLinearLayout) child;
+         layout.setSupported(isSupportedEntitiy(node));
          if(selectionMap.containsKey(node)) {
             SelectionType type = selectionMap.get(node);
-            child.setSelected(SelectionType.FULL.equals(type));
+            layout.setSelected(SelectionType.FULL.equals(type));
             layout.setImplicitlySelected(SelectionType.IMPLICIT.equals(type));
          } else {
-            child.setSelected(false);
+            layout.setSelected(false);
             layout.setImplicitlySelected(false);
          }
       }
+   }
+
+   private void setListeners(final AdapterView<?> parent) {
+      parent.setOnHierarchyChangeListener(new ViewGroup.OnHierarchyChangeListener() {
+         @Override
+         public void onChildViewAdded(View p, View child) {
+            updateViewSelection(parent);
+         }
+
+         @Override
+         public void onChildViewRemoved(View p, View child) {
+            updateViewSelection(parent);
+         }
+      });
+      ((TreeViewList)parent).setOnScrollListener(new AbsListView.OnScrollListener() {
+         @Override
+         public void onScrollStateChanged(AbsListView view, int scrollState) {
+
+         }
+
+         @Override
+         public void onScroll(AbsListView view, int firstVisibleItem, int visibleItemCount, int totalItemCount) {
+            updateViewSelection(view);
+         }
+      });
    }
 
    /**
     * Sets all objects in tree to full selection or clears depending on selectAll
     */
    public void selectAll(AdapterView<?> parent, boolean selectAll) {
+      log.debug("Select All");
       //We can use shortcut by clearing selectionMap, and full selection of root objects
       selectionMap.clear();
+      setListeners(parent);
       if (selectAll) {
          for (T graph : getManager().getChildren(null)) {
             traverseTree(graph, TRAVERSE_DOWN, new Visitor<T>() {
