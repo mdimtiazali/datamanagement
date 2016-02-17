@@ -8,6 +8,14 @@
  */
 package com.cnh.pf.android.data.management.dialog;
 
+import java.io.File;
+import java.io.FileFilter;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
+
 import android.app.Activity;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -39,13 +47,9 @@ import pl.polidea.treeview.TreeViewList;
 import roboguice.RoboGuice;
 import roboguice.event.EventManager;
 
-import java.io.File;
-import java.io.FileFilter;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
+import static android.view.View.GONE;
+import static android.view.View.VISIBLE;
+import static com.cnh.pf.android.data.management.R.styleable.SegmentedToggleButtonGroup;
 
 /**
  * Dialog allows user to select an import source and directory path

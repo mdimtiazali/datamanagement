@@ -14,6 +14,7 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.AbsListView;
 import android.widget.AdapterView;
+import com.cnh.jgroups.ObjectGraph;
 import com.cnh.pf.android.data.management.ExportFragment;
 import pl.polidea.treeview.AbstractTreeViewAdapter;
 import pl.polidea.treeview.ImplicitSelectLinearLayout;
@@ -21,6 +22,9 @@ import pl.polidea.treeview.TreeStateManager;
 import pl.polidea.treeview.TreeViewList;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
+
+import static android.R.attr.data;
+import static android.R.attr.id;
 
 /**
  * TreeViewAdapter with functionality to full/partially select child/parent objects in tree
@@ -226,5 +230,36 @@ public abstract class SelectionTreeViewAdapter<T> extends AbstractTreeViewAdapte
       if (listener != null) {
          listener.onItemSelected();
       }
+   }
+
+   /**
+    * Determines if all nodes in tree are fully selected.
+    */
+   class SelectAllVisitor implements Visitor<T> {
+      boolean result = true;
+
+      @Override public boolean visit(T node) {
+         if(!SelectionType.FULL.equals(selectionMap.get(node))) {
+            result = false;
+            return false;
+         }
+         return true;
+      }
+
+      public boolean getResult() {
+         return result;
+      }
+   }
+
+   /**
+    * Are all nodes fully selected?
+    * @return
+    */
+   public boolean areAllSelected() {
+      SelectAllVisitor v = new SelectAllVisitor();
+      for (T graph : getManager().getChildren(null)) {
+         traverseTree(graph, TRAVERSE_DOWN, v);
+      }
+      return v.getResult();
    }
 }

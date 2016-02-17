@@ -36,7 +36,10 @@ import com.cnh.pf.android.data.management.adapter.DataManagementBaseAdapter;
 import com.cnh.pf.android.data.management.adapter.TargetProcessViewAdapter;
 import com.cnh.pf.android.data.management.dialog.ImportSourceDialog;
 import com.cnh.pf.android.data.management.dialog.ProcessDialog;
+import com.cnh.pf.android.data.management.service.DataManagementService;
 import com.cnh.pf.data.management.DataManagementSession;
+import com.cnh.pf.data.management.DataManagementSession.SessionOperation;
+import com.cnh.pf.datamng.Process;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import roboguice.event.EventThread;
@@ -109,18 +112,38 @@ public class ImportFragment extends BaseDataFragment {
       });
    }
 
+
+
    @Override
    public void enableButtons(boolean enable) {
       super.enableButtons(enable);
       checkImportButton();
    }
 
+   @Override
+   protected void onOtherSessionUpdate(DataManagementSession session) {
+      logger.debug("Other session has been updated");
+      if(session.getSessionOperation().equals(SessionOperation.PERFORM_OPERATIONS)) {
+         logger.trace("Other operation completed. Enabling UI.");
+         checkImportButton();
+      }
+   }
+
    private void checkImportButton() {
-      importSelectedBtn.setEnabled(getTreeAdapter() != null && getTreeAdapter().getSelected().size() > 0);
+      DataManagementSession s = getDataManagementService().getSession();
+      boolean isActiveOperation = s!=null
+            && s.getSessionOperation().equals(SessionOperation.PERFORM_OPERATIONS)
+            && s.getResult()==null;
+      boolean hasSelection = getTreeAdapter() != null && getTreeAdapter().getSelected().size() > 0;
+      logger.debug("Checking import button hasActiveOp {}", s);
+
+      importSourceBtn.setEnabled(!isActiveOperation);
+      importSelectedBtn.setEnabled(hasSelection && !isActiveOperation);
    }
 
    /**Called when user selects Import source, from Import Source Dialog*/
    private void onImportSourceSelected(@Observes(EventThread.UI) ImportSourceDialog.ImportSourceSelectedEvent event) {
+      logger.debug("onImportSourceSelected( {} )", event.getDevice());
       removeProgressPanel();
       startText.setVisibility(View.GONE);
       treeProgress.setVisibility(View.VISIBLE);
@@ -135,17 +158,19 @@ public class ImportFragment extends BaseDataFragment {
       setSession(new DataManagementSession(new Datasource.Source[] { event.getDevice().getType() },
          event.getDevices(),
          new Datasource.Source[] { Datasource.Source.INTERNAL, Datasource.Source.DISPLAY }));
-      getDataManagementService().processOperation(getSession(), DataManagementSession.SessionOperation.DISCOVERY);
+      getDataManagementService().processOperation(getSession(), SessionOperation.DISCOVERY);
       if(getTreeAdapter()!=null) getTreeAdapter().selectAll(treeViewList, false);  //clear out the selection
    }
 
    @Override
    public void onNewSession() {
       removeProgressPanel();
+      checkImportButton();
+      setSession(null);
    }
 
    @Override public void processOperations() {
-      if (getSession().getSessionOperation().equals(DataManagementSession.SessionOperation.CALCULATE_OPERATIONS)) {
+      if (getSession().getSessionOperation().equals(SessionOperation.CALCULATE_OPERATIONS)) {
          logger.debug("Calculate Targets");
          boolean hasMultipleTargets = false;
          for (Operation operation : getSession().getData()) {
@@ -166,7 +191,7 @@ public class ImportFragment extends BaseDataFragment {
                   getSession().setData(operations);
                   logger.debug("Going to Calculate Conflicts");
                   showConflictDialog();
-                  getDataManagementService().processOperation(getSession(), DataManagementSession.SessionOperation.CALCULATE_CONFLICTS);
+                  getDataManagementService().processOperation(getSession(), SessionOperation.CALCULATE_CONFLICTS);
                }
             });
             processDialog.setOnButtonClickListener(new DialogViewInterface.OnButtonClickListener() {
@@ -187,10 +212,10 @@ public class ImportFragment extends BaseDataFragment {
             logger.debug("Found no targets with no parents, skipping to Calculate Conflicts");
             processDialog.hide();
             showConflictDialog();
-            getDataManagementService().processOperation(getSession(), DataManagementSession.SessionOperation.CALCULATE_CONFLICTS);
+            getDataManagementService().processOperation(getSession(), SessionOperation.CALCULATE_CONFLICTS);
          }
       }
-      else if (getSession().getSessionOperation().equals(DataManagementSession.SessionOperation.CALCULATE_CONFLICTS)) {
+      else if (getSession().getSessionOperation().equals(SessionOperation.CALCULATE_CONFLICTS)) {
          logger.debug("Calculate Conflicts");
          //Check for conflicts
          boolean hasConflicts = false;
@@ -209,7 +234,7 @@ public class ImportFragment extends BaseDataFragment {
                   processDialog.hide();
                   showProgressPanel();
                   getSession().setData(operations);
-                  getDataManagementService().processOperation(getSession(), DataManagementSession.SessionOperation.PERFORM_OPERATIONS);
+                  getDataManagementService().processOperation(getSession(), SessionOperation.PERFORM_OPERATIONS);
                }
             });
             processDialog.setOnDismissListener(new DialogViewInterface.OnDismissListener() {
@@ -222,7 +247,15 @@ public class ImportFragment extends BaseDataFragment {
             logger.debug("No conflicts found");
             processDialog.hide();
             showProgressPanel();
-            getDataManagementService().processOperation(getSession(), DataManagementSession.SessionOperation.PERFORM_OPERATIONS);
+            getDataManagementService().processOperation(getSession(), SessionOperation.PERFORM_OPERATIONS);
+         }
+      }
+      else if(getSession().getSessionOperation().equals(SessionOperation.PERFORM_OPERATIONS)) {
+         logger.trace("resetting new session.  Operation completed.");
+         getTreeAdapter().selectAll(treeViewList, false);
+         removeProgressPanel();
+         if(getSession().getResult().equals(Process.Result.SUCCESS)) {
+            Toast.makeText(getActivity(), "Import Completed", Toast.LENGTH_LONG).show();
          }
       }
    }
@@ -254,23 +287,22 @@ public class ImportFragment extends BaseDataFragment {
    /** Check if session returned by service is an import operation*/
    @Override
    public boolean isCurrentOperation(DataManagementSession session) {
-      return Arrays.binarySearch(session.getDestinationTypes(), Datasource.Source.INTERNAL) > -1;
+      return DataManagementService.isUsbImport(session);
    }
 
    @Override
    public void onTreeItemSelected() {
+      super.onTreeItemSelected();
       checkImportButton();
    }
 
    @Override
    public void onProgressPublished(String operation, int progress, int max) {
       logger.debug("onProgressPublished: {}", progress);
-      if(getSession().getSessionOperation().equals(DataManagementSession.SessionOperation.PERFORM_OPERATIONS)
+      if(getSession()!=null &&
+            DataManagementSession.SessionOperation.PERFORM_OPERATIONS.equals(getSession().getSessionOperation().equals(getSession().getSessionOperation()))
             && progress == max) {
          logger.info("Process completed.  {}/{} objects", progress, max);
-         getTreeAdapter().selectAll(treeViewList, false);
-         removeProgressPanel();
-         Toast.makeText(getActivity(), "Import Completed", Toast.LENGTH_LONG).show();
       }
       final Double percent = ((progress * 1.0) / max) * 100;
 
@@ -299,13 +331,10 @@ public class ImportFragment extends BaseDataFragment {
          getSession().setObjectData(new ArrayList<ObjectGraph>(getTreeAdapter().getSelected()));
          getDataManagementService().processOperation(getSession(), DataManagementSession.SessionOperation.CALCULATE_OPERATIONS);
       }
-      else {
-         //notify user he needs to select items first
-      }
    }
 
    void selectSource() {
-      DialogView importSourceDialog = new ImportSourceDialog(getActivity(), getDataManagementService().getMediums());
-      ((TabActivity) getActivity()).showPopup(importSourceDialog, true);
+      ((TabActivity) getActivity()).showPopup((DialogView)
+            new ImportSourceDialog(getActivity(), getDataManagementService().getMediums()), true);
    }
 }
