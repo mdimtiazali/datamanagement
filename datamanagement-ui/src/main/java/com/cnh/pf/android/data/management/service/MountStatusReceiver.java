@@ -15,6 +15,7 @@ import android.content.Intent;
 import android.graphics.drawable.BitmapDrawable;
 import android.os.ParcelUuid;
 import com.cnh.android.status.Status;
+import com.cnh.pf.android.data.management.R;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -25,14 +26,18 @@ import org.slf4j.LoggerFactory;
 public class MountStatusReceiver extends BroadcastReceiver {
    private static final Logger log = LoggerFactory.getLogger(MountStatusReceiver.class);
 
-   private BitmapDrawable statusDrawable;
    private static Status status;
 
    @Override
    public void onReceive(Context context, Intent intent) {
-      log.info("Received broadcast: {}", intent.getAction());
+      log.info("Received broadcast: {}", intent.getAction() );
+      if(status==null) {
+         status = new Status("USB Mounted",
+               (BitmapDrawable)context.getResources().getDrawable(R.drawable.ic_usb),
+               context.getPackageName());
+      }
       if(Intent.ACTION_MEDIA_MOUNTED.equals(intent.getAction())) {
-         status = new Status("USB Mounted", statusDrawable, context.getPackageName());
+
          context.sendBroadcast(new Intent(Status.ACTION_STATUS_DISPLAY).putExtra(Status.NAME, status));
       }
       else if(Intent.ACTION_MEDIA_UNMOUNTED.equals(intent.getAction())
