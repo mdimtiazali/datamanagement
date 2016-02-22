@@ -14,11 +14,9 @@ import android.content.Context;
 import android.content.Intent;
 import android.graphics.drawable.BitmapDrawable;
 import android.os.ParcelUuid;
-import com.cnh.pf.android.data.management.R;
+import com.cnh.android.status.Status;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
-import com.cnh.android.status.Status;
 
 /**
  * Listens for USB media events.
@@ -33,17 +31,19 @@ public class MountStatusReceiver extends BroadcastReceiver {
    @Override
    public void onReceive(Context context, Intent intent) {
       log.info("Received broadcast: {}", intent.getAction());
-      if(status == null) {
-         statusDrawable = (BitmapDrawable)context.getResources().getDrawable(R.drawable.button_info);
+      if(Intent.ACTION_MEDIA_MOUNTED.equals(intent.getAction())) {
          status = new Status("USB Mounted", statusDrawable, context.getPackageName());
-      }
-      if("android.intent.action.MEDIA_MOUNTED".equals(intent.getAction())) {
-         log.info("Media has been mounted: {} extras", intent.getExtras().size());
          context.sendBroadcast(new Intent(Status.ACTION_STATUS_DISPLAY).putExtra(Status.NAME, status));
       }
-      else if("android.intent.action.MEDIA_UNMOUNTED".equals(intent.getAction())) {
+      else if(Intent.ACTION_MEDIA_UNMOUNTED.equals(intent.getAction())
+            || Intent.ACTION_MEDIA_BAD_REMOVAL.equals(intent.getAction())
+            || Intent.ACTION_MEDIA_REMOVED.equals(intent.getAction())
+            || Intent.ACTION_MEDIA_EJECT.equals(intent.getAction())) {
          log.info("Media has been unmounted: {} extras", intent.getExtras().size());
-         context.sendBroadcast(new Intent(Status.ACTION_STATUS_REMOVE).putExtra(Status.ID, ParcelUuid.fromString(status.getID().toString())));
+         context.sendBroadcast(new Intent(Status.ACTION_STATUS_REMOVE)
+               .putExtra(Status.ID, ParcelUuid.fromString(status.getID().toString())));
       }
    }
+
+
 }
