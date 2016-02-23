@@ -15,10 +15,11 @@
    android:layout_height="match_parent">
 
    <TextView
+         android:id="@+id/label"
       android:layout_width="wrap_content"
       android:layout_height="wrap_content"
       style="@style/TextAppearance.Data.File.Header"
-      android:text="@string/newName"/>
+      android:text="@string/new_id_label"/>
 
    <EditText
       android:id="@+id/file_name"

@@ -35,20 +35,19 @@ import org.slf4j.LoggerFactory;
 import roboguice.RoboGuice;
 import roboguice.inject.InjectResource;
 
+import static android.R.attr.id;
+
 /**
  * Adapter used to feed data to Conflict Resolution View
  * @author oscar.salazar@cnhind.com
  */
 public class DataConflictViewAdapter extends DataManagementBaseAdapter {
-   private static final Logger logger = LoggerFactory.getLogger(ConflictResolutionViewAdapter.class);
+   private static final Logger logger = LoggerFactory.getLogger(DataConflictViewAdapter.class);
 
    @Inject LayoutInflater layoutInflater;
    @InjectResource(R.string.duplicate_file) String duplicateStr;
-   @InjectResource(R.string.existing_file) String existingFileStr;
-   @InjectResource(R.string.new_file) String newFileStr;
    @InjectResource(R.string.cancel) String cancelStr;
    @InjectResource(R.string.done) String doneStr;
-   @InjectResource(R.string.rename_file) String renameFileStr;
 
    public DataConflictViewAdapter(Activity context, List<Operation> operations) {
       super(context, operations);
@@ -72,9 +71,9 @@ public class DataConflictViewAdapter extends DataManagementBaseAdapter {
       @Override
       public void onButtonSelected(Operation.Action action) {
          if (action.equals(Operation.Action.COPY_AND_KEEP)) {
-            logger.debug("Keep both");
+            Operation op = operationList.get(activeOperation);
             final DialogView newNameDialog = new DialogView(context);
-            newNameDialog.setTitle(renameFileStr);
+            newNameDialog.setTitle(context.getResources().getString(R.string.new_id_title));
             View view = layoutInflater.inflate(R.layout.rename_file, null);
             newNameDialog.setBodyView(view);
             final EditText textEntry = (EditText) view.findViewById(R.id.file_name);
@@ -147,11 +146,14 @@ public class DataConflictViewAdapter extends DataManagementBaseAdapter {
          rowVH.columns = new ArrayList<TextView>();
          rowLayout.setTag(rowVH);
       }
-
-      if (existingFileVH.headerTv.getText() == null || existingFileVH.headerTv.getText().equals(""))
-         existingFileVH.headerTv.setText(existingFileStr);
-      if (newFileVH.headerTv.getText() == null || newFileVH.headerTv.getText().equals(""))
-         newFileVH.headerTv.setText(newFileStr);
+      Operation op = operationList.get(activeOperation);
+      String type = op.getData().getType().substring(op.getData().getType().lastIndexOf(".") + 1);
+      if (existingFileVH.headerTv.getText() == null || existingFileVH.headerTv.getText().equals("")) {
+         existingFileVH.headerTv.setText(context.getResources().getString(R.string.existing_file, type));
+      }
+      if (newFileVH.headerTv.getText() == null || newFileVH.headerTv.getText().equals("")) {
+         newFileVH.headerTv.setText(context.getResources().getString(R.string.new_file, type));
+      }
 
       Map<String, List<String>> rowMap = new HashMap<String, List<String>>();
       //Add row for each row of existing data
