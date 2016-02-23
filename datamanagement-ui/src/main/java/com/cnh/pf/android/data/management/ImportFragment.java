@@ -9,7 +9,10 @@
 
 package com.cnh.pf.android.data.management;
 
+import javax.inject.Inject;
 import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collection;
 import java.util.List;
 import java.util.Set;
 
@@ -34,10 +37,13 @@ import com.cnh.pf.android.data.management.adapter.DataManagementBaseAdapter;
 import com.cnh.pf.android.data.management.adapter.TargetProcessViewAdapter;
 import com.cnh.pf.android.data.management.dialog.ImportSourceDialog;
 import com.cnh.pf.android.data.management.dialog.ProcessDialog;
+import com.cnh.pf.android.data.management.helper.DatasourceHelper;
 import com.cnh.pf.android.data.management.service.DataManagementService;
 import com.cnh.pf.data.management.DataManagementSession;
 import com.cnh.pf.data.management.DataManagementSession.SessionOperation;
+import com.cnh.pf.data.management.aidl.MediumDevice;
 import com.cnh.pf.datamng.Process;
+import org.jgroups.Address;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import roboguice.event.EventThread;
@@ -60,6 +66,9 @@ public class ImportFragment extends BaseDataFragment {
    @InjectView(R.id.percent_tv) TextView percentTv;
    @InjectView(R.id.left_status) LinearLayout leftStatus;
    ProcessDialog processDialog;
+
+   private @Inject
+   DatasourceHelper dsHelper;
 
    @Override public void inflateViews(LayoutInflater inflater, View leftPanel) {
       inflater.inflate(R.layout.import_left_layout, (LinearLayout) leftPanel);
@@ -157,8 +166,10 @@ public class ImportFragment extends BaseDataFragment {
          pathTv.setText(getString(R.string.display_named, event.getDevice().getName()));
       }
       setSession(new DataManagementSession(new Datasource.Source[] { event.getDevice().getType() },
-         event.getDevices(),
-         new Datasource.Source[] { Datasource.Source.INTERNAL, Datasource.Source.DISPLAY }));
+            new Datasource.Source[] { Datasource.Source.INTERNAL, Datasource.Source.DISPLAY },
+            event.getDevices(),
+            dsHelper.getLocalDatasources(Datasource.Source.INTERNAL, Datasource.Source.DISPLAY)
+      ));
       getDataManagementService().processOperation(getSession(), SessionOperation.DISCOVERY);
       if(getTreeAdapter()!=null) getTreeAdapter().selectAll(treeViewList, false);  //clear out the selection
    }

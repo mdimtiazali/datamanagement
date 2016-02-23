@@ -18,21 +18,27 @@ import java.util.ArrayList;
 import java.util.List;
 
 import android.app.Application;
+import android.content.Context;
 import android.os.Environment;
 
 import com.cnh.jgroups.Datasource;
 import com.cnh.jgroups.Mediator;
 import com.cnh.pf.android.data.management.helper.DatasourceHelper;
+import com.cnh.pf.android.data.management.helper.ObservesTypeListener2;
 import com.cnh.pf.data.management.MediumImpl;
 import com.cnh.pf.data.management.aidl.MediumDevice;
 
 import com.google.inject.AbstractModule;
 import com.google.inject.Provider;
 import com.google.inject.Provides;
+import com.google.inject.matcher.Matchers;
 import org.jgroups.Global;
 import org.jgroups.JChannel;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import roboguice.event.EventManager;
+import roboguice.event.ObservesTypeListener;
+import roboguice.event.eventListener.factory.EventListenerThreadingDecorator;
 
 /**
  * Roboguice module definition

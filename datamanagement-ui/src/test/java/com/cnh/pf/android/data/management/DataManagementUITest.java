@@ -160,7 +160,7 @@ public class DataManagementUITest {
 
    private void fireDiscoveryEvent() {
       //Start new discovery
-      DataManagementSession session = new DataManagementSession(new Datasource.Source[] { Datasource.Source.INTERNAL }, (List<MediumDevice>)null, new Datasource.Source[] { Datasource.Source.INTERNAL});
+      DataManagementSession session = new DataManagementSession(new Datasource.Source[] { Datasource.Source.INTERNAL }, new Datasource.Source[] { Datasource.Source.INTERNAL}, null, null);
       session.setSessionOperation(DataManagementSession.SessionOperation.DISCOVERY);
       session.setObjectData(getTestObjectData());
       eventManager.fire(new DataServiceConnectionImpl.DataSessionEvent(session));

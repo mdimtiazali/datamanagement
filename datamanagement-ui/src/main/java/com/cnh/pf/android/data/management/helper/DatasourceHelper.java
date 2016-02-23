@@ -109,26 +109,32 @@ import org.slf4j.LoggerFactory;
     * @param sourceTypes {@link Datasource.Source }
     * @return
     */
-   public Address[] getAddressForSourceType(Datasource.Source []sourceTypes) {
-      Collection<Address> addresses = new ArrayList<Address>();
+   public List<MediumDevice> getLocalDatasources(Datasource.Source...sourceTypes) {
+      List<MediumDevice> devices = new ArrayList<MediumDevice>();
       final String myHostname = getHostname(mediator.getAddress());
       if (sourceMap != null) {
          for(Datasource.Source source : sourceTypes) {
             if(!sourceMap.containsKey(source)) continue;
             if(source.equals(Datasource.Source.DISPLAY)) { //filter display sources by host
-               addresses.addAll(Collections2.filter(sourceMap.get(source).keySet(), new Predicate<Address>() {
+               Collection<Address> displays = Collections2.filter(sourceMap.get(source).keySet(), new Predicate<Address>() {
                   @Override public boolean apply(@Nullable Address input) {
                      return myHostname.equals(getHostname(input));
                   }
-               }));
+               });
+               for(Address addr : displays) {
+                  devices.add(new MediumDevice(source, addr, UUID.get(addr)));
+               }
             }
             else {
-               addresses.addAll(sourceMap.get(source).keySet());
+               for(Address addr : sourceMap.get(source).keySet()) {
+                  devices.add(new MediumDevice(source, addr, UUID.get(addr)));
+               }
             }
          }
       }
 
-      return addresses.toArray(new Address[addresses.size()]);
+//      return addresses.toArray(new Address[addresses.size()]);
+      return devices;
    }
 
    /**
@@ -147,7 +153,7 @@ import org.slf4j.LoggerFactory;
       return addresses.toArray(new Address[addresses.size()]);
    }
 
-   @Override public List<MediumDevice> getDevices() {
+   @Override public List<MediumDevice> getTargetDevices() {
       List<MediumDevice> devs = new ArrayList<MediumDevice>();
       //temporarily always add usb for testing
       logger.debug("getDevices external storage state = {}", Environment.getExternalStorageState());

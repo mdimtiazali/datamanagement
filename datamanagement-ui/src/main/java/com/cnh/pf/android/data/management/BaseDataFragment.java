@@ -53,6 +53,7 @@ import roboguice.fragment.provided.RoboFragment;
 import roboguice.inject.InjectResource;
 import roboguice.inject.InjectView;
 
+import java.util.ArrayList;
 import java.util.List;
 
 /**
@@ -301,6 +302,7 @@ public abstract class BaseDataFragment extends RoboFragment {
                || getTreeAdapter() == null) {
             treeProgress.setVisibility(View.GONE);
             initiateTree();
+            updateSelectAllState();
          }
          else if (op.equals(DataManagementSession.SessionOperation.CALCULATE_OPERATIONS)) {
             //Import to existing parent if entity has parent
@@ -322,13 +324,14 @@ public abstract class BaseDataFragment extends RoboFragment {
    }
 
    private void initiateTree() {
-      if(session.getObjectData() == null) return;
       logger.debug("initateTree");
       //Discovery happened
       enableButtons(true);
+      List<ObjectGraph> data = session!=null && session.getObjectData()!=null ?
+            session.getObjectData() : new ArrayList<ObjectGraph>();
       manager = new InMemoryTreeStateManager<ObjectGraph>();
       treeBuilder = new TreeBuilder<ObjectGraph>(manager);
-      for (ObjectGraph graph : session.getObjectData()) {
+      for (ObjectGraph graph : data) {
          addToTree(null, graph);
       }
       treeAdapter = new ObjectTreeViewAdapter(getActivity(), manager, 1) {
@@ -342,7 +345,7 @@ public abstract class BaseDataFragment extends RoboFragment {
             return supportedByFormat(node);
          }
       };
-      treeAdapter.setData(session.getObjectData());
+      treeAdapter.setData(data);
       treeViewList.removeAllViewsInLayout();
       treeViewList.setVisibility(View.VISIBLE);
       treeViewList.setAdapter(treeAdapter);
@@ -382,7 +385,9 @@ public abstract class BaseDataFragment extends RoboFragment {
    }
 
    void updateSelectAllState() {
-      selectAllBtn.setEnabled(getSession()!=null);
+      selectAllBtn.setEnabled(getSession()!=null
+            && getSession().getObjectData()!=null
+            && !getSession().getObjectData().isEmpty());
       selectAllBtn.setText(getTreeAdapter().areAllSelected() ?
             R.string.deselect_all : R.string.select_all);
       selectAllBtn.setActivated(getTreeAdapter().areAllSelected());

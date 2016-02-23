@@ -177,17 +177,17 @@ public class ExportFragment extends BaseDataFragment {
             @Override public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
                if(id == -1) {
                   if(getSession()!=null) {
-                     getSession().setDevice(null);
+                     getSession().setSources(null);
                   }
                } else {
                   ObjectPickListItem<MediumDevice> item = (ObjectPickListItem<MediumDevice>) exportMediumPicklist.findItemById(id);
-                  getSession().setDevice(Arrays.asList(item.getObject()));
+                  getSession().setSources(Arrays.asList(item.getObject()));
                }
                checkExportButton();
             }
 
             @Override public void onNothingSelected(AdapterView<?> parent) {
-               getSession().setDevice(null);
+               getSession().setSources(null);
             }
          });
       }
@@ -202,11 +202,13 @@ public class ExportFragment extends BaseDataFragment {
       exportDropZone.setVisibility(View.VISIBLE);
       treeProgress.setVisibility(View.VISIBLE);
       treeViewList.setVisibility(View.GONE);
-      setSession(new DataManagementSession(new Datasource.Source[] { Datasource.Source.INTERNAL, Datasource.Source.DISPLAY }, null,
-         new Datasource.Source[] { Datasource.Source.USB }));
+      setSession(new DataManagementSession(new Datasource.Source[] { Datasource.Source.INTERNAL, Datasource.Source.DISPLAY },
+         new Datasource.Source[] { Datasource.Source.USB },
+            null,
+            null));
       if (exportMediumPicklist.getSelectedItemValue() != null) {
          ObjectPickListItem<MediumDevice> item = (ObjectPickListItem<MediumDevice>) exportMediumPicklist.getSelectedItem();
-         getSession().setDevice(Arrays.asList(item.getObject()));
+         getSession().setSources(Arrays.asList(item.getObject()));
       }
       if(exportFormatPicklist.getSelectedItemValue() != null) {
          getSession().setFormat(exportFormatPicklist.getSelectedItemValue());
@@ -225,13 +227,13 @@ public class ExportFragment extends BaseDataFragment {
             int index = new ArrayList<String>(formatManager.getFormats()).indexOf(session.getFormat());
             exportFormatPicklist.setSelectionByPosition(index);
          }
-         if(session.getDevice()==null) {
+         if(session.getSource()==null) {
             exportMediumPicklist.setSelectionById(-1);
          }
          else {
             for(int i=0; i<exportMediumPicklist.getAdapter().getCount(); i++) {
                ObjectPickListItem<MediumDevice> item = (ObjectPickListItem<MediumDevice>) exportMediumPicklist.getAdapter().getItem(i);
-               if(item.getObject().equals(session.getDevice())) {
+               if(item.getObject().equals(session.getSource())) {
                   exportMediumPicklist.setSelectionById(item.getId());
                   break;
                }
@@ -307,7 +309,7 @@ public class ExportFragment extends BaseDataFragment {
       getSession().setData(null);
       getSession().setObjectData(new ArrayList<ObjectGraph>(getTreeAdapter().getSelected()));
       ObjectPickListItem<MediumDevice> device = (ObjectPickListItem<MediumDevice>) exportMediumPicklist.getSelectedItem();
-      getSession().setDevice(Arrays.asList(device.getObject()));
+      getSession().setSources(Arrays.asList(device.getObject()));
       getSession().setFormat(exportFormatPicklist.getSelectedItemValue());
       setSession(getDataManagementService().processOperation(getSession(), SessionOperation.PERFORM_OPERATIONS));
       showProgressPanel();
@@ -337,7 +339,7 @@ public class ExportFragment extends BaseDataFragment {
       isActiveOperation |= getDataManagementService().hasActiveSession();
       boolean hasSelection = getTreeAdapter() != null
             && s != null
-            && s.getDevice() != null
+            && s.getSource() != null
             && s.getFormat() != null
             && getTreeAdapter().getSelected().size() > 0;
 

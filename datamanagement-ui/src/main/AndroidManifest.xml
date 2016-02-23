@@ -21,6 +21,14 @@
          <intent-filter>
             <action android:name="com.cnh.pf.data.management.CANCEL"/>
          </intent-filter>
+         <intent-filter>
+            <action android:name="android.intent.action.MEDIA_MOUNTED"/>
+            <action android:name="android.intent.action.MEDIA_UNMOUNTED"/>
+            <action android:name="android.intent.action.MEDIA_EJECT"/>
+            <action android:name="android.intent.action.MEDIA_BAD_REMOVAL"/>
+            <action android:name="android.intent.action.MEDIA_REMOVED"/>
+            <data android:scheme="file"/>
+         </intent-filter>
       </service>
 
       <receiver android:enabled="true" android:exported="true" android:name=".service.BootReceiver">
