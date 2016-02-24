@@ -11,11 +11,15 @@ package com.cnh.pf.android.data.management.adapter;
 
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 import android.app.Activity;
 import android.graphics.Color;
+import android.util.Pair;
+import android.util.TypedValue;
 import android.view.Gravity;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -45,7 +49,6 @@ public class DataConflictViewAdapter extends DataManagementBaseAdapter {
    private static final Logger logger = LoggerFactory.getLogger(DataConflictViewAdapter.class);
 
    @Inject LayoutInflater layoutInflater;
-   @InjectResource(R.string.duplicate_file) String duplicateStr;
    @InjectResource(R.string.cancel) String cancelStr;
    @InjectResource(R.string.done) String doneStr;
 
@@ -111,8 +114,9 @@ public class DataConflictViewAdapter extends DataManagementBaseAdapter {
 
    @Override
    public View getView(View convertView) {
-      View newView = null;
+      View newView = convertView;
       if (activeOperation < totalOperation) {
+         Operation operation = operationList.get(activeOperation);
          if (convertView == null) {
             newView = layoutInflater.inflate(R.layout.data_conflict, null);
             ColumnViewHolder viewHolder = new ColumnViewHolder();
@@ -121,22 +125,28 @@ public class DataConflictViewAdapter extends DataManagementBaseAdapter {
             viewHolder.columnsLayout = (LinearLayout) newView.findViewById(R.id.description_columns);
             viewHolder.newFile = (LinearLayout) newView.findViewById(R.id.new_file);
             newView.setTag(viewHolder);
-         } else {
-            newView = convertView;
          }
          logger.debug("Solve Conflict for object: " + activeOperation);
          ColumnViewHolder viewHolder = (ColumnViewHolder) newView.getTag();
-         Operation operation = operationList.get(activeOperation);
+
+         //a <type> named <name> already exists
          viewHolder.conflictFileTv.setText(
-               String.format(duplicateStr, operation.getData().getType().substring(operation.getData().getType().lastIndexOf(".") + 1), operation.getData().getName()));
+               context.getResources().getString(R.string.duplicate_file,
+                     getTypeString(operation.getData().getType()),
+                     operation.getData().getName()));
          populateDescriptionLayout(viewHolder.columnsLayout, viewHolder.exitingFile, viewHolder.newFile, operation.getConflictData(), operation.getData().getData());
       }
       targetView = newView;
       return newView;
    }
 
+   private String getTypeString(String type) {
+      return type.substring(type.lastIndexOf(".") + 1);
+   }
+
    /** Generates description area for the existing entity and new entitiy, reuses layouts */
    private void populateDescriptionLayout(LinearLayout rowLayout, LinearLayout existingFileLayout, LinearLayout newFileLayout,  Map<String, String> existingMap, Map<String, String> newMap) {
+      logger.debug("Conflict existing data: {}\nNew data {}", existingMap, newMap);
       /** Viewholder to re-use textviews within description area*/
       LayoutViewHolder existingFileVH = getViewHolder(existingFileLayout);
       LayoutViewHolder newFileVH = getViewHolder(newFileLayout);
@@ -147,39 +157,34 @@ public class DataConflictViewAdapter extends DataManagementBaseAdapter {
          rowLayout.setTag(rowVH);
       }
       Operation op = operationList.get(activeOperation);
-      String type = op.getData().getType().substring(op.getData().getType().lastIndexOf(".") + 1);
+      String type = getTypeString(op.getData().getType());
       if (existingFileVH.headerTv.getText() == null || existingFileVH.headerTv.getText().equals("")) {
-         existingFileVH.headerTv.setText(context.getResources().getString(R.string.existing_file, type));
+//         existingFileVH.headerTv.setText(context.getResources().getString(R.string.existing_file, type));
+         existingFileVH.headerTv.setText("Existing");
       }
       if (newFileVH.headerTv.getText() == null || newFileVH.headerTv.getText().equals("")) {
-         newFileVH.headerTv.setText(context.getResources().getString(R.string.new_file, type));
+//         newFileVH.headerTv.setText(context.getResources().getString(R.string.new_file, type));
+         newFileVH.headerTv.setText("New");
       }
 
-      Map<String, List<String>> rowMap = new HashMap<String, List<String>>();
-      //Add row for each row of existing data
-      for (final Map.Entry<String, String> entry : existingMap.entrySet()) {
-         rowMap.put(entry.getKey(), new ArrayList<String>() {{add(entry.getValue());}});
-      }
+      Map<String, Pair<String, String>> rowMap = new HashMap<String, Pair<String, String>>();
 
-      //Add row for each row of new data
-      for (final Map.Entry<String, String> entry : newMap.entrySet()) {
-         if (rowMap.containsKey(entry.getKey())) {
-            rowMap.get(entry.getKey()).add(entry.getValue());
-         }
-         else {
-            rowMap.put(entry.getKey(), new ArrayList<String>() {{add(""); add(entry.getValue());}});
-         }
+      Set<String> propNames = new HashSet<String>();
+      propNames.addAll(existingMap.keySet());
+      propNames.addAll(newMap.keySet());
+      for(String key : propNames) {
+         rowMap.put(key, new Pair<String, String>(existingMap.get(key), newMap.get(key)));
       }
 
       int rowNum = 0;
-      for (Map.Entry<String, List<String>> entry : rowMap.entrySet()) {
+      for (Map.Entry<String, Pair<String, String>> entry : rowMap.entrySet()) {
          logger.debug("descriptionMap: {} : {}", entry.getKey(), entry.getValue().toString());
          TextView existingFileRow;
          TextView newFileRow;
          TextView row;
          if (existingFileVH.columns.size() > rowNum) {
             existingFileRow = existingFileVH.columns.get(rowNum);
-            newFileRow = existingFileVH.columns.get(rowNum);
+            newFileRow = newFileVH.columns.get(rowNum);
             row = rowVH.columns.get(rowNum);
          }
          else {
@@ -193,9 +198,9 @@ public class DataConflictViewAdapter extends DataManagementBaseAdapter {
             rowVH.columns.add(row);
             rowLayout.addView(row);
          }
-         existingFileRow.setText(entry.getValue().get(0));
-         newFileRow.setText((entry.getValue().size() > 1 ? entry.getValue().get(1) : ""));
          row.setText(entry.getKey());
+         existingFileRow.setText(entry.getValue().first);
+         newFileRow.setText(entry.getValue().second);
 
          /** Highlight matching rows red for conflict */
          if (existingFileRow.getText().equals(newFileRow.getText()))
@@ -240,8 +245,7 @@ public class DataConflictViewAdapter extends DataManagementBaseAdapter {
       tv.setLayoutParams(new LinearLayout.LayoutParams(LinearLayout.LayoutParams.MATCH_PARENT, LinearLayout.LayoutParams.MATCH_PARENT));
       tv.setGravity(Gravity.CENTER_HORIZONTAL);
       tv.setTextAppearance(context, R.style.TextAppearance_Data_File_Column);
-      float scale = context.getResources().getDisplayMetrics().density;
-      int dpAsPixels = (int) (5*scale + 0.5f);
+      int dpAsPixels = (int) TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, 5, context.getResources().getDisplayMetrics());
       tv.setPadding(0,dpAsPixels,0, dpAsPixels);
       return tv;
    }
