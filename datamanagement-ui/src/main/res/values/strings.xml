@@ -59,8 +59,10 @@
    <string name="no_import_source">No import source device is detected. \nPlease check the device connection.</string>
    <string name="deselect_all">Deselect All</string>
    <string formatted="false" name="duplicate_file">A %s named \"%s\" already exists</string>
-   <string name="existing_file">Existing %s</string>
-   <string name="new_file">New %s</string>
+   <string name="existing_file">Existing</string>
+   <string name="existing_file_typed">Existing %s</string>
+   <string name="new_file">New</string>
+   <string name="new_file_typed">New %s</string>
    <string name="data_conflict">Data Conflict</string>
    <string name="rename_file">Rename %s</string>
    <string name="file_name">File Name</string>

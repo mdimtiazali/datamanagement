@@ -33,6 +33,7 @@ import com.cnh.android.widget.activity.TabActivity;
 import com.cnh.jgroups.Operation;
 import com.cnh.pf.android.data.management.R;
 
+import com.google.common.base.Strings;
 import com.google.inject.Inject;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -80,6 +81,9 @@ public class DataConflictViewAdapter extends DataManagementBaseAdapter {
             View view = layoutInflater.inflate(R.layout.rename_file, null);
             newNameDialog.setBodyView(view);
             final EditText textEntry = (EditText) view.findViewById(R.id.file_name);
+            if(Strings.isNullOrEmpty(op.getNewName())) {
+               textEntry.setText(op.getNewName());
+            }
             newNameDialog.setFirstButtonText(doneStr);
             newNameDialog.setSecondButtonText(cancelStr);
             newNameDialog.showThirdButton(false);
@@ -159,12 +163,10 @@ public class DataConflictViewAdapter extends DataManagementBaseAdapter {
       Operation op = operationList.get(activeOperation);
       String type = getTypeString(op.getData().getType());
       if (existingFileVH.headerTv.getText() == null || existingFileVH.headerTv.getText().equals("")) {
-//         existingFileVH.headerTv.setText(context.getResources().getString(R.string.existing_file, type));
-         existingFileVH.headerTv.setText("Existing");
+         existingFileVH.headerTv.setText(context.getResources().getString(R.string.existing_file));
       }
       if (newFileVH.headerTv.getText() == null || newFileVH.headerTv.getText().equals("")) {
-//         newFileVH.headerTv.setText(context.getResources().getString(R.string.new_file, type));
-         newFileVH.headerTv.setText("New");
+         newFileVH.headerTv.setText(context.getResources().getString(R.string.new_file));
       }
 
       Map<String, Pair<String, String>> rowMap = new HashMap<String, Pair<String, String>>();
