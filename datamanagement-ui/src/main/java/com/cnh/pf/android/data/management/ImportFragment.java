@@ -10,7 +10,6 @@
 package com.cnh.pf.android.data.management;
 
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 import java.util.Set;
 
@@ -23,7 +22,6 @@ import android.widget.ImageButton;
 import android.widget.LinearLayout;
 import android.widget.TextView;
 import android.widget.Toast;
-import butterknife.OnClick;
 import com.cnh.android.dialog.DialogView;
 import com.cnh.android.dialog.DialogViewInterface;
 import com.cnh.android.widget.activity.TabActivity;
@@ -130,15 +128,18 @@ public class ImportFragment extends BaseDataFragment {
    }
 
    private void checkImportButton() {
-      DataManagementSession s = getDataManagementService().getSession();
+      DataManagementSession s = getSession();
       boolean isActiveOperation = s!=null
-            && s.getSessionOperation().equals(SessionOperation.PERFORM_OPERATIONS)
-            && s.getResult()==null;
+            && (s.getSessionOperation().equals(SessionOperation.CALCULATE_CONFLICTS)
+            || s.getSessionOperation().equals(SessionOperation.CALCULATE_OPERATIONS)
+                  || (s.getSessionOperation().equals(SessionOperation.PERFORM_OPERATIONS) && s.getResult()==null));
+      isActiveOperation |= getDataManagementService().hasActiveSession();
       boolean hasSelection = getTreeAdapter() != null && getTreeAdapter().getSelected().size() > 0;
       logger.debug("Checking import button hasActiveOp {}", s);
 
       importSourceBtn.setEnabled(!isActiveOperation);
       importSelectedBtn.setEnabled(hasSelection && !isActiveOperation);
+      logger.debug("importedSelectedBtn {}", hasSelection && !isActiveOperation);
    }
 
    /**Called when user selects Import source, from Import Source Dialog*/
@@ -170,6 +171,7 @@ public class ImportFragment extends BaseDataFragment {
    }
 
    @Override public void processOperations() {
+      checkImportButton();
       if (getSession().getSessionOperation().equals(SessionOperation.CALCULATE_OPERATIONS)) {
          logger.debug("Calculate Targets");
          boolean hasMultipleTargets = false;
@@ -191,20 +193,14 @@ public class ImportFragment extends BaseDataFragment {
                   getSession().setData(operations);
                   logger.debug("Going to Calculate Conflicts");
                   showConflictDialog();
-                  getDataManagementService().processOperation(getSession(), SessionOperation.CALCULATE_CONFLICTS);
-               }
-            });
-            processDialog.setOnButtonClickListener(new DialogViewInterface.OnButtonClickListener() {
-               @Override public void onButtonClick(DialogViewInterface dialog, int which) {
-                  if (which == DialogViewInterface.BUTTON_THIRD) {
-                     // user pressed "Cancel" button
-                     dialog.dismiss();
-                  }
+                  setSession(getDataManagementService().processOperation(getSession(), SessionOperation.CALCULATE_CONFLICTS));
                }
             });
             processDialog.setOnDismissListener(new DialogViewInterface.OnDismissListener() {
                @Override public void onDismiss(DialogViewInterface dialog) {
                   processDialog.hide();
+                  getSession().setSessionOperation(SessionOperation.DISCOVERY);
+                  checkImportButton();
                }
             });
          }
@@ -212,7 +208,7 @@ public class ImportFragment extends BaseDataFragment {
             logger.debug("Found no targets with no parents, skipping to Calculate Conflicts");
             processDialog.hide();
             showConflictDialog();
-            getDataManagementService().processOperation(getSession(), SessionOperation.CALCULATE_CONFLICTS);
+            setSession(getDataManagementService().processOperation(getSession(), SessionOperation.CALCULATE_CONFLICTS));
          }
       }
       else if (getSession().getSessionOperation().equals(SessionOperation.CALCULATE_CONFLICTS)) {
@@ -234,12 +230,14 @@ public class ImportFragment extends BaseDataFragment {
                   processDialog.hide();
                   showProgressPanel();
                   getSession().setData(operations);
-                  getDataManagementService().processOperation(getSession(), SessionOperation.PERFORM_OPERATIONS);
+                  setSession(getDataManagementService().processOperation(getSession(), SessionOperation.PERFORM_OPERATIONS));
                }
             });
             processDialog.setOnDismissListener(new DialogViewInterface.OnDismissListener() {
                @Override public void onDismiss(DialogViewInterface dialog) {
                   processDialog.hide();
+                  getSession().setSessionOperation(SessionOperation.DISCOVERY);
+                  checkImportButton();
                }
             });
          }
@@ -247,7 +245,7 @@ public class ImportFragment extends BaseDataFragment {
             logger.debug("No conflicts found");
             processDialog.hide();
             showProgressPanel();
-            getDataManagementService().processOperation(getSession(), SessionOperation.PERFORM_OPERATIONS);
+            setSession(getDataManagementService().processOperation(getSession(), SessionOperation.PERFORM_OPERATIONS));
          }
       }
       else if(getSession().getSessionOperation().equals(SessionOperation.PERFORM_OPERATIONS)) {
@@ -258,6 +256,13 @@ public class ImportFragment extends BaseDataFragment {
             Toast.makeText(getActivity(), "Import Completed", Toast.LENGTH_LONG).show();
          }
       }
+
+   }
+
+   @Override
+   public void setSession(DataManagementSession session) {
+      super.setSession(session);
+      checkImportButton();
    }
 
    /** Shows conflict resolution dialog */
@@ -329,7 +334,7 @@ public class ImportFragment extends BaseDataFragment {
          processDialog.show();
          processDialog.setTitle(getResources().getString(R.string.checking_targets));
          getSession().setObjectData(new ArrayList<ObjectGraph>(getTreeAdapter().getSelected()));
-         getDataManagementService().processOperation(getSession(), DataManagementSession.SessionOperation.CALCULATE_OPERATIONS);
+         setSession(getDataManagementService().processOperation(getSession(), DataManagementSession.SessionOperation.CALCULATE_OPERATIONS));
       }
    }
 

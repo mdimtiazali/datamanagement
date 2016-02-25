@@ -382,6 +382,7 @@ public abstract class BaseDataFragment extends RoboFragment {
    }
 
    void updateSelectAllState() {
+      selectAllBtn.setEnabled(getSession()!=null);
       selectAllBtn.setText(getTreeAdapter().areAllSelected() ?
             R.string.deselect_all : R.string.select_all);
       selectAllBtn.setActivated(getTreeAdapter().areAllSelected());

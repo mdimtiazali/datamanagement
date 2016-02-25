@@ -211,8 +211,7 @@ public class ExportFragment extends BaseDataFragment {
       if(exportFormatPicklist.getSelectedItemValue() != null) {
          getSession().setFormat(exportFormatPicklist.getSelectedItemValue());
       }
-      checkExportButton();
-      getDataManagementService().processOperation(getSession(), SessionOperation.DISCOVERY);
+      setSession(getDataManagementService().processOperation(getSession(), SessionOperation.DISCOVERY));
    }
 
    @Override
@@ -239,6 +238,7 @@ public class ExportFragment extends BaseDataFragment {
             }
          }
       }
+      checkExportButton();
    }
 
    @Override
@@ -252,6 +252,7 @@ public class ExportFragment extends BaseDataFragment {
          }
          onNewSession();
       }
+      checkExportButton();
    }
 
    @Override
@@ -308,7 +309,7 @@ public class ExportFragment extends BaseDataFragment {
       ObjectPickListItem<MediumDevice> device = (ObjectPickListItem<MediumDevice>) exportMediumPicklist.getSelectedItem();
       getSession().setDevice(Arrays.asList(device.getObject()));
       getSession().setFormat(exportFormatPicklist.getSelectedItemValue());
-      getDataManagementService().processOperation(getSession(), SessionOperation.PERFORM_OPERATIONS);
+      setSession(getDataManagementService().processOperation(getSession(), SessionOperation.PERFORM_OPERATIONS));
       showProgressPanel();
    }
 
@@ -329,19 +330,20 @@ public class ExportFragment extends BaseDataFragment {
    }
 
    private void checkExportButton() {
-      DataManagementSession s = getDataManagementService().getSession();
+      DataManagementSession s = getSession();
       boolean isActiveOperation = s!=null
             && s.getSessionOperation().equals(SessionOperation.PERFORM_OPERATIONS)
             && s.getResult()==null;
+      isActiveOperation |= getDataManagementService().hasActiveSession();
       boolean hasSelection = getTreeAdapter() != null
-            && getSession().getDevice() != null
-            && getSession().getFormat() != null
+            && s != null
+            && s.getDevice() != null
+            && s.getFormat() != null
             && getTreeAdapter().getSelected().size() > 0;
 
       exportSelectedBtn.setEnabled(hasSelection && !isActiveOperation);
 
-      logger.debug("checkExportButton, exportMedium: {}, exportFormat: {}, selectedItems: {}",
-            getSession().getDevice(), getSession().getFormat(),
+      logger.debug("checkExportButton {} {}", s,
             hasSelection ? getTreeAdapter().getSelected().size() : "null");
    }
 
