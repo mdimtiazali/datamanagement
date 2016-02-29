@@ -95,17 +95,6 @@ public class DataManagementUITest {
       RoboGuice.Util.reset();
    }
 
-   /** Test whether the no data found dialog comes up when no discovery*/
-   @Test
-   public void testEmptyDiscovery() {
-      controller.create().start().resume();
-      DataManagementSession session = new DataManagementSession(new Datasource.Source[] { Datasource.Source.INTERNAL}, new ArrayList<MediumDevice>(0), new Datasource.Source[] {Datasource.Source.INTERNAL});
-      session.setSessionOperation(DataManagementSession.SessionOperation.DISCOVERY);
-      session.setObjectData(new ArrayList<ObjectGraph>());
-      eventManager.fire(new DataServiceConnectionImpl.DataSessionEvent(session));
-      assertEquals("Empty discovery dialog is visible", View.VISIBLE, activity.findViewById(R.id.empty_discovery_text).getVisibility());
-   }
-
    @Test
    public void testParseXml() throws IOException, XmlPullParserException {
       FormatManager parser = RoboGuice.getInjector(RuntimeEnvironment.application).getInstance(FormatManager.class);

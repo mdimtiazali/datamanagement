@@ -88,7 +88,7 @@ public class ProcessDialog extends DialogView {
                listener.onButtonSelected(Operation.Action.COPY_AND_REPLACE);
             }
             else if (which == DialogViewInterface.BUTTON_THIRD) {
-               ProcessDialog.this.hide();
+               ProcessDialog.this.dismiss();
             }
          }
       });
@@ -100,10 +100,10 @@ public class ProcessDialog extends DialogView {
             if (!done) {
                View targetView = adapter.getView(convertView);
                if (targetView == null) {
-                  ProcessDialog.this.dismiss();
+                  ProcessDialog.this.hide();
                }
             } else {
-               ProcessDialog.this.dismiss();
+               ProcessDialog.this.hide();
             }
          }
       });

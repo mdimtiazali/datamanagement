@@ -13,7 +13,9 @@ import javax.inject.Inject;
 import java.lang.reflect.Field;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
 import android.app.Application;
@@ -29,6 +31,7 @@ import android.os.AsyncTask;
 import android.os.Binder;
 import android.os.Handler;
 import android.os.IBinder;
+import android.os.ParcelUuid;
 import android.support.v4.app.NotificationCompat;
 import com.cnh.android.status.Status;
 import com.cnh.jgroups.Datasource;
@@ -39,12 +42,19 @@ import com.cnh.pf.android.data.management.DataManagementActivity;
 import com.cnh.pf.android.data.management.R;
 import com.cnh.pf.android.data.management.RoboModule;
 import com.cnh.pf.android.data.management.connection.DataServiceConnectionImpl;
+import com.cnh.pf.android.data.management.connection.DataServiceConnectionImpl.ConnectionEvent;
+import com.cnh.pf.android.data.management.connection.DataServiceConnectionImpl.DataSessionEvent;
+import com.cnh.pf.android.data.management.connection.DataServiceConnectionImpl.ErrorEvent;
+import com.cnh.pf.android.data.management.connection.DataServiceConnectionImpl.ProgressEvent;
+
 import com.cnh.pf.android.data.management.helper.DatasourceHelper;
 import com.cnh.pf.data.management.DataManagementSession;
+import com.cnh.pf.data.management.DataManagementSession.SessionOperation;
 import com.cnh.pf.data.management.aidl.IDataManagementListenerAIDL;
 import com.cnh.pf.data.management.aidl.MediumDevice;
 import com.cnh.pf.data.management.service.ServiceConstants;
 import com.cnh.pf.datamng.Process;
+import com.cnh.pf.datamng.Process.Result;
 import com.cnh.pf.jgroups.ChannelModule;
 import com.google.common.base.Function;
 import com.google.common.base.Throwables;
@@ -60,8 +70,11 @@ import org.slf4j.LoggerFactory;
 import roboguice.RoboGuiceHelper;
 import roboguice.config.DefaultRoboModule;
 import roboguice.event.EventManager;
+import roboguice.inject.InjectResource;
 import roboguice.service.RoboService;
 
+import static android.R.attr.y;
+import static android.R.id.message;
 import static com.cnh.pf.data.management.service.ServiceConstants.ACTION_STOP;
 import static org.jgroups.conf.ProtocolConfiguration.log;
 
@@ -77,6 +90,7 @@ public class DataManagementService extends RoboService implements SharedPreferen
    public static final String ACTION_CANCEL = "com.cnh.pf.data.management.CANCEL";
 
    private static final boolean SEND_NOTIFICATION = false;
+   public static final int KILL_STATUS_DELAY = 5000;
 
    private @Inject Mediator mediator;
    private @Inject DatasourceHelper dsHelper;
@@ -85,30 +99,32 @@ public class DataManagementService extends RoboService implements SharedPreferen
    @Named("global")
    @Inject private SharedPreferences prefs;
 
-   private BitmapDrawable statusDrawable;
+   @InjectResource(R.string.exporting_string) private String exporting;
+   @InjectResource(R.string.importing_string) private String importing;
+   @InjectResource(R.string.status_successful) private String statusSuccessful;
+   @InjectResource(R.string.status_cancelled) private String statusCancelled;
+   @InjectResource(R.string.status_cancelling) private String statusCancelling;
+   @InjectResource(R.string.status_starting) private String statusStarting;
 
    @Inject
    NotificationManager notifyManager;
 
-//   DataManagementSession session = null;
+   /** Running session, only one active session supported */
+   volatile DataManagementSession activeSession = null;
+   Status status;
+   boolean performCalled;
+
+   private Map<DataManagementSession, Status> activeSessions
+         = new HashMap<DataManagementSession, Status>();
+
    ConcurrentHashMap<String, IDataManagementListenerAIDL> listeners = new ConcurrentHashMap<String, IDataManagementListenerAIDL>();
    private Handler handler = new Handler();
    private final IBinder localBinder = new LocalBinder();
 
    /* Time to wait for USB Datasource to register if the usb has valid data*/
-   private static int usbDelay = 7000;
+   private static int usbDelay = 6000;
 
-   private static Field fStatusId;
-
-   static {
-      try {
-         fStatusId = Status.class.getField("mStatusId");
-         fStatusId.setAccessible(true);
-      }
-      catch (Exception e) {
-         logger.error("", e);
-      }
-   }
+   private BitmapDrawable statusDrawable;
 
    @Override public int onStartCommand(Intent intent, int flags, int startId) {
       logger.debug("onStartCommand {}", intent);
@@ -161,17 +177,22 @@ public class DataManagementService extends RoboService implements SharedPreferen
       });
    }
 
+   public DataManagementSession getSession() {
+      return activeSession;
+   }
+
    public void register(String name, IDataManagementListenerAIDL listener) {
       logger.debug("Register: " + name);
       listeners.put(name, listener);
    }
 
-   public void processOperation(final DataManagementSession session, DataManagementSession.SessionOperation sessionOperation) {
+   public DataManagementSession processOperation(final DataManagementSession session, DataManagementSession.SessionOperation sessionOperation) {
       logger.debug("service.processOperation: {}", sessionOperation);
       if (sessionOperation.equals(DataManagementSession.SessionOperation.DISCOVERY)) {
+         session.setSessionOperation(DataManagementSession.SessionOperation.DISCOVERY);
+         session.setResult(null);
          int waitForDatasource = 0;
-         if (Arrays.binarySearch(session.getDestinationTypes(), Datasource.Source.INTERNAL) > -1
-               && session.getDevice().getType().equals(Datasource.Source.USB)) {
+         if (isUsbImport(session)) {
             logger.debug("Starting USB Datasource");
             waitForDatasource = usbDelay;
             startUsbServices(session.getDevice().getPath().getPath(), false, session.getFormat());
@@ -185,19 +206,39 @@ public class DataManagementService extends RoboService implements SharedPreferen
          }, waitForDatasource);
       }
       else if (sessionOperation.equals(DataManagementSession.SessionOperation.CALCULATE_OPERATIONS)) {
+         session.setSessionOperation(DataManagementSession.SessionOperation.CALCULATE_OPERATIONS);
+         session.setResult(null);
          new CalculateTargetsTask().execute(session);
       }
       else if (sessionOperation.equals(DataManagementSession.SessionOperation.CALCULATE_CONFLICTS)) {
+         session.setSessionOperation(DataManagementSession.SessionOperation.CALCULATE_CONFLICTS);
+         session.setResult(null);
          new CalculateConflictsTask().execute(session);
       }
       else if (sessionOperation.equals(DataManagementSession.SessionOperation.PERFORM_OPERATIONS)) {
+         session.setSessionOperation(DataManagementSession.SessionOperation.PERFORM_OPERATIONS);
+         session.setResult(null);
          performOperations(session);
       }
       else {
          logger.error("Couldn't find op");
       }
+      return session;
    }
 
+   /**
+    * Return whether an operation is currently executing.
+    * @return true executing, false otherwise;
+    */
+   public boolean hasActiveSession() {
+      return activeSession!=null && activeSession.getResult()==null
+            && activeSession.getSessionOperation().equals(SessionOperation.PERFORM_OPERATIONS);
+   }
+
+   /**
+    * Cancel a session.
+    * @param session the session to cancel.
+    */
    public void cancel(DataManagementSession session) {
       new CancelTask().execute(session);
    }
@@ -206,36 +247,36 @@ public class DataManagementService extends RoboService implements SharedPreferen
       return dsHelper.getDevices();
    }
 
-
+   public static boolean isUsbExport(DataManagementSession session) {
+      return Arrays.binarySearch(session.getSourceTypes(), Datasource.Source.INTERNAL) > -1
+            && session.getDevice().getType().equals(Datasource.Source.USB);
+   }
+   public static boolean isUsbImport(DataManagementSession session) {
+      return Arrays.binarySearch(session.getDestinationTypes(), Datasource.Source.INTERNAL) > -1
+            && session.getDevice().getType().equals(Datasource.Source.USB);
+   }
 
    private void performOperations(final DataManagementSession session) {
       try {
          int waitStart = 0;
-         if (Arrays.binarySearch(session.getSourceTypes(), Datasource.Source.INTERNAL) > -1
-               && session.getDevice().getType().equals(Datasource.Source.USB)) {
-            String path = session.getDevice().getPath().getPath();
-            startUsbServices(path, true, session.getFormat());
+         activeSession = session; //track running sessions
+         performCalled = false;
+         status = new com.cnh.android.status.Status("", statusDrawable, getApplicationContext().getPackageName());
+         activeSessions.put(session, status);
+         sendStatus(session, statusStarting);
+         if (isUsbExport(session)) {
+            startUsbServices(session.getDevice().getPath().getPath(), true, session.getFormat());
             waitStart = usbDelay;
          }
          handler.postDelayed(new Runnable() {
             @Override
             public void run() {
-               new PerformOperationsTask() {
-                  @Override
-                  protected void onPostExecute(DataManagementSession session) {
-                     super.onPostExecute(session);
-                     if(!session.getResult().equals(Process.Result.CANCEL)) {
-                        logger.info("perform ops finished good");
-                        if (Arrays.binarySearch(session.getSourceTypes(), Datasource.Source.INTERNAL) > -1
-                              && session.getDevice().getType().equals(Datasource.Source.USB)) {
-                           stopUsbServices();
-                        }
-                     }
-                     else {
-                        logger.warn("perform ops finished not so good");
-                     }
-                  }
-               }.execute(session);
+               if(activeSession==null || Process.Result.CANCEL.equals(activeSession.getResult())) {
+                  log.debug("Operation cancelled before calling performOperations");
+                  return;  //if cancel was pressed before datasource started
+               }
+               performCalled = true;
+               new PerformOperationsTask().execute(session);
             }
          }, waitStart);
       }
@@ -277,29 +318,21 @@ public class DataManagementService extends RoboService implements SharedPreferen
       @Override
       public void onProgressPublished(String operation, int progress, int max) {
          logger.debug(String.format("publishProgress(%s, %d, %d)", operation, progress, max));
-         //TODO send notification
-         if(SEND_NOTIFICATION) {
-            Notification n = new NotificationCompat.Builder(DataManagementService.this)
-                  .setContentTitle("Data Operation")
-                  .setContentText(operation)
-                  .setSmallIcon(android.R.drawable.ic_dialog_info)
-                  .setProgress(max, progress, false)
-                  .setContentIntent(PendingIntent.getActivity(DataManagementService.this, 0, new Intent(DataManagementService.this, DataManagementActivity.class), 0))
-                  .addAction(R.drawable.button_stop, "Stop", PendingIntent.getService(DataManagementService.this, 0, new Intent(ACTION_CANCEL), 0))
-                  .build();
-            notifyManager.notify(0, n);
-         }
-         Status status = new Status(String.format("%s %d/%d", operation, progress, max),
-               statusDrawable, getApplicationContext().getPackageName());
-         try {
-            fStatusId.set(status, "data");
-         }
-         catch (Exception e) {
-            log.error("", e);
-         }
-
-         sendBroadcast(new Intent(Status.ACTION_STATUS_DISPLAY).putExtra(Status.NAME, status));
          globalEventManager.fire(new DataServiceConnectionImpl.ProgressEvent(operation, progress, max));
+         if (hasActiveSession() && performCalled) {
+            sendStatus(activeSession, String.format("%s %d/%d", operation, progress, max));
+
+            if (SEND_NOTIFICATION) {
+               notifyManager.notify(0, new NotificationCompat.Builder(DataManagementService.this)
+                     .setContentTitle("Data Operation")
+                     .setContentText(operation)
+                     .setSmallIcon(android.R.drawable.ic_dialog_info)
+                     .setProgress(max, progress, false)
+                     .setContentIntent(PendingIntent.getActivity(DataManagementService.this, 0, new Intent(DataManagementService.this, DataManagementActivity.class), 0))
+                     .addAction(R.drawable.button_stop, "Stop", PendingIntent.getService(DataManagementService.this, 0, new Intent(ACTION_CANCEL), 0))
+                     .build());
+            }
+         }
       }
 
       @Override
@@ -345,7 +378,6 @@ public class DataManagementService extends RoboService implements SharedPreferen
       protected DataManagementSession doInBackground(DataManagementSession... params) {
             DataManagementSession session = params[0];
          try {
-            session.setSessionOperation(DataManagementSession.SessionOperation.DISCOVERY);
             Address[] addrs = (session.getDevice()!=null && session.getDevice().getAddress()!=null) ? Collections2.transform(session.getDevices(), new Function<MediumDevice, Address>() {
                @Nullable @Override public Address apply(@Nullable MediumDevice input) {
                   return input.getAddress();
@@ -354,17 +386,22 @@ public class DataManagementService extends RoboService implements SharedPreferen
             logger.debug("Discovery for {}, address: {}", Arrays.toString(session.getSourceTypes()), addressToString(addrs));
             if (addrs == null || addrs.length > 0) {
                session.setObjectData(mediator.discovery(addrs));
-               session.setResult( Process.Result.SUCCESS);
+               if(session.getObjectData()==null || session.getObjectData().isEmpty()) {
+                  globalEventManager.fire(new ErrorEvent(session, ErrorEvent.DataError.NO_DATA));
+                  session.setResult(Result.NO_DATASOURCE);
+               } else {
+                  session.setResult(Process.Result.SUCCESS);
+               }
             } else {
-               globalEventManager.fire(
-                     new DataServiceConnectionImpl.ErrorEvent(DataServiceConnectionImpl.ErrorEvent.DataError.NO_SOURCE_DATASOURCE));
+               globalEventManager.fire(new ErrorEvent(session, ErrorEvent.DataError.NO_SOURCE_DATASOURCE));
                session.setResult(Process.Result.NO_DATASOURCE);
             }
          }
          catch (Exception e) {
             logger.debug("error in discovery", e);
-            globalEventManager.fire(new DataServiceConnectionImpl.ErrorEvent(DataServiceConnectionImpl.ErrorEvent.DataError.DISCOVERY_ERROR,
-               Throwables.getRootCause(e).getMessage()));
+            globalEventManager.fire(new ErrorEvent(session,
+                  ErrorEvent.DataError.DISCOVERY_ERROR,
+                  Throwables.getRootCause(e).getMessage()));
             session.setResult(Process.Result.ERROR);
          }
          return session;
@@ -377,7 +414,6 @@ public class DataManagementService extends RoboService implements SharedPreferen
          logger.debug("Calculate Targets...");
          DataManagementSession session = params[0];
          try {
-            session.setSessionOperation(DataManagementSession.SessionOperation.CALCULATE_OPERATIONS);
             Address[] addresses = dsHelper.getAddressForSourceType(session.getDestinationTypes());
             logger.debug("Calculate targets to address: {}", addressToString(addresses));
             if (addresses == null || addresses.length > 0) {
@@ -387,14 +423,15 @@ public class DataManagementService extends RoboService implements SharedPreferen
             } else {
                logger.warn("Skipping calculate targets");
                globalEventManager.fire(
-                     new DataServiceConnectionImpl.ErrorEvent(DataServiceConnectionImpl.ErrorEvent.DataError.NO_TARGET_DATASOURCE));
+                     new ErrorEvent(session, ErrorEvent.DataError.NO_TARGET_DATASOURCE));
                session.setResult( Process.Result.NO_DATASOURCE);
             }
          }
          catch (Exception e) {
             logger.error("Send exception in CalculateTargets: ", e);
-            globalEventManager.fire(new DataServiceConnectionImpl.ErrorEvent(DataServiceConnectionImpl.ErrorEvent.DataError.CALCULATE_TARGETS_ERROR,
-               Throwables.getRootCause(e).getMessage()));
+            globalEventManager.fire(new ErrorEvent(session,
+                  ErrorEvent.DataError.CALCULATE_TARGETS_ERROR,
+                  Throwables.getRootCause(e).getMessage()));
             session.setResult(Process.Result.ERROR);
          }
          return session;
@@ -407,7 +444,6 @@ public class DataManagementService extends RoboService implements SharedPreferen
          logger.debug("Calculate Conflicts...");
          DataManagementSession session = params[0];
          try {
-            session.setSessionOperation(DataManagementSession.SessionOperation.CALCULATE_CONFLICTS);
             Address[] addresses = dsHelper.getAddressForSourceType(session.getDestinationTypes());
             if (addresses == null || addresses.length > 0) {
                session.setData(mediator.calculateConflicts(session.getData(), addresses));
@@ -418,8 +454,9 @@ public class DataManagementService extends RoboService implements SharedPreferen
          }
          catch (Exception e) {
             logger.error("Send exception", e);
-            globalEventManager.fire(new DataServiceConnectionImpl.ErrorEvent(DataServiceConnectionImpl.ErrorEvent.DataError.CALCULATE_CONFLICT_ERROR,
-               Throwables.getRootCause(e).getMessage()));
+            globalEventManager.fire(new ErrorEvent(session,
+                  ErrorEvent.DataError.CALCULATE_CONFLICT_ERROR,
+                  Throwables.getRootCause(e).getMessage()));
             session.setResult(Process.Result.ERROR);
          }
          return session;
@@ -431,7 +468,6 @@ public class DataManagementService extends RoboService implements SharedPreferen
       protected DataManagementSession doInBackground(DataManagementSession... params) {
          logger.debug("Performing Operations...");
          DataManagementSession session = params[0];
-         session.setSessionOperation(DataManagementSession.SessionOperation.PERFORM_OPERATIONS);
          try {
             if(session.getData() == null) {
                session.setData(new ArrayList<Operation>());
@@ -450,26 +486,78 @@ public class DataManagementService extends RoboService implements SharedPreferen
                   }
                   else {//suspect/unreachable
                      globalEventManager.fire(
-                        new DataServiceConnectionImpl.ErrorEvent(DataServiceConnectionImpl.ErrorEvent.DataError.NO_TARGET_DATASOURCE));
-                     session.setResult( Process.Result.NO_DATASOURCE);
+                        new ErrorEvent(session, ErrorEvent.DataError.NO_TARGET_DATASOURCE));
+                     session.setResult(Process.Result.NO_DATASOURCE);
                   }
                }
-               session.setResult( hasIncomplete ? Process.Result.CANCEL : Process.Result.SUCCESS);
+               session.setResult(hasIncomplete ? Process.Result.CANCEL : Process.Result.SUCCESS);
             }
             else {
                globalEventManager.fire(
-                  new DataServiceConnectionImpl.ErrorEvent(DataServiceConnectionImpl.ErrorEvent.DataError.NO_TARGET_DATASOURCE));
+                  new ErrorEvent(session, ErrorEvent.DataError.NO_TARGET_DATASOURCE));
                session.setResult( Process.Result.NO_DATASOURCE);
             }
          }
          catch (Throwable e) {
             logger.error("Send exception in PerformOperation:", e);
-            globalEventManager.fire(new DataServiceConnectionImpl.ErrorEvent(DataServiceConnectionImpl.ErrorEvent.DataError.PERFORM_ERROR,
-               Throwables.getRootCause(e).getMessage()));
+            globalEventManager.fire(new ErrorEvent(session,
+                  ErrorEvent.DataError.PERFORM_ERROR,
+                  Throwables.getRootCause(e).toString()));
             session.setResult(Process.Result.ERROR);
          }
          return session;
       }
+
+      @Override
+      protected void onPostExecute(DataManagementSession session) {
+         super.onPostExecute(session);
+         completeOperation(session);
+      }
+   }
+
+   private void completeOperation(DataManagementSession session) {
+      logger.info("perform ops finished {}", session.getResult().name());
+      if(session.getResult().equals(Process.Result.ERROR)) {
+         sendStatus(session, "Error");
+      }
+      else if(session.getResult().equals(Process.Result.CANCEL)) {
+         sendStatus(session, statusCancelled);
+      }
+      else if(session.getResult().equals(Result.SUCCESS)) {
+         sendStatus(session, statusSuccessful);
+      }
+      if (isUsbExport(session)) {//stop USB datasources after export
+         stopUsbServices();
+      }
+      activeSessions.remove(activeSession);
+      activeSession=null;
+      handler.postDelayed(new Runnable() {
+         @Override
+         public void run() {
+            removeStatus(status);
+         }
+      }, KILL_STATUS_DELAY);
+   }
+
+   private void sendStatus(DataManagementSession session, int res, Object...args) {
+      if(args != null) {
+         sendStatus(session, getResources().getString(res, args));
+      }
+      else {
+         sendStatus(session, getResources().getString(res));
+      }
+   }
+
+   private void sendStatus(DataManagementSession session, String message) {
+      StringBuffer sb = new StringBuffer(isUsbImport(session) ? importing : exporting);
+      sb.append(" ").append(message);
+      status.setMessage(sb.toString());
+      removeStatus(status);
+      sendBroadcast(new Intent(Status.ACTION_STATUS_DISPLAY).putExtra(Status.NAME, status));
+   }
+
+   private void removeStatus(Status s) {
+      sendBroadcast(new Intent(Status.ACTION_STATUS_REMOVE).putExtra(Status.ID, ParcelUuid.fromString(s.getID().toString())));
    }
 
    private class CancelTask extends SessionOperationTask<Void> {
@@ -479,28 +567,38 @@ public class DataManagementService extends RoboService implements SharedPreferen
          DataManagementSession session = params[0];
          try {
             Address[] addresses = dsHelper.getAddressForSourceType(session.getDestinationTypes());
-            if (addresses == null || addresses.length > 0) {
+            //if process already running tell it to cancel.
+            if (addresses == null || addresses.length > 0 && performCalled) {
                mediator.cancel(addresses);
-               session.setResult(Process.Result.SUCCESS);
-            } else {
-               session.setResult(Process.Result.NO_DATASOURCE);
+            }
+            else {   //datasource hasn't started yet so finish before it began.
+               session.setResult(Process.Result.CANCEL);
             }
          }
          catch (Exception e) {
             logger.error("Send exception", e);
-            globalEventManager.fire(new DataServiceConnectionImpl.ErrorEvent(DataServiceConnectionImpl.ErrorEvent.DataError.PERFORM_ERROR,
-               Throwables.getRootCause(e).getMessage()));
-            session.setResult(Process.Result.ERROR);
+            globalEventManager.fire(new ErrorEvent(session, ErrorEvent.DataError.PERFORM_ERROR, Throwables.getRootCause(e).getMessage()));
          }
          return session;
+      }
+
+      @Override
+      protected void onPostExecute(DataManagementSession session) {
+         //only call super and fire event if we caught the datasource before it started working.
+         //otherwise the performOperations call itself will return the canceled status.
+         if(Process.Result.CANCEL.equals(session.getResult())) {
+            super.onPostExecute(session);
+            completeOperation(session);
+         } else {
+            sendStatus(session, statusCancelling);
+         }
       }
    }
 
    private abstract class SessionOperationTask<Progress> extends AsyncTask<DataManagementSession, Progress, DataManagementSession> {
       @Override protected void onPostExecute(DataManagementSession session) {
          super.onPostExecute(session);
-         if (session.getResult().equals(Process.Result.SUCCESS))
-            globalEventManager.fire(new DataServiceConnectionImpl.DataSessionEvent(session));
+         globalEventManager.fire(new DataSessionEvent(session));
       }
    }
 }

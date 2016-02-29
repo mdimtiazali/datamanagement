@@ -28,6 +28,8 @@ import com.cnh.pf.android.data.management.adapter.ObjectTreeViewAdapter;
 import com.cnh.pf.android.data.management.adapter.SelectionTreeViewAdapter;
 import com.cnh.pf.android.data.management.connection.DataServiceConnection;
 import com.cnh.pf.android.data.management.connection.DataServiceConnectionImpl;
+import com.cnh.pf.android.data.management.connection.DataServiceConnectionImpl.ErrorEvent;
+import com.cnh.pf.android.data.management.connection.DataServiceConnectionImpl.ProgressEvent;
 import com.cnh.pf.android.data.management.connection.DataServiceConnectionImpl.ConnectionEvent;
 import com.cnh.pf.android.data.management.connection.DataServiceConnectionImpl.DataSessionEvent;
 import com.cnh.pf.android.data.management.dialog.ErrorDialog;
@@ -35,11 +37,11 @@ import com.cnh.pf.android.data.management.graph.GroupObjectGraph;
 import com.cnh.pf.android.data.management.helper.TreeDragShadowBuilder;
 import com.cnh.pf.android.data.management.service.DataManagementService;
 import com.cnh.pf.data.management.DataManagementSession;
+import com.cnh.pf.data.management.DataManagementSession.SessionOperation;
 import com.google.inject.Inject;
 import com.google.inject.name.Named;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import pl.polidea.treeview.ImplicitSelectLinearLayout;
 import pl.polidea.treeview.InMemoryTreeStateManager;
 import pl.polidea.treeview.TreeBuilder;
 import pl.polidea.treeview.TreeStateManager;
@@ -77,6 +79,7 @@ public abstract class BaseDataFragment extends RoboFragment {
    private TreeBuilder<ObjectGraph> treeBuilder;
    protected ObjectTreeViewAdapter treeAdapter;
 
+   /** Current session */
    protected volatile DataManagementSession session = null;
 
    /**
@@ -85,15 +88,66 @@ public abstract class BaseDataFragment extends RoboFragment {
     * @param leftPanel Layout Left Panel Holder
     */
    public abstract void inflateViews(LayoutInflater inflater, View leftPanel);
+
+   /**
+    * Callback when new session is started.
+    */
    public abstract void onNewSession();
+
+   /**
+    * {@link SessionOperation} has completed.
+    *
+    * Useful to get user input and pass to next step in the process.
+    * Also to respond after process completion.
+    */
    public abstract void processOperations();
+
+   /**
+    * Is this operation the one currently managed by this fragment.
+    * @param session the session
+    * @return  <code>true</code> if the session is the current one, <code>false</code> if this is background session.
+    */
    public abstract boolean isCurrentOperation(DataManagementSession session);
-   public abstract void onTreeItemSelected();
+
+   /**
+    * Progress update from datasource.
+    * @param operation  the current operation
+    * @param progress   current progress
+    * @param max        total progress
+    */
    public abstract void onProgressPublished(String operation, int progress, int max);
+
+   /**
+    * Test whether a node is supported by the current format.
+    * @param node the node
+    * @return  <code>true</code> if supported, <code>false</code> otherwise.
+    */
    public abstract boolean supportedByFormat(ObjectGraph node);
+
+   /**
+    * A background session has completed.
+    * @param session the session
+    */
+   protected abstract void onOtherSessionUpdate(DataManagementSession session);
+
+   /**
+    * When user (de)selects a node in the tree
+    */
+   public void onTreeItemSelected() {
+      updateSelectAllState();
+   }
+
+   @Override
+   public void onSaveInstanceState(Bundle outState) {
+      super.onSaveInstanceState(outState);
+      outState.putParcelable("session", session);
+   }
 
    @Override public void onCreate(Bundle savedInstanceState) {
       super.onCreate(savedInstanceState);
+      if(savedInstanceState!=null) {
+         session = savedInstanceState.getParcelable("session");
+      }
    }
 
    @Override
@@ -101,11 +155,6 @@ public abstract class BaseDataFragment extends RoboFragment {
       View layout = inflater.inflate(R.layout.import_layout, container, false);
       LinearLayout leftPanel = (LinearLayout) layout.findViewById(R.id.left_panel_wrapper);
       inflateViews(inflater, leftPanel);
-      //TODO less listeners, one event cover multiple triggers
-      globalEventManager.registerObserver(DataSessionEvent.class, updateListener);
-      globalEventManager.registerObserver(ConnectionEvent.class, connectionListener);
-      globalEventManager.registerObserver(DataServiceConnectionImpl.ErrorEvent.class, errorListener);
-      globalEventManager.registerObserver(DataServiceConnectionImpl.ProgressEvent.class, progressListener);
       return layout;
    }
 
@@ -131,8 +180,8 @@ public abstract class BaseDataFragment extends RoboFragment {
    }
 
    @Override
-   public void onDestroyView() {
-      super.onDestroyView();
+   public void onPause() {
+      super.onPause();
       globalEventManager.unregisterObserver(DataSessionEvent.class, updateListener);
       globalEventManager.unregisterObserver(ConnectionEvent.class, connectionListener);
       globalEventManager.unregisterObserver(DataServiceConnectionImpl.ErrorEvent.class, errorListener);
@@ -142,6 +191,10 @@ public abstract class BaseDataFragment extends RoboFragment {
    @Override
    public void onResume() {
       super.onResume();
+      globalEventManager.registerObserver(DataSessionEvent.class, updateListener);
+      globalEventManager.registerObserver(ConnectionEvent.class, connectionListener);
+      globalEventManager.registerObserver(DataServiceConnectionImpl.ErrorEvent.class, errorListener);
+      globalEventManager.registerObserver(DataServiceConnectionImpl.ProgressEvent.class, progressListener);
       if (dataServiceConnection.isConnected()) {
          onResumeSession(null);
       }
@@ -167,9 +220,18 @@ public abstract class BaseDataFragment extends RoboFragment {
                errorDialog.setOnButtonClickListener(new DialogViewInterface.OnButtonClickListener() {
                   @Override
                   public void onButtonClick(DialogViewInterface dialog, int which) {
-                     if (which == DialogViewInterface.BUTTON_FIRST
-                           && !event.getType().equals(DataServiceConnectionImpl.ErrorEvent.DataError.NO_SOURCE_DATASOURCE))
-                        onResumeSession(null);
+                     if (which == DialogViewInterface.BUTTON_FIRST) {
+                        if(isCurrentOperation(event.getSession())) {
+                           if(!event.getType().equals(ErrorEvent.DataError.NO_SOURCE_DATASOURCE)) {
+                              onResumeSession(null);
+                           }
+                           else {
+                              treeProgress.setVisibility(View.GONE);
+                           }
+                        } else {
+                           onOtherSessionUpdate(event.getSession());
+                        }
+                     }
                   }
                });
                ((TabActivity) getActivity()).showPopup(errorDialog, true);
@@ -206,21 +268,37 @@ public abstract class BaseDataFragment extends RoboFragment {
       }
    };
 
+   /** Called when session was updated on backend */
+   EventListener updateListener = new EventListener<DataSessionEvent>() {
+      @Override
+      public void onEvent(final DataSessionEvent event) {
+         logger.debug("onSessionUpdated, session: {}", (session != null ? session.toString() : "null"));
+         getActivity().runOnUiThread(new Runnable() {
+            @Override
+            public void run() {
+               if(isCurrentOperation(event.getSession())) {
+                  onResumeSession(event.getSession());
+               } else {
+                  onOtherSessionUpdate(event.getSession());
+               }
+            }
+         });
+      }
+   };
+
    private void onResumeSession(DataManagementSession session) {
       logger.debug("onResumeSession {}", session);
-      if (session == null || !isCurrentOperation(session)) {
+      if (session == null) {
          logger.debug("Starting new session");
          setSession(null);
          treeViewList.setVisibility(View.GONE);
          onNewSession();
       }
-      else if (session.getObjectData() == null || session.getObjectData().size() < 1) {
-         displayEmptyDiscovery();
-      }
       else {
          setSession(session);
          DataManagementSession.SessionOperation op = session.getSessionOperation();
-         if (op.equals(DataManagementSession.SessionOperation.DISCOVERY)) {
+         if (op.equals(DataManagementSession.SessionOperation.DISCOVERY)
+               || getTreeAdapter() == null) {
             treeProgress.setVisibility(View.GONE);
             initiateTree();
          }
@@ -243,47 +321,8 @@ public abstract class BaseDataFragment extends RoboFragment {
       return operations;
    }
 
-   /** Called when session was updated on backend */
-   EventListener updateListener = new EventListener<DataSessionEvent>() {
-      @Override
-      public void onEvent(final DataSessionEvent event) {
-         logger.debug("onSessionUpdated, session: {}", (session != null ? session.toString() : "null"));
-         getActivity().runOnUiThread(new Runnable() {
-            @Override
-            public void run() {
-               onResumeSession(event.getSession());
-            }
-         });
-      }
-   };
-
-   private void displayEmptyDiscovery() {
-      getActivity().runOnUiThread(new Runnable() {
-         @Override
-         public void run() {
-            final DialogView emptyDialog = new DialogView(getActivity());
-            emptyDialog.setBodyView(layoutInflater.inflate(R.layout.empty_discovery, null));
-            emptyDialog.setFirstButtonText(doneStr);
-            emptyDialog.showSecondButton(false);
-            emptyDialog.showThirdButton(false);
-            emptyDialog.setTitle("");
-            emptyDialog.setOnButtonClickListener(new DialogViewInterface.OnButtonClickListener() {
-               @Override
-               public void onButtonClick(DialogViewInterface dialog, int which) {
-                  if (which == DialogViewInterface.BUTTON_FIRST) {
-                     startText.setVisibility(View.VISIBLE);
-                     pathTv.setText("");
-                     ((TabActivity) getActivity()).dismissPopup(emptyDialog);
-                  }
-               }
-            });
-            treeProgress.setVisibility(View.GONE);
-            ((TabActivity) getActivity()).showPopup(emptyDialog, true);
-         }
-      });
-   }
-
    private void initiateTree() {
+      if(session.getObjectData() == null) return;
       logger.debug("initateTree");
       //Discovery happened
       enableButtons(true);
@@ -342,16 +381,16 @@ public abstract class BaseDataFragment extends RoboFragment {
       }
    }
 
+   void updateSelectAllState() {
+      selectAllBtn.setEnabled(getSession()!=null);
+      selectAllBtn.setText(getTreeAdapter().areAllSelected() ?
+            R.string.deselect_all : R.string.select_all);
+      selectAllBtn.setActivated(getTreeAdapter().areAllSelected());
+   }
+
    void selectAll() {
-      if (!selectAllBtn.isActivated()) {
-         treeAdapter.selectAll(treeViewList, true);
-         selectAllBtn.setText(R.string.deselect_all);
-      }
-      else {
-         treeAdapter.selectAll(treeViewList, false);
-         selectAllBtn.setText(R.string.select_all);
-      }
-      selectAllBtn.setActivated(!selectAllBtn.isActivated());
+      treeAdapter.selectAll(treeViewList, !getTreeAdapter().areAllSelected());
+      updateSelectAllState();
    }
 
    public DataManagementSession getSession() {

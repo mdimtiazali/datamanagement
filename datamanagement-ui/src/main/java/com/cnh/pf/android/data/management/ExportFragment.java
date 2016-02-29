@@ -32,6 +32,7 @@ import com.cnh.jgroups.Datasource;
 import com.cnh.jgroups.ObjectGraph;
 import com.cnh.pf.android.data.management.parser.FormatManager;
 import com.cnh.pf.data.management.DataManagementSession;
+import com.cnh.pf.data.management.DataManagementSession.SessionOperation;
 import com.cnh.pf.data.management.aidl.MediumDevice;
 import com.cnh.pf.datamng.Process;
 import com.google.inject.Inject;
@@ -200,6 +201,7 @@ public class ExportFragment extends BaseDataFragment {
       leftStatusPanel.setVisibility(View.GONE);
       exportDropZone.setVisibility(View.VISIBLE);
       treeProgress.setVisibility(View.VISIBLE);
+      treeViewList.setVisibility(View.GONE);
       setSession(new DataManagementSession(new Datasource.Source[] { Datasource.Source.INTERNAL, Datasource.Source.DISPLAY }, null,
          new Datasource.Source[] { Datasource.Source.USB }));
       if (exportMediumPicklist.getSelectedItemValue() != null) {
@@ -209,8 +211,7 @@ public class ExportFragment extends BaseDataFragment {
       if(exportFormatPicklist.getSelectedItemValue() != null) {
          getSession().setFormat(exportFormatPicklist.getSelectedItemValue());
       }
-      checkExportButton();
-      getDataManagementService().processOperation(getSession(), DataManagementSession.SessionOperation.DISCOVERY);
+      setSession(getDataManagementService().processOperation(getSession(), SessionOperation.DISCOVERY));
    }
 
    @Override
@@ -237,16 +238,21 @@ public class ExportFragment extends BaseDataFragment {
             }
          }
       }
+      checkExportButton();
    }
 
    @Override
    public void processOperations() {
-      if(getSession().getSessionOperation().equals(DataManagementSession.SessionOperation.PERFORM_OPERATIONS)) {
+      if(getSession().getSessionOperation().equals(SessionOperation.PERFORM_OPERATIONS)) {
+         logger.trace("resetting new session.  Operation completed.");
+         getTreeAdapter().selectAll(treeViewList, false);
+         removeProgressPanel();
          if(getSession().getResult().equals(Process.Result.SUCCESS)) {
-            logger.trace("resetting new session.  Operation completed successfully.");
-            onNewSession();
+            Toast.makeText(getActivity(), "Export Completed", Toast.LENGTH_LONG).show();
          }
+         onNewSession();
       }
+      checkExportButton();
    }
 
    @Override
@@ -257,6 +263,7 @@ public class ExportFragment extends BaseDataFragment {
 
    @Override
    public void onTreeItemSelected() {
+      super.onTreeItemSelected();
       checkExportButton();
    }
 
@@ -266,12 +273,10 @@ public class ExportFragment extends BaseDataFragment {
       final Double percent = ((progress * 1.0) / max) * 100;
       progressBar.setProgress(percent.intValue());
       percentTv.setText(percent.intValue()+"");
-      if(getSession().getSessionOperation().equals(DataManagementSession.SessionOperation.PERFORM_OPERATIONS)
+      if(getSession()!=null &&
+            getSession().getSessionOperation().equals(SessionOperation.PERFORM_OPERATIONS)
             && progress == max) {
          logger.info("Process completed.  {}/{} objects", progress, max);
-         getTreeAdapter().selectAll(treeViewList, false);
-         removeProgressPanel();
-         Toast.makeText(getActivity(), "Export Completed", Toast.LENGTH_LONG).show();
       }
    }
 
@@ -289,13 +294,22 @@ public class ExportFragment extends BaseDataFragment {
       checkExportButton();
    }
 
+   @Override
+   protected void onOtherSessionUpdate(DataManagementSession session) {
+      logger.debug("Other session has been updated");
+      if(session.getSessionOperation().equals(SessionOperation.PERFORM_OPERATIONS)) {
+         logger.trace("Other operation completed. Enabling UI.");
+         checkExportButton();
+      }
+   }
+
    void exportSelected() {
       getSession().setData(null);
       getSession().setObjectData(new ArrayList<ObjectGraph>(getTreeAdapter().getSelected()));
       ObjectPickListItem<MediumDevice> device = (ObjectPickListItem<MediumDevice>) exportMediumPicklist.getSelectedItem();
       getSession().setDevice(Arrays.asList(device.getObject()));
       getSession().setFormat(exportFormatPicklist.getSelectedItemValue());
-      getDataManagementService().processOperation(getSession(), DataManagementSession.SessionOperation.PERFORM_OPERATIONS);
+      setSession(getDataManagementService().processOperation(getSession(), SessionOperation.PERFORM_OPERATIONS));
       showProgressPanel();
    }
 
@@ -316,15 +330,21 @@ public class ExportFragment extends BaseDataFragment {
    }
 
    private void checkExportButton() {
-      logger.debug("checkExportButton, exportMedium: {}, selectedItems: {}",
-            getSession().getDevice(),
-            getTreeAdapter() != null ? getTreeAdapter().getSelected().size() : "null");
+      DataManagementSession s = getSession();
+      boolean isActiveOperation = s!=null
+            && s.getSessionOperation().equals(SessionOperation.PERFORM_OPERATIONS)
+            && s.getResult()==null;
+      isActiveOperation |= getDataManagementService().hasActiveSession();
+      boolean hasSelection = getTreeAdapter() != null
+            && s != null
+            && s.getDevice() != null
+            && s.getFormat() != null
+            && getTreeAdapter().getSelected().size() > 0;
 
-      if(getSession().getDevice()==null || getTreeAdapter()==null) {
-         exportSelectedBtn.setEnabled(false);
-      } else {
-         exportSelectedBtn.setEnabled(getTreeAdapter().getSelected().size() > 0);
-      }
+      exportSelectedBtn.setEnabled(hasSelection && !isActiveOperation);
+
+      logger.debug("checkExportButton {} {}", s,
+            hasSelection ? getTreeAdapter().getSelected().size() : "null");
    }
 
    public static class ObjectPickListItem<T> extends PickListItem {

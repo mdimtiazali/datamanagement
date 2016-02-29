@@ -17,7 +17,8 @@
    <string name="dont_copy">Don\'t Copy</string>
    <string name="keep_both">Keep Both</string>
    <string name="conflict">Conflict</string>
-   <string name="newName">New name:</string>
+   <string name="new_id_title">Enter New Identifier</string>
+   <string name="new_id_label">New identifier:</string>
    <string name="calculating_targets">Calculating Targets</string>
    <string name="checking_targets">Checking Potential Targets...</string>
    <string name="checking_conflicts">Checking Conflicts...</string>
@@ -58,10 +59,12 @@
    <string name="no_import_source">No import source device is detected. \nPlease check the device connection.</string>
    <string name="deselect_all">Deselect All</string>
    <string formatted="false" name="duplicate_file">A %s named \"%s\" already exists</string>
-   <string name="existing_file">Existing File</string>
-   <string name="new_file">New File</string>
+   <string name="existing_file">Existing</string>
+   <string name="existing_file_typed">Existing %s</string>
+   <string name="new_file">New</string>
+   <string name="new_file_typed">New %s</string>
    <string name="data_conflict">Data Conflict</string>
-   <string name="rename_file">Rename File</string>
+   <string name="rename_file">Rename %s</string>
    <string name="file_name">File Name</string>
    <string name="empty_discovery">No data found</string>
 
@@ -71,5 +74,20 @@
       \nShapefile:
       \nPrescriptions.
    </string>
+
+   <string name="error_no_data">No Data</string>
+   <string name="error_no_source">No Source Datasource</string>
+   <string name="error_no_target">No Target Datasource</string>
+   <string name="error_perform_ops">Perform Operations Error</string>
+   <string name="error_calculate_conflicts">Calculate Conflicts Error</string>
+   <string name="error_calculate_operations">Calculate Targets Error</string>
+   <string name="error_discovery">Discovery Error</string>
+   <string name="status_cancelled">Cancelled</string>
+   <string name="status_cancelling">Cancelling...</string>
+   <string name="status_successful">Successful</string>
+   <string name="status_starting">Starting...</string>
+
+   <string name="usb_data_available">USB Data Available</string>
+   <string name="usb_no_data_available">No USB Data Available</string>
 
 </resources>
