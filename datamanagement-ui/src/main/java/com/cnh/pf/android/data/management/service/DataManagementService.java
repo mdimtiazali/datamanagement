@@ -103,9 +103,6 @@ public class DataManagementService extends RoboService implements SharedPreferen
    @Inject
    NotificationManager notifyManager;
 
-   /** Running session, only one active session supported */
-   volatile DataManagementSession activeSession = null;
-   Status status;
    boolean performCalled;
    private Map<DataManagementSession, Status> activeSessions
          = new HashMap<DataManagementSession, Status>();
@@ -240,8 +237,6 @@ public class DataManagementService extends RoboService implements SharedPreferen
       session.setSessionOperation(sessionOperation);
       session.setResult(null);
       if (sessionOperation.equals(DataManagementSession.SessionOperation.DISCOVERY)) {
-         session.setSessionOperation(DataManagementSession.SessionOperation.DISCOVERY);
-         session.setResult(null);
          int waitForDatasource = 0;
          if (isUsbImport(session)) {
             logger.debug("Starting USB Datasource");
@@ -259,18 +254,12 @@ public class DataManagementService extends RoboService implements SharedPreferen
          }, waitForDatasource);
       }
       else if (sessionOperation.equals(DataManagementSession.SessionOperation.CALCULATE_OPERATIONS)) {
-         session.setSessionOperation(DataManagementSession.SessionOperation.CALCULATE_OPERATIONS);
-         session.setResult(null);
          new CalculateTargetsTask().execute(session);
       }
       else if (sessionOperation.equals(DataManagementSession.SessionOperation.CALCULATE_CONFLICTS)) {
-         session.setSessionOperation(DataManagementSession.SessionOperation.CALCULATE_CONFLICTS);
-         session.setResult(null);
          new CalculateConflictsTask().execute(session);
       }
       else if (sessionOperation.equals(DataManagementSession.SessionOperation.PERFORM_OPERATIONS)) {
-         session.setSessionOperation(DataManagementSession.SessionOperation.PERFORM_OPERATIONS);
-         session.setResult(null);
          performOperations(session);
       }
       else {
@@ -284,8 +273,17 @@ public class DataManagementService extends RoboService implements SharedPreferen
     * @return true executing, false otherwise;
     */
    public boolean hasActiveSession() {
-      return activeSession!=null && activeSession.getResult()==null
-            && activeSession.getSessionOperation().equals(DataManagementSession.SessionOperation.PERFORM_OPERATIONS);
+      return getActiveSession()!=null;
+   }
+
+   public DataManagementSession getActiveSession() {
+      for(Map.Entry<DataManagementSession, Status> entry : activeSessions.entrySet()) {
+         if(entry.getKey().getResult()==null
+               && entry.getKey().getSessionOperation().equals(DataManagementSession.SessionOperation.PERFORM_OPERATIONS)) {
+            return entry.getKey();
+         }
+      }
+      return null;
    }
 
    /**
@@ -312,20 +310,19 @@ public class DataManagementService extends RoboService implements SharedPreferen
    private void performOperations(final DataManagementSession session) {
       try {
          int waitStart = 0;
-         activeSession = session; //track running sessions
          performCalled = false;
          Status status = new com.cnh.android.status.Status("", statusDrawable, getApplicationContext().getPackageName());
          activeSessions.put(session, status);
          sendStatus(session, statusStarting);
          if (isUsbExport(session)) {
-            startUsbServices(new String[] { session.getSource().getPath().getPath() },
+            startUsbServices(new String[] { session.getTargets().get(0).getPath().getPath() },
                   true, session.getFormat());
             waitStart = usbDelay;
          }
          handler.postDelayed(new Runnable() {
             @Override
             public void run() {
-               if(activeSession==null || Process.Result.CANCEL.equals(activeSession.getResult())) {
+               if(!hasActiveSession()) {
                   log.debug("Operation cancelled before calling performOperations");
                   return;  //if cancel was pressed before datasource started
                }
@@ -377,7 +374,7 @@ public class DataManagementService extends RoboService implements SharedPreferen
          logger.debug(String.format("publishProgress(%s, %d, %d)", operation, progress, max));
          globalEventManager.fire(new DataServiceConnectionImpl.ProgressEvent(operation, progress, max));
          if (hasActiveSession() && performCalled) {
-            sendStatus(activeSession, String.format("%s %d/%d", operation, progress, max));
+            sendStatus(getActiveSession(), String.format("%s %d/%d", operation, progress, max));
 
             if (SEND_NOTIFICATION) {
                notifyManager.notify(0, new NotificationCompat.Builder(DataManagementService.this)
@@ -582,7 +579,7 @@ public class DataManagementService extends RoboService implements SharedPreferen
       }
    }
 
-   private void completeOperation(DataManagementSession session) {
+   private void completeOperation(final DataManagementSession session) {
       logger.info("perform ops finished {}", session.getResult().name());
       if(session.getResult().equals(Process.Result.ERROR)) {
          sendStatus(session, "Error");
@@ -597,13 +594,10 @@ public class DataManagementService extends RoboService implements SharedPreferen
          new StopTask().execute(getAddresses(session.getTargets()));
       }
 
-      activeSessions.remove(session);
-      activeSession=null;
       handler.postDelayed(new Runnable() {
          @Override
          public void run() {
-            removeStatus(status);
-            status=null;
+            removeStatus(activeSessions.remove(session));
          }
       }, KILL_STATUS_DELAY);
    }
@@ -622,12 +616,13 @@ public class DataManagementService extends RoboService implements SharedPreferen
    }
 
    private void sendStatus(DataManagementSession session, Status status, String message) {
-      StringBuffer sb = new StringBuffer(isUsbImport(session) ? importing : exporting);
-      sb.append(" ").append(message);
-      sendStatus(status, sb.toString());
+      if(status==null) return;
+      sendStatus(status, new StringBuffer(
+            isUsbImport(session) ? importing : exporting).append(" ").append(message).toString());
    }
 
    private void sendStatus(Status s, String msg) {
+      if(s==null) return;
       s.setMessage(msg);
       removeStatus(s);
       sendBroadcast(new Intent(Status.ACTION_STATUS_DISPLAY).putExtra(Status.NAME, s));
@@ -645,7 +640,7 @@ public class DataManagementService extends RoboService implements SharedPreferen
          try {
             Address[] addresses = getAddresses(session.getTargets());
             //if process already running tell it to cancel.
-            if (addresses == null || addresses.length > 0 && performCalled) {
+            if (addresses.length > 0 && performCalled) {
                mediator.cancel(addresses);
             }
             else {   //datasource hasn't started yet so finish before it began.

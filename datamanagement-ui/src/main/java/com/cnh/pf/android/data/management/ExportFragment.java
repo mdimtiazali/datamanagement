@@ -40,6 +40,8 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import roboguice.inject.InjectView;
 
+import static com.cnh.pf.data.management.DataManagementSession.SessionOperation.DISCOVERY;
+
 /**
  * Export Tab Fragment, handles export to external mediums {USB, External Display}.
  * @author oscar.salazar@cnhind.com
@@ -177,11 +179,12 @@ public class ExportFragment extends BaseDataFragment {
             @Override public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
                if(id == -1) {
                   if(getSession()!=null) {
-                     getSession().setSources(null);
+                     getSession().setTargets(null);
                   }
-               } else {
+               } else if(getSession()!=null) {
                   ObjectPickListItem<MediumDevice> item = (ObjectPickListItem<MediumDevice>) exportMediumPicklist.findItemById(id);
-                  getSession().setSources(Arrays.asList(item.getObject()));
+                  getSession().setTargets(Arrays.asList(item.getObject()));
+                  getSession().setDestinationTypes(item.getObject().getType());
                }
                checkExportButton();
             }
@@ -191,9 +194,6 @@ public class ExportFragment extends BaseDataFragment {
             }
          });
       }
-      else {
-         //TODO Show Connect Sources in PickList
-      }
    }
 
    @Override
@@ -202,14 +202,11 @@ public class ExportFragment extends BaseDataFragment {
       exportDropZone.setVisibility(View.VISIBLE);
       treeProgress.setVisibility(View.VISIBLE);
       treeViewList.setVisibility(View.GONE);
+      ObjectPickListItem<MediumDevice> item = (ObjectPickListItem<MediumDevice>) exportMediumPicklist.getSelectedItem();
       setSession(new DataManagementSession(new Datasource.Source[] { Datasource.Source.INTERNAL, Datasource.Source.DISPLAY },
-         new Datasource.Source[] { Datasource.Source.USB },
+            item != null ? new Datasource.Source[] { item.getObject().getType() } : null,
             null,
-            null));
-      if (exportMediumPicklist.getSelectedItemValue() != null) {
-         ObjectPickListItem<MediumDevice> item = (ObjectPickListItem<MediumDevice>) exportMediumPicklist.getSelectedItem();
-         getSession().setSources(Arrays.asList(item.getObject()));
-      }
+            item != null ? Arrays.asList(item.getObject()) : null));
       if(exportFormatPicklist.getSelectedItemValue() != null) {
          getSession().setFormat(exportFormatPicklist.getSelectedItemValue());
       }
@@ -224,16 +221,16 @@ public class ExportFragment extends BaseDataFragment {
             exportFormatPicklist.setSelectionById(-1);
          }
          else {
-            int index = new ArrayList<String>(formatManager.getFormats()).indexOf(session.getFormat());
+            int index = Arrays.asList(formatManager.getFormats()).indexOf(session.getFormat());
             exportFormatPicklist.setSelectionByPosition(index);
          }
-         if(session.getSource()==null) {
+         if(session.getDestinationTypes()==null || session.getDestinationTypes().length==0) {
             exportMediumPicklist.setSelectionById(-1);
          }
          else {
             for(int i=0; i<exportMediumPicklist.getAdapter().getCount(); i++) {
                ObjectPickListItem<MediumDevice> item = (ObjectPickListItem<MediumDevice>) exportMediumPicklist.getAdapter().getItem(i);
-               if(item.getObject().equals(session.getSource())) {
+               if(item.getObject().getType().equals(session.getDestinationTypes()[0])) {
                   exportMediumPicklist.setSelectionById(item.getId());
                   break;
                }
@@ -339,7 +336,7 @@ public class ExportFragment extends BaseDataFragment {
       isActiveOperation |= getDataManagementService().hasActiveSession();
       boolean hasSelection = getTreeAdapter() != null
             && s != null
-            && s.getSource() != null
+            && s.getDestinationTypes() != null
             && s.getFormat() != null
             && getTreeAdapter().getSelected().size() > 0;
 
