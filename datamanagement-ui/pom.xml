@@ -58,6 +58,12 @@
                 </exclusion>
             </exclusions>
         </dependency>
+       <dependency>
+          <groupId>com.cnh.pf</groupId>
+          <artifactId>corelib</artifactId>
+          <version>7.6.0</version>
+          <type>aar</type>
+       </dependency>
         <dependency>
             <groupId>com.cnh.pf</groupId>
             <artifactId>pfwidget</artifactId>
