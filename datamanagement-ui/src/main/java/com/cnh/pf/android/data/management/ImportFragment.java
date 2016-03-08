@@ -303,7 +303,7 @@ public class ImportFragment extends BaseDataFragment {
    /** Check if session returned by service is an import operation*/
    @Override
    public boolean isCurrentOperation(DataManagementSession session) {
-      return DataManagementService.isUsbImport(session);
+      return session.equals(getSession());
    }
 
    @Override

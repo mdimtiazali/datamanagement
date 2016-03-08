@@ -117,7 +117,11 @@ public class DataManagementUITest {
       ExportFragment fragment = (ExportFragment) ((TabActivity) activity).getFragmentManager().findFragmentByTag("Export");
       assertTrue("export fragment is visible", fragment != null);
       //Start new discovery
-      fireDiscoveryEvent();
+      DataManagementSession session = new DataManagementSession(new Datasource.Source[] { Datasource.Source.INTERNAL }, new Datasource.Source[] { Datasource.Source.INTERNAL}, null, null);
+      session.setSessionOperation(DataManagementSession.SessionOperation.DISCOVERY);
+      session.setObjectData(getTestObjectData());
+      fragment.setSession(session);
+      fireDiscoveryEvent(session);
       //Assert tree view shows results of discovery
       assertEquals("Object Tree View is visible", View.VISIBLE, fragment.getView().findViewById(R.id.tree_view_list).getVisibility());
       //Mock picklist, select ISOXML as export format$
@@ -137,7 +141,11 @@ public class DataManagementUITest {
       activateTab(1);  //0 - Import 1 - Export
       //Mock picklist, select ISOXML as export format$
       ExportFragment fragment = (ExportFragment) ((TabActivity) activity).getFragmentManager().findFragmentByTag("Export");
-      fireDiscoveryEvent();
+      DataManagementSession session = new DataManagementSession(new Datasource.Source[] { Datasource.Source.INTERNAL }, new Datasource.Source[] { Datasource.Source.INTERNAL}, null, null);
+      session.setSessionOperation(DataManagementSession.SessionOperation.DISCOVERY);
+      session.setObjectData(getTestObjectData());
+      fragment.setSession(session);
+      fireDiscoveryEvent(session);
       fragment.exportFormatPicklist = mock(PickListEditable.class);
       when(fragment.exportFormatPicklist.getSelectedItemValue()).thenReturn("ISOXML");
       //Set selected item to top of tree, will import everything recursive
@@ -158,11 +166,8 @@ public class DataManagementUITest {
       ((TabActivity) activity).selectTabAtPosition(tabPosition);
    }
 
-   private void fireDiscoveryEvent() {
+   private void fireDiscoveryEvent(DataManagementSession session) {
       //Start new discovery
-      DataManagementSession session = new DataManagementSession(new Datasource.Source[] { Datasource.Source.INTERNAL }, new Datasource.Source[] { Datasource.Source.INTERNAL}, null, null);
-      session.setSessionOperation(DataManagementSession.SessionOperation.DISCOVERY);
-      session.setObjectData(getTestObjectData());
       eventManager.fire(new DataServiceConnectionImpl.DataSessionEvent(session));
    }
 
