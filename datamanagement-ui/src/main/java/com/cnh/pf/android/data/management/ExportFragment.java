@@ -224,17 +224,21 @@ public class ExportFragment extends BaseDataFragment {
             int index = Arrays.asList(formatManager.getFormats()).indexOf(session.getFormat());
             exportFormatPicklist.setSelectionByPosition(index);
          }
-         if(session.getDestinationTypes()==null || session.getDestinationTypes().length==0) {
-            exportMediumPicklist.setSelectionById(-1);
-         }
-         else {
+         if(session.getTargets()!=null) {
+            boolean found = false;
             for(int i=0; i<exportMediumPicklist.getAdapter().getCount(); i++) {
                ObjectPickListItem<MediumDevice> item = (ObjectPickListItem<MediumDevice>) exportMediumPicklist.getAdapter().getItem(i);
-               if(item.getObject().getType().equals(session.getDestinationTypes()[0])) {
+               if(item.getObject().equals(session.getTargets().get(0))) {
                   exportMediumPicklist.setSelectionById(item.getId());
+                  found = true;
                   break;
                }
             }
+            if(!found) {
+               exportMediumPicklist.setSelectionById(-1);
+            }
+         } else {
+            exportMediumPicklist.setSelectionById(-1);
          }
       }
       checkExportButton();
@@ -256,8 +260,8 @@ public class ExportFragment extends BaseDataFragment {
 
    @Override
    public boolean isCurrentOperation(DataManagementSession session) {
-      logger.trace("isCurrentOperation( {} )", Arrays.toString(session.getSourceTypes()));
-      return Arrays.binarySearch(session.getSourceTypes(), Datasource.Source.INTERNAL) > -1;
+      logger.trace("isCurrentOperation( {} == {})", session, getSession());
+      return session.equals(getSession());
    }
 
    @Override
