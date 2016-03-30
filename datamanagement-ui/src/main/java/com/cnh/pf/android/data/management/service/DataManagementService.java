@@ -299,12 +299,16 @@ public class DataManagementService extends RoboService implements SharedPreferen
    }
 
    public static boolean isUsbExport(DataManagementSession session) {
-      return Arrays.binarySearch(session.getSourceTypes(), Datasource.Source.INTERNAL) > -1
+      return session.getSourceTypes()!=null
+            && Arrays.binarySearch(session.getSourceTypes(), Datasource.Source.INTERNAL) > -1
+            && session.getDestinationTypes()!=null
             && Arrays.binarySearch(session.getDestinationTypes(), Datasource.Source.USB) > -1;
    }
    public static boolean isUsbImport(DataManagementSession session) {
-      return Arrays.binarySearch(session.getDestinationTypes(), Datasource.Source.INTERNAL) > -1
-            && session.getSource().getType().equals(Datasource.Source.USB);
+      return session.getSource()!=null
+            && session.getSource().getType().equals(Datasource.Source.USB)
+            && session.getDestinationTypes()!=null
+            && Arrays.binarySearch(session.getDestinationTypes(), Datasource.Source.INTERNAL) > -1;
    }
 
    private void performOperations(final DataManagementSession session) {
@@ -574,8 +578,8 @@ public class DataManagementService extends RoboService implements SharedPreferen
 
       @Override
       protected void onPostExecute(DataManagementSession session) {
-         super.onPostExecute(session);
          completeOperation(session);
+         super.onPostExecute(session);
       }
    }
 
@@ -594,10 +598,13 @@ public class DataManagementService extends RoboService implements SharedPreferen
          new StopTask().execute(getAddresses(session.getTargets()));
       }
 
+      final Status status = activeSessions.remove(session);
       handler.postDelayed(new Runnable() {
          @Override
          public void run() {
-            removeStatus(activeSessions.remove(session));
+            if(status != null) {
+               removeStatus(status);
+            }
          }
       }, KILL_STATUS_DELAY);
    }
@@ -659,8 +666,8 @@ public class DataManagementService extends RoboService implements SharedPreferen
          //only call super and fire event if we caught the datasource before it started working.
          //otherwise the performOperations call itself will return the canceled status.
          if(Process.Result.CANCEL.equals(session.getResult())) {
-            super.onPostExecute(session);
             completeOperation(session);
+            super.onPostExecute(session);
          } else {
             sendStatus(session, statusCancelling);
          }
