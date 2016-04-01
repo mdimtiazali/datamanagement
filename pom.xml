@@ -7,7 +7,7 @@
 	<parent>
 		<groupId>com.cnh.pf</groupId>
 		<artifactId>parent</artifactId>
-		<version>8.73.0-dm-SNAPSHOT</version>
+		<version>8.73.0-rsc-SNAPSHOT</version>
 		<relativePath>../</relativePath>
 	</parent>
 
