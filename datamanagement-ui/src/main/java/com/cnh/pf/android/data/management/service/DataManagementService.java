@@ -70,7 +70,6 @@ import roboguice.inject.InjectResource;
 import roboguice.service.RoboService;
 
 import static com.cnh.pf.data.management.service.ServiceConstants.ACTION_STOP;
-import static org.jgroups.conf.ProtocolConfiguration.log;
 
 /**
  * Service manages a DataManagementSession. Keeps one session alive until completion.
@@ -112,7 +111,7 @@ public class DataManagementService extends RoboService implements SharedPreferen
    private final IBinder localBinder = new LocalBinder();
 
    /* Time to wait for USB Datasource to register if the usb has valid data*/
-   private static int usbDelay = 6000;
+   private static int usbDelay = 7000;
 
    private BitmapDrawable statusDrawable;
    private static Status dataStatus;
@@ -327,7 +326,7 @@ public class DataManagementService extends RoboService implements SharedPreferen
             @Override
             public void run() {
                if(!hasActiveSession()) {
-                  log.debug("Operation cancelled before calling performOperations");
+                  logger.debug("Operation cancelled before calling performOperations");
                   return;  //if cancel was pressed before datasource started
                }
                performCalled = true;

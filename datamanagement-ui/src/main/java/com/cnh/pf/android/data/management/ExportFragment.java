@@ -224,7 +224,7 @@ public class ExportFragment extends BaseDataFragment {
             int index = Arrays.asList(formatManager.getFormats()).indexOf(session.getFormat());
             exportFormatPicklist.setSelectionByPosition(index);
          }
-         if(session.getTargets()!=null) {
+         if(session.getTargets()!=null && session.getTargets().size()>0) {
             boolean found = false;
             for(int i=0; i<exportMediumPicklist.getAdapter().getCount(); i++) {
                ObjectPickListItem<MediumDevice> item = (ObjectPickListItem<MediumDevice>) exportMediumPicklist.getAdapter().getItem(i);
