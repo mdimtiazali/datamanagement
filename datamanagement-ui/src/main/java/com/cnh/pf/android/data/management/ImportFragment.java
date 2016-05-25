@@ -67,9 +67,6 @@ public class ImportFragment extends BaseDataFragment {
    @InjectView(R.id.left_status) LinearLayout leftStatus;
    ProcessDialog processDialog;
 
-   private @Inject
-   DatasourceHelper dsHelper;
-
    @Override public void inflateViews(LayoutInflater inflater, View leftPanel) {
       inflater.inflate(R.layout.import_left_layout, (LinearLayout) leftPanel);
    }
@@ -165,11 +162,12 @@ public class ImportFragment extends BaseDataFragment {
       else {
          pathTv.setText(getString(R.string.display_named, event.getDevice().getName()));
       }
-      setSession(new DataManagementSession(new Datasource.Source[] { event.getDevice().getType() },
+      DataManagementSession session = new DataManagementSession(
+            null,
             new Datasource.Source[] { Datasource.Source.INTERNAL, Datasource.Source.DISPLAY },
             event.getDevices(),
-            dsHelper.getLocalDatasources(Datasource.Source.INTERNAL, Datasource.Source.DISPLAY)
-      ));
+            null);
+      setSession(session);
       getDataManagementService().processOperation(getSession(), SessionOperation.DISCOVERY);
       if(getTreeAdapter()!=null) getTreeAdapter().selectAll(treeViewList, false);  //clear out the selection
    }

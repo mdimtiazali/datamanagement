@@ -111,7 +111,7 @@ public class DataManagementService extends RoboService implements SharedPreferen
    private final IBinder localBinder = new LocalBinder();
 
    /* Time to wait for USB Datasource to register if the usb has valid data*/
-   private static int usbDelay = 7000;
+   private static int usbDelay = 6000;
 
    private BitmapDrawable statusDrawable;
    private static Status dataStatus;
@@ -236,21 +236,20 @@ public class DataManagementService extends RoboService implements SharedPreferen
       session.setSessionOperation(sessionOperation);
       session.setResult(null);
       if (sessionOperation.equals(DataManagementSession.SessionOperation.DISCOVERY)) {
-         int waitForDatasource = 0;
          if (isUsbImport(session)) {
             logger.debug("Starting USB Datasource");
-            waitForDatasource = usbDelay;
             startUsbServices(new String[] { session.getSource().getPath().getPath() },
                   false, session.getFormat());
+            handler.postDelayed(new Runnable() {
+               @Override
+               public void run() {
+                  logger.debug("Running discovery");
+                  new DiscoveryTask().execute(session);
+               }
+            }, usbDelay);
+         } else {
+            new DiscoveryTask().execute(session);
          }
-         handler.postDelayed(new Runnable() {
-            @Override
-            public void run() {
-               logger.debug("Running discovery");
-               session.setSources(dsHelper.getLocalDatasources(session.getSourceTypes()));
-               new DiscoveryTask().execute(session);
-            }
-         }, waitForDatasource);
       }
       else if (sessionOperation.equals(DataManagementSession.SessionOperation.CALCULATE_OPERATIONS)) {
          new CalculateTargetsTask().execute(session);
@@ -300,8 +299,8 @@ public class DataManagementService extends RoboService implements SharedPreferen
    public static boolean isUsbExport(DataManagementSession session) {
       return session.getSourceTypes()!=null
             && Arrays.binarySearch(session.getSourceTypes(), Datasource.Source.INTERNAL) > -1
-            && session.getDestinationTypes()!=null
-            && Arrays.binarySearch(session.getDestinationTypes(), Datasource.Source.USB) > -1;
+            && session.getTarget()!=null
+            && session.getTarget().getType().equals(Datasource.Source.USB);
    }
    public static boolean isUsbImport(DataManagementSession session) {
       return session.getSource()!=null
@@ -312,30 +311,28 @@ public class DataManagementService extends RoboService implements SharedPreferen
 
    private void performOperations(final DataManagementSession session) {
       try {
-         int waitStart = 0;
          performCalled = false;
          Status status = new com.cnh.android.status.Status("", statusDrawable, getApplicationContext().getPackageName());
          activeSessions.put(session, status);
          sendStatus(session, statusStarting);
          if (isUsbExport(session)) {
-            startUsbServices(new String[] { session.getTargets().get(0).getPath().getPath() },
-                  true, session.getFormat());
-            waitStart = usbDelay;
+            startUsbServices(new String[] { session.getTarget().getPath().getPath() }, true, session.getFormat());
+            handler.postDelayed(new Runnable() {
+               @Override
+               public void run() {
+                  if(!hasActiveSession()) {
+                     logger.debug("Operation cancelled before calling performOperations");
+                     return;  //if cancel was pressed before datasource started
+                  }
+                  performCalled = true;
+                  new PerformOperationsTask().execute(session);
+               }
+            }, usbDelay);
          }
-         handler.postDelayed(new Runnable() {
-            @Override
-            public void run() {
-               if(!hasActiveSession()) {
-                  logger.debug("Operation cancelled before calling performOperations");
-                  return;  //if cancel was pressed before datasource started
-               }
-               performCalled = true;
-               if(isUsbExport(session)) {
-                  session.setTargets(dsHelper.getLocalDatasources(session.getDestinationTypes()));
-               }
-               new PerformOperationsTask().execute(session);
-            }
-         }, waitStart);
+         else {
+            performCalled = true;
+            new PerformOperationsTask().execute(session);
+         }
       }
       catch (Exception e) {
          logger.error("Could not find destination address for this type", e);
@@ -400,6 +397,7 @@ public class DataManagementService extends RoboService implements SharedPreferen
          logger.debug("onViewAccepted {}", newView);
          try {
             dsHelper.setSourceMap(newView);
+            //TODO fire event
          }
          catch (Exception e) {
             logger.error("Error in updating sourceMap", e);
@@ -448,6 +446,12 @@ public class DataManagementService extends RoboService implements SharedPreferen
       protected DataManagementSession doInBackground(DataManagementSession... params) {
             DataManagementSession session = params[0];
          try {
+            if(session.getSources()==null && session.getSourceTypes()!=null) { //export
+               session.setSources(dsHelper.getLocalDatasources(session.getSourceTypes()));
+            }
+            else if(session.getSource().getAddress() == null) { //if MediumDevice hasn't been resolved
+               session.setSources(dsHelper.getLocalDatasources(session.getSource().getType()));
+            }
             Address[] addrs = getAddresses(session.getSources());
             logger.debug("Discovery for {}, address: {}", Arrays.toString(session.getSourceTypes()), addressToString(addrs));
             if (addrs == null || addrs.length > 0) {
@@ -474,12 +478,22 @@ public class DataManagementService extends RoboService implements SharedPreferen
       }
    }
 
+   private void resolveTargets(DataManagementSession session) {
+      if(session.getTargets()==null && session.getDestinationTypes()!=null) { //resolve by type
+         session.setTargets(dsHelper.getLocalDatasources(session.getDestinationTypes()));
+      }
+      else if(session.getTarget().getAddress() == null) { //if MediumDevice hasn't been resolved
+         session.setTargets(dsHelper.getLocalDatasources(session.getTarget().getType()));
+      }
+   }
+
    private class CalculateTargetsTask extends SessionOperationTask<Void> {
       @Override
       protected DataManagementSession doInBackground(DataManagementSession... params) {
          logger.debug("Calculate Targets...");
          DataManagementSession session = params[0];
          try {
+            resolveTargets(session);
             Address[] addresses = getAddresses(session.getTargets());
             logger.debug("Calculate targets to address: {}", addressToString(addresses));
             if (addresses == null || addresses.length > 0) {
@@ -535,6 +549,7 @@ public class DataManagementService extends RoboService implements SharedPreferen
          logger.debug("Performing Operations...");
          DataManagementSession session = params[0];
          try {
+            resolveTargets(session);
             if(session.getData() == null) {
                session.setData(new ArrayList<Operation>());
                for(ObjectGraph obj : session.getObjectData()) {
@@ -552,8 +567,8 @@ public class DataManagementService extends RoboService implements SharedPreferen
                   }
                   else {//suspect/unreachable
                      globalEventManager.fire(
-                        new ErrorEvent(session, ErrorEvent.DataError.NO_TARGET_DATASOURCE));
-                     session.setResult(Process.Result.NO_DATASOURCE);
+                        new ErrorEvent(session, ErrorEvent.DataError.PERFORM_ERROR));
+                     session.setResult(Result.ERROR);
                   }
                }
                session.setResult(hasIncomplete ? Process.Result.CANCEL : Process.Result.SUCCESS);
