@@ -311,6 +311,7 @@ public class DataManagementService extends RoboService implements SharedPreferen
 
    private void performOperations(final DataManagementSession session) {
       try {
+         session.setResult(null);
          performCalled = false;
          Status status = new com.cnh.android.status.Status("", statusDrawable, getApplicationContext().getPackageName());
          activeSessions.put(session, status);
@@ -559,11 +560,11 @@ public class DataManagementService extends RoboService implements SharedPreferen
             Address[] addresses = getAddresses(session.getTargets());
             if (addresses != null && addresses.length > 0) {
                session.setResults(mediator.performOperations(session.getData(), addresses));
-               boolean hasIncomplete = false;
+               boolean hasCancelled = Result.CANCEL.equals(session.getResult());
                for(Rsp<Process> ret : session.getResults()) {
                   if(ret.hasException()) throw ret.getException();
                   if(ret.wasReceived() && ret.getValue()!=null) {
-                     hasIncomplete |= ret.getValue().getProgress().progress<ret.getValue().getProgress().max;
+                     hasCancelled |= ret.getValue().getResult().equals(Result.CANCEL);
                   }
                   else {//suspect/unreachable
                      globalEventManager.fire(
@@ -571,7 +572,11 @@ public class DataManagementService extends RoboService implements SharedPreferen
                      session.setResult(Result.ERROR);
                   }
                }
-               session.setResult(hasIncomplete ? Process.Result.CANCEL : Process.Result.SUCCESS);
+               if(hasCancelled) {
+                  session.setResult(Result.CANCEL);
+               } else {
+                  session.setResult(Result.SUCCESS);
+               }
             }
             else {
                globalEventManager.fire(
@@ -581,10 +586,10 @@ public class DataManagementService extends RoboService implements SharedPreferen
          }
          catch (Throwable e) {
             logger.error("Send exception in PerformOperation:", e);
+            session.setResult(Process.Result.ERROR);
             globalEventManager.fire(new ErrorEvent(session,
                   ErrorEvent.DataError.PERFORM_ERROR,
                   Throwables.getRootCause(e).toString()));
-            session.setResult(Process.Result.ERROR);
 
          }
          return session;
@@ -659,13 +664,11 @@ public class DataManagementService extends RoboService implements SharedPreferen
          logger.debug("Cancelling...");
          DataManagementSession session = params[0];
          try {
+            session.setResult(Process.Result.CANCEL);
             Address[] addresses = getAddresses(session.getTargets());
             //if process already running tell it to cancel.
             if (addresses.length > 0 && performCalled) {
                mediator.cancel(addresses);
-            }
-            else {   //datasource hasn't started yet so finish before it began.
-               session.setResult(Process.Result.CANCEL);
             }
          }
          catch (Exception e) {
@@ -705,7 +708,9 @@ public class DataManagementService extends RoboService implements SharedPreferen
    private abstract class SessionOperationTask<Progress> extends AsyncTask<DataManagementSession, Progress, DataManagementSession> {
       @Override protected void onPostExecute(DataManagementSession session) {
          super.onPostExecute(session);
-         globalEventManager.fire(new DataSessionEvent(session));
+         if(session.getResult()!=Result.ERROR) {
+            globalEventManager.fire(new DataSessionEvent(session));
+         }
       }
    }
 }
