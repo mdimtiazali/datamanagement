@@ -11,6 +11,7 @@ package com.cnh.pf.android.data.management;
 
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collection;
 import java.util.List;
 
 import android.os.Bundle;
@@ -30,6 +31,7 @@ import com.cnh.android.widget.control.PickListItem;
 import com.cnh.android.widget.control.ProgressBarView;
 import com.cnh.jgroups.Datasource;
 import com.cnh.jgroups.ObjectGraph;
+import com.cnh.pf.android.data.management.helper.DatasourceHelper;
 import com.cnh.pf.android.data.management.parser.FormatManager;
 import com.cnh.pf.data.management.DataManagementSession;
 import com.cnh.pf.data.management.DataManagementSession.SessionOperation;
@@ -144,13 +146,8 @@ public class ExportFragment extends BaseDataFragment {
       exportFormatPicklist.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
          @Override
          public void onItemSelected(AdapterView<?> adapterView, View view, int position, long id) {
-            if(id == -1) {
-               if(getSession()!=null) {
-                  getSession().setFormat(null);
-               }
-            } else {
-               PickListItem item = exportFormatPicklist.findItemById(id);
-               getSession().setFormat(item.getValue());
+            if(getSession()!=null) {
+               getSession().setFormat(id!=-1 ? exportFormatPicklist.findItemById(id).getValue() : null);
             }
             if(getTreeAdapter()!=null) {
                getTreeAdapter().updateViewSelection(treeViewList);
@@ -169,31 +166,26 @@ public class ExportFragment extends BaseDataFragment {
    private void populateExportToPickList() {
       exportMediumPicklist.setAdapter(new PickListAdapter(exportMediumPicklist, getActivity().getApplicationContext()));
       List<MediumDevice> devices = getDataManagementService().getMediums();
-      if (devices != null && devices.size() > 0) {
+      if (!isEmpty(devices)) {
          int deviceId = 0;
          for (MediumDevice device : devices) {
-            exportMediumPicklist.addItem(new ObjectPickListItem<MediumDevice>(deviceId, device.getType().toString(), device));
-            deviceId++;
+            exportMediumPicklist.addItem(new ObjectPickListItem<MediumDevice>(deviceId++, device.getType().toString(), device));
          }
-         exportMediumPicklist.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
-            @Override public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
-               if(id == -1) {
-                  if(getSession()!=null) {
-                     getSession().setTargets(null);
-                  }
-               } else if(getSession()!=null) {
-                  ObjectPickListItem<MediumDevice> item = (ObjectPickListItem<MediumDevice>) exportMediumPicklist.findItemById(id);
-                  getSession().setTargets(Arrays.asList(item.getObject()));
-                  getSession().setDestinationTypes(item.getObject().getType());
-               }
-               checkExportButton();
-            }
-
-            @Override public void onNothingSelected(AdapterView<?> parent) {
-               getSession().setSources(null);
-            }
-         });
       }
+      exportMediumPicklist.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
+         @Override public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
+            if(getSession()!=null) {
+               ObjectPickListItem<MediumDevice> item = (ObjectPickListItem<MediumDevice>) exportMediumPicklist.findItemById(id);
+               getSession().setTargets(item!=null ? Arrays.asList(item.getObject()) : null);
+            }
+            checkExportButton();
+         }
+
+         @Override public void onNothingSelected(AdapterView<?> parent) {
+            getSession().setTargets(null);
+            checkExportButton();
+         }
+      });
    }
 
    @Override
@@ -202,15 +194,25 @@ public class ExportFragment extends BaseDataFragment {
       exportDropZone.setVisibility(View.VISIBLE);
       treeProgress.setVisibility(View.VISIBLE);
       treeViewList.setVisibility(View.GONE);
+      DataManagementSession session = new DataManagementSession(
+            new Datasource.Source[] { Datasource.Source.INTERNAL, Datasource.Source.DISPLAY },
+            null, null, null);
       ObjectPickListItem<MediumDevice> item = (ObjectPickListItem<MediumDevice>) exportMediumPicklist.getSelectedItem();
-      setSession(new DataManagementSession(new Datasource.Source[] { Datasource.Source.INTERNAL, Datasource.Source.DISPLAY },
-            item != null ? new Datasource.Source[] { item.getObject().getType() } : null,
-            null,
-            item != null ? Arrays.asList(item.getObject()) : null));
-      if(exportFormatPicklist.getSelectedItemValue() != null) {
-         getSession().setFormat(exportFormatPicklist.getSelectedItemValue());
+      if(item != null) {
+         session.setTargets(Arrays.asList(item.getObject()));
       }
-      setSession(getDataManagementService().processOperation(getSession(), SessionOperation.DISCOVERY));
+      if(exportFormatPicklist.getSelectedItemValue() != null) {
+         session.setFormat(exportFormatPicklist.getSelectedItemValue());
+      }
+      setSession(getDataManagementService().processOperation(session, SessionOperation.DISCOVERY));
+   }
+
+   public static boolean isEmpty(Collection<?> collection) {
+      return collection==null || collection.isEmpty();
+   }
+
+   public static boolean isEmpty(Object []array) {
+      return array==null || array.length==0;
    }
 
    @Override
@@ -221,23 +223,19 @@ public class ExportFragment extends BaseDataFragment {
             exportFormatPicklist.setSelectionById(-1);
          }
          else {
-            int index = Arrays.asList(formatManager.getFormats()).indexOf(session.getFormat());
-            exportFormatPicklist.setSelectionByPosition(index);
+            exportFormatPicklist.setSelectionByPosition(Arrays.asList(formatManager.getFormats()).indexOf(session.getFormat()));
          }
-         if(session.getTargets()!=null) {
-            boolean found = false;
-            for(int i=0; i<exportMediumPicklist.getAdapter().getCount(); i++) {
-               ObjectPickListItem<MediumDevice> item = (ObjectPickListItem<MediumDevice>) exportMediumPicklist.getAdapter().getItem(i);
-               if(item.getObject().equals(session.getTargets().get(0))) {
-                  exportMediumPicklist.setSelectionById(item.getId());
-                  found = true;
-                  break;
-               }
+
+         boolean found = false;
+         for(int i=0; i<exportMediumPicklist.getAdapter().getCount(); i++) {
+            ObjectPickListItem<MediumDevice> item = (ObjectPickListItem<MediumDevice>) exportMediumPicklist.getAdapter().getItem(i);
+            if(!isEmpty(session.getTargets()) && item.getObject().equals(session.getTargets().get(0))) {
+               exportMediumPicklist.setSelectionById(item.getId());
+               found = true;
+               break;
             }
-            if(!found) {
-               exportMediumPicklist.setSelectionById(-1);
-            }
-         } else {
+         }
+         if(!found) {
             exportMediumPicklist.setSelectionById(-1);
          }
       }
@@ -309,9 +307,6 @@ public class ExportFragment extends BaseDataFragment {
    void exportSelected() {
       getSession().setData(null);
       getSession().setObjectData(new ArrayList<ObjectGraph>(getTreeAdapter().getSelected()));
-      ObjectPickListItem<MediumDevice> device = (ObjectPickListItem<MediumDevice>) exportMediumPicklist.getSelectedItem();
-      getSession().setSources(Arrays.asList(device.getObject()));
-      getSession().setFormat(exportFormatPicklist.getSelectedItemValue());
       setSession(getDataManagementService().processOperation(getSession(), SessionOperation.PERFORM_OPERATIONS));
       showProgressPanel();
    }
@@ -340,7 +335,7 @@ public class ExportFragment extends BaseDataFragment {
       isActiveOperation |= getDataManagementService().hasActiveSession();
       boolean hasSelection = getTreeAdapter() != null
             && s != null
-            && s.getDestinationTypes() != null
+            && s.getTarget() != null
             && s.getFormat() != null
             && getTreeAdapter().getSelected().size() > 0;
 

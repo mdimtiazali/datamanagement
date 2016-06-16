@@ -14,6 +14,7 @@ import android.app.Service;
 import com.cnh.pf.android.data.management.R;
 import com.cnh.pf.data.management.DataManagementSession;
 import com.google.common.base.MoreObjects;
+import org.jgroups.View;
 
 /**
  * Service must handle its own connection to service. Must provide Service connection and status.
@@ -144,6 +145,32 @@ public interface DataServiceConnectionImpl {
                .add("session", session)
                .add("error", error)
                .add("type", type)
+               .toString();
+      }
+   }
+
+   class ViewChangeEvent {
+      private View newView;
+      private View oldView;
+
+      public ViewChangeEvent(View oldView, View newView) {
+         this.newView = newView;
+         this.oldView = oldView;
+      }
+
+      public View getNewView() {
+         return newView;
+      }
+
+      public View getOldView() {
+         return oldView;
+      }
+
+      @Override
+      public String toString() {
+         return MoreObjects.toStringHelper(this)
+               .add("oldView", oldView)
+               .add("newView", newView)
                .toString();
       }
    }

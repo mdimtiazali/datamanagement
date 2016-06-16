@@ -131,6 +131,9 @@ public abstract class BaseDataFragment extends RoboFragment {
     */
    protected abstract void onOtherSessionUpdate(DataManagementSession session);
 
+   protected void onViewChange(org.jgroups.View oldView, org.jgroups.View newView) {
+   }
+
    /**
     * When user (de)selects a node in the tree
     */
@@ -187,6 +190,7 @@ public abstract class BaseDataFragment extends RoboFragment {
       globalEventManager.unregisterObserver(ConnectionEvent.class, connectionListener);
       globalEventManager.unregisterObserver(DataServiceConnectionImpl.ErrorEvent.class, errorListener);
       globalEventManager.unregisterObserver(DataServiceConnectionImpl.ProgressEvent.class, progressListener);
+      globalEventManager.unregisterObserver(DataServiceConnectionImpl.ViewChangeEvent.class, viewChangeListener);
    }
 
    @Override
@@ -196,6 +200,7 @@ public abstract class BaseDataFragment extends RoboFragment {
       globalEventManager.registerObserver(ConnectionEvent.class, connectionListener);
       globalEventManager.registerObserver(DataServiceConnectionImpl.ErrorEvent.class, errorListener);
       globalEventManager.registerObserver(DataServiceConnectionImpl.ProgressEvent.class, progressListener);
+      globalEventManager.registerObserver(DataServiceConnectionImpl.ViewChangeEvent.class, viewChangeListener);
       if (dataServiceConnection.isConnected()) {
          onResumeSession(null);
       }
@@ -253,6 +258,19 @@ public abstract class BaseDataFragment extends RoboFragment {
             //Disable all buttons for now
             enableButtons(false);
          }
+      }
+   };
+
+   /** Called when group membership changes */
+   EventListener viewChangeListener = new EventListener<DataServiceConnectionImpl.ViewChangeEvent>() {
+      @Override
+      public void onEvent(final DataServiceConnectionImpl.ViewChangeEvent event) {
+         getActivity().runOnUiThread(new Runnable() {
+            @Override
+            public void run() {
+               onViewChange(event.getOldView(), event.getNewView());
+            }
+         });
       }
    };
 
