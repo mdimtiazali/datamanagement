@@ -114,6 +114,7 @@ public class ImportFragment extends BaseDataFragment {
             return false;
          }
       });
+      processDialog = new ProcessDialog(getActivity());
    }
 
 
@@ -140,12 +141,9 @@ public class ImportFragment extends BaseDataFragment {
             || s.getSessionOperation().equals(SessionOperation.CALCULATE_OPERATIONS)
                   || (s.getSessionOperation().equals(SessionOperation.PERFORM_OPERATIONS) && s.getResult()==null));
       isActiveOperation |= getDataManagementService().hasActiveSession();
-      boolean hasSelection = getTreeAdapter() != null && getTreeAdapter().getSelected().size() > 0;
-      logger.debug("Checking import button hasActiveOp {}", s);
-
+      boolean hasSelection = getTreeAdapter() != null && getTreeAdapter().hasSelection();
       importSourceBtn.setEnabled(!isActiveOperation);
       importSelectedBtn.setEnabled(hasSelection && !isActiveOperation);
-      logger.debug("importedSelectedBtn {}", hasSelection && !isActiveOperation);
    }
 
    /**Called when user selects Import source, from Import Source Dialog*/
@@ -175,12 +173,10 @@ public class ImportFragment extends BaseDataFragment {
    @Override
    public void onNewSession() {
       removeProgressPanel();
-      checkImportButton();
       setSession(null);
    }
 
    @Override public void processOperations() {
-      checkImportButton();
       if (getSession().getSessionOperation().equals(SessionOperation.CALCULATE_OPERATIONS)) {
          logger.debug("Calculate Targets");
          boolean hasMultipleTargets = false;
@@ -198,7 +194,6 @@ public class ImportFragment extends BaseDataFragment {
             adapter.setOnTargetsSelectedListener(new TargetProcessViewAdapter.OnTargetsSelectedListener() {
                @Override public void onCompletion(List<Operation> operations) {
                   logger.debug("onCompletion: {}", operations.toString());
-                  processDialog.hide();
                   getSession().setData(operations);
                   logger.debug("Going to Calculate Conflicts");
                   showConflictDialog();
@@ -208,6 +203,8 @@ public class ImportFragment extends BaseDataFragment {
             processDialog.setOnDismissListener(new DialogViewInterface.OnDismissListener() {
                @Override public void onDismiss(DialogViewInterface dialog) {
                   processDialog.hide();
+                  treeViewList.setVisibility(View.VISIBLE);
+                  treeProgress.setVisibility(View.GONE);
                   getSession().setSessionOperation(SessionOperation.DISCOVERY);
                   checkImportButton();
                }
@@ -215,7 +212,6 @@ public class ImportFragment extends BaseDataFragment {
          }
          else {
             logger.debug("Found no targets with no parents, skipping to Calculate Conflicts");
-            processDialog.hide();
             showConflictDialog();
             setSession(getDataManagementService().processOperation(getSession(), SessionOperation.CALCULATE_CONFLICTS));
          }
@@ -245,6 +241,8 @@ public class ImportFragment extends BaseDataFragment {
             processDialog.setOnDismissListener(new DialogViewInterface.OnDismissListener() {
                @Override public void onDismiss(DialogViewInterface dialog) {
                   processDialog.hide();
+                  treeViewList.setVisibility(View.VISIBLE);
+                  treeProgress.setVisibility(View.GONE);
                   getSession().setSessionOperation(SessionOperation.DISCOVERY);
                   checkImportButton();
                }
@@ -261,6 +259,8 @@ public class ImportFragment extends BaseDataFragment {
          logger.trace("resetting new session.  Operation completed.");
          getTreeAdapter().selectAll(treeViewList, false);
          removeProgressPanel();
+         treeViewList.setVisibility(View.VISIBLE);
+         treeProgress.setVisibility(View.GONE);
          if(getSession().getResult().equals(Process.Result.SUCCESS)) {
             Toast.makeText(getActivity(), "Import Completed", Toast.LENGTH_LONG).show();
          }
@@ -276,9 +276,9 @@ public class ImportFragment extends BaseDataFragment {
 
    /** Shows conflict resolution dialog */
    private void showConflictDialog() {
-      processDialog = new ProcessDialog(getActivity());
+      processDialog.init();
       processDialog.setTitle(getResources().getString(R.string.checking_conflicts));
-      processDialog.show();
+      processDialog.setProgress(0);
    }
 
    /** Inflates left panel progress view */
@@ -312,20 +312,13 @@ public class ImportFragment extends BaseDataFragment {
 
    @Override
    public void onProgressPublished(String operation, int progress, int max) {
-      logger.debug("onProgressPublished: {}", progress);
-      if(getSession()!=null &&
-            DataManagementSession.SessionOperation.PERFORM_OPERATIONS.equals(getSession().getSessionOperation().equals(getSession().getSessionOperation()))
-            && progress == max) {
-         logger.info("Process completed.  {}/{} objects", progress, max);
-      }
       final Double percent = ((progress * 1.0) / max) * 100;
-
-      if (progressBar.getVisibility() == View.VISIBLE) {
-         progressBar.setProgress(percent.intValue());
-         percentTv.setText(Integer.toString(percent.intValue()));
+      if(processDialog.isShown()) {
+         processDialog.setProgress(percent.intValue());
       }
       else {
-         processDialog.setProgress(percent.intValue());
+         progressBar.setProgress(percent.intValue());
+         percentTv.setText(Integer.toString(percent.intValue()));
       }
    }
 
@@ -339,10 +332,11 @@ public class ImportFragment extends BaseDataFragment {
       logger.debug("Import selected");
       Set<ObjectGraph> selected = getTreeAdapter().getSelected();
       if (selected.size() > 0) {
-         processDialog = new ProcessDialog(getActivity());
-         processDialog.show();
+         processDialog.init();
          processDialog.setTitle(getResources().getString(R.string.checking_targets));
-         getSession().setObjectData(new ArrayList<ObjectGraph>(getTreeAdapter().getSelected()));
+         processDialog.setProgress(0);
+         processDialog.show();
+         getSession().setObjectData(new ArrayList<ObjectGraph>(selected));
          setSession(getDataManagementService().processOperation(getSession(), DataManagementSession.SessionOperation.CALCULATE_OPERATIONS));
       }
    }

@@ -274,11 +274,6 @@ public class ExportFragment extends BaseDataFragment {
       final Double percent = ((progress * 1.0) / max) * 100;
       progressBar.setProgress(percent.intValue());
       percentTv.setText(percent.intValue()+"");
-      if(getSession()!=null &&
-            getSession().getSessionOperation().equals(SessionOperation.PERFORM_OPERATIONS)
-            && progress == max) {
-         logger.info("Process completed.  {}/{} objects", progress, max);
-      }
    }
 
    @Override
@@ -337,12 +332,9 @@ public class ExportFragment extends BaseDataFragment {
             && s != null
             && s.getTarget() != null
             && s.getFormat() != null
-            && getTreeAdapter().getSelected().size() > 0;
+            && getTreeAdapter().hasSelection();
 
       exportSelectedBtn.setEnabled(hasSelection && !isActiveOperation);
-
-      logger.debug("checkExportButton {} {}", s,
-            hasSelection ? getTreeAdapter().getSelected().size() : "null");
    }
 
    public static class ObjectPickListItem<T> extends PickListItem {

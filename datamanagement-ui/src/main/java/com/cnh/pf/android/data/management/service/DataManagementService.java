@@ -32,6 +32,7 @@ import android.os.Environment;
 import android.os.Handler;
 import android.os.IBinder;
 import android.os.ParcelUuid;
+import android.os.RemoteException;
 import android.support.v4.app.NotificationCompat;
 import com.cnh.android.status.Status;
 import com.cnh.jgroups.Datasource;
@@ -209,6 +210,7 @@ public class DataManagementService extends RoboService implements SharedPreferen
 
    @Override
    public void onDestroy() {
+      listeners.clear();
       prefs.unregisterOnSharedPreferenceChangeListener(this);
       super.onDestroy();
       new Thread(new Runnable() {
@@ -229,6 +231,11 @@ public class DataManagementService extends RoboService implements SharedPreferen
    public void register(String name, IDataManagementListenerAIDL listener) {
       logger.debug("Register: " + name);
       listeners.put(name, listener);
+   }
+
+   public void unregister(String name) {
+      logger.debug("Unegister: " + name);
+      listeners.remove(name);
    }
 
    public DataManagementSession processOperation(final DataManagementSession session, DataManagementSession.SessionOperation sessionOperation) {
@@ -371,9 +378,21 @@ public class DataManagementService extends RoboService implements SharedPreferen
 
    private Mediator.ProgressListener pListener = new Mediator.ProgressListener() {
       @Override
-      public void onProgressPublished(String operation, int progress, int max) {
+      public void onProgressPublished(final String operation, final int progress, final int max) {
          logger.debug(String.format("publishProgress(%s, %d, %d)", operation, progress, max));
-         globalEventManager.fire(new DataServiceConnectionImpl.ProgressEvent(operation, progress, max));
+         handler.post(new Runnable() {
+            @Override
+            public void run() {
+               for(IDataManagementListenerAIDL listener : listeners.values()) {
+                  try {
+                     listener.onProgressUpdated(operation, progress, max);
+                  }
+                  catch (RemoteException e) {
+                     logger.error("", e);
+                  }
+               }
+            }
+         });
          if (hasActiveSession() && performCalled) {
             sendStatus(getActiveSession(), String.format("%s %d/%d", operation, progress, max));
 
@@ -398,7 +417,6 @@ public class DataManagementService extends RoboService implements SharedPreferen
          logger.debug("onViewAccepted {}", newView);
          try {
             dsHelper.setSourceMap(newView);
-            //TODO fire event
          }
          catch (Exception e) {
             logger.error("Error in updating sourceMap", e);
@@ -709,7 +727,14 @@ public class DataManagementService extends RoboService implements SharedPreferen
       @Override protected void onPostExecute(DataManagementSession session) {
          super.onPostExecute(session);
          if(session.getResult()!=Result.ERROR) {
-            globalEventManager.fire(new DataSessionEvent(session));
+            for (IDataManagementListenerAIDL listener : listeners.values()) {
+               try {
+                  listener.onDataSessionUpdated(session);
+               }
+               catch (RemoteException e) {
+                  logger.error("", e);
+               }
+            }
          }
       }
    }

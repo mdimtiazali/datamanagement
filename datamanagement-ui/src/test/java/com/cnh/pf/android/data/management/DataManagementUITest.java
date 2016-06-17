@@ -18,6 +18,7 @@ import android.app.ActionBar;
 import android.content.ComponentName;
 import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
+import android.os.RemoteException;
 import android.view.View;
 
 import com.cnh.android.widget.activity.TabActivity;
@@ -109,7 +110,7 @@ public class DataManagementUITest {
    }
 
    @Test
-   public void testISOSupport() {
+   public void testISOSupport() throws RemoteException {
       //Initialize export fragment
       activateTab(1);
       //Check export fragment visible
@@ -121,7 +122,7 @@ public class DataManagementUITest {
       session.setSessionOperation(DataManagementSession.SessionOperation.DISCOVERY);
       session.setObjectData(getTestObjectData());
       fragment.setSession(session);
-      fireDiscoveryEvent(session);
+      fireDiscoveryEvent(fragment, session);
       //Assert tree view shows results of discovery
       assertEquals("Object Tree View is visible", View.VISIBLE, fragment.getView().findViewById(R.id.tree_view_list).getVisibility());
       //Mock picklist, select ISOXML as export format$
@@ -136,7 +137,7 @@ public class DataManagementUITest {
 
    /** Test to make sure that the data sent to destination datasource only has supported types */
    @Test
-   public void testRecursiveFormatSupport() {
+   public void testRecursiveFormatSupport() throws RemoteException {
       //Initialize export fragment
       activateTab(1);  //0 - Import 1 - Export
       //Mock picklist, select ISOXML as export format$
@@ -145,7 +146,7 @@ public class DataManagementUITest {
       session.setSessionOperation(DataManagementSession.SessionOperation.DISCOVERY);
       session.setObjectData(getTestObjectData());
       fragment.setSession(session);
-      fireDiscoveryEvent(session);
+      fireDiscoveryEvent(fragment, session);
       fragment.exportFormatPicklist = mock(PickListEditable.class);
       when(fragment.exportFormatPicklist.getSelectedItemValue()).thenReturn("ISOXML");
       //Set selected item to top of tree, will import everything recursive
@@ -166,9 +167,9 @@ public class DataManagementUITest {
       ((TabActivity) activity).selectTabAtPosition(tabPosition);
    }
 
-   private void fireDiscoveryEvent(DataManagementSession session) {
+   private void fireDiscoveryEvent(BaseDataFragment fragment, DataManagementSession session) throws RemoteException {
       //Start new discovery
-      eventManager.fire(new DataServiceConnectionImpl.DataSessionEvent(session));
+      fragment.onDataSessionUpdated(session);
    }
 
    /* Generate Object tree for testing */

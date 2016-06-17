@@ -210,7 +210,7 @@ public abstract class AbstractTreeViewAdapter<T> extends BaseAdapter implements
     private Drawable getDrawableOrDefaultBackground(final Drawable r) {
         if (r == null) {
             return activity.getResources()
-                  .getDrawable(R.drawable.list_selector_background).mutate();
+                  .getDrawable(R.drawable.complex_selector_background);
         } else {
             return r;
         }
@@ -219,11 +219,6 @@ public abstract class AbstractTreeViewAdapter<T> extends BaseAdapter implements
     public final LinearLayout populateTreeItem(final LinearLayout layout,
           final View childView, final TreeNodeInfo<T> nodeInfo,
           final boolean newChildView) {
-        final Drawable individualRowDrawable = getBackgroundDrawable(nodeInfo);
-        final Drawable bgDrawable = individualRowDrawable == null ?
-              getDrawableOrDefaultBackground(rowBackgroundDrawable)
-              : individualRowDrawable;
-
         if(newChildView) {
             layout.setTag(R.id.treeview_list_item_indent, layout.findViewById(R.id.treeview_list_item_indent));
             final View view = layout.findViewById(R.id.treeview_list_item_frame_layout);
@@ -236,8 +231,6 @@ public abstract class AbstractTreeViewAdapter<T> extends BaseAdapter implements
         final LinearLayout frameLayout = (LinearLayout) layout.getTag(R.id.treeview_list_item_frame_layout);
         final FrameLayout frame = (FrameLayout) layout.getTag(R.id.treeview_list_item_frame);
 
-        indentView.setLayoutParams(new LinearLayout.LayoutParams(calculateIndentation(nodeInfo), LayoutParams.MATCH_PARENT));
-
         toggle.setImageDrawable(getDrawable(nodeInfo));
         toggle.setVisibility((nodeInfo.isWithChildren() && collapsible) ? View.VISIBLE : View.GONE);
         toggle.setOnClickListener(nodeInfo.isWithChildren() && collapsible ? indicatorClickListener : null);
@@ -245,9 +238,10 @@ public abstract class AbstractTreeViewAdapter<T> extends BaseAdapter implements
 
         layout.setTag(nodeInfo.getId());
 
-        frameLayout.setBackground(bgDrawable);
+        indentView.setLayoutParams(new LinearLayout.LayoutParams(calculateIndentation(nodeInfo), LayoutParams.MATCH_PARENT));
         if (newChildView) {
-            frame.addView(childView, LayoutParams.MATCH_PARENT, LayoutParams.WRAP_CONTENT);
+            frameLayout.setBackground(getDrawableOrDefaultBackground(null).mutate());
+            frame.addView(childView, LayoutParams.MATCH_PARENT, LayoutParams.MATCH_PARENT);
         }
         frameLayout.setTag(nodeInfo.getId());
         return layout;

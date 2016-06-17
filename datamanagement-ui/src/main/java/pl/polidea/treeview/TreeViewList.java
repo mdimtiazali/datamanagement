@@ -98,6 +98,13 @@ public class TreeViewList extends ListView {
       parseAttributes(context, attrs);
    }
 
+   @Override
+   protected void layoutChildren() {
+      if(isLayoutRequested()) {
+         super.layoutChildren();
+      }
+   }
+
    private void parseAttributes(final Context context, final AttributeSet attrs) {
       final TypedArray a = context.obtainStyledAttributes(attrs,
             R.styleable.TreeViewList);

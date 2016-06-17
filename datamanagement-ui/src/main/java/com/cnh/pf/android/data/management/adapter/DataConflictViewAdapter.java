@@ -175,6 +175,7 @@ public class DataConflictViewAdapter extends DataManagementBaseAdapter {
       propNames.addAll(existingMap.keySet());
       propNames.addAll(newMap.keySet());
       for(String key : propNames) {
+         if(key.startsWith("_")) continue; //skip 'private' properties
          rowMap.put(key, new Pair<String, String>(existingMap.get(key), newMap.get(key)));
       }
 
