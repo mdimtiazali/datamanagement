@@ -564,7 +564,7 @@ public class DataManagementService extends RoboService implements SharedPreferen
                for(Rsp<Process> ret : session.getResults()) {
                   if(ret.hasException()) throw ret.getException();
                   if(ret.wasReceived() && ret.getValue()!=null) {
-                     hasCancelled |= ret.getValue().getResult().equals(Result.CANCEL);
+                     hasCancelled |= Result.CANCEL.equals(ret.getValue().getResult());
                   }
                   else {//suspect/unreachable
                      globalEventManager.fire(
