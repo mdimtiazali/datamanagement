@@ -9,14 +9,12 @@
 
 package com.cnh.pf.android.data.management;
 
-import javax.inject.Inject;
 import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collection;
 import java.util.List;
 import java.util.Set;
 
 import android.os.Bundle;
+import android.os.RemoteException;
 import android.view.DragEvent;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -37,13 +35,10 @@ import com.cnh.pf.android.data.management.adapter.DataManagementBaseAdapter;
 import com.cnh.pf.android.data.management.adapter.TargetProcessViewAdapter;
 import com.cnh.pf.android.data.management.dialog.ImportSourceDialog;
 import com.cnh.pf.android.data.management.dialog.ProcessDialog;
-import com.cnh.pf.android.data.management.helper.DatasourceHelper;
-import com.cnh.pf.android.data.management.service.DataManagementService;
 import com.cnh.pf.data.management.DataManagementSession;
 import com.cnh.pf.data.management.DataManagementSession.SessionOperation;
 import com.cnh.pf.data.management.aidl.MediumDevice;
 import com.cnh.pf.datamng.Process;
-import org.jgroups.Address;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import roboguice.event.EventThread;
@@ -177,7 +172,7 @@ public class ImportFragment extends BaseDataFragment {
    }
 
    @Override public void processOperations() {
-      if (getSession().getSessionOperation().equals(SessionOperation.CALCULATE_OPERATIONS)) {
+      if (getSession().getSessionOperation().equals(SessionOperation.CALCULATE_OPERATIONS) && !isCancelled()) {
          logger.debug("Calculate Targets");
          boolean hasMultipleTargets = false;
          for (Operation operation : getSession().getData()) {
@@ -200,15 +195,6 @@ public class ImportFragment extends BaseDataFragment {
                   setSession(getDataManagementService().processOperation(getSession(), SessionOperation.CALCULATE_CONFLICTS));
                }
             });
-            processDialog.setOnDismissListener(new DialogViewInterface.OnDismissListener() {
-               @Override public void onDismiss(DialogViewInterface dialog) {
-                  processDialog.hide();
-                  treeViewList.setVisibility(View.VISIBLE);
-                  treeProgress.setVisibility(View.GONE);
-                  getSession().setSessionOperation(SessionOperation.DISCOVERY);
-                  checkImportButton();
-               }
-            });
          }
          else {
             logger.debug("Found no targets with no parents, skipping to Calculate Conflicts");
@@ -216,7 +202,7 @@ public class ImportFragment extends BaseDataFragment {
             setSession(getDataManagementService().processOperation(getSession(), SessionOperation.CALCULATE_CONFLICTS));
          }
       }
-      else if (getSession().getSessionOperation().equals(SessionOperation.CALCULATE_CONFLICTS)) {
+      else if (getSession().getSessionOperation().equals(SessionOperation.CALCULATE_CONFLICTS) && !isCancelled()) {
          logger.debug("Calculate Conflicts");
          //Check for conflicts
          boolean hasConflicts = false;
@@ -238,15 +224,6 @@ public class ImportFragment extends BaseDataFragment {
                   setSession(getDataManagementService().processOperation(getSession(), SessionOperation.PERFORM_OPERATIONS));
                }
             });
-            processDialog.setOnDismissListener(new DialogViewInterface.OnDismissListener() {
-               @Override public void onDismiss(DialogViewInterface dialog) {
-                  processDialog.hide();
-                  treeViewList.setVisibility(View.VISIBLE);
-                  treeProgress.setVisibility(View.GONE);
-                  getSession().setSessionOperation(SessionOperation.DISCOVERY);
-                  checkImportButton();
-               }
-            });
          }
          else {
             logger.debug("No conflicts found");
@@ -259,8 +236,6 @@ public class ImportFragment extends BaseDataFragment {
          logger.trace("resetting new session.  Operation completed.");
          getTreeAdapter().selectAll(treeViewList, false);
          removeProgressPanel();
-         treeViewList.setVisibility(View.VISIBLE);
-         treeProgress.setVisibility(View.GONE);
          if(getSession().getResult().equals(Process.Result.SUCCESS)) {
             Toast.makeText(getActivity(), "Import Completed", Toast.LENGTH_LONG).show();
          }
@@ -279,6 +254,15 @@ public class ImportFragment extends BaseDataFragment {
       processDialog.init();
       processDialog.setTitle(getResources().getString(R.string.checking_conflicts));
       processDialog.setProgress(0);
+      processDialog.setOnDismissListener(new DialogViewInterface.OnDismissListener() {
+         @Override public void onDismiss(DialogViewInterface dialog) {
+            processDialog.hide();
+            logger.debug("Cancelling operation");
+            setCancelled(true);
+            getSession().setSessionOperation(SessionOperation.DISCOVERY);
+            checkImportButton();
+         }
+      });
    }
 
    /** Inflates left panel progress view */
@@ -336,6 +320,7 @@ public class ImportFragment extends BaseDataFragment {
          processDialog.setTitle(getResources().getString(R.string.checking_targets));
          processDialog.setProgress(0);
          processDialog.show();
+         setCancelled(false);
          getSession().setObjectData(new ArrayList<ObjectGraph>(selected));
          setSession(getDataManagementService().processOperation(getSession(), DataManagementSession.SessionOperation.CALCULATE_OPERATIONS));
       }
@@ -344,5 +329,10 @@ public class ImportFragment extends BaseDataFragment {
    void selectSource() {
       ((TabActivity) getActivity()).showPopup((DialogView)
             new ImportSourceDialog(getActivity(), getDataManagementService().getMediums()), true);
+   }
+
+   @Override
+   public void onMediumsUpdated(List<MediumDevice> mediums) throws RemoteException {
+      logger.info("onMediumsUpdated {}", mediums);
    }
 }

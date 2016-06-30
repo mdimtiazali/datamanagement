@@ -9,6 +9,9 @@
 
 package com.cnh.pf.android.data.management;
 
+import java.util.ArrayList;
+import java.util.List;
+
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.IBinder;
@@ -32,10 +35,8 @@ import com.cnh.pf.android.data.management.adapter.ObjectTreeViewAdapter;
 import com.cnh.pf.android.data.management.adapter.SelectionTreeViewAdapter;
 import com.cnh.pf.android.data.management.connection.DataServiceConnection;
 import com.cnh.pf.android.data.management.connection.DataServiceConnectionImpl;
-import com.cnh.pf.android.data.management.connection.DataServiceConnectionImpl.ErrorEvent;
-import com.cnh.pf.android.data.management.connection.DataServiceConnectionImpl.ProgressEvent;
 import com.cnh.pf.android.data.management.connection.DataServiceConnectionImpl.ConnectionEvent;
-import com.cnh.pf.android.data.management.connection.DataServiceConnectionImpl.DataSessionEvent;
+import com.cnh.pf.android.data.management.connection.DataServiceConnectionImpl.ErrorEvent;
 import com.cnh.pf.android.data.management.dialog.ErrorDialog;
 import com.cnh.pf.android.data.management.graph.GroupObjectGraph;
 import com.cnh.pf.android.data.management.helper.TreeDragShadowBuilder;
@@ -57,9 +58,6 @@ import roboguice.event.EventManager;
 import roboguice.fragment.provided.RoboFragment;
 import roboguice.inject.InjectResource;
 import roboguice.inject.InjectView;
-
-import java.util.ArrayList;
-import java.util.List;
 
 /**
  * Base Import/Export Fragment, handles inflating TreeView area and selection. Import/Export source
@@ -86,6 +84,7 @@ public abstract class BaseDataFragment extends RoboFragment implements IDataMana
    private TreeBuilder<ObjectGraph> treeBuilder;
    protected ObjectTreeViewAdapter treeAdapter;
    protected Handler handler = new Handler(Looper.getMainLooper());
+   protected boolean cancelled;
 
    /** Current session */
    protected volatile DataManagementSession session = null;
@@ -100,7 +99,9 @@ public abstract class BaseDataFragment extends RoboFragment implements IDataMana
    /**
     * Callback when new session is started.
     */
-   public abstract void onNewSession();
+   public void onNewSession() {
+      setSession(null);
+   }
 
    /**
     * {@link SessionOperation} has completed.
@@ -306,7 +307,7 @@ public abstract class BaseDataFragment extends RoboFragment implements IDataMana
       logger.debug("onResumeSession {}", session);
       if (session == null) {
          logger.debug("Starting new session");
-         setSession(null);
+         cancelled = false;
          treeViewList.setVisibility(View.GONE);
          onNewSession();
       }
@@ -426,5 +427,13 @@ public abstract class BaseDataFragment extends RoboFragment implements IDataMana
 
    public void setSession(DataManagementSession session) {
       this.session = session;
+   }
+
+   protected boolean isCancelled() {
+      return cancelled;
+   }
+
+   protected void setCancelled(boolean cancelled) {
+      this.cancelled = cancelled;
    }
 }

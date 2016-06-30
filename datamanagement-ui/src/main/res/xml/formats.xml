@@ -10,7 +10,7 @@
 
 <formats>
 
-   <format name="ISOXML">
+   <format name="ISOXML" pcm="true" standalone="false">
       <type>com.cnh.pf.model.pfds.Customer</type>
       <type>com.cnh.pf.model.pfds.Farm</type>
       <type>com.cnh.pf.model.pfds.Field</type>
@@ -27,7 +27,7 @@
       <type>FILE</type>
    </format>
 
-   <format name="CNH">
+   <format name="CNH" pcm="true" standalone="true">
       <type>!com.cnh.pf.model.pfds.Customer</type>
       <type>!com.cnh.pf.model.pfds.Farm</type>
       <type>!com.cnh.pf.model.pfds.Field</type>

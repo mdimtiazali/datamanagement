@@ -89,5 +89,6 @@
 
    <string name="usb_data_available">USB Data Available</string>
    <string name="usb_no_data_available">No USB Data Available</string>
+   <string name="usb_scanning">Scanning USB Stick...</string>
 
 </resources>

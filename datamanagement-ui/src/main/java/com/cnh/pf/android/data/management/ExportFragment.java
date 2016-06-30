@@ -15,6 +15,7 @@ import java.util.Collection;
 import java.util.List;
 
 import android.os.Bundle;
+import android.os.RemoteException;
 import android.view.DragEvent;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -24,14 +25,12 @@ import android.widget.ImageButton;
 import android.widget.LinearLayout;
 import android.widget.TextView;
 import android.widget.Toast;
-import butterknife.OnClick;
 import com.cnh.android.widget.control.PickListAdapter;
 import com.cnh.android.widget.control.PickListEditable;
 import com.cnh.android.widget.control.PickListItem;
 import com.cnh.android.widget.control.ProgressBarView;
 import com.cnh.jgroups.Datasource;
 import com.cnh.jgroups.ObjectGraph;
-import com.cnh.pf.android.data.management.helper.DatasourceHelper;
 import com.cnh.pf.android.data.management.parser.FormatManager;
 import com.cnh.pf.data.management.DataManagementSession;
 import com.cnh.pf.data.management.DataManagementSession.SessionOperation;
@@ -41,8 +40,6 @@ import com.google.inject.Inject;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import roboguice.inject.InjectView;
-
-import static com.cnh.pf.data.management.DataManagementSession.SessionOperation.DISCOVERY;
 
 /**
  * Export Tab Fragment, handles export to external mediums {USB, External Display}.
@@ -148,6 +145,7 @@ public class ExportFragment extends BaseDataFragment {
          public void onItemSelected(AdapterView<?> adapterView, View view, int position, long id) {
             if(getSession()!=null) {
                getSession().setFormat(id!=-1 ? exportFormatPicklist.findItemById(id).getValue() : null);
+               logger.trace("setFormat {}", getSession().getFormat());
             }
             if(getTreeAdapter()!=null) {
                getTreeAdapter().updateViewSelection(treeViewList);
@@ -190,6 +188,7 @@ public class ExportFragment extends BaseDataFragment {
 
    @Override
    public void onNewSession() {
+      DataManagementSession oldSession = getSession();
       leftStatusPanel.setVisibility(View.GONE);
       exportDropZone.setVisibility(View.VISIBLE);
       treeProgress.setVisibility(View.VISIBLE);
@@ -197,12 +196,18 @@ public class ExportFragment extends BaseDataFragment {
       DataManagementSession session = new DataManagementSession(
             new Datasource.Source[] { Datasource.Source.INTERNAL, Datasource.Source.DISPLAY },
             null, null, null);
-      ObjectPickListItem<MediumDevice> item = (ObjectPickListItem<MediumDevice>) exportMediumPicklist.getSelectedItem();
-      if(item != null) {
-         session.setTargets(Arrays.asList(item.getObject()));
+      if(oldSession != null) {
+         session.setFormat(oldSession.getFormat());
+         session.setTargets(oldSession.getTargets());
       }
-      if(exportFormatPicklist.getSelectedItemValue() != null) {
-         session.setFormat(exportFormatPicklist.getSelectedItemValue());
+      if(session.getFormat()==null) {   //set defaults
+         session.setFormat(formatManager.getFormats().iterator().next());
+      }
+      if(session.getTarget()==null) {
+         List<MediumDevice> mediums = getDataManagementService().getMediums();
+         if(!mediums.isEmpty()) {
+            session.setTargets(Arrays.asList(mediums.get(0)));
+         }
       }
       setSession(getDataManagementService().processOperation(session, SessionOperation.DISCOVERY));
    }
@@ -219,11 +224,12 @@ public class ExportFragment extends BaseDataFragment {
    public void setSession(DataManagementSession session) {
       super.setSession(session);
       if(session!=null) {
+         logger.debug("setSession format: {}", session.getFormat());
          if(session.getFormat()==null) {
             exportFormatPicklist.setSelectionById(-1);
          }
          else {
-            exportFormatPicklist.setSelectionByPosition(Arrays.asList(formatManager.getFormats()).indexOf(session.getFormat()));
+            exportFormatPicklist.setSelectionByPosition(new ArrayList<String>(formatManager.getFormats()).indexOf(session.getFormat()));
          }
 
          boolean found = false;
@@ -238,6 +244,9 @@ public class ExportFragment extends BaseDataFragment {
          if(!found) {
             exportMediumPicklist.setSelectionById(-1);
          }
+      } else {
+         exportFormatPicklist.setSelectionById(-1);
+         exportMediumPicklist.setSelectionById(-1);
       }
       checkExportButton();
    }
@@ -278,11 +287,9 @@ public class ExportFragment extends BaseDataFragment {
 
    @Override
    public boolean supportedByFormat(ObjectGraph node) {
-      boolean supported = true;
-      if (exportFormatPicklist.getSelectedItemValue() != null) {
-         supported = formatManager.formatSupportsType(exportFormatPicklist.getSelectedItemValue(), node.getType());
-      }
-      return supported;
+      return (getSession()!=null && getSession().getFormat() != null) ?
+            formatManager.formatSupportsType(getSession().getFormat(), node.getType()) :
+            false;
    }
 
    @Override public void enableButtons(boolean enable) {
@@ -335,6 +342,12 @@ public class ExportFragment extends BaseDataFragment {
             && getTreeAdapter().hasSelection();
 
       exportSelectedBtn.setEnabled(hasSelection && !isActiveOperation);
+   }
+
+   @Override
+   public void onMediumsUpdated(List<MediumDevice> mediums) throws RemoteException {
+      logger.info("onMediumsUpdated {}", mediums);
+      populateExportToPickList();
    }
 
    public static class ObjectPickListItem<T> extends PickListItem {

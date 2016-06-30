@@ -10,17 +10,18 @@ package com.cnh.pf.android.data.management;
 
 import java.io.IOException;
 import java.util.ArrayList;
-import java.util.Collections;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Set;
 
-import android.app.ActionBar;
 import android.content.ComponentName;
+import android.content.Context;
 import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
 import android.os.RemoteException;
 import android.view.View;
-
+import com.cnh.android.util.prefs.GlobalPreferences;
+import com.cnh.android.util.prefs.GlobalPreferencesNotAvailableException;
 import com.cnh.android.widget.activity.TabActivity;
 import com.cnh.android.widget.control.PickListEditable;
 import com.cnh.jgroups.Datasource;
@@ -28,26 +29,25 @@ import com.cnh.jgroups.Mediator;
 import com.cnh.jgroups.ObjectGraph;
 import com.cnh.pf.android.data.management.adapter.ObjectTreeViewAdapter;
 import com.cnh.pf.android.data.management.adapter.SelectionTreeViewAdapter;
-import com.cnh.pf.android.data.management.connection.DataServiceConnectionImpl;
 import com.cnh.pf.android.data.management.parser.FormatManager;
 import com.cnh.pf.android.data.management.service.DataManagementService;
 import com.cnh.pf.data.management.DataManagementSession;
-
 import com.cnh.pf.data.management.aidl.MediumDevice;
-import com.google.common.collect.Collections2;
 import com.google.inject.AbstractModule;
 import com.google.inject.Key;
 import com.google.inject.Provides;
 import com.google.inject.Singleton;
 import com.google.inject.name.Named;
 import com.google.inject.name.Names;
-import org.bouncycastle.jce.provider.symmetric.ARC4;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
+import org.mockito.Matchers;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
+import org.mockito.invocation.InvocationOnMock;
+import org.mockito.stubbing.Answer;
 import org.robolectric.Robolectric;
 import org.robolectric.RobolectricMavenTestRunner;
 import org.robolectric.RuntimeEnvironment;
@@ -57,6 +57,7 @@ import org.xmlpull.v1.XmlPullParserException;
 import roboguice.RoboGuice;
 import roboguice.config.DefaultRoboModule;
 import roboguice.event.EventManager;
+
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
@@ -88,6 +89,16 @@ public class DataManagementUITest {
       controller = Robolectric.buildActivity(DataManagementActivity.class);
       activity = controller.get();
       when(binder.getService()).thenReturn(service);
+      when(service.getMediums()).thenReturn(Arrays.asList(new MediumDevice(Datasource.Source.USB, RuntimeEnvironment.application.getFilesDir())));
+      when(service.processOperation(Matchers.any(DataManagementSession.class), Matchers.any(DataManagementSession.SessionOperation.class))).then(new Answer<DataManagementSession>() {
+         @Override
+         public DataManagementSession answer(InvocationOnMock invocation) throws Throwable {
+            DataManagementSession session = (DataManagementSession) invocation.getArguments()[0];
+            DataManagementSession.SessionOperation op = (DataManagementSession.SessionOperation) invocation.getArguments()[1];
+            session.setSessionOperation(op);
+            return session;
+         }
+      });
       shadowOf(RuntimeEnvironment.application).setComponentNameAndServiceForBindService(new ComponentName(activity.getPackageName(), DataManagementService.class.getName()), binder);
    }
 
@@ -121,6 +132,7 @@ public class DataManagementUITest {
       DataManagementSession session = new DataManagementSession(new Datasource.Source[] { Datasource.Source.INTERNAL }, new Datasource.Source[] { Datasource.Source.INTERNAL}, null, null);
       session.setSessionOperation(DataManagementSession.SessionOperation.DISCOVERY);
       session.setObjectData(getTestObjectData());
+      session.setFormat("ISOXML");
       fragment.setSession(session);
       fireDiscoveryEvent(fragment, session);
       //Assert tree view shows results of discovery
@@ -145,6 +157,7 @@ public class DataManagementUITest {
       DataManagementSession session = new DataManagementSession(new Datasource.Source[] { Datasource.Source.INTERNAL }, new Datasource.Source[] { Datasource.Source.INTERNAL}, null, null);
       session.setSessionOperation(DataManagementSession.SessionOperation.DISCOVERY);
       session.setObjectData(getTestObjectData());
+      session.setFormat("ISOXML");
       fragment.setSession(session);
       fireDiscoveryEvent(fragment, session);
       fragment.exportFormatPicklist = mock(PickListEditable.class);
@@ -202,6 +215,14 @@ public class DataManagementUITest {
       @SuppressWarnings("deprecation")
       private SharedPreferences getPrefs() throws PackageManager.NameNotFoundException {
          return null;
+      }
+
+      @Provides
+      @Singleton
+      public GlobalPreferences getGlobalPreferences(Context context) throws GlobalPreferencesNotAvailableException {
+         GlobalPreferences prefs = mock(GlobalPreferences.class);
+         when(prefs.hasPCM()).thenReturn(true);
+         return prefs;
       }
    }
 }

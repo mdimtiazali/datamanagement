@@ -42,8 +42,6 @@ import com.cnh.jgroups.Operation;
 import com.cnh.pf.android.data.management.DataManagementActivity;
 import com.cnh.pf.android.data.management.R;
 import com.cnh.pf.android.data.management.RoboModule;
-import com.cnh.pf.android.data.management.connection.DataServiceConnectionImpl;
-import com.cnh.pf.android.data.management.connection.DataServiceConnectionImpl.DataSessionEvent;
 import com.cnh.pf.android.data.management.connection.DataServiceConnectionImpl.ErrorEvent;
 import com.cnh.pf.android.data.management.helper.DatasourceHelper;
 import com.cnh.pf.data.management.DataManagementSession;
@@ -124,55 +122,19 @@ public class DataManagementService extends RoboService implements SharedPreferen
          cancel(intent.<DataManagementSession>getParcelableExtra("session"));
       }
       else if(Intent.ACTION_MEDIA_MOUNTED.equals(intent.getAction())) {
+         sendMediumUpdateEvent();
          Uri mount = intent.getData();
          File mountFile = new File(mount.getPath());
          logger.info("Media has been mounted @{}: extras #: {}", mountFile.getAbsolutePath(), intent.getExtras().size());
-         logger.info("Checking for data");
-         sendStatus(dataStatus, "Scanning USB...");
-         //Check if USB has any interesting data
-         File usb = Environment.getExternalStorageDirectory();
-         File[] folders = usb.listFiles(new FileFilter() {
-            @Override
-            public boolean accept(File file) {
-               return file.isDirectory();
-            }
-         });
-         String[] paths = new String[folders.length];
-         for(int i=0; i<folders.length; i++) {
-            logger.trace("Checking path: {}", folders[i].getAbsolutePath());
-            paths[i] = folders[i].getAbsolutePath();
-         }
-         //Launch USB datasource broadcast for every root folder on USB
-         startUsbServices(paths, false, null);
-         //wait for datasources, then see if any cared about the data.
-         handler.postDelayed(new Runnable() {
-            @Override
-            public void run() {
-               logger.info("Checking datasources on USB");
-               Address[] addr = dsHelper.getAddressForSourceType(Datasource.Source.USB);
-               if(addr!=null && addr.length>0) {
-                  logger.info("Found USB data! {} datasources to be exact.", addr.length);
-                  sendStatus(dataStatus, getResources().getString(R.string.usb_data_available));
-               } else {
-                  sendStatus(dataStatus, getResources().getString(R.string.usb_no_data_available));
-                  handler.postDelayed(new Runnable() {
-                     @Override
-                     public void run() {
-                        removeStatus(dataStatus);
-                     }
-                  }, usbDelay);
-               }
-               stopUsbServices();
-            }
-         }, usbDelay*2);
+         scan(mountFile);
       }
       else if(Intent.ACTION_MEDIA_UNMOUNTED.equals(intent.getAction())
             || Intent.ACTION_MEDIA_BAD_REMOVAL.equals(intent.getAction())
             || Intent.ACTION_MEDIA_REMOVED.equals(intent.getAction())
             || Intent.ACTION_MEDIA_EJECT.equals(intent.getAction())) {
          logger.info("Media has been unmounted: {} extras", intent.getExtras().size());
-         sendBroadcast(new Intent(Status.ACTION_STATUS_REMOVE)
-               .putExtra(Status.ID, ParcelUuid.fromString(dataStatus.getID().toString())));
+         sendMediumUpdateEvent();
+         removeUsbStatus();
       }
       return START_NOT_STICKY;
    }
@@ -193,10 +155,9 @@ public class DataManagementService extends RoboService implements SharedPreferen
       final Application app = getApplication();
       //Phoenix Workaround (phoenix sometimes cannot read the manifest)
       RoboGuiceHelper.help(app, new String[] { "com.cnh.pf.android.data.management", "com.cnh.pf.jgroups" },
-         new RoboModule(app), new ChannelModule(app));
+            new RoboModule(app), new ChannelModule(app));
       super.onCreate();
       statusDrawable = (BitmapDrawable)getResources().getDrawable(R.drawable.ic_usb);
-      dataStatus = new Status(getResources().getString(R.string.usb_data_available), statusDrawable, app.getPackageName());
       try {
          prefs.registerOnSharedPreferenceChangeListener(this);
          mediator.setProgressListener(pListener);
@@ -210,6 +171,7 @@ public class DataManagementService extends RoboService implements SharedPreferen
 
    @Override
    public void onDestroy() {
+      removeUsbStatus();
       listeners.clear();
       prefs.unregisterOnSharedPreferenceChangeListener(this);
       super.onDestroy();
@@ -236,6 +198,75 @@ public class DataManagementService extends RoboService implements SharedPreferen
    public void unregister(String name) {
       logger.debug("Unegister: " + name);
       listeners.remove(name);
+   }
+
+   protected void sendMediumUpdateEvent() {
+      List<MediumDevice> mediums = dsHelper.getTargetDevices();
+      for(IDataManagementListenerAIDL listener : listeners.values()) {
+         try {
+            listener.onMediumsUpdated(mediums);
+         }
+         catch (RemoteException e) {
+            logger.error("", e);
+         }
+      }
+   }
+
+   /**
+    * Scan USB stick for data.
+    *
+    * Starts all USB datasources and checks to see how many found data.
+    * Passes all subfolders under the mountpoint.
+    * @param mount
+    */
+   protected void scan(File mount) {
+      logger.info("Checking for data");
+      dataStatus = new Status(getResources().getString(R.string.usb_data_available), statusDrawable, getApplication().getPackageName());
+      sendStatus(dataStatus, getResources().getString(R.string.usb_scanning));
+      //Check if USB has any interesting data
+      File usb = Environment.getExternalStorageDirectory();
+      File[] folders = usb.listFiles(new FileFilter() {
+         @Override
+         public boolean accept(File file) {
+            return file.isDirectory();
+         }
+      });
+      String[] paths = new String[folders.length];
+      for(int i=0; i<folders.length; i++) {
+         logger.trace("Checking path: {}", folders[i].getAbsolutePath());
+         paths[i] = folders[i].getAbsolutePath();
+      }
+      //Launch USB datasource broadcast for every root folder on USB
+      startUsbServices(paths, false, null);
+      //wait for datasources, then see if any cared about the data.
+      handler.postDelayed(new Runnable() {
+         @Override
+         public void run() {
+            logger.info("Checking datasources on USB");
+            Address[] addr = dsHelper.getAddressForSourceType(Datasource.Source.USB);
+            if(addr!=null && addr.length>0) {
+               logger.info("Found USB data! {} datasources to be exact.", addr.length);
+               sendStatus(dataStatus, getResources().getString(R.string.usb_data_available));
+            } else {
+               sendStatus(dataStatus, getResources().getString(R.string.usb_no_data_available));
+               handler.postDelayed(new Runnable() {
+                  @Override
+                  public void run() {
+                     removeStatus(dataStatus);
+                  }
+               }, usbDelay);
+            }
+            stopUsbServices();
+         }
+      }, usbDelay*2);
+   }
+
+   protected void removeUsbStatus() {
+      if(dataStatus != null) {
+         sendBroadcast(new Intent(Status.ACTION_STATUS_REMOVE)
+               .putExtra(Status.ID, ParcelUuid.fromString(dataStatus.getID().toString())));
+         dataStatus = null;
+      }
    }
 
    public DataManagementSession processOperation(final DataManagementSession session, DataManagementSession.SessionOperation sessionOperation) {
@@ -463,7 +494,7 @@ public class DataManagementService extends RoboService implements SharedPreferen
    private class DiscoveryTask extends SessionOperationTask<Void> {
       @Override
       protected DataManagementSession doInBackground(DataManagementSession... params) {
-            DataManagementSession session = params[0];
+         DataManagementSession session = params[0];
          try {
             if(session.getSources()==null && session.getSourceTypes()!=null) { //export
                session.setSources(dsHelper.getLocalDatasources(session.getSourceTypes()));
@@ -581,12 +612,12 @@ public class DataManagementService extends RoboService implements SharedPreferen
                boolean hasCancelled = Result.CANCEL.equals(session.getResult());
                for(Rsp<Process> ret : session.getResults()) {
                   if(ret.hasException()) throw ret.getException();
-                  if(ret.wasReceived() && ret.getValue()!=null) {
+                  if(ret.wasReceived() && ret.getValue()!=null && ret.getValue().getResult()!=null) {
                      hasCancelled |= Result.CANCEL.equals(ret.getValue().getResult());
                   }
                   else {//suspect/unreachable
                      globalEventManager.fire(
-                        new ErrorEvent(session, ErrorEvent.DataError.PERFORM_ERROR));
+                           new ErrorEvent(session, ErrorEvent.DataError.PERFORM_ERROR));
                      session.setResult(Result.ERROR);
                   }
                }
@@ -598,7 +629,7 @@ public class DataManagementService extends RoboService implements SharedPreferen
             }
             else {
                globalEventManager.fire(
-                  new ErrorEvent(session, ErrorEvent.DataError.NO_TARGET_DATASOURCE));
+                     new ErrorEvent(session, ErrorEvent.DataError.NO_TARGET_DATASOURCE));
                session.setResult( Process.Result.NO_DATASOURCE);
             }
          }
