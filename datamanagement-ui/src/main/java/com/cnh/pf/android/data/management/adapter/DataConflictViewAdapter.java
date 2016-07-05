@@ -81,7 +81,7 @@ public class DataConflictViewAdapter extends DataManagementBaseAdapter {
             View view = layoutInflater.inflate(R.layout.rename_file, null);
             newNameDialog.setBodyView(view);
             final EditText textEntry = (EditText) view.findViewById(R.id.file_name);
-            if(Strings.isNullOrEmpty(op.getNewName())) {
+            if(!Strings.isNullOrEmpty(op.getNewName())) {
                textEntry.setText(op.getNewName());
             }
             newNameDialog.setFirstButtonText(doneStr);
@@ -175,6 +175,7 @@ public class DataConflictViewAdapter extends DataManagementBaseAdapter {
       propNames.addAll(existingMap.keySet());
       propNames.addAll(newMap.keySet());
       for(String key : propNames) {
+         if(key.startsWith("_")) continue; //skip 'private' properties
          rowMap.put(key, new Pair<String, String>(existingMap.get(key), newMap.get(key)));
       }
 

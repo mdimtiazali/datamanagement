@@ -9,7 +9,14 @@
 
 package com.cnh.pf.android.data.management;
 
+import java.util.ArrayList;
+import java.util.List;
+
 import android.os.Bundle;
+import android.os.Handler;
+import android.os.IBinder;
+import android.os.Looper;
+import android.os.RemoteException;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -28,16 +35,15 @@ import com.cnh.pf.android.data.management.adapter.ObjectTreeViewAdapter;
 import com.cnh.pf.android.data.management.adapter.SelectionTreeViewAdapter;
 import com.cnh.pf.android.data.management.connection.DataServiceConnection;
 import com.cnh.pf.android.data.management.connection.DataServiceConnectionImpl;
-import com.cnh.pf.android.data.management.connection.DataServiceConnectionImpl.ErrorEvent;
-import com.cnh.pf.android.data.management.connection.DataServiceConnectionImpl.ProgressEvent;
 import com.cnh.pf.android.data.management.connection.DataServiceConnectionImpl.ConnectionEvent;
-import com.cnh.pf.android.data.management.connection.DataServiceConnectionImpl.DataSessionEvent;
+import com.cnh.pf.android.data.management.connection.DataServiceConnectionImpl.ErrorEvent;
 import com.cnh.pf.android.data.management.dialog.ErrorDialog;
 import com.cnh.pf.android.data.management.graph.GroupObjectGraph;
 import com.cnh.pf.android.data.management.helper.TreeDragShadowBuilder;
 import com.cnh.pf.android.data.management.service.DataManagementService;
 import com.cnh.pf.data.management.DataManagementSession;
 import com.cnh.pf.data.management.DataManagementSession.SessionOperation;
+import com.cnh.pf.data.management.aidl.IDataManagementListenerAIDL;
 import com.google.inject.Inject;
 import com.google.inject.name.Named;
 import org.slf4j.Logger;
@@ -53,16 +59,14 @@ import roboguice.fragment.provided.RoboFragment;
 import roboguice.inject.InjectResource;
 import roboguice.inject.InjectView;
 
-import java.util.ArrayList;
-import java.util.List;
-
 /**
  * Base Import/Export Fragment, handles inflating TreeView area and selection. Import/Export source
  * control is handled by extending class. ButterKnife binding handled by this class. Extending classes need
  * to annotate and inflate layouts.
  * @author oscar.salazar@cnhind.com
  */
-public abstract class BaseDataFragment extends RoboFragment {
+public abstract class BaseDataFragment extends RoboFragment implements IDataManagementListenerAIDL {
+   public static final String NAME = "MEDIATOR";
    private final Logger logger = LoggerFactory.getLogger(getClass());
 
    @Inject private DataServiceConnection dataServiceConnection;
@@ -79,6 +83,8 @@ public abstract class BaseDataFragment extends RoboFragment {
    private TreeStateManager<ObjectGraph> manager;
    private TreeBuilder<ObjectGraph> treeBuilder;
    protected ObjectTreeViewAdapter treeAdapter;
+   protected Handler handler = new Handler(Looper.getMainLooper());
+   protected boolean cancelled;
 
    /** Current session */
    protected volatile DataManagementSession session = null;
@@ -93,7 +99,9 @@ public abstract class BaseDataFragment extends RoboFragment {
    /**
     * Callback when new session is started.
     */
-   public abstract void onNewSession();
+   public void onNewSession() {
+      setSession(null);
+   }
 
    /**
     * {@link SessionOperation} has completed.
@@ -130,6 +138,9 @@ public abstract class BaseDataFragment extends RoboFragment {
     * @param session the session
     */
    protected abstract void onOtherSessionUpdate(DataManagementSession session);
+
+   protected void onViewChange(org.jgroups.View oldView, org.jgroups.View newView) {
+   }
 
    /**
     * When user (de)selects a node in the tree
@@ -183,22 +194,43 @@ public abstract class BaseDataFragment extends RoboFragment {
    @Override
    public void onPause() {
       super.onPause();
-      globalEventManager.unregisterObserver(DataSessionEvent.class, updateListener);
+      if (dataServiceConnection.isConnected()) {
+         getDataManagementService().unregister(NAME);
+      }
       globalEventManager.unregisterObserver(ConnectionEvent.class, connectionListener);
       globalEventManager.unregisterObserver(DataServiceConnectionImpl.ErrorEvent.class, errorListener);
-      globalEventManager.unregisterObserver(DataServiceConnectionImpl.ProgressEvent.class, progressListener);
+      globalEventManager.unregisterObserver(DataServiceConnectionImpl.ViewChangeEvent.class, viewChangeListener);
    }
 
    @Override
    public void onResume() {
       super.onResume();
-      globalEventManager.registerObserver(DataSessionEvent.class, updateListener);
       globalEventManager.registerObserver(ConnectionEvent.class, connectionListener);
       globalEventManager.registerObserver(DataServiceConnectionImpl.ErrorEvent.class, errorListener);
-      globalEventManager.registerObserver(DataServiceConnectionImpl.ProgressEvent.class, progressListener);
+      globalEventManager.registerObserver(DataServiceConnectionImpl.ViewChangeEvent.class, viewChangeListener);
       if (dataServiceConnection.isConnected()) {
+         getDataManagementService().register(NAME, BaseDataFragment.this);
          onResumeSession(null);
       }
+   }
+
+   @Override
+   public void onProgressUpdated(String operation, int progress, int max) throws RemoteException {
+      onProgressPublished(operation, progress, max);
+   }
+
+   @Override
+   public void onDataSessionUpdated(DataManagementSession session) throws RemoteException {
+      if(isCurrentOperation(session)) {
+         onResumeSession(session);
+      } else {
+         onOtherSessionUpdate(session);
+      }
+   }
+
+   @Override
+   public IBinder asBinder() {
+      return null;
    }
 
    /**
@@ -247,41 +279,25 @@ public abstract class BaseDataFragment extends RoboFragment {
       public void onEvent(ConnectionEvent event) {
          logger.debug("onConnected");
          if (event.isConnected()) {
+            getDataManagementService().register(NAME, BaseDataFragment.this);
             onResumeSession(session);
          }
          else {
             //Disable all buttons for now
             enableButtons(false);
+            getDataManagementService().unregister(NAME);
          }
       }
    };
 
-   /** Called when progress is published from backed */
-   EventListener progressListener = new EventListener<DataServiceConnectionImpl.ProgressEvent>() {
+   /** Called when group membership changes */
+   EventListener viewChangeListener = new EventListener<DataServiceConnectionImpl.ViewChangeEvent>() {
       @Override
-      public void onEvent(final DataServiceConnectionImpl.ProgressEvent event) {
+      public void onEvent(final DataServiceConnectionImpl.ViewChangeEvent event) {
          getActivity().runOnUiThread(new Runnable() {
             @Override
             public void run() {
-               onProgressPublished(event.getOperation(), event.getProgress(), event.getMax());
-            }
-         });
-      }
-   };
-
-   /** Called when session was updated on backend */
-   EventListener updateListener = new EventListener<DataSessionEvent>() {
-      @Override
-      public void onEvent(final DataSessionEvent event) {
-         logger.debug("onSessionUpdated, session: {}", (session != null ? session.toString() : "null"));
-         getActivity().runOnUiThread(new Runnable() {
-            @Override
-            public void run() {
-               if(isCurrentOperation(event.getSession())) {
-                  onResumeSession(event.getSession());
-               } else {
-                  onOtherSessionUpdate(event.getSession());
-               }
+               onViewChange(event.getOldView(), event.getNewView());
             }
          });
       }
@@ -291,15 +307,14 @@ public abstract class BaseDataFragment extends RoboFragment {
       logger.debug("onResumeSession {}", session);
       if (session == null) {
          logger.debug("Starting new session");
-         setSession(null);
+         cancelled = false;
          treeViewList.setVisibility(View.GONE);
          onNewSession();
       }
       else {
          setSession(session);
          DataManagementSession.SessionOperation op = session.getSessionOperation();
-         if (op.equals(DataManagementSession.SessionOperation.DISCOVERY)
-               || getTreeAdapter() == null) {
+         if (op.equals(DataManagementSession.SessionOperation.DISCOVERY)) {
             treeProgress.setVisibility(View.GONE);
             initiateTree();
             updateSelectAllState();
@@ -388,9 +403,9 @@ public abstract class BaseDataFragment extends RoboFragment {
       selectAllBtn.setEnabled(getSession()!=null
             && getSession().getObjectData()!=null
             && !getSession().getObjectData().isEmpty());
-      selectAllBtn.setText(getTreeAdapter().areAllSelected() ?
-            R.string.deselect_all : R.string.select_all);
-      selectAllBtn.setActivated(getTreeAdapter().areAllSelected());
+      boolean allSelected = getTreeAdapter().areAllSelected();
+      selectAllBtn.setText(allSelected ? R.string.deselect_all : R.string.select_all);
+      selectAllBtn.setActivated(allSelected);
    }
 
    void selectAll() {
@@ -412,5 +427,13 @@ public abstract class BaseDataFragment extends RoboFragment {
 
    public void setSession(DataManagementSession session) {
       this.session = session;
+   }
+
+   protected boolean isCancelled() {
+      return cancelled;
+   }
+
+   protected void setCancelled(boolean cancelled) {
+      this.cancelled = cancelled;
    }
 }

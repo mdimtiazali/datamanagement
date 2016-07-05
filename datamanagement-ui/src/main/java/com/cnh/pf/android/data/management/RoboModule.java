@@ -13,32 +13,22 @@ import javax.inject.Inject;
 import javax.inject.Named;
 import javax.inject.Singleton;
 
-import java.io.File;
-import java.util.ArrayList;
-import java.util.List;
-
 import android.app.Application;
 import android.content.Context;
 import android.os.Environment;
-
-import com.cnh.jgroups.Datasource;
+import com.cnh.android.util.prefs.GlobalPreferences;
+import com.cnh.android.util.prefs.GlobalPreferencesNotAvailableException;
 import com.cnh.jgroups.Mediator;
 import com.cnh.pf.android.data.management.helper.DatasourceHelper;
-import com.cnh.pf.android.data.management.helper.ObservesTypeListener2;
-import com.cnh.pf.data.management.MediumImpl;
-import com.cnh.pf.data.management.aidl.MediumDevice;
-
 import com.google.inject.AbstractModule;
 import com.google.inject.Provider;
 import com.google.inject.Provides;
-import com.google.inject.matcher.Matchers;
 import org.jgroups.Global;
 import org.jgroups.JChannel;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import roboguice.config.DefaultRoboModule;
 import roboguice.event.EventManager;
-import roboguice.event.ObservesTypeListener;
-import roboguice.event.eventListener.factory.EventListenerThreadingDecorator;
 
 /**
  * Roboguice module definition
@@ -66,14 +56,23 @@ public class RoboModule extends AbstractModule {
       return new Mediator(channel, "DataManagementService");
    }
 
+   @Provides
+   @Singleton
+   public GlobalPreferences getGlobalPreferences(Context context) throws GlobalPreferencesNotAvailableException {
+      return new GlobalPreferences(context);
+   }
+
    @Singleton
    private static class DatasourceHelperProvider implements Provider<DatasourceHelper> {
 
       @Inject
       private Mediator mediator;
+      @Inject
+      @Named(DefaultRoboModule.GLOBAL_EVENT_MANAGER_NAME)
+      private EventManager eventManager;
 
       @Override public DatasourceHelper get() {
-         return new DatasourceHelper(mediator);
+         return new DatasourceHelper(mediator, eventManager);
       }
    }
 }

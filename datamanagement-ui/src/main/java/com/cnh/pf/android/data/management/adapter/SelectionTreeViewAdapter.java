@@ -262,4 +262,8 @@ public abstract class SelectionTreeViewAdapter<T> extends AbstractTreeViewAdapte
       }
       return v.getResult();
    }
+
+   public boolean hasSelection() {
+      return !getSelectionMap().isEmpty();
+   }
 }
