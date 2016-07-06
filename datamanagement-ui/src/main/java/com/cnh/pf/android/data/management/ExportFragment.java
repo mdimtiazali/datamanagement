@@ -260,6 +260,9 @@ public class ExportFragment extends BaseDataFragment {
          if(getSession().getResult().equals(Process.Result.SUCCESS)) {
             Toast.makeText(getActivity(), "Export Completed", Toast.LENGTH_LONG).show();
          }
+         else if(getSession().getResult().equals(Process.Result.CANCEL)) {
+            Toast.makeText(getActivity(), "Import Cancelled", Toast.LENGTH_LONG).show();
+         }
          onNewSession();
       }
       checkExportButton();

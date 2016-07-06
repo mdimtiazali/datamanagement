@@ -327,7 +327,7 @@ public class DataManagementService extends RoboService implements SharedPreferen
     * @param session the session to cancel.
     */
    public void cancel(DataManagementSession session) {
-      new CancelTask().execute(session);
+      new CancelTask().executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR, session);
    }
 
    public List<MediumDevice> getMediums() {
@@ -713,11 +713,13 @@ public class DataManagementService extends RoboService implements SharedPreferen
          logger.debug("Cancelling...");
          DataManagementSession session = params[0];
          try {
-            session.setResult(Process.Result.CANCEL);
             Address[] addresses = getAddresses(session.getTargets());
             //if process already running tell it to cancel.
             if (addresses.length > 0 && performCalled) {
                mediator.cancel(addresses);
+            }
+            else {
+               session.setResult(Process.Result.CANCEL);
             }
          }
          catch (Exception e) {
