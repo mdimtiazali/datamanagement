@@ -110,6 +110,7 @@ public class ImportFragment extends BaseDataFragment {
          }
       });
       processDialog = new ProcessDialog(getActivity());
+      checkImportButton();
    }
 
 
@@ -135,7 +136,8 @@ public class ImportFragment extends BaseDataFragment {
             && (s.getSessionOperation().equals(SessionOperation.CALCULATE_CONFLICTS)
             || s.getSessionOperation().equals(SessionOperation.CALCULATE_OPERATIONS)
                   || (s.getSessionOperation().equals(SessionOperation.PERFORM_OPERATIONS) && s.getResult()==null));
-      isActiveOperation |= getDataManagementService().hasActiveSession();
+      boolean connected = getDataManagementService() != null;
+      isActiveOperation |=  connected && getDataManagementService().hasActiveSession();
       boolean hasSelection = getTreeAdapter() != null && getTreeAdapter().hasSelection();
       importSourceBtn.setEnabled(!isActiveOperation);
       importSelectedBtn.setEnabled(hasSelection && !isActiveOperation);
@@ -318,7 +320,7 @@ public class ImportFragment extends BaseDataFragment {
    void importSelected() {
       logger.debug("Import selected");
       Set<ObjectGraph> selected = getTreeAdapter().getSelected();
-      if (selected.size() > 0) {
+      if (selected.size() > 0 && getSession() != null) {
          processDialog.init();
          processDialog.setTitle(getResources().getString(R.string.checking_targets));
          processDialog.setProgress(0);
@@ -330,8 +332,7 @@ public class ImportFragment extends BaseDataFragment {
    }
 
    void selectSource() {
-      ((TabActivity) getActivity()).showPopup((DialogView)
-            new ImportSourceDialog(getActivity(), getDataManagementService().getMediums()), true);
+      ((TabActivity) getActivity()).showPopup(new ImportSourceDialog(getActivity(), getDataManagementService().getMediums()), true);
    }
 
    @Override
