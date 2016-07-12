@@ -13,6 +13,7 @@ import android.app.Activity;
 import android.view.LayoutInflater;
 import android.view.View;
 
+import android.view.ViewGroup;
 import com.cnh.android.dialog.DialogViewInterface;
 import com.cnh.jgroups.Operation;
 import com.cnh.pf.android.data.management.R;
@@ -54,7 +55,7 @@ public class ProcessDialog extends DialogView {
       init();
    }
 
-   private void init() {
+   public void init() {
       setFirstButtonText(keepBothStr);
       setSecondButtonText(replaceStr);
       setThirdButtonText(cancelStr);
@@ -67,6 +68,17 @@ public class ProcessDialog extends DialogView {
       pbBar = (ProgressBarView) view.findViewById(R.id.progress_bar);
       pbBar.setProgress(0);
       activeView = this.setBodyView(view);
+   }
+
+   private View body;
+
+   @Override
+   public DialogView setBodyView(View view) {
+      if(body!=null) {
+         ((ViewGroup)body.getParent()).removeView(body);
+      }
+      body = view;
+      return super.setBodyView(view);
    }
 
    /**
@@ -139,6 +151,7 @@ public class ProcessDialog extends DialogView {
    public void setProgress(int progress) {
       logger.debug("setProgress:" + progress);
       pbBar.setProgress(progress);
+      invalidate();
    }
 
    @Override
