@@ -142,7 +142,7 @@ public class ImportFragment extends BaseDataFragment {
       isActiveOperation |=  connected && getDataManagementService().hasActiveSession();
       boolean hasSelection = getTreeAdapter() != null && getTreeAdapter().hasSelection();
       importSourceBtn.setEnabled(connected && !isActiveOperation);
-      importSelectedBtn.setEnabled(connected && hasSelection && !isActiveOperation);
+      importSelectedBtn.setEnabled(connected && hasSelection && !isActiveOperation && s!=null);
    }
 
    /**Called when user selects Import source, from Import Source Dialog*/
