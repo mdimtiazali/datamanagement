@@ -197,6 +197,7 @@ import static org.jgroups.conf.ProtocolConfiguration.log;
       String name = DataUtils.getHostname(addr);
       if(Strings.isNullOrEmpty(name)) name = DataUtils.getProperty(addr, HostnameAddressGenerator.MAC);
       if(Strings.isNullOrEmpty(name)) name = DataUtils.getProperty(addr, HostnameAddressGenerator.INET4);
+      if(Strings.isNullOrEmpty(name)) name = DataUtils.getProperty(addr, HostnameAddressGenerator.INET6);
       if(Strings.isNullOrEmpty(name)) name = DataUtils.getInetAddress(addr);
       return name;
    }
