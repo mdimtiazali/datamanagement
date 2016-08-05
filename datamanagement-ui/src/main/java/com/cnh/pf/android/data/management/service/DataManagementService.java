@@ -201,14 +201,19 @@ public class DataManagementService extends RoboService implements SharedPreferen
    }
 
    protected void sendMediumUpdateEvent() {
-      List<MediumDevice> mediums = dsHelper.getTargetDevices();
-      for(IDataManagementListenerAIDL listener : listeners.values()) {
-         try {
-            listener.onMediumsUpdated(mediums);
+      try {
+         List<MediumDevice> mediums = dsHelper.getTargetDevices();
+         for(IDataManagementListenerAIDL listener : listeners.values()) {
+            try {
+               listener.onMediumsUpdated(mediums);
+            }
+            catch (RemoteException e) {
+               logger.error("", e);
+            }
          }
-         catch (RemoteException e) {
-            logger.error("", e);
-         }
+      }
+      catch(Exception e) {
+         logger.warn("Error sending medium update event, probably mediator isn't connected");
       }
    }
 

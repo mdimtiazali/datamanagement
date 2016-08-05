@@ -61,6 +61,8 @@ public class ImportFragment extends BaseDataFragment {
    @InjectView(R.id.percent_tv) TextView percentTv;
    @InjectView(R.id.left_status) LinearLayout leftStatus;
    ProcessDialog processDialog;
+   //store original data in case cancel is pressed.  so we can restore it.
+   private List<ObjectGraph> originalData;
 
    @Override public void inflateViews(LayoutInflater inflater, View leftPanel) {
       inflater.inflate(R.layout.import_left_layout, (LinearLayout) leftPanel);
@@ -139,8 +141,8 @@ public class ImportFragment extends BaseDataFragment {
       boolean connected = getDataManagementService() != null;
       isActiveOperation |=  connected && getDataManagementService().hasActiveSession();
       boolean hasSelection = getTreeAdapter() != null && getTreeAdapter().hasSelection();
-      importSourceBtn.setEnabled(!isActiveOperation);
-      importSelectedBtn.setEnabled(hasSelection && !isActiveOperation);
+      importSourceBtn.setEnabled(connected && !isActiveOperation);
+      importSelectedBtn.setEnabled(connected && hasSelection && !isActiveOperation && s!=null);
    }
 
    /**Called when user selects Import source, from Import Source Dialog*/
@@ -264,7 +266,9 @@ public class ImportFragment extends BaseDataFragment {
             processDialog.hide();
             logger.debug("Cancelling operation");
             setCancelled(true);
+            getSession().setObjectData(originalData);
             getSession().setSessionOperation(SessionOperation.DISCOVERY);
+            if(getTreeAdapter()!=null) getTreeAdapter().selectAll(treeViewList, false);  //clear out the selection
             checkImportButton();
          }
       });
@@ -326,6 +330,7 @@ public class ImportFragment extends BaseDataFragment {
          processDialog.setProgress(0);
          processDialog.show();
          setCancelled(false);
+         originalData = getSession().getObjectData();
          getSession().setObjectData(new ArrayList<ObjectGraph>(selected));
          setSession(getDataManagementService().processOperation(getSession(), DataManagementSession.SessionOperation.CALCULATE_OPERATIONS));
       }
