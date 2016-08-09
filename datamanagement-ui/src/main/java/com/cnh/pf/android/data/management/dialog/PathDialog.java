@@ -12,6 +12,7 @@ package com.cnh.pf.android.data.management.dialog;
 import java.io.File;
 
 import android.os.Environment;
+import com.google.common.io.Files;
 import pl.polidea.treeview.InMemoryTreeStateManager;
 import pl.polidea.treeview.TreeBuilder;
 import pl.polidea.treeview.TreeStateManager;
@@ -94,12 +95,13 @@ public class PathDialog extends DialogView {
       } else {
          treeBuilder.addRelation(parent, dir);
       }
-      if(!dir.getName().contains("cn1") &&
-            !dir.getName().contains("TASKDATA")) {
+      if(dir.isDirectory()
+            && !dir.getName().contains("cn1")
+            && !dir.getName().contains("TASKDATA")) {
          File[] files = dir.listFiles();
          if (files != null) {
             for (File file : files) {
-               if (file.isDirectory()) {
+               if (file.isDirectory() || Files.getFileExtension(file.getName()).equals("shp")) {
                   getSourcePath(dir, file);
                }
             }

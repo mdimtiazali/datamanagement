@@ -44,6 +44,7 @@ import com.cnh.pf.android.data.management.R;
 import com.cnh.pf.android.data.management.RoboModule;
 import com.cnh.pf.android.data.management.connection.DataServiceConnectionImpl.ErrorEvent;
 import com.cnh.pf.android.data.management.helper.DatasourceHelper;
+import com.cnh.pf.android.data.management.parser.FormatManager;
 import com.cnh.pf.data.management.DataManagementSession;
 import com.cnh.pf.data.management.aidl.IDataManagementListenerAIDL;
 import com.cnh.pf.data.management.aidl.MediumDevice;
@@ -90,6 +91,8 @@ public class DataManagementService extends RoboService implements SharedPreferen
    @Inject EventManager globalEventManager;
    @Named("global")
    @Inject private SharedPreferences prefs;
+
+   @Inject private FormatManager formatManager;
 
    @InjectResource(R.string.exporting_string) private String exporting;
    @InjectResource(R.string.importing_string) private String importing;
@@ -360,7 +363,8 @@ public class DataManagementService extends RoboService implements SharedPreferen
          activeSessions.put(session, status);
          sendStatus(session, statusStarting);
          if (isUsbExport(session)) {
-            startUsbServices(new String[] { session.getTarget().getPath().getPath() }, true, session.getFormat());
+            File destinationFolder = new File(session.getTarget().getPath(), formatManager.getFormat(session.getFormat()).path);
+            startUsbServices(new String[] { destinationFolder.getPath() }, true, session.getFormat());
             handler.postDelayed(new Runnable() {
                @Override
                public void run() {
