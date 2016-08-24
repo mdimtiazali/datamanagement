@@ -10,9 +10,6 @@
 package com.cnh.pf.android.data.management;
 
 import android.app.Application;
-import com.cnh.pf.jgroups.ChannelModule;
-import com.facebook.stetho.Stetho;
-import roboguice.RoboGuiceHelper;
 
 /**
  * Test application without the roboguice phoenix workaround or stetho

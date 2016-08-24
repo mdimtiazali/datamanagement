@@ -12,6 +12,7 @@ package com.cnh.pf.android.data.management.dialog;
 import java.io.File;
 
 import android.os.Environment;
+import android.widget.AbsListView;
 import com.google.common.io.Files;
 import pl.polidea.treeview.InMemoryTreeStateManager;
 import pl.polidea.treeview.TreeBuilder;
@@ -51,6 +52,7 @@ public class PathDialog extends DialogView {
       LayoutInflater inflater = ((Activity) getContext()).getLayoutInflater();
       View view = inflater.inflate(R.layout.path_tree, null);
       pathList = (TreeViewList) view.findViewById(R.id.path_tree_view);
+      pathList.setChoiceMode(AbsListView.CHOICE_MODE_SINGLE);
       manager = new InMemoryTreeStateManager<File>();
       treeBuilder = new TreeBuilder<File>(manager);
       pathList.removeAllViewsInLayout();

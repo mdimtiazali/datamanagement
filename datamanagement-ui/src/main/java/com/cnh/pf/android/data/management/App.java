@@ -9,21 +9,15 @@
 
 package com.cnh.pf.android.data.management;
 
-import android.app.Application;
-import com.cnh.pf.jgroups.ChannelModule;
-import com.facebook.stetho.Stetho;
-import roboguice.RoboGuiceHelper;
+import android.support.multidex.MultiDexApplication;
 
 /**
  * @author kedzie
  */
-public class App extends Application {
+public class App extends MultiDexApplication {
 
    @Override
    public void onCreate() {
       super.onCreate();
-      RoboGuiceHelper.help(this, new String[] { "com.cnh.pf.android.data.management", "com.cnh.pf.jgroups" },
-            new RoboModule(this), new ChannelModule(this));
-      Stetho.initializeWithDefaults(this);
    }
 }

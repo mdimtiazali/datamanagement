@@ -94,12 +94,13 @@ public class ProcessDialog extends DialogView {
          @Override
          public void onButtonClick(DialogViewInterface dialog, int which) {
             if (which == DialogViewInterface.BUTTON_FIRST) {
-               listener.onButtonSelected(Operation.Action.COPY_AND_KEEP);
+               listener.onButtonSelected(ProcessDialog.this, Operation.Action.COPY_AND_KEEP);
             }
             else if (which == DialogViewInterface.BUTTON_SECOND) {
-               listener.onButtonSelected(Operation.Action.COPY_AND_REPLACE);
+               listener.onButtonSelected(ProcessDialog.this, Operation.Action.COPY_AND_REPLACE);
             }
             else if (which == DialogViewInterface.BUTTON_THIRD) {
+               listener.onButtonSelected(ProcessDialog.this, null);
                ProcessDialog.this.dismiss();
             }
          }

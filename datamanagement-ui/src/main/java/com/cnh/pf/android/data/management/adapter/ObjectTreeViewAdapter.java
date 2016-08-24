@@ -22,6 +22,7 @@ import com.cnh.jgroups.DataTypes;
 import com.cnh.pf.android.data.management.R;
 import com.cnh.pf.android.data.management.graph.GroupObjectGraph;
 import com.cnh.jgroups.Datasource;
+import com.cnh.pf.model.TypedValue;
 import com.google.common.base.Predicate;
 import pl.polidea.treeview.TreeNodeInfo;
 import pl.polidea.treeview.TreeStateManager;
@@ -87,7 +88,7 @@ public abstract class ObjectTreeViewAdapter extends SelectionTreeViewAdapter<Obj
     */
    public static ObjectGraph filter(ObjectGraph obj, Predicate<ObjectGraph> predicate) {
       if(!predicate.apply(obj)) return null;
-      ObjectGraph node = new ObjectGraph(obj.getSources(), obj.getType(), obj.getId(), obj.getName(), new HashMap<String, String>(obj.getData()), null);
+      ObjectGraph node = new ObjectGraph(obj.getSources(), obj.getType(), obj.getId(), obj.getName(), new HashMap<String, TypedValue>(obj.getData()), null);
       for(ObjectGraph child : obj.getChildren()) {
          ObjectGraph fc = filter(child, predicate);
          if(fc != null) {
