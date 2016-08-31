@@ -8,17 +8,6 @@
  */
 package com.cnh.pf.android.data.management.service;
 
-import javax.annotation.Nullable;
-import javax.inject.Inject;
-import java.io.File;
-import java.io.FileFilter;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.concurrent.ConcurrentHashMap;
-
 import android.app.Application;
 import android.app.NotificationManager;
 import android.app.PendingIntent;
@@ -26,13 +15,7 @@ import android.content.Intent;
 import android.content.SharedPreferences;
 import android.graphics.drawable.BitmapDrawable;
 import android.net.Uri;
-import android.os.AsyncTask;
-import android.os.Binder;
-import android.os.Environment;
-import android.os.Handler;
-import android.os.IBinder;
-import android.os.ParcelUuid;
-import android.os.RemoteException;
+import android.os.*;
 import android.support.v4.app.NotificationCompat;
 import com.cnh.android.status.Status;
 import com.cnh.jgroups.Datasource;
@@ -68,6 +51,13 @@ import roboguice.config.DefaultRoboModule;
 import roboguice.event.EventManager;
 import roboguice.inject.InjectResource;
 import roboguice.service.RoboService;
+
+import javax.annotation.Nullable;
+import javax.inject.Inject;
+import java.io.File;
+import java.io.FileFilter;
+import java.util.*;
+import java.util.concurrent.ConcurrentHashMap;
 
 import static com.cnh.pf.data.management.service.ServiceConstants.ACTION_STOP;
 
@@ -174,16 +164,18 @@ public class DataManagementService extends RoboService implements SharedPreferen
 
    @Override
    public void onDestroy() {
+      stopUsbServices();
+      sendBroadcast(new Intent(ServiceConstants.ACTION_INTERNAL_DATA_STOP).addFlags(Intent.FLAG_INCLUDE_STOPPED_PACKAGES));
       removeUsbStatus();
       listeners.clear();
       prefs.unregisterOnSharedPreferenceChangeListener(this);
-      super.onDestroy();
       new Thread(new Runnable() {
          @Override
          public void run() {
             mediator.close();
          }
       });
+      super.onDestroy();
    }
 
    public DataManagementSession getSession() {
@@ -232,8 +224,7 @@ public class DataManagementService extends RoboService implements SharedPreferen
       dataStatus = new Status(getResources().getString(R.string.usb_data_available), statusDrawable, getApplication().getPackageName());
       sendStatus(dataStatus, getResources().getString(R.string.usb_scanning));
       //Check if USB has any interesting data
-      File usb = Environment.getExternalStorageDirectory();
-      File[] folders = usb.listFiles(new FileFilter() {
+      File[] folders = mount.listFiles(new FileFilter() {
          @Override
          public boolean accept(File file) {
             return file.isDirectory();
@@ -526,7 +517,7 @@ public class DataManagementService extends RoboService implements SharedPreferen
                session.setResult(Process.Result.NO_DATASOURCE);
             }
          }
-         catch (Exception e) {
+         catch (Throwable e) {
             logger.debug("error in discovery", e);
             globalEventManager.fire(new ErrorEvent(session,
                   ErrorEvent.DataError.DISCOVERY_ERROR,
@@ -566,7 +557,7 @@ public class DataManagementService extends RoboService implements SharedPreferen
                session.setResult( Process.Result.NO_DATASOURCE);
             }
          }
-         catch (Exception e) {
+         catch (Throwable e) {
             logger.error("Send exception in CalculateTargets: ", e);
             globalEventManager.fire(new ErrorEvent(session,
                   ErrorEvent.DataError.CALCULATE_TARGETS_ERROR,
@@ -591,7 +582,7 @@ public class DataManagementService extends RoboService implements SharedPreferen
                session.setResult( Process.Result.NO_DATASOURCE);
             }
          }
-         catch (Exception e) {
+         catch (Throwable e) {
             logger.error("Send exception", e);
             globalEventManager.fire(new ErrorEvent(session,
                   ErrorEvent.DataError.CALCULATE_CONFLICT_ERROR,

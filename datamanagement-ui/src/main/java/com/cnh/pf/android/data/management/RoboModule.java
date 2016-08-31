@@ -14,12 +14,6 @@ import javax.inject.Named;
 import javax.inject.Singleton;
 
 import android.app.Application;
-import android.content.Context;
-import android.os.Environment;
-import com.cnh.android.util.prefs.GlobalPreferences;
-import com.cnh.android.util.prefs.GlobalPreferencesNotAvailableException;
-import com.cnh.jgroups.Mediator;
-import com.cnh.pf.android.data.management.helper.DatasourceHelper;
 import com.google.inject.AbstractModule;
 import com.google.inject.Provider;
 import com.google.inject.Provides;
@@ -29,6 +23,9 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import roboguice.config.DefaultRoboModule;
 import roboguice.event.EventManager;
+
+import com.cnh.jgroups.Mediator;
+import com.cnh.pf.android.data.management.helper.DatasourceHelper;
 
 /**
  * Roboguice module definition
@@ -54,12 +51,6 @@ public class RoboModule extends AbstractModule {
    public Mediator getMediator(@Named("data") JChannel channel) {
       logger.debug("Using channel {}", channel.getProperties());
       return new Mediator(channel, "DataManagementService");
-   }
-
-   @Provides
-   @Singleton
-   public GlobalPreferences getGlobalPreferences(Context context) throws GlobalPreferencesNotAvailableException {
-      return new GlobalPreferences(context);
    }
 
    @Singleton
