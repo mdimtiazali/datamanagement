@@ -12,6 +12,8 @@ package com.cnh.pf.android.data.management.adapter;
 import android.app.Activity;
 import android.view.View;
 import android.widget.TextView;
+
+import com.cnh.android.dialog.DialogView;
 import com.cnh.jgroups.Operation;
 
 import java.util.List;
@@ -84,6 +86,7 @@ public abstract class DataManagementBaseAdapter {
    public interface OnTargetsSelectedListener {
       /**
        * Invoked when operations have completed
+       * @param dialog  the dialog
        * @param operations List<Operations> operations
        */
       void onCompletion(List<Operation> operations);
@@ -92,6 +95,6 @@ public abstract class DataManagementBaseAdapter {
    public abstract OnActionSelectedListener getActionListener();
 
    public interface OnActionSelectedListener {
-      void onButtonSelected(Operation.Action action);
+      void onButtonSelected(DialogView dialog, Operation.Action action);
    }
 }

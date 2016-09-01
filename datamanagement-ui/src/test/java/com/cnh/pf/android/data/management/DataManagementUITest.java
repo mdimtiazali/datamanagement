@@ -24,6 +24,7 @@ import com.cnh.android.util.prefs.GlobalPreferences;
 import com.cnh.android.util.prefs.GlobalPreferencesNotAvailableException;
 import com.cnh.android.widget.activity.TabActivity;
 import com.cnh.android.widget.control.PickListEditable;
+import com.cnh.jgroups.DataTypes;
 import com.cnh.jgroups.Datasource;
 import com.cnh.jgroups.Mediator;
 import com.cnh.jgroups.ObjectGraph;
@@ -113,11 +114,12 @@ public class DataManagementUITest {
       parser.parseXml();
       Set<String> formats = parser.getFormats();
       assertTrue("xml specifies isoxml format", formats.contains("ISOXML"));
-      assertTrue("isoxml supporrts customery type", parser.formatSupportsType("ISOXML", "com.cnh.pf.model.pfds.Customer"));
+      assertTrue("isoxml supporrts customery type", parser.formatSupportsType("ISOXML", DataTypes.GROWER));
       assertFalse("isoxml does not support VEHICLE type", parser.formatSupportsType("ISOXML", "VEHICLE"));
       assertTrue("xml specifies cnh format", formats.contains("CNH"));
       assertTrue("cnh supports vehicle type", parser.formatSupportsType("CNH", "VEHICLE"));
-      assertFalse("cnh does not support customer type", parser.formatSupportsType("CNH", "com.cnh.pf.model.pfds.Customer"));
+      assertTrue("cnh does not support customer type", parser.formatSupportsType("CNH", DataTypes.GROWER));
+      assertFalse("cnh does not support prescription type", parser.formatSupportsType("CNH", "com.cnh.pf.model.pfds.Prescription"));
    }
 
    @Test
@@ -187,11 +189,11 @@ public class DataManagementUITest {
 
    /* Generate Object tree for testing */
    private List<ObjectGraph> getTestObjectData() {
-      customer = new ObjectGraph(null, "com.cnh.pf.model.pfds.Customer", "Oscar");
-      ObjectGraph farm = new ObjectGraph(null, "com.cnh.pf.model.pfds.Farm", "Dekalp");
-      ObjectGraph field = new ObjectGraph(null, "com.cnh.pf.model.pfds.Field", "North");
-      ObjectGraph task = new ObjectGraph(null, "com.cnh.pf.model.pfds.Task", "Task1");
-      ObjectGraph task2 = new ObjectGraph(null, "com.cnh.pf.model.pfds.Task", "Task2");
+      customer = new ObjectGraph(null, DataTypes.GROWER, "Oscar");
+      ObjectGraph farm = new ObjectGraph(null, DataTypes.FARM, "Dekalp");
+      ObjectGraph field = new ObjectGraph(null, DataTypes.FIELD, "North");
+      ObjectGraph task = new ObjectGraph(null, DataTypes.TASK, "Task1");
+      ObjectGraph task2 = new ObjectGraph(null, DataTypes.TASK, "Task2");
       testObject = new ObjectGraph(null, "com.cnh.prescription.shapefile", "Shapefile Prescription"); // Not real object, used to demostrate format support
       field.addChild(testObject);
       field.addChild(task);
