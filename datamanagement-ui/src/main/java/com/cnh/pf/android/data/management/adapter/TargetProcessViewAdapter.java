@@ -9,27 +9,23 @@
  */
 package com.cnh.pf.android.data.management.adapter;
 
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.List;
-
-import com.cnh.jgroups.MultiSetObjectGraph;
-import com.cnh.pf.android.data.management.ExportFragment;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 import android.app.Activity;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.widget.AdapterView;
 import android.widget.TextView;
-
-import com.cnh.pf.android.data.management.R;
 import com.cnh.android.widget.control.PickListAdapter;
 import com.cnh.android.widget.control.PickListEditable;
-import com.cnh.android.widget.control.PickListItem;
+import com.cnh.jgroups.MultiSetObjectGraph;
 import com.cnh.jgroups.ObjectGraph;
 import com.cnh.jgroups.Operation;
+import com.cnh.pf.android.data.management.ExportFragment;
+import com.cnh.pf.android.data.management.R;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import java.util.ArrayList;
+import java.util.List;
 
 /**
  * View Adapter for ProcessDialog

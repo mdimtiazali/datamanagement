@@ -10,11 +10,11 @@
 
 <formats>
 
-   <format name="ISOXML" pcm="true" standalone="false">
-      <type>com.cnh.pf.model.pfds.Customer</type>
-      <type>com.cnh.pf.model.pfds.Farm</type>
-      <type>com.cnh.pf.model.pfds.Field</type>
-      <type>com.cnh.pf.model.pfds.Task</type>
+   <format name="ISOXML" pcm="true" standalone="false" path="TASKDATA">
+      <type>GROWER</type>
+      <type>FARM</type>
+      <type>FIELD</type>
+      <type>TASK</type>
       <type>com.cnh.pf.model.pfds.RxPlan</type>
       <type>com.cnh.pf.model.pfds.Prescription</type>
       <type>com.cnh.pf.model.pfds.PrescriptionZone</type>
@@ -24,14 +24,11 @@
       <type>com.cnh.autoguidance.model.GuidancePattern</type>
       <type>com.cnh.autoguidance.boundary.BoundaryItem</type>
       <type>com.cnh.autoguidance.boundary.LandmarkItem</type>
+      <type>COVERAGE</type>
       <type>FILE</type>
    </format>
 
-   <format name="CNH" pcm="true" standalone="true">
-      <type>!com.cnh.pf.model.pfds.Customer</type>
-      <type>!com.cnh.pf.model.pfds.Farm</type>
-      <type>!com.cnh.pf.model.pfds.Field</type>
-      <type>!com.cnh.pf.model.pfds.Task</type>
+   <format name="CNH" pcm="true" standalone="true" path="XDATA">
       <type>!com.cnh.pf.model.pfds.RxPlan</type>
       <type>!com.cnh.pf.model.pfds.Prescription</type>
       <type>!com.cnh.pf.model.pfds.PrescriptionZone</type>
@@ -41,7 +38,6 @@
       <type>!com.cnh.autoguidance.model.GuidancePattern</type>
       <type>!com.cnh.autoguidance.boundary.BoundaryItem</type>
       <type>!com.cnh.autoguidance.boundary.LandmarkItem</type>
-      <type>!FILE</type>
    </format>
 
 </formats>

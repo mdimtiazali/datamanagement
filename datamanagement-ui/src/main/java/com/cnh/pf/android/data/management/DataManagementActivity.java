@@ -21,6 +21,7 @@ import android.view.View;
 import com.cnh.android.widget.activity.TabActivity;
 import com.cnh.android.widget.control.TabActivityListeners;
 import com.cnh.android.widget.control.TabActivityTab;
+import com.cnh.pf.data.management.service.ServiceConstants;
 import com.cnh.pf.jgroups.ChannelModule;
 import com.google.inject.Key;
 import org.slf4j.Logger;
@@ -181,7 +182,7 @@ public class DataManagementActivity extends TabActivity implements RoboContext {
       super.onResume();
       eventManager.fire(new OnResumeEvent(this));
       logger.debug("Sending INTERNAL_DATA broadcast");
-      sendBroadcast(new Intent("com.cnh.pf.data.INTERNAL_DATA").addFlags(Intent.FLAG_INCLUDE_STOPPED_PACKAGES));
+      sendBroadcast(new Intent(ServiceConstants.ACTION_INTERNAL_DATA).addFlags(Intent.FLAG_INCLUDE_STOPPED_PACKAGES));
    }
 
    @Override

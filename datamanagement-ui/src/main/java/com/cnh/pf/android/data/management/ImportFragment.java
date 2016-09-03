@@ -178,6 +178,11 @@ public class ImportFragment extends BaseDataFragment {
    @Override public void processOperations() {
       if (getSession().getSessionOperation().equals(SessionOperation.CALCULATE_OPERATIONS) && !isCancelled()) {
          logger.debug("Calculate Targets");
+         if(getSession().getData() == null) {
+            Toast.makeText(getActivity(), "No operations came back from server.  Check connectivity", Toast.LENGTH_SHORT).show();
+            cancel();
+            return;
+         }
          boolean hasMultipleTargets = false;
          for (Operation operation : getSession().getData()) {
             if (operation.getPotentialTargets() != null && operation.getPotentialTargets().size() > 1 && operation.getData().getParent()==null) {
@@ -263,15 +268,19 @@ public class ImportFragment extends BaseDataFragment {
       processDialog.setProgress(0);
       processDialog.setOnDismissListener(new DialogViewInterface.OnDismissListener() {
          @Override public void onDismiss(DialogViewInterface dialog) {
-            processDialog.hide();
-            logger.debug("Cancelling operation");
-            setCancelled(true);
-            getSession().setObjectData(originalData);
-            getSession().setSessionOperation(SessionOperation.DISCOVERY);
-            if(getTreeAdapter()!=null) getTreeAdapter().selectAll(treeViewList, false);  //clear out the selection
-            checkImportButton();
+            cancel();
          }
       });
+   }
+
+   void cancel() {
+      processDialog.hide();
+      logger.debug("Cancelling operation");
+      setCancelled(true);
+      getSession().setObjectData(originalData);
+      getSession().setSessionOperation(SessionOperation.DISCOVERY);
+      if(getTreeAdapter()!=null) getTreeAdapter().selectAll(treeViewList, false);  //clear out the selection
+      checkImportButton();
    }
 
    /** Inflates left panel progress view */
