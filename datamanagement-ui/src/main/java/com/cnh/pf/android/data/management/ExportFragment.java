@@ -312,8 +312,13 @@ public class ExportFragment extends BaseDataFragment {
    void exportSelected() {
       getSession().setData(null);
       getSession().setObjectData(new ArrayList<ObjectGraph>(getTreeAdapter().getSelected()));
-      setSession(getDataManagementService().processOperation(getSession(), SessionOperation.PERFORM_OPERATIONS));
-      showProgressPanel();
+      if(!getSession().getObjectData().isEmpty()) {
+         setSession(getDataManagementService().processOperation(getSession(), SessionOperation.PERFORM_OPERATIONS));
+         showProgressPanel();
+      }
+      else {
+         Toast.makeText(getActivity(), "No data of selected format selected", Toast.LENGTH_LONG).show();
+      }
    }
 
    /** Inflates left panel progress view */

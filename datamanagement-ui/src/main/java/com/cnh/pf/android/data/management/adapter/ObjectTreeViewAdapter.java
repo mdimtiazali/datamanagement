@@ -22,6 +22,7 @@ import com.cnh.jgroups.DataTypes;
 import com.cnh.pf.android.data.management.R;
 import com.cnh.pf.android.data.management.graph.GroupObjectGraph;
 import com.cnh.jgroups.Datasource;
+import com.cnh.pf.model.TypedValue;
 import com.google.common.base.Predicate;
 import pl.polidea.treeview.TreeNodeInfo;
 import pl.polidea.treeview.TreeStateManager;
@@ -47,10 +48,10 @@ public abstract class ObjectTreeViewAdapter extends SelectionTreeViewAdapter<Obj
    private static final Map<String, Integer> TYPE_ICONS = new HashMap<String, Integer>();
 
    static {
-      TYPE_ICONS.put("com.cnh.pf.model.pfds.Customer", R.drawable.ic_datatree_grower);
-      TYPE_ICONS.put("com.cnh.pf.model.pfds.Farm", R.drawable.ic_datatree_farm);
-      TYPE_ICONS.put("com.cnh.pf.model.pfds.Field", R.drawable.ic_datatree_field);
-      TYPE_ICONS.put("com.cnh.pf.model.pfds.Task", R.drawable.ic_datatree_tasks);
+      TYPE_ICONS.put(DataTypes.GROWER, R.drawable.ic_datatree_grower);
+      TYPE_ICONS.put(DataTypes.FARM, R.drawable.ic_datatree_farm);
+      TYPE_ICONS.put(DataTypes.FIELD, R.drawable.ic_datatree_field);
+      TYPE_ICONS.put(DataTypes.TASK, R.drawable.ic_datatree_tasks);
       TYPE_ICONS.put("com.cnh.pf.model.pfds.TaskPlan", R.drawable.ic_datatree_tasks);
       TYPE_ICONS.put("com.cnh.pf.model.pfds.Prescription", R.drawable.ic_datatree_prescription);
       TYPE_ICONS.put("com.cnh.pf.model.pfds.RxPlan", R.drawable.ic_datatree_prescription);
@@ -60,6 +61,8 @@ public abstract class ObjectTreeViewAdapter extends SelectionTreeViewAdapter<Obj
       TYPE_ICONS.put("com.cnh.autoguidance.boundary.LandmarkItem", R.drawable.ic_datatree_obstacles);
       TYPE_ICONS.put("com.cnh.autoguidance.model.GuidanceGroup", R.drawable.ic_datatree_swath);
       TYPE_ICONS.put("com.cnh.autoguidance.model.GuidancePattern", R.drawable.ic_datatree_swath);
+      TYPE_ICONS.put(DataTypes.COVERAGE, R.drawable.ic_datatree_boundaries);
+      TYPE_ICONS.put(DataTypes.FILE, R.drawable.ic_datatree_background_layers);
       TYPE_ICONS.put(DataTypes.VEHICLE, R.drawable.ic_datatree_copy);
       TYPE_ICONS.put(DataTypes.VEHICLE_IMPLEMENT, R.drawable.ic_datatree_implements);
       TYPE_ICONS.put(DataTypes.VEHICLE_IMPLEMENT_CONFIG, R.drawable.ic_datatree_background_layers);
@@ -85,7 +88,7 @@ public abstract class ObjectTreeViewAdapter extends SelectionTreeViewAdapter<Obj
     */
    public static ObjectGraph filter(ObjectGraph obj, Predicate<ObjectGraph> predicate) {
       if(!predicate.apply(obj)) return null;
-      ObjectGraph node = new ObjectGraph(obj.getSources(), obj.getType(), obj.getId(), obj.getName(), new HashMap<String, String>(obj.getData()), null);
+      ObjectGraph node = new ObjectGraph(obj.getSources(), obj.getType(), obj.getId(), obj.getName(), new HashMap<String, TypedValue>(obj.getData()), null);
       for(ObjectGraph child : obj.getChildren()) {
          ObjectGraph fc = filter(child, predicate);
          if(fc != null) {

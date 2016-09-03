@@ -9,34 +9,35 @@
 
 package com.cnh.pf.android.data.management.service;
 
+import javax.inject.Inject;
+import java.io.IOException;
+
 import android.app.Application;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.os.IBinder;
-import com.cnh.android.util.prefs.GlobalPreferences;
-import com.cnh.pf.android.data.management.RoboModule;
-import com.cnh.pf.jgroups.ChannelModule;
 import com.google.inject.name.Named;
-import org.jgroups.stack.GossipRouter;
-import org.jgroups.util.Util;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import roboguice.RoboGuiceHelper;
 import roboguice.service.RoboService;
 
-import javax.inject.Inject;
-import java.io.IOException;
+import com.cnh.android.util.prefs.GlobalPreferences;
+import com.cnh.pf.android.data.management.RoboModule;
+import com.cnh.pf.data.management.service.ServiceConstants;
+import com.cnh.pf.jgroups.ChannelModule;
 
 /**
  * Starts network routes in standalone mode.
  *
  * Created by mkedzierski on 12/2/15.
  */
-public class GossipRouterService extends RoboService {
-   private static final Logger log = LoggerFactory.getLogger(GossipRouterService.class);
+public class MulticastRouteService extends RoboService {
+   private static final Logger log = LoggerFactory.getLogger(MulticastRouteService.class);
 
    @Named("global")
-   @Inject private SharedPreferences prefs;
+   @Inject
+   private SharedPreferences prefs;
 
    @Override
    public void onCreate() {
@@ -47,23 +48,25 @@ public class GossipRouterService extends RoboService {
       super.onCreate();
    }
 
-   @Override public int onStartCommand(Intent intent, int flags, int startId) {
-      if(!prefs.getBoolean(GlobalPreferences.PREF_PCM, false)) {
-         try {
-            Runtime.getRuntime().exec("su busybox ifconfig lo multicast".split(" "));
-            Runtime.getRuntime().exec("su busybox route add -net 224.0.0.0 netmask 240.0.0.0 dev lo".split(" "));
-            log.trace("Added routes");
+   @Override
+   public int onStartCommand(Intent intent, int flags, int startId) {
+      if(intent.getAction().equals(ServiceConstants.ACTION_INTERNAL_DATA)) {
+         if (!prefs.getBoolean(GlobalPreferences.PREF_PCM, false)) {
+            try {
+               Runtime.getRuntime().exec("su busybox ifconfig lo multicast".split(" "));
+               Runtime.getRuntime().exec("su busybox route add -net 224.0.0.0 netmask 240.0.0.0 dev lo".split(" "));
+               log.trace("Added loopback multicast route");
+            }
+            catch (IOException e) {
+               log.error("Error", e);
+            }
          }
-         catch (IOException e) {
-            log.error("Error", e);
-         }
-         return START_NOT_STICKY;
-      }else {
-         return START_NOT_STICKY;
       }
+      return START_NOT_STICKY;
    }
 
-   @Override public IBinder onBind(Intent intent) {
+   @Override
+   public IBinder onBind(Intent intent) {
       return null;
    }
 }

@@ -19,7 +19,6 @@ import java.util.Set;
 import android.app.Activity;
 import android.graphics.Color;
 import android.util.Pair;
-import android.util.TypedValue;
 import android.view.Gravity;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -32,6 +31,7 @@ import com.cnh.android.dialog.DialogViewInterface;
 import com.cnh.android.widget.activity.TabActivity;
 import com.cnh.jgroups.Operation;
 import com.cnh.pf.android.data.management.R;
+import com.cnh.pf.model.TypedValue;
 
 import com.google.common.base.Strings;
 import com.google.inject.Inject;
@@ -40,7 +40,6 @@ import org.slf4j.LoggerFactory;
 import roboguice.RoboGuice;
 import roboguice.inject.InjectResource;
 
-import static android.R.attr.id;
 
 /**
  * Adapter used to feed data to Conflict Resolution View
@@ -73,8 +72,8 @@ public class DataConflictViewAdapter extends DataManagementBaseAdapter {
 
    private OnActionSelectedListener actionListener = new OnActionSelectedListener() {
       @Override
-      public void onButtonSelected(Operation.Action action) {
-         if (action.equals(Operation.Action.COPY_AND_KEEP)) {
+      public void onButtonSelected(final DialogView dialog, Operation.Action action) {
+         if (Operation.Action.COPY_AND_KEEP.equals(action)) {
             Operation op = operationList.get(activeOperation);
             final DialogView newNameDialog = new DialogView(context);
             newNameDialog.setTitle(context.getResources().getString(R.string.new_id_title));
@@ -89,10 +88,10 @@ public class DataConflictViewAdapter extends DataManagementBaseAdapter {
             newNameDialog.showThirdButton(false);
             newNameDialog.setOnButtonClickListener(new DialogViewInterface.OnButtonClickListener() {
                @Override
-               public void onButtonClick(DialogViewInterface dialog, int which) {
+               public void onButtonClick(DialogViewInterface nameDialog, int which) {
                   if (which == DialogViewInterface.BUTTON_FIRST) {
                      String newName = textEntry.getText().toString();
-                     if (!newName.equals("")) {
+                     if (!Strings.isNullOrEmpty(newName)) {
                         operationList.get(activeOperation).setNewName(newName);
                         operationList.get(activeOperation).setAction(Operation.Action.COPY_AND_KEEP);
                         newNameDialog.dismiss();
@@ -103,11 +102,13 @@ public class DataConflictViewAdapter extends DataManagementBaseAdapter {
                   else if (which == DialogViewInterface.BUTTON_SECOND) {
                      newNameDialog.dismiss();
                   }
+                  enableButtons(dialog, true);
                }
             });
+            enableButtons(dialog, false);
             ((TabActivity) newNameDialog.getContext()).showPopup(newNameDialog, true);
          }
-         else if (action.equals(Operation.Action.COPY_AND_REPLACE)) {
+         else if (Operation.Action.COPY_AND_REPLACE.equals(action)) {
             logger.debug("replace");
             operationList.get(activeOperation).setAction(Operation.Action.COPY_AND_REPLACE);
             activeOperation++;
@@ -115,6 +116,12 @@ public class DataConflictViewAdapter extends DataManagementBaseAdapter {
          }
       }
    };
+
+   void enableButtons(DialogView dialog, boolean enabled) {
+      dialog.setFirstButtonEnabled(enabled);
+      dialog.setSecondButtonEnabled(enabled);
+      dialog.setThirdButtonEnabled(enabled);
+   }
 
    @Override
    public View getView(View convertView) {
@@ -138,7 +145,7 @@ public class DataConflictViewAdapter extends DataManagementBaseAdapter {
                context.getResources().getString(R.string.duplicate_file,
                      getTypeString(operation.getData().getType()),
                      operation.getData().getName()));
-         populateDescriptionLayout(viewHolder.columnsLayout, viewHolder.exitingFile, viewHolder.newFile, operation.getConflictData(), operation.getData().getData());
+         populateDescriptionLayout(viewHolder.columnsLayout, viewHolder.exitingFile, viewHolder.newFile, operation.getConflictDataTyped(), operation.getData().getData());
       }
       targetView = newView;
       return newView;
@@ -149,7 +156,7 @@ public class DataConflictViewAdapter extends DataManagementBaseAdapter {
    }
 
    /** Generates description area for the existing entity and new entitiy, reuses layouts */
-   private void populateDescriptionLayout(LinearLayout rowLayout, LinearLayout existingFileLayout, LinearLayout newFileLayout,  Map<String, String> existingMap, Map<String, String> newMap) {
+   private void populateDescriptionLayout(LinearLayout rowLayout, LinearLayout existingFileLayout, LinearLayout newFileLayout,  Map<String, TypedValue> existingMap, Map<String, TypedValue> newMap) {
       logger.debug("Conflict existing data: {}\nNew data {}", existingMap, newMap);
       /** Viewholder to re-use textviews within description area*/
       LayoutViewHolder existingFileVH = getViewHolder(existingFileLayout);
@@ -176,7 +183,7 @@ public class DataConflictViewAdapter extends DataManagementBaseAdapter {
       propNames.addAll(newMap.keySet());
       for(String key : propNames) {
          if(key.startsWith("_")) continue; //skip 'private' properties
-         rowMap.put(key, new Pair<String, String>(existingMap.get(key), newMap.get(key)));
+         rowMap.put(key, new Pair<String, String>(String.valueOf(existingMap.get(key).getFieldValue()), String.valueOf(newMap.get(key).getFieldValue())));
       }
 
       int rowNum = 0;
@@ -248,7 +255,7 @@ public class DataConflictViewAdapter extends DataManagementBaseAdapter {
       tv.setLayoutParams(new LinearLayout.LayoutParams(LinearLayout.LayoutParams.MATCH_PARENT, LinearLayout.LayoutParams.MATCH_PARENT));
       tv.setGravity(Gravity.CENTER_HORIZONTAL);
       tv.setTextAppearance(context, R.style.TextAppearance_Data_File_Column);
-      int dpAsPixels = (int) TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, 5, context.getResources().getDisplayMetrics());
+      int dpAsPixels = (int) android.util.TypedValue.applyDimension(android.util.TypedValue.COMPLEX_UNIT_DIP, 5, context.getResources().getDisplayMetrics());
       tv.setPadding(0,dpAsPixels,0, dpAsPixels);
       return tv;
    }
