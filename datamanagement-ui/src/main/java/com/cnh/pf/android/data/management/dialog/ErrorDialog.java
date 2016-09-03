@@ -13,13 +13,12 @@ import android.content.Context;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.widget.TextView;
-
+import butterknife.Bind;
+import butterknife.ButterKnife;
 import com.cnh.android.dialog.DialogView;
 import com.cnh.pf.android.data.management.R;
 import com.cnh.pf.android.data.management.connection.DataServiceConnectionImpl;
-
-import butterknife.Bind;
-import butterknife.ButterKnife;
+import com.google.common.base.Strings;
 import com.google.inject.Inject;
 import roboguice.RoboGuice;
 
@@ -39,7 +38,7 @@ public class ErrorDialog extends DialogView {
       ButterKnife.bind(this, view);
 
       this.setTitle(event.getType().toString());
-      errorString.setText(event.getError());
+      errorString.setText(Strings.isNullOrEmpty(event.getError()) ? "No Details" : event.getError());
       setBodyView(view);
       setFirstButtonText(getResources().getString(R.string.cancel));
       showFirstButton(true);

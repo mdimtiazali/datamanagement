@@ -9,6 +9,7 @@
 
 package com.cnh.pf.android.data.management.graph;
 
+import com.cnh.pf.model.TypedValue;
 import com.cnh.jgroups.ObjectGraph;
 import org.jgroups.Address;
 
@@ -24,7 +25,7 @@ public class GroupObjectGraph extends ObjectGraph {
       super(source, type, name);
    }
 
-   public GroupObjectGraph(Address source, String type, String name, Map<String, String> data, ObjectGraph parent) {
+   public GroupObjectGraph(Address source, String type, String name, Map<String, TypedValue> data, ObjectGraph parent) {
       super(source, type, name, data, parent);
    }
 }

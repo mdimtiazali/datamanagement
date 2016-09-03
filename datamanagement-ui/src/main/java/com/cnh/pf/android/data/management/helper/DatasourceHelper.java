@@ -9,6 +9,7 @@
 
 package com.cnh.pf.android.data.management.helper;
 
+import java.net.InetAddress;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
@@ -195,9 +196,19 @@ import static org.jgroups.conf.ProtocolConfiguration.log;
 
    public static String getHostname(Address addr) {
       String name = DataUtils.getHostname(addr);
-      if(Strings.isNullOrEmpty(name)) name = DataUtils.getProperty(addr, HostnameAddressGenerator.MAC);
-      if(Strings.isNullOrEmpty(name)) name = DataUtils.getProperty(addr, HostnameAddressGenerator.INET4);
-      if(Strings.isNullOrEmpty(name)) name = DataUtils.getInetAddress(addr);
+      if(Strings.isNullOrEmpty(name)) name = DataUtils.getMac(addr);
+      if(Strings.isNullOrEmpty(name)) {
+         InetAddress inetAddress = DataUtils.getPropertyAddress(addr, HostnameAddressGenerator.INET4);
+         if(inetAddress != null) {
+            name = inetAddress.toString();
+         }
+      }
+      if(Strings.isNullOrEmpty(name)) {
+         InetAddress inetAddress = DataUtils.getInetAddress(addr);
+         if(inetAddress != null) {
+            name = inetAddress.toString();
+         }
+      }
       return name;
    }
 }
