@@ -28,6 +28,8 @@ import org.slf4j.LoggerFactory;
 import org.xmlpull.v1.XmlPullParser;
 import org.xmlpull.v1.XmlPullParserException;
 
+import static com.cnh.pf.android.data.management.R.xml.formats;
+
 /**
  * Class parses xml document which list all entities supported by data formats
  * @author oscar.salazar@cnhind.com
@@ -43,6 +45,7 @@ import org.xmlpull.v1.XmlPullParserException;
    private static String FORMAT_NAME = "name";
    private static String FORMAT_PCM = "pcm";
    private static String FORMAT_STANDALONE = "standalone";
+   private static String FORMAT_PATH = "path";
    public static String TYPE = "type";
 
    @Inject
@@ -63,6 +66,9 @@ import org.xmlpull.v1.XmlPullParserException;
          }
          else if (parser.getAttributeName(idx).equals(FORMAT_STANDALONE)) {
             format.standaloneMode = Boolean.valueOf(parser.getAttributeValue(idx));
+         }
+         else if (parser.getAttributeName(idx).equals(FORMAT_PATH)) {
+            format.path = parser.getAttributeValue(idx);
          }
       }
       int eventType = parser.getEventType();
@@ -113,6 +119,13 @@ import org.xmlpull.v1.XmlPullParserException;
    }
 
    /**
+    * Return a format
+    */
+   public Format getFormat(String name) {
+      return formatMap.get(name);
+   }
+
+   /**
     * Parses xml and populates map
     * @throws IOException
     * @throws XmlPullParserException
@@ -120,7 +133,7 @@ import org.xmlpull.v1.XmlPullParserException;
    public void parseXml() throws IOException, XmlPullParserException {
       if (formatMap == null) {
          formatMap = new HashMap<String, Format>();
-         XmlPullParser xpp = context.getResources().getXml(R.xml.formats);
+         XmlPullParser xpp = context.getResources().getXml(formats);
          int eventType = xpp.getEventType();
          while (eventType != XmlPullParser.END_DOCUMENT) {
             if (eventType == XmlPullParser.START_TAG && xpp.getName().equals(FORMAT)) {
@@ -137,6 +150,7 @@ import org.xmlpull.v1.XmlPullParserException;
       public String name;
       public boolean pcmMode;
       public boolean standaloneMode;
+      public String path;
       public List<String> includes = new ArrayList<String>();
       public List<String> excludes = new ArrayList<String>();
    }
