@@ -281,18 +281,18 @@ public class DataManagementService extends RoboService implements SharedPreferen
                @Override
                public void run() {
                   logger.debug("Running discovery");
-                  new DiscoveryTask().execute(session);
+                  new DiscoveryTask().executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR, session);
                }
             }, usbDelay);
          } else {
-            new DiscoveryTask().execute(session);
+            new DiscoveryTask().executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR, session);
          }
       }
       else if (sessionOperation.equals(DataManagementSession.SessionOperation.CALCULATE_OPERATIONS)) {
-         new CalculateTargetsTask().execute(session);
+         new CalculateTargetsTask().executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR, session);
       }
       else if (sessionOperation.equals(DataManagementSession.SessionOperation.CALCULATE_CONFLICTS)) {
-         new CalculateConflictsTask().execute(session);
+         new CalculateConflictsTask().executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR, session);
       }
       else if (sessionOperation.equals(DataManagementSession.SessionOperation.PERFORM_OPERATIONS)) {
          performOperations(session);
@@ -364,13 +364,13 @@ public class DataManagementService extends RoboService implements SharedPreferen
                      return;  //if cancel was pressed before datasource started
                   }
                   performCalled = true;
-                  new PerformOperationsTask().execute(session);
+                  new PerformOperationsTask().executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR, session);
                }
             }, usbDelay);
          }
          else {
             performCalled = true;
-            new PerformOperationsTask().execute(session);
+            new PerformOperationsTask().executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR, session);
          }
       }
       catch (Exception e) {
