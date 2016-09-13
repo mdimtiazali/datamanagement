@@ -28,5 +28,8 @@ public class BootReceiver extends BroadcastReceiver {
    public void onReceive(Context context, Intent intent) {
       logger.info("Got Broadcast: " + intent.getAction());
       context.startService(new Intent(context, MulticastRouteService.class).setAction(intent.getAction()));
+      if(Intent.ACTION_BOOT_COMPLETED.equals(intent.getAction())) {
+         context.startService(new Intent(context, DataManagementService.class).setAction(intent.getAction()));
+      }
    }
 }

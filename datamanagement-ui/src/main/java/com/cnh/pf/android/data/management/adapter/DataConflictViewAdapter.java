@@ -109,7 +109,6 @@ public class DataConflictViewAdapter extends DataManagementBaseAdapter {
             ((TabActivity) newNameDialog.getContext()).showPopup(newNameDialog, true);
          }
          else if (Operation.Action.COPY_AND_REPLACE.equals(action)) {
-            logger.debug("replace");
             operationList.get(activeOperation).setAction(Operation.Action.COPY_AND_REPLACE);
             activeOperation++;
             checkAndUpdateActive();
@@ -137,7 +136,6 @@ public class DataConflictViewAdapter extends DataManagementBaseAdapter {
             viewHolder.newFile = (LinearLayout) newView.findViewById(R.id.new_file);
             newView.setTag(viewHolder);
          }
-         logger.debug("Solve Conflict for object: " + activeOperation);
          ColumnViewHolder viewHolder = (ColumnViewHolder) newView.getTag();
 
          //a <type> named <name> already exists
@@ -157,7 +155,6 @@ public class DataConflictViewAdapter extends DataManagementBaseAdapter {
 
    /** Generates description area for the existing entity and new entitiy, reuses layouts */
    private void populateDescriptionLayout(LinearLayout rowLayout, LinearLayout existingFileLayout, LinearLayout newFileLayout,  Map<String, TypedValue> existingMap, Map<String, TypedValue> newMap) {
-      logger.debug("Conflict existing data: {}\nNew data {}", existingMap, newMap);
       /** Viewholder to re-use textviews within description area*/
       LayoutViewHolder existingFileVH = getViewHolder(existingFileLayout);
       LayoutViewHolder newFileVH = getViewHolder(newFileLayout);
@@ -183,12 +180,14 @@ public class DataConflictViewAdapter extends DataManagementBaseAdapter {
       propNames.addAll(newMap.keySet());
       for(String key : propNames) {
          if(key.startsWith("_")) continue; //skip 'private' properties
-         rowMap.put(key, new Pair<String, String>(String.valueOf(existingMap.get(key).getFieldValue()), String.valueOf(newMap.get(key).getFieldValue())));
+         TypedValue existingVal = existingMap.get(key);
+         TypedValue newVal = newMap.get(key);
+         rowMap.put(key, new Pair<String, String>(existingVal != null ? String.valueOf(existingVal.getFieldValue()) : "",
+               newVal != null ? String.valueOf(newVal.getFieldValue()) : ""));
       }
 
       int rowNum = 0;
       for (Map.Entry<String, Pair<String, String>> entry : rowMap.entrySet()) {
-         logger.debug("descriptionMap: {} : {}", entry.getKey(), entry.getValue().toString());
          TextView existingFileRow;
          TextView newFileRow;
          TextView row;
@@ -221,9 +220,7 @@ public class DataConflictViewAdapter extends DataManagementBaseAdapter {
       /** Remove any previous unused textviews, using existingFileVH index but all three layouts have similar number of views */
       if (existingFileVH.columns.size() != 0 && rowNum < existingFileVH.columns.size()-1) {
          int toRemove = existingFileVH.columns.size()-1-rowNum;
-         logger.debug("Items to remove: {}", toRemove);
          while (toRemove != 0) {
-            logger.debug("Removing {} from {} items", toRemove, existingFileVH.columns.size());
             int location = existingFileVH.columns.size()-1;
             /** Revome from list and layout */
             TextView removed = existingFileVH.columns.remove(location);

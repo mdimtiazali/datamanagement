@@ -86,7 +86,6 @@ public abstract class DataManagementBaseAdapter {
    public interface OnTargetsSelectedListener {
       /**
        * Invoked when operations have completed
-       * @param dialog  the dialog
        * @param operations List<Operations> operations
        */
       void onCompletion(List<Operation> operations);

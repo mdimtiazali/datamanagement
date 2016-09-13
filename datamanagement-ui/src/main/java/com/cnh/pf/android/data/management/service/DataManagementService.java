@@ -129,7 +129,7 @@ public class DataManagementService extends RoboService implements SharedPreferen
          sendMediumUpdateEvent();
          removeUsbStatus();
       }
-      return START_NOT_STICKY;
+      return START_STICKY;
    }
 
    @Override public IBinder onBind(Intent intent) {

@@ -55,9 +55,9 @@ public class TargetProcessViewAdapter extends DataManagementBaseAdapter {
             viewHolder.nameView = (TextView) newView.findViewById(R.id.object_name);
             viewHolder.targetList = (PickListEditable) newView.findViewById(R.id.target_picklist);
             viewHolder.targetList.setAdapter(new PickListAdapter(viewHolder.targetList, context));
-            viewHolder.targetList.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
+            viewHolder.targetList.setOnItemSelectedListener(new PickListEditable.OnItemSelectedListener() {
                @Override
-               public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
+               public void onItemSelected(AdapterView<?> parent, View view, int position, long id, boolean b) {
                   if (id != PickListEditable.NO_ID) {
                      ExportFragment.ObjectPickListItem<ObjectGraph> pickItem = (ExportFragment.ObjectPickListItem<ObjectGraph>)
                         viewHolder.targetList.getAdapter().getItem(position);

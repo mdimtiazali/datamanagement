@@ -9,22 +9,12 @@
 
 package com.cnh.pf.android.data.management;
 
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collection;
-import java.util.List;
-
 import android.os.Bundle;
 import android.os.RemoteException;
 import android.view.DragEvent;
 import android.view.LayoutInflater;
 import android.view.View;
-import android.widget.AdapterView;
-import android.widget.Button;
-import android.widget.ImageButton;
-import android.widget.LinearLayout;
-import android.widget.TextView;
-import android.widget.Toast;
+import android.widget.*;
 import com.cnh.android.widget.control.PickListAdapter;
 import com.cnh.android.widget.control.PickListEditable;
 import com.cnh.android.widget.control.PickListItem;
@@ -40,6 +30,11 @@ import com.google.inject.Inject;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import roboguice.inject.InjectView;
+
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collection;
+import java.util.List;
 
 /**
  * Export Tab Fragment, handles export to external mediums {USB, External Display}.
@@ -140,9 +135,8 @@ public class ExportFragment extends BaseDataFragment {
          exportFormatPicklist.addItem(new PickListItem(formatId++, format));
       }
 
-      exportFormatPicklist.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
-         @Override
-         public void onItemSelected(AdapterView<?> adapterView, View view, int position, long id) {
+      exportFormatPicklist.setOnItemSelectedListener(new PickListEditable.OnItemSelectedListener() {
+         @Override public void onItemSelected(AdapterView<?> adapterView, View view, int position, long id, boolean b) {
             if(getSession()!=null) {
                getSession().setFormat(id!=-1 ? exportFormatPicklist.findItemById(id).getValue() : null);
                logger.trace("setFormat {}", getSession().getFormat());
@@ -154,8 +148,7 @@ public class ExportFragment extends BaseDataFragment {
             treeViewList.invalidate();
          }
 
-         @Override
-         public void onNothingSelected(AdapterView<?> adapterView) {
+         @Override public void onNothingSelected(AdapterView<?> adapterView) {
             getSession().setFormat(null);
          }
       });
@@ -170,8 +163,8 @@ public class ExportFragment extends BaseDataFragment {
             exportMediumPicklist.addItem(new ObjectPickListItem<MediumDevice>(deviceId++, device.getType().toString(), device));
          }
       }
-      exportMediumPicklist.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
-         @Override public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
+      exportMediumPicklist.setOnItemSelectedListener(new PickListEditable.OnItemSelectedListener() {
+         @Override public void onItemSelected(AdapterView<?> parent, View view, int position, long id, boolean b) {
             if(getSession()!=null) {
                ObjectPickListItem<MediumDevice> item = (ObjectPickListItem<MediumDevice>) exportMediumPicklist.findItemById(id);
                getSession().setTargets(item!=null ? Arrays.asList(item.getObject()) : null);
