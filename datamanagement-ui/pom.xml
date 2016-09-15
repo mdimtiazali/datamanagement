@@ -64,6 +64,12 @@
           <artifactId>corelib</artifactId>
           <version>7.10.0</version>
           <type>aar</type>
+           <exclusions>
+               <exclusion>
+                   <groupId>com.cnh.pf</groupId>
+                   <artifactId>widget</artifactId>
+               </exclusion>
+           </exclusions>
        </dependency>
         <dependency>
             <groupId>com.cnh.pf</groupId>
@@ -190,19 +196,7 @@
                          <jvmArgument>-Xmx2096M</jvmArgument>
                       </jvmArguments>
                    </dex>
-                    <sdk>
-                        <platform>18</platform>
-                    </sdk>
-                    <manifest>
-                        <debuggable>true</debuggable>
-                        <versionName/>
-                        <versionCodeUpdateFromVersion>true</versionCodeUpdateFromVersion>
-                    </manifest>
                     <attachSources>true</attachSources>
-                    <!-- these default values are set explicitly so IntelliJ can see them -->
-                    <androidManifestFile>${project.basedir}/src/main/AndroidManifest.xml</androidManifestFile>
-                    <resourceDirectory>${project.basedir}/src/main/res</resourceDirectory>
-                    <assetsDirectory>${project.basedir}/src/main/assets</assetsDirectory>
                     <extractDuplicates>true</extractDuplicates>
                     <proguard>
                         <skip>true</skip>
@@ -212,13 +206,6 @@
                         </configs>
                     </proguard>
                 </configuration>
-                <executions>
-                    <execution>
-                        <id>manifest</id>
-                        <phase>process-resources</phase>
-                        <goals><goal>manifest-update</goal></goals>
-                    </execution>
-                </executions>
             </plugin>
         </plugins>
     </build>
