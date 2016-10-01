@@ -24,8 +24,6 @@
       <type>com.cnh.autoguidance.model.GuidancePattern</type>
       <type>com.cnh.autoguidance.boundary.BoundaryItem</type>
       <type>com.cnh.autoguidance.boundary.LandmarkItem</type>
-      <type>COVERAGE</type>
-      <type>FILE</type>
    </format>
 
    <format name="CNH" pcm="true" standalone="true" path="XDATA">
