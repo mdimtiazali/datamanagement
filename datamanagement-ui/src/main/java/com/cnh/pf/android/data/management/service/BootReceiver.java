@@ -15,9 +15,8 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 /**
- * Receives com.cnh.pf.EXTERNAL_DATA broadcast and launches {@link MulticastRouteService}
- * Receives com.cnh.pf.EXTERNAL_DATA_STOP broadcast and stops datasources
- * 
+ * Receives ACTION_BOOT_COMPLETED broadcast and launches {@link MulticastRouteService}
+ *
  * @author kedzie
  */
 public class BootReceiver extends BroadcastReceiver {
@@ -27,9 +26,8 @@ public class BootReceiver extends BroadcastReceiver {
    @Override
    public void onReceive(Context context, Intent intent) {
       logger.info("Got Broadcast: " + intent.getAction());
-      context.startService(new Intent(context, MulticastRouteService.class).setAction(intent.getAction()));
       if(Intent.ACTION_BOOT_COMPLETED.equals(intent.getAction())) {
-         context.startService(new Intent(context, DataManagementService.class).setAction(intent.getAction()));
+         context.startService(new Intent(context, MulticastRouteService.class).setAction(intent.getAction()));
       }
    }
 }
