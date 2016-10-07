@@ -8,14 +8,6 @@
  */
 package com.cnh.pf.android.data.management.dialog;
 
-import java.io.File;
-import java.io.FileFilter;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
-
 import android.app.Activity;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -47,9 +39,9 @@ import pl.polidea.treeview.TreeViewList;
 import roboguice.RoboGuice;
 import roboguice.event.EventManager;
 
-import static android.view.View.GONE;
-import static android.view.View.VISIBLE;
-import static com.cnh.pf.android.data.management.R.styleable.SegmentedToggleButtonGroup;
+import java.io.File;
+import java.io.FileFilter;
+import java.util.*;
 
 /**
  * Dialog allows user to select an import source and directory path
@@ -130,7 +122,7 @@ public class ImportSourceDialog extends DialogView {
                   if(currentDevice.getType().equals(Source.DISPLAY)) {
                      String currentHostname = DataUtils.getHostnameOrIp(currentDevice.getAddress());
                      for(MediumDevice md : devices.values()) {
-                        if(DataUtils.getHostnameOrIp(md.getAddress()).equals(currentHostname)) {
+                        if(currentHostname.equals(DataUtils.getHostnameOrIp(md.getAddress()))) {
                            hostDevices.add(md);
                         }
                      }
@@ -205,8 +197,8 @@ public class ImportSourceDialog extends DialogView {
                displayPicklist.addItem(new ObjectPickListItem<MediumDevice>(id++, md.getAddress().toString(), md));
             }
          }
-         displayPicklist.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
-            @Override public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
+         displayPicklist.setOnItemSelectedListener(new PickListEditable.OnItemSelectedListener() {
+            @Override public void onItemSelected(AdapterView<?> parent, View view, int position, long id, boolean b) {
                ObjectPickListItem<MediumDevice> item = (ObjectPickListItem<MediumDevice>) displayPicklist.findItemById(id);
                currentDevice = item.getObject();
                setFirstButtonEnabled(true);

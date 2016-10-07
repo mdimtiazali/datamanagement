@@ -1,0 +1,28 @@
+<!--
+  ~ Copyright (C) 2016 CNH Industrial NV. All rights reserved.
+  ~
+  ~ This software contains proprietary information of CNH Industrial NV. Neither
+  ~ receipt nor possession thereof confers any right to reproduce, use, or
+  ~ disclose in whole or in part any such information without written
+  ~ authorization from CNH Industrial NV.
+  -->
+
+<configuration debug="false">
+
+    <appender name="LOGCAT"
+              class="ch.qos.logback.classic.android.LogcatAppender" >
+        <checkLoggable>false</checkLoggable>
+        <encoder> <!-- Don't really need much of a pattern for logcat, alot is already done for you -->
+            <pattern>%msg</pattern> <!-- %d{HH:mm:ss.SSS} [%thread] %-5level %logger{36} - %msg%n -->
+        </encoder>
+    </appender>
+
+    <root level="warn">
+        <appender-ref ref="LOGCAT" />
+    </root>
+
+    <logger name="com.cnh" level="info" additivity="false">
+        <appender-ref ref="LOGCAT" />
+    </logger>
+
+</configuration>

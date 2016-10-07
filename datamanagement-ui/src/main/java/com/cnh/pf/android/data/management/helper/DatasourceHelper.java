@@ -9,29 +9,31 @@
 
 package com.cnh.pf.android.data.management.helper;
 
-import javax.annotation.Nullable;
+import java.net.InetAddress;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Collection;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.Queue;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ConcurrentLinkedQueue;
 
 import android.os.Environment;
 import com.cnh.jgroups.Datasource;
 import com.cnh.jgroups.Mediator;
+import com.cnh.pf.android.data.management.connection.DataServiceConnectionImpl;
 import com.cnh.pf.data.management.MediumImpl;
 import com.cnh.pf.data.management.aidl.MediumDevice;
 import com.cnh.pf.datamng.DataUtils;
 import com.cnh.pf.datamng.HostnameAddressGenerator;
-import com.google.common.base.Predicate;
 import com.google.common.base.Strings;
-import com.google.common.collect.Collections2;
 import com.google.inject.Inject;
 import com.google.inject.Singleton;
+import com.google.inject.name.Named;
 import org.jgroups.Address;
 import org.jgroups.View;
 import org.jgroups.util.Rsp;
@@ -39,6 +41,10 @@ import org.jgroups.util.RspList;
 import org.jgroups.util.UUID;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import roboguice.config.DefaultRoboModule;
+import roboguice.event.EventManager;
+
+import static org.jgroups.conf.ProtocolConfiguration.log;
 
 /**
  * Class that maps Datasource.Source types to actual datasource addresses
@@ -48,48 +54,72 @@ import org.slf4j.LoggerFactory;
    private static final Logger logger = LoggerFactory.getLogger(DatasourceHelper.class);
 
    private Mediator mediator;
-   private ConcurrentHashMap<Datasource.Source, Map<Address, List<String>>> sourceMap = null;
+   private ConcurrentHashMap<Datasource.Source, Map<Address, List<String>>> sourceMap
+         = new ConcurrentHashMap<Datasource.Source, Map<Address, List<String>>>();;
+   private volatile View currentView;
+   private EventManager eventManager;
 
    @Inject
-   public DatasourceHelper(Mediator mediator) {
+   public DatasourceHelper(Mediator mediator, @Named(DefaultRoboModule.GLOBAL_EVENT_MANAGER_NAME) EventManager eventManager) {
       this.mediator = mediator;
+      this.eventManager = eventManager;
    }
 
    public void setSourceMap(View view) throws Exception {
-      sourceMap = new ConcurrentHashMap<Datasource.Source, Map<Address, List<String>>>();
-      try {
-         RspList<Datasource.Source[]> rsp = mediator.getAllSources(null);
-         RspList<String[]> rspType = mediator.getAllDatatypes(null);
-         for (Map.Entry<Address, Rsp<Datasource.Source[]>> entry : rsp.entrySet()) {
-            Rsp<Datasource.Source[]> response = entry.getValue();
-            if (response.hasException()) {
-               logger.warn("Couldn't receive sources from {}" + UUID.get(entry.getKey()));
-               continue;
-            }
-            if (response.wasReceived()) {
-               logger.info("addr: " + entry.getKey().toString() + " is valid datasource");
-               for (Datasource.Source source : Arrays.asList(entry.getValue().getValue())) {
-                  if (sourceMap.get(source) == null) {
-                     sourceMap.put(source, new HashMap<Address, List<String>>());
-                  }
-                  List<String> types = getDataTypes(entry.getKey(), rspType);
-                  sourceMap.get(source).put(entry.getKey(), types);
-               }
-            }
-            else {
-               logger.info("addr: " + entry.getKey().toString() + " is not valid datasource");
+      View oldView = currentView;
+      currentView = view;
+      final Address[][]diff = View.diff(oldView, view);
+      logger.trace("View change.  Left: {}, Joined: {}", Arrays.toString(diff[1]), Arrays.toString(diff[0]));
+      new Thread("view map update") {
+         @Override
+         public void run() {
+            updateViewMaps(diff);
+         }
+      }.start();
+      eventManager.fire(new DataServiceConnectionImpl.ViewChangeEvent(oldView, view));
+   }
+
+   //read pending diff and update the map
+   synchronized void updateViewMaps(Address[][] diff) {
+      //remove all left members from map
+      for(Address left : diff[1]) {
+         logger.trace("Removing address: {}", left);
+         for(Iterator<Map.Entry<Datasource.Source, Map<Address, List<String>>>> sourceIt=sourceMap.entrySet().iterator(); sourceIt.hasNext();) {
+            Map.Entry<Datasource.Source, Map<Address, List<String>>> entry = sourceIt.next();
+            entry.getValue().remove(left);
+            if(entry.getValue().isEmpty()) {
+               sourceIt.remove();
             }
          }
       }
-      catch (Exception e) {
-         logger.error("Exception getSources", e);
+      try {
+         //add joined members
+         for(Address joined : diff[0]) {
+            if(joined.equals(mediator.getAddress())) continue;
+            String[] types = mediator.getDatatypes(joined);
+            Datasource.Source[] sources = mediator.getSources(joined);
+            if (types!=null && sources!=null) {
+               logger.info("addr: {} is valid datasource", joined.toString());
+               List<String> dataTypes = Arrays.asList(types);
+               for (Datasource.Source source : sources) {
+                  HashMap<Address, List<String>> typeMap = (HashMap<Address, List<String>>) sourceMap.get(source);
+                  if (typeMap==null) {
+                     typeMap = new HashMap<Address, List<String>>();
+                     HashMap<Address, List<String>> tmp = (HashMap<Address, List<String>>) sourceMap.putIfAbsent(source, typeMap);
+                     if(tmp!=null)
+                        typeMap = tmp;
+                  }
+                  typeMap.put(joined, dataTypes);
+               }
+            }
+            else {
+               logger.warn("addr: {} is not valid datasource", joined.toString());
+            }
+         }
       }
-      logger.debug("sourceMap: {}", sourceMap.toString());
-   }
-
-   private List<String> getDataTypes(Address addr, RspList<String[]> rsp) {
-      String[] val = rsp.get(addr).getValue();
-      return val == null ? new ArrayList<String>() : Arrays.asList(rsp.get(addr).getValue());
+      catch (Throwable e) {
+         logger.error("", e) ;
+      }
    }
 
    /**
@@ -97,8 +127,8 @@ import org.slf4j.LoggerFactory;
     * @param sourceType {@link Datasource.Source }
     * @return
     */
-   public Address[] getAddressForSourceType(Datasource.Source sourceType) {
-      if (sourceMap != null && sourceMap.containsKey(sourceType)) {
+   public synchronized Address[] getAddressForSourceType(Datasource.Source sourceType) {
+      if (sourceMap.containsKey(sourceType)) {
          return sourceMap.get(sourceType).keySet().toArray(new Address[0]);
       }
       return new Address[0];
@@ -109,31 +139,17 @@ import org.slf4j.LoggerFactory;
     * @param sourceTypes {@link Datasource.Source }
     * @return
     */
-   public List<MediumDevice> getLocalDatasources(Datasource.Source...sourceTypes) {
+   public synchronized List<MediumDevice> getLocalDatasources(Datasource.Source...sourceTypes) {
       List<MediumDevice> devices = new ArrayList<MediumDevice>();
       final String myHostname = getHostname(mediator.getAddress());
-      if (sourceMap != null) {
-         for(Datasource.Source source : sourceTypes) {
-            if(!sourceMap.containsKey(source)) continue;
-            if(source.equals(Datasource.Source.DISPLAY)) { //filter display sources by host
-               Collection<Address> displays = Collections2.filter(sourceMap.get(source).keySet(), new Predicate<Address>() {
-                  @Override public boolean apply(@Nullable Address input) {
-                     return myHostname.equals(getHostname(input));
-                  }
-               });
-               for(Address addr : displays) {
-                  devices.add(new MediumDevice(source, addr, UUID.get(addr)));
-               }
-            }
-            else {
-               for(Address addr : sourceMap.get(source).keySet()) {
-                  devices.add(new MediumDevice(source, addr, UUID.get(addr)));
-               }
+      for(Datasource.Source source : sourceTypes) {
+         if(!sourceMap.containsKey(source)) continue;
+         for(Address addr : sourceMap.get(source).keySet()) {
+            if(!source.equals(Datasource.Source.DISPLAY) || myHostname.equals(getHostname(addr))) {
+               devices.add(new MediumDevice(source, addr, UUID.get(addr)));
             }
          }
       }
-
-//      return addresses.toArray(new Address[addresses.size()]);
       return devices;
    }
 
@@ -143,7 +159,7 @@ import org.slf4j.LoggerFactory;
     * @param type {PFDS, VIP, User Layout}
     * @return Address of responsible datasource
     */
-   public Address[] getDestinationAddresses(Datasource.Source sourceType, String type) throws Exception {
+   public synchronized Address[] getDestinationAddresses(Datasource.Source sourceType, String type) throws Exception {
       Set<Address> addresses = new HashSet<Address>();
       for (Map.Entry<Address, List<String>> map : sourceMap.get(sourceType).entrySet()) {
          if (map.getValue().contains(type)) {
@@ -153,7 +169,7 @@ import org.slf4j.LoggerFactory;
       return addresses.toArray(new Address[addresses.size()]);
    }
 
-   @Override public List<MediumDevice> getTargetDevices() {
+   @Override public synchronized List<MediumDevice> getTargetDevices() {
       List<MediumDevice> devs = new ArrayList<MediumDevice>();
       //temporarily always add usb for testing
       logger.debug("getDevices external storage state = {}", Environment.getExternalStorageState());
@@ -180,8 +196,19 @@ import org.slf4j.LoggerFactory;
 
    public static String getHostname(Address addr) {
       String name = DataUtils.getHostname(addr);
-      if(Strings.isNullOrEmpty(name)) name = DataUtils.getProperty(addr, HostnameAddressGenerator.INET4);
-      if(Strings.isNullOrEmpty(name)) name = DataUtils.getInetAddress(addr);
+      if(Strings.isNullOrEmpty(name)) name = DataUtils.getMac(addr);
+      if(Strings.isNullOrEmpty(name)) {
+         InetAddress inetAddress = DataUtils.getPropertyAddress(addr, HostnameAddressGenerator.INET4);
+         if(inetAddress != null) {
+            name = inetAddress.toString();
+         }
+      }
+      if(Strings.isNullOrEmpty(name)) {
+         InetAddress inetAddress = DataUtils.getInetAddress(addr);
+         if(inetAddress != null) {
+            name = inetAddress.toString();
+         }
+      }
       return name;
    }
 }

@@ -13,32 +13,19 @@ import javax.inject.Inject;
 import javax.inject.Named;
 import javax.inject.Singleton;
 
-import java.io.File;
-import java.util.ArrayList;
-import java.util.List;
-
 import android.app.Application;
-import android.content.Context;
-import android.os.Environment;
-
-import com.cnh.jgroups.Datasource;
-import com.cnh.jgroups.Mediator;
-import com.cnh.pf.android.data.management.helper.DatasourceHelper;
-import com.cnh.pf.android.data.management.helper.ObservesTypeListener2;
-import com.cnh.pf.data.management.MediumImpl;
-import com.cnh.pf.data.management.aidl.MediumDevice;
-
 import com.google.inject.AbstractModule;
 import com.google.inject.Provider;
 import com.google.inject.Provides;
-import com.google.inject.matcher.Matchers;
 import org.jgroups.Global;
 import org.jgroups.JChannel;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import roboguice.config.DefaultRoboModule;
 import roboguice.event.EventManager;
-import roboguice.event.ObservesTypeListener;
-import roboguice.event.eventListener.factory.EventListenerThreadingDecorator;
+
+import com.cnh.jgroups.Mediator;
+import com.cnh.pf.android.data.management.helper.DatasourceHelper;
 
 /**
  * Roboguice module definition
@@ -71,9 +58,12 @@ public class RoboModule extends AbstractModule {
 
       @Inject
       private Mediator mediator;
+      @Inject
+      @Named(DefaultRoboModule.GLOBAL_EVENT_MANAGER_NAME)
+      private EventManager eventManager;
 
       @Override public DatasourceHelper get() {
-         return new DatasourceHelper(mediator);
+         return new DatasourceHelper(mediator, eventManager);
       }
    }
 }

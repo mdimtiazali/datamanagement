@@ -9,27 +9,23 @@
  */
 package com.cnh.pf.android.data.management.adapter;
 
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.List;
-
-import com.cnh.jgroups.MultiSetObjectGraph;
-import com.cnh.pf.android.data.management.ExportFragment;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 import android.app.Activity;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.widget.AdapterView;
 import android.widget.TextView;
-
-import com.cnh.pf.android.data.management.R;
 import com.cnh.android.widget.control.PickListAdapter;
 import com.cnh.android.widget.control.PickListEditable;
-import com.cnh.android.widget.control.PickListItem;
+import com.cnh.jgroups.MultiSetObjectGraph;
 import com.cnh.jgroups.ObjectGraph;
 import com.cnh.jgroups.Operation;
+import com.cnh.pf.android.data.management.ExportFragment;
+import com.cnh.pf.android.data.management.R;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import java.util.ArrayList;
+import java.util.List;
 
 /**
  * View Adapter for ProcessDialog
@@ -59,9 +55,9 @@ public class TargetProcessViewAdapter extends DataManagementBaseAdapter {
             viewHolder.nameView = (TextView) newView.findViewById(R.id.object_name);
             viewHolder.targetList = (PickListEditable) newView.findViewById(R.id.target_picklist);
             viewHolder.targetList.setAdapter(new PickListAdapter(viewHolder.targetList, context));
-            viewHolder.targetList.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
+            viewHolder.targetList.setOnItemSelectedListener(new PickListEditable.OnItemSelectedListener() {
                @Override
-               public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
+               public void onItemSelected(AdapterView<?> parent, View view, int position, long id, boolean b) {
                   if (id != PickListEditable.NO_ID) {
                      ExportFragment.ObjectPickListItem<ObjectGraph> pickItem = (ExportFragment.ObjectPickListItem<ObjectGraph>)
                         viewHolder.targetList.getAdapter().getItem(position);

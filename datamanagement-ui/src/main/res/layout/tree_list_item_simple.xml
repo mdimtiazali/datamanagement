@@ -12,7 +12,7 @@
           android:text="Text"
           android:duplicateParentState="true"
           android:layout_width="match_parent"
-          android:layout_height="wrap_content"
+          android:layout_height="match_parent"
           android:id="@+id/tree_list_item_simple"
           android:textSize="20sp"
           android:fontFamily="sans-seriff"
