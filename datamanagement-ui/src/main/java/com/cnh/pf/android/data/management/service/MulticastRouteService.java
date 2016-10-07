@@ -50,7 +50,8 @@ public class MulticastRouteService extends RoboService {
 
    @Override
    public int onStartCommand(Intent intent, int flags, int startId) {
-      if(intent.getAction().equals(ServiceConstants.ACTION_INTERNAL_DATA)) {
+      if(intent == null) return START_STICKY;
+      if(intent.getAction().equals(Intent.ACTION_BOOT_COMPLETED)) {
          if (!prefs.getBoolean(GlobalPreferences.PREF_PCM, false)) {
             try {
                Runtime.getRuntime().exec("su busybox ifconfig lo multicast".split(" "));
@@ -62,7 +63,7 @@ public class MulticastRouteService extends RoboService {
             }
          }
       }
-      return START_NOT_STICKY;
+      return START_STICKY;
    }
 
    @Override

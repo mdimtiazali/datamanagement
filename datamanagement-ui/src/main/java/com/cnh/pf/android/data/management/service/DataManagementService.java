@@ -111,6 +111,10 @@ public class DataManagementService extends RoboService implements SharedPreferen
    @Override public int onStartCommand(Intent intent, int flags, int startId) {
       logger.debug("onStartCommand {}", intent);
 
+      if(intent == null) { //happens after restart when service is sticky
+         return START_STICKY;
+      }
+      
       if(ACTION_CANCEL.equals(intent.getAction())) {
          cancel(intent.<DataManagementSession>getParcelableExtra("session"));
       }
@@ -118,14 +122,14 @@ public class DataManagementService extends RoboService implements SharedPreferen
          sendMediumUpdateEvent();
          Uri mount = intent.getData();
          File mountFile = new File(mount.getPath());
-         logger.info("Media has been mounted @{}: extras #: {}", mountFile.getAbsolutePath(), intent.getExtras().size());
+         logger.info("Media has been mounted @{}: ", mountFile.getAbsolutePath());
          scan(mountFile);
       }
       else if(Intent.ACTION_MEDIA_UNMOUNTED.equals(intent.getAction())
             || Intent.ACTION_MEDIA_BAD_REMOVAL.equals(intent.getAction())
             || Intent.ACTION_MEDIA_REMOVED.equals(intent.getAction())
             || Intent.ACTION_MEDIA_EJECT.equals(intent.getAction())) {
-         logger.info("Media has been unmounted: {} extras", intent.getExtras().size());
+         logger.info("Media has been unmounted");
          sendMediumUpdateEvent();
          removeUsbStatus();
       }
