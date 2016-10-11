@@ -35,6 +35,7 @@
     <string name="obstacles">Obstacles</string>
     <string name="guidance_groups">Swaths</string>
     <string name="guidance_patterns">Guidance Patterns</string>
+    <string name="notes">Notes</string>
 
     <string name="products">Products</string>
     <string name="product_mixes">Product Mixes</string>

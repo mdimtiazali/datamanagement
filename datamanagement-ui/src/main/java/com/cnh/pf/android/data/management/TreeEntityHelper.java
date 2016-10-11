@@ -38,6 +38,7 @@ public class TreeEntityHelper {
       put("com.cnh.pf.model.product.library.ProductMix", R.string.product_mixes);
       put(DataTypes.VEHICLE, R.string.vehicles);
       put(DataTypes.IMPLEMENT, R.string.imps);
+      put(DataTypes.NOTE, R.string.notes);
    }};
 
    public static String getGroupName(Context context, String type) {
