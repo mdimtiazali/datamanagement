@@ -32,10 +32,6 @@
       <type>!com.cnh.pf.model.pfds.PrescriptionZone</type>
       <type>!com.cnh.pf.model.product.library.Product</type>
       <type>!com.cnh.pf.model.product.library.ProductMix</type>
-      <type>!com.cnh.autoguidance.model.GuidanceGroup</type>
-      <type>!com.cnh.autoguidance.model.GuidancePattern</type>
-      <type>!com.cnh.autoguidance.boundary.BoundaryItem</type>
-      <type>!com.cnh.autoguidance.boundary.LandmarkItem</type>
    </format>
 
 </formats>
