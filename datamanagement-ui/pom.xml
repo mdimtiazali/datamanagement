@@ -35,29 +35,37 @@
             <groupId>com.cnh.pf</groupId>
             <artifactId>libdatamng-android</artifactId>
             <version>${project.version}</version>
-           <type>aar</type>
+            <type>aar</type>
             <exclusions>
-               <exclusion>
-                  <groupId>android</groupId>
-                  <artifactId>android-parcelable</artifactId>
-               </exclusion>
-               <exclusion>
-                  <groupId>org.codehaus.groovy</groupId>
-                  <artifactId>groovy</artifactId>
-               </exclusion>
-               <exclusion>
-                  <groupId>ch.qos.logback</groupId>
-                  <artifactId>logback-core</artifactId>
-               </exclusion>
-               <exclusion>
-                  <groupId>ch.qos.logback</groupId>
-                  <artifactId>logback-classic</artifactId>
-               </exclusion>
-               <exclusion>
-                 <groupId>com.google.code.gson</groupId>
-                 <artifactId>gson</artifactId>
-              </exclusion>
+                <exclusion>
+                    <groupId>android</groupId>
+                    <artifactId>android-parcelable</artifactId>
+                </exclusion>
+                <exclusion>
+                    <groupId>org.codehaus.groovy</groupId>
+                    <artifactId>groovy</artifactId>
+                </exclusion>
+                <exclusion>
+                    <groupId>ch.qos.logback</groupId>
+                    <artifactId>logback-core</artifactId>
+                </exclusion>
+                <exclusion>
+                    <groupId>ch.qos.logback</groupId>
+                    <artifactId>logback-classic</artifactId>
+                </exclusion>
+                <exclusion>
+                    <groupId>com.google.code.gson</groupId>
+                    <artifactId>gson</artifactId>
+                </exclusion>
+                <exclusion>
+                    <groupId>com.google.guava</groupId>
+                    <artifactId>guava</artifactId>
+                </exclusion>
             </exclusions>
+        </dependency>
+        <dependency>
+            <groupId>com.google.guava</groupId>
+            <artifactId>guava</artifactId>
         </dependency>
        <dependency>
           <groupId>com.cnh.pf</groupId>
