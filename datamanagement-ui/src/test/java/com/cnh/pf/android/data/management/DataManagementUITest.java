@@ -119,7 +119,7 @@ public class DataManagementUITest {
       assertTrue("xml specifies cnh format", formats.contains("CNH"));
       assertTrue("cnh supports vehicle type", parser.formatSupportsType("CNH", "VEHICLE"));
       assertTrue("cnh does not support customer type", parser.formatSupportsType("CNH", DataTypes.GROWER));
-      assertFalse("cnh does not support prescription type", parser.formatSupportsType("CNH", "com.cnh.pf.model.pfds.Prescription"));
+      assertFalse("cnh does not support prescription type", parser.formatSupportsType("CNH", DataTypes.RX));
    }
 
    @Test

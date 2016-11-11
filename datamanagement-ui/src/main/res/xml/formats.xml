@@ -15,23 +15,21 @@
       <type>FARM</type>
       <type>FIELD</type>
       <type>TASK</type>
-      <type>com.cnh.pf.model.pfds.RxPlan</type>
-      <type>com.cnh.pf.model.pfds.Prescription</type>
-      <type>com.cnh.pf.model.pfds.PrescriptionZone</type>
-      <type>com.cnh.pf.model.product.library.Product</type>
-      <type>com.cnh.pf.model.product.library.ProductMix</type>
-      <type>com.cnh.autoguidance.model.GuidanceGroup</type>
-      <type>com.cnh.autoguidance.model.GuidancePattern</type>
-      <type>com.cnh.autoguidance.boundary.BoundaryItem</type>
-      <type>com.cnh.autoguidance.boundary.LandmarkItem</type>
+      <type>RX_PLAN</type>
+      <type>RX</type>
+      <type>RX_ZONE</type>
+      <type>PRODUCT</type>
+      <type>PRODUCT_MIX</type>
+      <type>GUIDANCE_GROUP</type>
+      <type>GUIDANCE_PATTERN</type>
+      <type>BOUNDARY</type>
+      <type>LANDMARK</type>
    </format>
 
    <format name="CNH" pcm="true" standalone="true" path="XDATA">
-      <type>!com.cnh.pf.model.pfds.RxPlan</type>
-      <type>!com.cnh.pf.model.pfds.Prescription</type>
-      <type>!com.cnh.pf.model.pfds.PrescriptionZone</type>
-      <type>!com.cnh.pf.model.product.library.Product</type>
-      <type>!com.cnh.pf.model.product.library.ProductMix</type>
+      <type>!RX_PLAN</type>
+      <type>!RX</type>
+      <type>!RX_ZONE</type>
    </format>
 
 </formats>

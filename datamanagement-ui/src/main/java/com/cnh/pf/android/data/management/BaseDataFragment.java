@@ -210,7 +210,7 @@ public abstract class BaseDataFragment extends RoboFragment implements IDataMana
       globalEventManager.registerObserver(DataServiceConnectionImpl.ViewChangeEvent.class, viewChangeListener);
       if (dataServiceConnection.isConnected()) {
          getDataManagementService().register(NAME, BaseDataFragment.this);
-         onResumeSession(null);
+         onResumeSession(session);
       }
    }
 
@@ -255,12 +255,12 @@ public abstract class BaseDataFragment extends RoboFragment implements IDataMana
                   public void onButtonClick(DialogViewInterface dialog, int which) {
                      if (which == DialogViewInterface.BUTTON_FIRST) {
                         if(isCurrentOperation(event.getSession())) {
-                           if(!event.getType().equals(ErrorEvent.DataError.NO_SOURCE_DATASOURCE)) {
+//                           if(!event.getType().equals(ErrorEvent.DataError.NO_SOURCE_DATASOURCE)) {
                               onResumeSession(null);
-                           }
-                           else {
-                              treeProgress.setVisibility(View.GONE);
-                           }
+//                           }
+//                           else {
+//                              treeProgress.setVisibility(View.GONE);
+//                           }
                         } else {
                            onOtherSessionUpdate(event.getSession());
                         }
