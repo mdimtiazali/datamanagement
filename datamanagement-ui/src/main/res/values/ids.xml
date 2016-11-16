@@ -9,5 +9,5 @@
   -->
 
 <resources>
-   <item name="usb_string" type="id">USB</item>
+    <item name="usb_string" type="id">USB</item>
 </resources>

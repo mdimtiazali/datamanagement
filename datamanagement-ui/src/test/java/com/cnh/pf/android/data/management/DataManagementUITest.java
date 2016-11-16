@@ -8,11 +8,12 @@
  */
 package com.cnh.pf.android.data.management;
 
-import java.io.IOException;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
-import java.util.Set;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertTrue;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.when;
+import static org.robolectric.Shadows.shadowOf;
 
 import android.content.ComponentName;
 import android.content.Context;
@@ -20,6 +21,7 @@ import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
 import android.os.RemoteException;
 import android.view.View;
+
 import com.cnh.android.util.prefs.GlobalPreferences;
 import com.cnh.android.util.prefs.GlobalPreferencesNotAvailableException;
 import com.cnh.android.widget.activity.TabActivity;
@@ -40,6 +42,7 @@ import com.google.inject.Provides;
 import com.google.inject.Singleton;
 import com.google.inject.name.Named;
 import com.google.inject.name.Names;
+
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
@@ -55,16 +58,16 @@ import org.robolectric.RuntimeEnvironment;
 import org.robolectric.annotation.Config;
 import org.robolectric.util.ActivityController;
 import org.xmlpull.v1.XmlPullParserException;
+
+import java.io.IOException;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
+import java.util.Set;
+
 import roboguice.RoboGuice;
 import roboguice.config.DefaultRoboModule;
 import roboguice.event.EventManager;
-
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertTrue;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.when;
-import static org.robolectric.Shadows.shadowOf;
 
 /**
  * Test UI elements reflecting events sent from backend
@@ -76,8 +79,10 @@ public class DataManagementUITest {
    ActivityController<DataManagementActivity> controller;
    DataManagementActivity activity;
    EventManager eventManager;
-   @Mock DataManagementService service;
-   @Mock DataManagementService.LocalBinder binder;
+   @Mock
+   DataManagementService service;
+   @Mock
+   DataManagementService.LocalBinder binder;
    BaseDataFragment fragment;
    ObjectGraph customer;
    ObjectGraph testObject;
@@ -91,16 +96,18 @@ public class DataManagementUITest {
       activity = controller.get();
       when(binder.getService()).thenReturn(service);
       when(service.getMediums()).thenReturn(Arrays.asList(new MediumDevice(Datasource.Source.USB, RuntimeEnvironment.application.getFilesDir())));
-      when(service.processOperation(Matchers.any(DataManagementSession.class), Matchers.any(DataManagementSession.SessionOperation.class))).then(new Answer<DataManagementSession>() {
-         @Override
-         public DataManagementSession answer(InvocationOnMock invocation) throws Throwable {
-            DataManagementSession session = (DataManagementSession) invocation.getArguments()[0];
-            DataManagementSession.SessionOperation op = (DataManagementSession.SessionOperation) invocation.getArguments()[1];
-            session.setSessionOperation(op);
-            return session;
-         }
-      });
-      shadowOf(RuntimeEnvironment.application).setComponentNameAndServiceForBindService(new ComponentName(activity.getPackageName(), DataManagementService.class.getName()), binder);
+      when(service.processOperation(Matchers.any(DataManagementSession.class), Matchers.any(DataManagementSession.SessionOperation.class)))
+            .then(new Answer<DataManagementSession>() {
+               @Override
+               public DataManagementSession answer(InvocationOnMock invocation) throws Throwable {
+                  DataManagementSession session = (DataManagementSession) invocation.getArguments()[0];
+                  DataManagementSession.SessionOperation op = (DataManagementSession.SessionOperation) invocation.getArguments()[1];
+                  session.setSessionOperation(op);
+                  return session;
+               }
+            });
+      shadowOf(RuntimeEnvironment.application).setComponentNameAndServiceForBindService(new ComponentName(activity.getPackageName(), DataManagementService.class.getName()),
+            binder);
    }
 
    @After
@@ -131,7 +138,8 @@ public class DataManagementUITest {
       ExportFragment fragment = (ExportFragment) ((TabActivity) activity).getFragmentManager().findFragmentByTag("Export");
       assertTrue("export fragment is visible", fragment != null);
       //Start new discovery
-      DataManagementSession session = new DataManagementSession(new Datasource.Source[] { Datasource.Source.INTERNAL }, new Datasource.Source[] { Datasource.Source.INTERNAL}, null, null);
+      DataManagementSession session = new DataManagementSession(new Datasource.Source[] { Datasource.Source.INTERNAL }, new Datasource.Source[] { Datasource.Source.INTERNAL },
+            null, null);
       session.setSessionOperation(DataManagementSession.SessionOperation.DISCOVERY);
       session.setObjectData(getTestObjectData());
       session.setFormat("ISOXML");
@@ -153,10 +161,11 @@ public class DataManagementUITest {
    @Test
    public void testRecursiveFormatSupport() throws RemoteException {
       //Initialize export fragment
-      activateTab(1);  //0 - Import 1 - Export
+      activateTab(1); //0 - Import 1 - Export
       //Mock picklist, select ISOXML as export format$
       ExportFragment fragment = (ExportFragment) ((TabActivity) activity).getFragmentManager().findFragmentByTag("Export");
-      DataManagementSession session = new DataManagementSession(new Datasource.Source[] { Datasource.Source.INTERNAL }, new Datasource.Source[] { Datasource.Source.INTERNAL}, null, null);
+      DataManagementSession session = new DataManagementSession(new Datasource.Source[] { Datasource.Source.INTERNAL }, new Datasource.Source[] { Datasource.Source.INTERNAL },
+            null, null);
       session.setSessionOperation(DataManagementSession.SessionOperation.DISCOVERY);
       session.setObjectData(getTestObjectData());
       session.setFormat("ISOXML");
@@ -200,14 +209,18 @@ public class DataManagementUITest {
       field.addChild(task2);
       farm.addChild(field);
       customer.addChild(farm);
-      return (new ArrayList<ObjectGraph>() {{add(customer);}});
+      return (new ArrayList<ObjectGraph>() {
+         {
+            add(customer);
+         }
+      });
    }
 
    public class MyTestModule extends AbstractModule {
 
       @Override
       protected void configure() {
-//         bind(DataManagementService.class).toInstance(service);
+         //         bind(DataManagementService.class).toInstance(service);
          bind(Mediator.class).toInstance(mock(Mediator.class));
       }
 

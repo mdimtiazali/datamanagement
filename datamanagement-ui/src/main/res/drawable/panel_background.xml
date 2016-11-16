@@ -1,5 +1,4 @@
-<?xml version="1.0" encoding="utf-8"?>
-<!--
+<?xml version="1.0" encoding="utf-8"?><!--
   ~ Copyright (C) 2015 CNH Industrial NV. All rights reserved.
   ~
   ~ This software contains proprietary information of CNH Industrial NV. Neither
@@ -9,17 +8,17 @@
   -->
 
 <layer-list xmlns:android="http://schemas.android.com/apk/res/android">
-   <item>
-      <shape android:shape="rectangle">
-         <solid android:color="@color/data_panel_border"/>
-      </shape>
-   </item>
-   <item
-      android:left="1dp"
-      android:right="2dp"
-      android:top="1dp" >
-      <shape android:shape="rectangle">
-         <solid android:color="@android:color/white"/>
-      </shape>
-   </item>
+    <item>
+        <shape android:shape="rectangle">
+            <solid android:color="@color/data_panel_border" />
+        </shape>
+    </item>
+    <item
+            android:left="1dp"
+            android:right="2dp"
+            android:top="1dp">
+        <shape android:shape="rectangle">
+            <solid android:color="@android:color/white" />
+        </shape>
+    </item>
 </layer-list>

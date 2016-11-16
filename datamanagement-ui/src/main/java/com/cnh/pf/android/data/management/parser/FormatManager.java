@@ -9,6 +9,20 @@
 
 package com.cnh.pf.android.data.management.parser;
 
+import static com.cnh.pf.android.data.management.R.xml.formats;
+
+import android.app.Application;
+import android.content.Context;
+
+import com.cnh.android.util.prefs.GlobalPreferences;
+import com.google.inject.Inject;
+import com.google.inject.Singleton;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.xmlpull.v1.XmlPullParser;
+import org.xmlpull.v1.XmlPullParserException;
+
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -17,24 +31,12 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
-import android.app.Application;
-import android.content.Context;
-import com.cnh.android.util.prefs.GlobalPreferences;
-import com.cnh.pf.android.data.management.R;
-import com.google.inject.Inject;
-import com.google.inject.Singleton;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.xmlpull.v1.XmlPullParser;
-import org.xmlpull.v1.XmlPullParserException;
-
-import static com.cnh.pf.android.data.management.R.xml.formats;
-
 /**
  * Class parses xml document which list all entities supported by data formats
  * @author oscar.salazar@cnhind.com
  */
-@Singleton public class FormatManager {
+@Singleton
+public class FormatManager {
    private static final Logger log = LoggerFactory.getLogger(FormatManager.class);
 
    Context context;
@@ -76,9 +78,10 @@ import static com.cnh.pf.android.data.management.R.xml.formats;
          if (eventType == XmlPullParser.START_TAG && parser.getName().equals(TYPE)) {
             if (parser.next() == XmlPullParser.TEXT) {
                String text = parser.getText();
-               if(text.startsWith("!")) {
+               if (text.startsWith("!")) {
                   format.excludes.add(text.substring(1));
-               } else {
+               }
+               else {
                   format.includes.add(text);
                }
             }
@@ -92,14 +95,12 @@ import static com.cnh.pf.android.data.management.R.xml.formats;
     * Check if type supported by this format
     */
    public boolean formatSupportsType(String format, String type) {
-      if(!formatMap.containsKey(format)) return false;
+      if (!formatMap.containsKey(format)) return false;
       Format f = formatMap.get(format);
 
-      if(!f.includes.isEmpty() && f.includes.contains(type))
-         return true;
+      if (!f.includes.isEmpty() && f.includes.contains(type)) return true;
 
-      if(!f.excludes.isEmpty() && !f.excludes.contains(type))
-         return true;
+      if (!f.excludes.isEmpty() && !f.excludes.contains(type)) return true;
 
       return false;
    }
@@ -144,7 +145,6 @@ import static com.cnh.pf.android.data.management.R.xml.formats;
          }
       }
    }
-
 
    public static class Format {
       public String name;

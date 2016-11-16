@@ -9,25 +9,27 @@
  */
 package com.cnh.pf.android.data.management.dialog;
 
+import static org.jgroups.conf.ProtocolConfiguration.log;
+
 import android.app.Activity;
 import android.view.LayoutInflater;
 import android.view.View;
-
 import android.view.ViewGroup;
+
+import com.cnh.android.dialog.DialogView;
 import com.cnh.android.dialog.DialogViewInterface;
+import com.cnh.android.widget.activity.TabActivity;
+import com.cnh.android.widget.control.ProgressBarView;
 import com.cnh.jgroups.Operation;
 import com.cnh.pf.android.data.management.R;
 import com.cnh.pf.android.data.management.adapter.DataConflictViewAdapter;
 import com.cnh.pf.android.data.management.adapter.DataManagementBaseAdapter;
-import com.cnh.android.dialog.DialogView;
-import com.cnh.android.widget.activity.TabActivity;
-import com.cnh.android.widget.control.ProgressBarView;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
 import roboguice.RoboGuice;
 import roboguice.inject.InjectResource;
-
-import static org.jgroups.conf.ProtocolConfiguration.log;
 
 /**
  * Dialog showing overall import/export process and current step in full process
@@ -36,17 +38,20 @@ import static org.jgroups.conf.ProtocolConfiguration.log;
 public class ProcessDialog extends DialogView {
    private static final Logger logger = LoggerFactory.getLogger(ProcessDialog.class);
 
-   @InjectResource(R.string.keep_both) String keepBothStr;
-   @InjectResource(R.string.copy_and_replace) String replaceStr;
-   @InjectResource(R.string.cancel) String cancelStr;
-   @InjectResource(R.string.data_conflict) String dataConflictStr;
+   @InjectResource(R.string.keep_both)
+   String keepBothStr;
+   @InjectResource(R.string.copy_and_replace)
+   String replaceStr;
+   @InjectResource(R.string.cancel)
+   String cancelStr;
+   @InjectResource(R.string.data_conflict)
+   String dataConflictStr;
    private DataManagementBaseAdapter adapter;
    private View activeView;
    private Activity context;
    private ProgressBarView pbBar;
 
    private DataConflictViewAdapter.OnActionSelectedListener listener;
-
 
    public ProcessDialog(Activity context) {
       super(context);
@@ -63,7 +68,7 @@ public class ProcessDialog extends DialogView {
       showFirstButton(false);
       setDismissOnButtonClick(false);
 
-      LayoutInflater inflater = ((Activity)getContext()).getLayoutInflater();
+      LayoutInflater inflater = ((Activity) getContext()).getLayoutInflater();
       View view = inflater.inflate(R.layout.progress_layout, null);
       pbBar = (ProgressBarView) view.findViewById(R.id.progress_bar);
       pbBar.setProgress(0);
@@ -74,8 +79,8 @@ public class ProcessDialog extends DialogView {
 
    @Override
    public DialogView setBodyView(View view) {
-      if(body!=null) {
-         ((ViewGroup)body.getParent()).removeView(body);
+      if (body != null) {
+         ((ViewGroup) body.getParent()).removeView(body);
       }
       body = view;
       return super.setBodyView(view);
@@ -115,7 +120,8 @@ public class ProcessDialog extends DialogView {
                if (targetView == null) {
                   ProcessDialog.this.hide();
                }
-            } else {
+            }
+            else {
                ProcessDialog.this.hide();
             }
          }

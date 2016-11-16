@@ -9,13 +9,6 @@
 
 package com.cnh.pf.android.data.management.adapter;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-
 import android.app.Activity;
 import android.graphics.Color;
 import android.util.Pair;
@@ -32,14 +25,21 @@ import com.cnh.android.widget.activity.TabActivity;
 import com.cnh.jgroups.Operation;
 import com.cnh.pf.android.data.management.R;
 import com.cnh.pf.model.TypedValue;
-
 import com.google.common.base.Strings;
 import com.google.inject.Inject;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+
 import roboguice.RoboGuice;
 import roboguice.inject.InjectResource;
-
 
 /**
  * Adapter used to feed data to Conflict Resolution View
@@ -48,9 +48,12 @@ import roboguice.inject.InjectResource;
 public class DataConflictViewAdapter extends DataManagementBaseAdapter {
    private static final Logger logger = LoggerFactory.getLogger(DataConflictViewAdapter.class);
 
-   @Inject LayoutInflater layoutInflater;
-   @InjectResource(R.string.cancel) String cancelStr;
-   @InjectResource(R.string.done) String doneStr;
+   @Inject
+   LayoutInflater layoutInflater;
+   @InjectResource(R.string.cancel)
+   String cancelStr;
+   @InjectResource(R.string.done)
+   String doneStr;
 
    public DataConflictViewAdapter(Activity context, List<Operation> operations) {
       super(context, operations);
@@ -80,7 +83,7 @@ public class DataConflictViewAdapter extends DataManagementBaseAdapter {
             View view = layoutInflater.inflate(R.layout.rename_file, null);
             newNameDialog.setBodyView(view);
             final EditText textEntry = (EditText) view.findViewById(R.id.file_name);
-            if(!Strings.isNullOrEmpty(op.getNewName())) {
+            if (!Strings.isNullOrEmpty(op.getNewName())) {
                textEntry.setText(op.getNewName());
             }
             newNameDialog.setFirstButtonText(doneStr);
@@ -139,10 +142,7 @@ public class DataConflictViewAdapter extends DataManagementBaseAdapter {
          ColumnViewHolder viewHolder = (ColumnViewHolder) newView.getTag();
 
          //a <type> named <name> already exists
-         viewHolder.conflictFileTv.setText(
-               context.getResources().getString(R.string.duplicate_file,
-                     getTypeString(operation.getData().getType()),
-                     operation.getData().getName()));
+         viewHolder.conflictFileTv.setText(context.getResources().getString(R.string.duplicate_file, getTypeString(operation.getData().getType()), operation.getData().getName()));
          populateDescriptionLayout(viewHolder.columnsLayout, viewHolder.exitingFile, viewHolder.newFile, operation.getConflictDataTyped(), operation.getData().getData());
       }
       targetView = newView;
@@ -154,7 +154,8 @@ public class DataConflictViewAdapter extends DataManagementBaseAdapter {
    }
 
    /** Generates description area for the existing entity and new entitiy, reuses layouts */
-   private void populateDescriptionLayout(LinearLayout rowLayout, LinearLayout existingFileLayout, LinearLayout newFileLayout,  Map<String, TypedValue> existingMap, Map<String, TypedValue> newMap) {
+   private void populateDescriptionLayout(LinearLayout rowLayout, LinearLayout existingFileLayout, LinearLayout newFileLayout, Map<String, TypedValue> existingMap,
+         Map<String, TypedValue> newMap) {
       /** Viewholder to re-use textviews within description area*/
       LayoutViewHolder existingFileVH = getViewHolder(existingFileLayout);
       LayoutViewHolder newFileVH = getViewHolder(newFileLayout);
@@ -178,12 +179,12 @@ public class DataConflictViewAdapter extends DataManagementBaseAdapter {
       Set<String> propNames = new HashSet<String>();
       propNames.addAll(existingMap.keySet());
       propNames.addAll(newMap.keySet());
-      for(String key : propNames) {
-         if(key.startsWith("_")) continue; //skip 'private' properties
+      for (String key : propNames) {
+         if (key.startsWith("_")) continue; //skip 'private' properties
          TypedValue existingVal = existingMap.get(key);
          TypedValue newVal = newMap.get(key);
-         rowMap.put(key, new Pair<String, String>(existingVal != null ? String.valueOf(existingVal.getFieldValue()) : "",
-               newVal != null ? String.valueOf(newVal.getFieldValue()) : ""));
+         rowMap.put(key,
+               new Pair<String, String>(existingVal != null ? String.valueOf(existingVal.getFieldValue()) : "", newVal != null ? String.valueOf(newVal.getFieldValue()) : ""));
       }
 
       int rowNum = 0;
@@ -212,16 +213,15 @@ public class DataConflictViewAdapter extends DataManagementBaseAdapter {
          newFileRow.setText(entry.getValue().second);
 
          /** Highlight matching rows red for conflict */
-         if (existingFileRow.getText().equals(newFileRow.getText()))
-            row.setTextColor(Color.RED);
+         if (existingFileRow.getText().equals(newFileRow.getText())) row.setTextColor(Color.RED);
          rowNum++;
       }
 
       /** Remove any previous unused textviews, using existingFileVH index but all three layouts have similar number of views */
-      if (existingFileVH.columns.size() != 0 && rowNum < existingFileVH.columns.size()-1) {
-         int toRemove = existingFileVH.columns.size()-1-rowNum;
+      if (existingFileVH.columns.size() != 0 && rowNum < existingFileVH.columns.size() - 1) {
+         int toRemove = existingFileVH.columns.size() - 1 - rowNum;
          while (toRemove != 0) {
-            int location = existingFileVH.columns.size()-1;
+            int location = existingFileVH.columns.size() - 1;
             /** Revome from list and layout */
             TextView removed = existingFileVH.columns.remove(location);
             existingFileVH.descriptionArea.removeView(removed);
@@ -253,7 +253,7 @@ public class DataConflictViewAdapter extends DataManagementBaseAdapter {
       tv.setGravity(Gravity.CENTER_HORIZONTAL);
       tv.setTextAppearance(context, R.style.TextAppearance_Data_File_Column);
       int dpAsPixels = (int) android.util.TypedValue.applyDimension(android.util.TypedValue.COMPLEX_UNIT_DIP, 5, context.getResources().getDisplayMetrics());
-      tv.setPadding(0,dpAsPixels,0, dpAsPixels);
+      tv.setPadding(0, dpAsPixels, 0, dpAsPixels);
       return tv;
    }
 
@@ -270,7 +270,8 @@ public class DataConflictViewAdapter extends DataManagementBaseAdapter {
       }
       if (activeOperation == totalOperation) {
          onTargetsSelectedListener.onCompletion(operationList);
-      } else {
+      }
+      else {
          onTargetSelectedListener.onTargetSelected(false, targetView);
       }
    }

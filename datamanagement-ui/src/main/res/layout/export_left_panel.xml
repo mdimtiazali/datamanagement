@@ -9,117 +9,117 @@
   -->
 
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
-              xmlns:cnh="http://schemas.android.com/apk/res/com.cnh.pf.android.data.management"
-              android:orientation="vertical"
-              android:layout_width="match_parent"
-              android:layout_height="match_parent">
+        xmlns:cnh="http://schemas.android.com/apk/res/com.cnh.pf.android.data.management"
+        android:orientation="vertical"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent">
 
-   <LinearLayout
-      android:layout_width="match_parent"
-      android:layout_height="match_parent"
-      android:layout_marginLeft="16dp"
-      android:layout_marginRight="16dp"
-      android:orientation="vertical">
-
-      <TextView
-         android:layout_width="wrap_content"
-         android:layout_height="wrap_content"
-         style="@style/TextAppearance.Import.Entity"
-         android:text="@string/export_to"/>
-      
-      <com.cnh.android.widget.control.PickListEditable
-         android:id="@+id/export_medium_picklist"
-         android:layout_width="match_parent"
-         android:layout_height="wrap_content"
-         cnh:allowItemCopying="false"
-         cnh:allowItemDeletion="false"
-         cnh:allowItemCreation="false"
-         cnh:allowItemEditing="false"
-         cnh:allowItemManagement="false"/>
-
-      <RelativeLayout
-         android:layout_width="match_parent"
-         android:layout_height="wrap_content"
-         android:orientation="horizontal">
-
-         <TextView
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_centerVertical="true"
-            style="@style/TextAppearance.Import.Entity"
-            android:text="@string/export_format"/>
-
-         <com.cnh.android.widget.control.InfoButton
-            android:id="@+id/format_info_btn"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_alignParentRight="true"
-            android:layout_centerVertical="true"
-            cnh:popup_description="@string/format_description"
-            cnh:popup_title="@string/export_format"/>
-      </RelativeLayout>
-
-      <com.cnh.android.widget.control.PickListEditable
-         android:id="@+id/export_format_picklist"
-         android:layout_width="match_parent"
-         android:layout_height="wrap_content"
-         cnh:allowItemCopying="false"
-         cnh:allowItemDeletion="false"
-         cnh:allowItemCreation="false"
-         cnh:allowItemEditing="false"
-         cnh:allowItemManagement="false"/>
-
-      <LinearLayout
-         android:layout_width="match_parent"
-         android:layout_height="wrap_content"
-         android:layout_marginTop="12dp"
-         android:orientation="vertical"
-         android:background="@drawable/dashed_border">
-
-         <LinearLayout
-            android:id="@+id/status_panel"
+    <LinearLayout
             android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:orientation="vertical"
-            android:visibility="gone">
-
-            <include layout="@layout/perform_left_layout"/>
-         </LinearLayout>
-
-
-         <LinearLayout
-            android:id="@+id/export_drop_zone"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
+            android:layout_height="match_parent"
+            android:layout_marginLeft="16dp"
+            android:layout_marginRight="16dp"
             android:orientation="vertical">
 
-         <ImageView
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_marginTop="50dp"
-            android:background="@drawable/ic_dragdrop_export_usb"
-            android:layout_gravity="center"/>
+        <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                style="@style/TextAppearance.Import.Entity"
+                android:text="@string/export_to" />
 
-         <TextView
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_gravity="center_horizontal"
-            android:gravity="center"
-            android:layout_marginBottom="50dp"
-            style="@style/TextAppearance.Import.Entity"
-            android:text="@string/export_drag_and_drop"/>
-         </LinearLayout>
-      </LinearLayout>
+        <com.cnh.android.widget.control.PickListEditable
+                android:id="@+id/export_medium_picklist"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                cnh:allowItemCopying="false"
+                cnh:allowItemDeletion="false"
+                cnh:allowItemCreation="false"
+                cnh:allowItemEditing="false"
+                cnh:allowItemManagement="false" />
 
-      <Button
-         android:id="@+id/export_selected_btn"
-         style="@style/Button"
-         android:layout_width="match_parent"
-         android:layout_height="wrap_content"
-         android:layout_marginTop="12dp"
-         android:enabled="false"
-         android:text="@string/export_selected"
-         android:textSize="22dp"/>
-   </LinearLayout>
+        <RelativeLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal">
+
+            <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_centerVertical="true"
+                    style="@style/TextAppearance.Import.Entity"
+                    android:text="@string/export_format" />
+
+            <com.cnh.android.widget.control.InfoButton
+                    android:id="@+id/format_info_btn"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_alignParentRight="true"
+                    android:layout_centerVertical="true"
+                    cnh:popup_description="@string/format_description"
+                    cnh:popup_title="@string/export_format" />
+        </RelativeLayout>
+
+        <com.cnh.android.widget.control.PickListEditable
+                android:id="@+id/export_format_picklist"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                cnh:allowItemCopying="false"
+                cnh:allowItemDeletion="false"
+                cnh:allowItemCreation="false"
+                cnh:allowItemEditing="false"
+                cnh:allowItemManagement="false" />
+
+        <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="12dp"
+                android:orientation="vertical"
+                android:background="@drawable/dashed_border">
+
+            <LinearLayout
+                    android:id="@+id/status_panel"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="vertical"
+                    android:visibility="gone">
+
+                <include layout="@layout/perform_left_layout" />
+            </LinearLayout>
+
+
+            <LinearLayout
+                    android:id="@+id/export_drop_zone"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="vertical">
+
+                <ImageView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="50dp"
+                        android:background="@drawable/ic_dragdrop_export_usb"
+                        android:layout_gravity="center" />
+
+                <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_gravity="center_horizontal"
+                        android:gravity="center"
+                        android:layout_marginBottom="50dp"
+                        style="@style/TextAppearance.Import.Entity"
+                        android:text="@string/export_drag_and_drop" />
+            </LinearLayout>
+        </LinearLayout>
+
+        <Button
+                android:id="@+id/export_selected_btn"
+                style="@style/Button"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="12dp"
+                android:enabled="false"
+                android:text="@string/export_selected"
+                android:textSize="22dp" />
+    </LinearLayout>
 
 </LinearLayout>

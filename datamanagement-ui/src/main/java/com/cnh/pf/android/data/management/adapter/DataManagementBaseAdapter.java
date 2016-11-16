@@ -66,6 +66,7 @@ public abstract class DataManagementBaseAdapter {
     * @return updated view
     */
    public abstract View getView(View convertView);
+
    protected abstract void checkAndUpdateActive();
 
    public interface OnTargetSelectedListener {

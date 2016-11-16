@@ -14,6 +14,7 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.widget.AdapterView;
 import android.widget.TextView;
+
 import com.cnh.android.widget.control.PickListAdapter;
 import com.cnh.android.widget.control.PickListEditable;
 import com.cnh.jgroups.MultiSetObjectGraph;
@@ -21,6 +22,7 @@ import com.cnh.jgroups.ObjectGraph;
 import com.cnh.jgroups.Operation;
 import com.cnh.pf.android.data.management.ExportFragment;
 import com.cnh.pf.android.data.management.R;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -59,8 +61,8 @@ public class TargetProcessViewAdapter extends DataManagementBaseAdapter {
                @Override
                public void onItemSelected(AdapterView<?> parent, View view, int position, long id, boolean b) {
                   if (id != PickListEditable.NO_ID) {
-                     ExportFragment.ObjectPickListItem<ObjectGraph> pickItem = (ExportFragment.ObjectPickListItem<ObjectGraph>)
-                        viewHolder.targetList.getAdapter().getItem(position);
+                     ExportFragment.ObjectPickListItem<ObjectGraph> pickItem = (ExportFragment.ObjectPickListItem<ObjectGraph>) viewHolder.targetList.getAdapter()
+                           .getItem(position);
                      operationList.get(activeOperation++).setTarget(pickItem.getObject());
                      checkAndUpdateActive();
                   }
@@ -72,7 +74,8 @@ public class TargetProcessViewAdapter extends DataManagementBaseAdapter {
                }
             });
             newView.setTag(viewHolder);
-         } else {
+         }
+         else {
             newView = convertView;
          }
          logger.debug("Solve Target for object: " + activeOperation);
@@ -90,7 +93,7 @@ public class TargetProcessViewAdapter extends DataManagementBaseAdapter {
          viewHolder.typeView.setText(operation.getData().getType());
          viewHolder.nameView.setText(operation.getData().getName());
          viewHolder.targetList.clearList();
-         int i=0;
+         int i = 0;
          for (ObjectGraph target : operation.getPotentialTargets()) {
             viewHolder.targetList.addItem(new ExportFragment.ObjectPickListItem<ObjectGraph>(i++, target.getName(), target));
          }
@@ -106,7 +109,8 @@ public class TargetProcessViewAdapter extends DataManagementBaseAdapter {
       }
       if (activeOperation == totalOperation) {
          onTargetsSelectedListener.onCompletion(operationList);
-      } else {
+      }
+      else {
          onTargetSelectedListener.onTargetSelected(false, targetView);
       }
    }

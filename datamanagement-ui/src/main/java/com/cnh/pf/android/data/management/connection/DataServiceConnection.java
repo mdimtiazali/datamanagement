@@ -16,14 +16,15 @@ import android.content.Intent;
 import android.content.ServiceConnection;
 import android.os.IBinder;
 
-import com.cnh.pf.android.data.management.service.DataManagementService;
 import com.cnh.pf.android.data.management.DataManagementActivity;
-
+import com.cnh.pf.android.data.management.service.DataManagementService;
 import com.google.inject.Inject;
 import com.google.inject.Singleton;
 import com.google.inject.name.Named;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
 import roboguice.activity.event.OnPauseEvent;
 import roboguice.activity.event.OnResumeEvent;
 import roboguice.config.DefaultRoboModule;
@@ -46,13 +47,15 @@ public class DataServiceConnection implements DataServiceConnectionImpl {
    private static String appName = DataManagementActivity.class.getName();
 
    private ServiceConnection serviceConnection = new ServiceConnection() {
-      @Override public void onServiceConnected(ComponentName componentName, IBinder iBinder) {
+      @Override
+      public void onServiceConnected(ComponentName componentName, IBinder iBinder) {
          DataManagementService.LocalBinder binder = (DataManagementService.LocalBinder) iBinder;
          service = (DataManagementService) binder.getService();
          eventManager.fire(new ConnectionEvent(true, service));
       }
 
-      @Override public void onServiceDisconnected(ComponentName componentName) {
+      @Override
+      public void onServiceDisconnected(ComponentName componentName) {
          service = null;
          eventManager.fire(new ConnectionEvent(false, null));
       }
@@ -73,7 +76,8 @@ public class DataServiceConnection implements DataServiceConnectionImpl {
    private void disconnect(@Observes OnPauseEvent event) {
       logger.debug("disconnect");
       new Thread(new Runnable() {
-         @Override public void run() {
+         @Override
+         public void run() {
             context.unbindService(serviceConnection);
          }
       });

@@ -14,6 +14,7 @@ import android.app.Service;
 import com.cnh.pf.android.data.management.R;
 import com.cnh.pf.data.management.DataManagementSession;
 import com.google.common.base.MoreObjects;
+
 import org.jgroups.View;
 
 /**
@@ -89,13 +90,10 @@ public interface DataServiceConnectionImpl {
       private DataError type;
 
       public enum DataError {
-         NO_SOURCE_DATASOURCE(R.string.error_no_source, "No Source Datasource"),
-         NO_DATA(R.string.error_no_source, "No DATA"),
-         NO_TARGET_DATASOURCE(R.string.error_no_target, "No Target Datasource"),
-         CALCULATE_CONFLICT_ERROR(R.string.error_calculate_conflicts, "Calculate Conflict Error"),
-         CALCULATE_TARGETS_ERROR(R.string.error_calculate_operations, "Calculate Targets Error"),
-         DISCOVERY_ERROR(R.string.error_discovery, "Discovery Error"),
-         PERFORM_ERROR(R.string.error_perform_ops, "Perform Operations Error");
+         NO_SOURCE_DATASOURCE(R.string.error_no_source, "No Source Datasource"), NO_DATA(R.string.error_no_source, "No DATA"), NO_TARGET_DATASOURCE(R.string.error_no_target,
+               "No Target Datasource"), CALCULATE_CONFLICT_ERROR(R.string.error_calculate_conflicts,
+                     "Calculate Conflict Error"), CALCULATE_TARGETS_ERROR(R.string.error_calculate_operations, "Calculate Targets Error"), DISCOVERY_ERROR(R.string.error_discovery,
+                           "Discovery Error"), PERFORM_ERROR(R.string.error_perform_ops, "Perform Operations Error");
 
          private String value;
          private int res;
@@ -105,7 +103,9 @@ public interface DataServiceConnectionImpl {
             this.value = v;
          }
 
-         public int resource() { return res; }
+         public int resource() {
+            return res;
+         }
 
          public String value() {
             return value;
@@ -141,11 +141,7 @@ public interface DataServiceConnectionImpl {
 
       @Override
       public String toString() {
-         return MoreObjects.toStringHelper(this)
-               .add("session", session)
-               .add("error", error)
-               .add("type", type)
-               .toString();
+         return MoreObjects.toStringHelper(this).add("session", session).add("error", error).add("type", type).toString();
       }
    }
 
@@ -168,10 +164,7 @@ public interface DataServiceConnectionImpl {
 
       @Override
       public String toString() {
-         return MoreObjects.toStringHelper(this)
-               .add("oldView", oldView)
-               .add("newView", newView)
-               .toString();
+         return MoreObjects.toStringHelper(this).add("oldView", oldView).add("newView", newView).toString();
       }
    }
 }

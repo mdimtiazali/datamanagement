@@ -9,13 +9,13 @@
   -->
 
 <TextView xmlns:android="http://schemas.android.com/apk/res/android"
-          android:text="Text"
-          android:duplicateParentState="true"
-          android:layout_width="match_parent"
-          android:layout_height="match_parent"
-          android:id="@+id/tree_list_item_simple"
-          android:textSize="20sp"
-          android:fontFamily="sans-seriff"
-          android:layout_weight="1"
-          android:gravity="center_vertical"
-          android:textColor="@color/StandardBlackColor"/>
+        android:text="Text"
+        android:duplicateParentState="true"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:id="@+id/tree_list_item_simple"
+        android:textSize="20sp"
+        android:fontFamily="sans-seriff"
+        android:layout_weight="1"
+        android:gravity="center_vertical"
+        android:textColor="@color/StandardBlackColor" />

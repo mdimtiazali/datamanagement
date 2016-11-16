@@ -1,115 +1,121 @@
 <?xml version="1.0" encoding="utf-8"?>
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
-              xmlns:cnh="http://schemas.android.com/apk/res/com.cnh.pf.android.data.management"
-              android:layout_width="match_parent"
-              android:layout_height="match_parent"
-              android:orientation="vertical"
-                android:padding="12dp">
+        xmlns:cnh="http://schemas.android.com/apk/res/com.cnh.pf.android.data.management"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:orientation="vertical"
+        android:padding="12dp">
 
 
-   <LinearLayout android:layout_width="match_parent" android:layout_height="wrap_content"
-                 android:orientation="horizontal">
+    <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal">
 
-       <LinearLayout
-           android:layout_width="0dp"
-           android:layout_weight="1"
-           android:layout_height="wrap_content"
-           android:orientation="vertical">
+        <LinearLayout
+                android:layout_width="0dp"
+                android:layout_weight="1"
+                android:layout_height="wrap_content"
+                android:orientation="vertical">
 
-           <com.cnh.android.widget.control.PickListEditable
-               android:id="@+id/source_pick"
-               style="@style/PickListBig"
-               android:layout_width="match_parent"
-               android:layout_height="wrap_content"
-               cnh:allowItemManagement="false"
-               cnh:allowItemCreation="false"
-               cnh:allowItemEditing="false"
-               cnh:allowItemDeletion="false"
-               cnh:allowItemCopying="false"
-               cnh:title="@string/import_source"/>
-
-           <TextView
-               android:id="@+id/source_dir"
-               android:layout_width="match_parent"
-               android:layout_height="wrap_content"
-               android:layout_marginTop="10dp"
-               android:padding="5dp"
-               android:textSize="28dp"
-               android:textColor="@color/StandardBlackColor"
-               android:background="@drawable/text_border"
-               android:visibility="gone"/>
-       </LinearLayout>
-
-       <LinearLayout
-           android:layout_width="0dp"
-           android:layout_weight="1"
-           android:layout_height="wrap_content"
-           android:orientation="vertical">
-
-           <com.cnh.android.widget.control.PickListEditable
-               android:id="@+id/destination_pick"
-               style="@style/PickListBig"
-               android:layout_width="match_parent"
-               android:layout_height="wrap_content"
-               cnh:allowItemManagement="false"
-               cnh:allowItemCreation="false"
-               cnh:allowItemEditing="false"
-               cnh:allowItemDeletion="false"
-               cnh:allowItemCopying="false"
-               cnh:title="@string/destination"/>
-
-           <TextView
-               android:id="@+id/dest_dir"
-               android:layout_width="match_parent"
-               android:layout_height="wrap_content"
-               android:layout_marginTop="10dp"
-               android:padding="5dp"
-               android:textSize="28dp"
-               android:textColor="@color/StandardBlackColor"
-               android:background="@drawable/text_border"
-               android:visibility="gone"/>
-       </LinearLayout>
-
-
-   </LinearLayout>
-
-    <LinearLayout android:layout_width="match_parent" android:layout_height="match_parent"
-                  android:orientation="horizontal">
-
-        <ScrollView android:layout_width="0dp"
-                    android:layout_weight="3"
+            <com.cnh.android.widget.control.PickListEditable
+                    android:id="@+id/source_pick"
+                    style="@style/PickListBig"
+                    android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-            android:scrollbars="none">
+                    cnh:allowItemManagement="false"
+                    cnh:allowItemCreation="false"
+                    cnh:allowItemEditing="false"
+                    cnh:allowItemDeletion="false"
+                    cnh:allowItemCopying="false"
+                    cnh:title="@string/import_source" />
+
+            <TextView
+                    android:id="@+id/source_dir"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="10dp"
+                    android:padding="5dp"
+                    android:textSize="28dp"
+                    android:textColor="@color/StandardBlackColor"
+                    android:background="@drawable/text_border"
+                    android:visibility="gone" />
+        </LinearLayout>
+
+        <LinearLayout
+                android:layout_width="0dp"
+                android:layout_weight="1"
+                android:layout_height="wrap_content"
+                android:orientation="vertical">
+
+            <com.cnh.android.widget.control.PickListEditable
+                    android:id="@+id/destination_pick"
+                    style="@style/PickListBig"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    cnh:allowItemManagement="false"
+                    cnh:allowItemCreation="false"
+                    cnh:allowItemEditing="false"
+                    cnh:allowItemDeletion="false"
+                    cnh:allowItemCopying="false"
+                    cnh:title="@string/destination" />
+
+            <TextView
+                    android:id="@+id/dest_dir"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="10dp"
+                    android:padding="5dp"
+                    android:textSize="28dp"
+                    android:textColor="@color/StandardBlackColor"
+                    android:background="@drawable/text_border"
+                    android:visibility="gone" />
+        </LinearLayout>
+
+
+    </LinearLayout>
+
+    <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:orientation="horizontal">
+
+        <ScrollView
+                android:layout_width="0dp"
+                android:layout_weight="3"
+                android:layout_height="wrap_content"
+                android:scrollbars="none">
 
             <pl.polidea.treeview.TreeViewList
-                android:id="@+id/tree_view"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:choiceMode="none"
-                android:dividerHeight="8dp"
-                android:divider="@android:color/transparent"
-                cnh:indent_width="18dp"
-                cnh:row_background="@drawable/complex_selector_background"
-                cnh:indicator_background="@android:color/transparent"
-                cnh:indicator_gravity="center_vertical|right"
-                cnh:src_collapsed="@drawable/ic_action_expand"
-                cnh:src_expanded="@drawable/ic_action_collapse"
-                cnh:collapsible="true"
-                cnh:draw_line="true"
-                cnh:line_color="@color/tree_line"
-                cnh:line_width="2dp"/>
+                    android:id="@+id/tree_view"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:choiceMode="none"
+                    android:dividerHeight="8dp"
+                    android:divider="@android:color/transparent"
+                    cnh:indent_width="18dp"
+                    cnh:row_background="@drawable/complex_selector_background"
+                    cnh:indicator_background="@android:color/transparent"
+                    cnh:indicator_gravity="center_vertical|right"
+                    cnh:src_collapsed="@drawable/ic_action_expand"
+                    cnh:src_expanded="@drawable/ic_action_collapse"
+                    cnh:collapsible="true"
+                    cnh:draw_line="true"
+                    cnh:line_color="@color/tree_line"
+                    cnh:line_width="2dp" />
         </ScrollView>
+
         <Button
-            android:id="@+id/btn_continue"
-            style="@style/Button"
-            android:layout_width="0dp"
-            android:layout_weight="1"
-            android:layout_height="wrap_content"
-            android:layout_marginLeft="0dp"
-            android:layout_marginRight="0dp"
-            android:paddingLeft="10dp"
-            android:paddingRight="10dp"
-            android:visibility="gone"
-            android:text="@string/continue_string"/>
+                android:id="@+id/btn_continue"
+                style="@style/Button"
+                android:layout_width="0dp"
+                android:layout_weight="1"
+                android:layout_height="wrap_content"
+                android:layout_marginLeft="0dp"
+                android:layout_marginRight="0dp"
+                android:paddingLeft="10dp"
+                android:paddingRight="10dp"
+                android:visibility="gone"
+                android:text="@string/continue_string" />
     </LinearLayout>
 </LinearLayout>

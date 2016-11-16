@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="utf-8"?>
+<selector xmlns:android="http://schemas.android.com/apk/res/android" xmlns:cnh="http://schemas.android.com/apk/res-auto">
+    <item android:drawable="@drawable/faults_arrow_sort_ascendant" cnh:state_sort_asc="true" />
+    <item android:drawable="@drawable/faults_arrow_sort_descendant" cnh:state_sort_desc="true" />
+    <item>
+        <shape>
+            <solid android:color="@android:color/transparent" />
+        </shape>
+    </item>
+</selector>

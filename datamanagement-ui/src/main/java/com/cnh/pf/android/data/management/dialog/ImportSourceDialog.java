@@ -13,8 +13,7 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.widget.AdapterView;
 import android.widget.RadioGroup;
-import butterknife.Bind;
-import butterknife.ButterKnife;
+
 import com.cnh.android.dialog.DialogView;
 import com.cnh.android.dialog.DialogViewInterface;
 import com.cnh.android.widget.activity.TabActivity;
@@ -30,18 +29,26 @@ import com.cnh.pf.data.management.aidl.MediumDevice;
 import com.cnh.pf.datamng.DataUtils;
 import com.google.common.io.Files;
 import com.google.inject.Inject;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import java.io.File;
+import java.io.FileFilter;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
+
+import butterknife.Bind;
+import butterknife.ButterKnife;
 import pl.polidea.treeview.InMemoryTreeStateManager;
 import pl.polidea.treeview.TreeBuilder;
 import pl.polidea.treeview.TreeStateManager;
 import pl.polidea.treeview.TreeViewList;
 import roboguice.RoboGuice;
 import roboguice.event.EventManager;
-
-import java.io.File;
-import java.io.FileFilter;
-import java.util.*;
 
 /**
  * Dialog allows user to select an import source and directory path
@@ -50,11 +57,16 @@ import java.util.*;
 public class ImportSourceDialog extends DialogView {
    private static final Logger log = LoggerFactory.getLogger(ImportSourceDialog.class);
 
-   @Inject private EventManager eventManager;
-   @Inject LayoutInflater layoutInflater;
-   @Bind(R.id.import_selection_group) SegmentedToggleButtonGroup importGroup;
-   @Bind(R.id.source_path_tree_view) TreeViewList sourcePathTreeView;
-   @Bind(R.id.display_picklist) PickListEditable displayPicklist;
+   @Inject
+   private EventManager eventManager;
+   @Inject
+   LayoutInflater layoutInflater;
+   @Bind(R.id.import_selection_group)
+   SegmentedToggleButtonGroup importGroup;
+   @Bind(R.id.source_path_tree_view)
+   TreeViewList sourcePathTreeView;
+   @Bind(R.id.display_picklist)
+   PickListEditable displayPicklist;
    private TreeStateManager<File> manager;
    private PathTreeViewAdapter treeAdapter;
    private TreeBuilder<File> treeBuilder;
@@ -77,7 +89,8 @@ public class ImportSourceDialog extends DialogView {
          showSecondButton(false);
          showThirdButton(false);
          setOnButtonClickListener(new OnButtonClickListener() {
-            @Override public void onButtonClick(DialogViewInterface dialog, int which) {
+            @Override
+            public void onButtonClick(DialogViewInterface dialog, int which) {
                if (which == DialogViewInterface.BUTTON_FIRST) {
                   ((TabActivity) getContext()).dismissPopup(ImportSourceDialog.this);
                }
@@ -97,7 +110,7 @@ public class ImportSourceDialog extends DialogView {
                devices.put(buttonId, device);
             }
             else if (device.getType().equals(Datasource.Source.DISPLAY)) {
-               if(hosts.add(device.getName())) { //one button per host
+               if (hosts.add(device.getName())) { //one button per host
                   importGroup.addButton(getContext().getResources().getString(R.string.display_named, device.getName()), buttonId);
                }
                devices.put(buttonId, device);
@@ -105,7 +118,8 @@ public class ImportSourceDialog extends DialogView {
             buttonId++;
          }
          importGroup.setOnCheckedChangeListener(new RadioGroup.OnCheckedChangeListener() {
-            @Override public void onCheckedChanged(RadioGroup group, int checkedId) {
+            @Override
+            public void onCheckedChanged(RadioGroup group, int checkedId) {
                onButtonSelectd(checkedId);
             }
          });
@@ -115,18 +129,20 @@ public class ImportSourceDialog extends DialogView {
          showFirstButton(false);
          setSecondButtonText(getResources().getString(R.string.cancel));
          setOnButtonClickListener(new OnButtonClickListener() {
-            @Override public void onButtonClick(DialogViewInterface dialog, int which) {
+            @Override
+            public void onButtonClick(DialogViewInterface dialog, int which) {
                if (which == DialogViewInterface.BUTTON_FIRST) {
                   //Select
                   List<MediumDevice> hostDevices = new ArrayList<MediumDevice>();
-                  if(currentDevice.getType().equals(Source.DISPLAY)) {
+                  if (currentDevice.getType().equals(Source.DISPLAY)) {
                      String currentHostname = DataUtils.getHostnameOrIp(currentDevice.getAddress());
-                     for(MediumDevice md : devices.values()) {
-                        if(currentHostname.equals(DataUtils.getHostnameOrIp(md.getAddress()))) {
+                     for (MediumDevice md : devices.values()) {
+                        if (currentHostname.equals(DataUtils.getHostnameOrIp(md.getAddress()))) {
                            hostDevices.add(md);
                         }
                      }
-                  } else {
+                  }
+                  else {
                      hostDevices.add(currentDevice);
                   }
                   eventManager.fire(new ImportSourceSelectedEvent(hostDevices));
@@ -163,7 +179,7 @@ public class ImportSourceDialog extends DialogView {
 
       showFirstButton(true);
 
-      if (currentDevice.getType().equals(Datasource.Source.USB) && currentDevice.getPath()!=null) {
+      if (currentDevice.getType().equals(Datasource.Source.USB) && currentDevice.getPath() != null) {
          //Do this after usb, display selection
          manager = new InMemoryTreeStateManager<File>();
          treeBuilder = new TreeBuilder<File>(manager);
@@ -178,7 +194,8 @@ public class ImportSourceDialog extends DialogView {
          manager.expandDirectChildren(currentDevice.getPath()); //expand top node only
 
          treeAdapter.setOnPathSelectedListener(new PathTreeViewAdapter.OnPathSelectedListener() {
-            @Override public void onPathSelected(File path) {
+            @Override
+            public void onPathSelected(File path) {
                currentDevice.setPath(path);
                setFirstButtonEnabled(true);
             }
@@ -191,20 +208,22 @@ public class ImportSourceDialog extends DialogView {
          int id = 0;
          log.trace("current host {}", currentHost);
          log.trace("Medium devices {}", devices);
-         for(MediumDevice md : devices.values()) {
-            if(currentHost.equals(md.getName())) {
+         for (MediumDevice md : devices.values()) {
+            if (currentHost.equals(md.getName())) {
                log.trace("Adding device {}", md);
                displayPicklist.addItem(new ObjectPickListItem<MediumDevice>(id++, md.getAddress().toString(), md));
             }
          }
          displayPicklist.setOnItemSelectedListener(new PickListEditable.OnItemSelectedListener() {
-            @Override public void onItemSelected(AdapterView<?> parent, View view, int position, long id, boolean b) {
+            @Override
+            public void onItemSelected(AdapterView<?> parent, View view, int position, long id, boolean b) {
                ObjectPickListItem<MediumDevice> item = (ObjectPickListItem<MediumDevice>) displayPicklist.findItemById(id);
                currentDevice = item.getObject();
                setFirstButtonEnabled(true);
             }
 
-            @Override public void onNothingSelected(AdapterView<?> parent) {
+            @Override
+            public void onNothingSelected(AdapterView<?> parent) {
             }
          });
          displayPicklist.setVisibility(VISIBLE);
@@ -231,7 +250,7 @@ public class ImportSourceDialog extends DialogView {
        * @return
        */
       public MediumDevice getDevice() {
-         return (device != null && device.size()>0) ? device.get(0) : null;
+         return (device != null && device.size() > 0) ? device.get(0) : null;
       }
    }
 }
