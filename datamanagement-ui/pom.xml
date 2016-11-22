@@ -16,7 +16,7 @@
    <parent>
       <groupId>com.cnh.pf</groupId>
       <artifactId>parent</artifactId>
-      <version>10.0.0-ym2-SNAPSHOT</version>
+      <version>10.1.0-ym-SNAPSHOT</version>
       <relativePath>../../</relativePath>
    </parent>
 
