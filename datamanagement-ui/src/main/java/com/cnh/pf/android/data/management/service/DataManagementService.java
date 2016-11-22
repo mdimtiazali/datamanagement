@@ -158,8 +158,6 @@ public class DataManagementService extends RoboService implements SharedPreferen
       try {
          prefs.registerOnSharedPreferenceChangeListener(this);
          mediator.setProgressListener(pListener);
-         if (!mediator.getChannel().isConnected())
-            new ConnectTask().execute();
       }
       catch (Exception e) {
          logger.error("error in onCreate", e);
@@ -191,6 +189,10 @@ public class DataManagementService extends RoboService implements SharedPreferen
 
    public void register(String name, IDataManagementListenerAIDL listener) {
       logger.debug("Register: " + name);
+      if(listeners.isEmpty()) {
+         if (!mediator.getChannel().isConnected())
+            new ConnectTask().execute();
+      }
       listeners.put(name, listener);
    }
 
@@ -231,12 +233,11 @@ public class DataManagementService extends RoboService implements SharedPreferen
       File[] folders = mount.listFiles(new FileFilter() {
          @Override
          public boolean accept(File file) {
-            return file.isDirectory();
+            return file.isDirectory() && !file.getName().startsWith(".");
          }
       });
       String[] paths = new String[folders.length];
       for(int i=0; i<folders.length; i++) {
-         logger.trace("Checking path: {}", folders[i].getAbsolutePath());
          paths[i] = folders[i].getAbsolutePath();
       }
       //Launch USB datasource broadcast for every root folder on USB
