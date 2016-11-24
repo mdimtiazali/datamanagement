@@ -51,6 +51,7 @@ import com.cnh.android.pf.widget.utilities.UnitsQueryHolder;
 import com.cnh.android.pf.widget.utilities.UnitsSettings;
 import com.cnh.android.pf.widget.utilities.commands.DeleteProductCommand;
 import com.cnh.android.pf.widget.utilities.commands.DeleteProductMixCommand;
+import com.cnh.android.pf.widget.utilities.commands.GetVarietyListCommand;
 import com.cnh.android.pf.widget.utilities.commands.LoadProductMixListCommand;
 import com.cnh.android.pf.widget.utilities.commands.ProductCommandParams;
 import com.cnh.android.pf.widget.utilities.commands.ProductMixCommandParams;
@@ -87,6 +88,7 @@ import com.cnh.pf.model.TableChangeEvent;
 import com.cnh.pf.model.product.configuration.ControllerProductConfiguration;
 import com.cnh.pf.model.product.configuration.DriveProductConfiguration;
 import com.cnh.pf.model.product.configuration.ImplementProductConfig;
+import com.cnh.pf.model.product.configuration.Variety;
 import com.cnh.pf.model.product.library.CNHPlanterFanData;
 import com.cnh.pf.model.product.library.MeasurementSystem;
 import com.cnh.pf.model.product.library.Product;
@@ -177,6 +179,7 @@ public class ProductLibraryFragment extends RoboFragment {
    private static final int WHAT_IMPLEMENT = 6;
    private static final int WHAT_LOAD_PRODUCT_MIX_LIST = 7;
    private static final int WHAT_LOAD_UNIT_LIST = 8;
+   private static final int WHAT_GET_VARIETY_LIST = 9;
    private IVIPServiceAIDL vipService;
    private IVIPListenerAIDL vipListener = new SimpleVIPListener() {
 
@@ -202,6 +205,7 @@ public class ProductLibraryFragment extends RoboFragment {
          vipCommunicationHandler.obtainMessage(WHAT_LOAD_PRODUCT_LIST).sendToTarget();
          vipCommunicationHandler.obtainMessage(WHAT_LOAD_UNIT_LIST).sendToTarget();
          vipCommunicationHandler.obtainMessage(WHAT_LOAD_PRODUCT_MIX_LIST).sendToTarget();
+         vipCommunicationHandler.obtainMessage(WHAT_GET_VARIETY_LIST).sendToTarget();
          vipService.requestImplementProductConfigCurrent();
       }
 
@@ -316,6 +320,16 @@ public class ProductLibraryFragment extends RoboFragment {
             disabled.setVisibility(View.VISIBLE);
             disabled.setMode(pcmConnected ? DisabledOverlay.MODE.LOADING : DisabledOverlay.MODE.DISCONNECTED);
             break;
+         case WHAT_GET_VARIETY_LIST:
+            log.debug("Loading Variety list");
+
+            new VIPAsyncTask<IVIPServiceAIDL, List<Variety>>(vipService, new GenericListener<List<Variety>>() {
+               @Override
+               public void handleEvent(List<Variety> varietyList) {
+                  log.debug("got variety list:" + varietyList);
+               }
+            }).execute(new GetVarietyListCommand());
+
          default:
             log.info("Unexpected default case in vip handler");
             break;
