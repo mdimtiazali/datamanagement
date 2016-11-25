@@ -150,6 +150,9 @@ public class ProductLibraryFragment extends RoboFragment {
    private RelativeLayout productMixEmptyView;
    private ProgressiveDisclosureView productsPanel;
 
+   private List<Variety> varietyList;
+   private ProgressiveDisclosureView varietiesPanel;
+
    //Product Mixes
    private ProgressiveDisclosureView productMixesPanel;
    private NestedExpandableListView productListView;
@@ -274,9 +277,6 @@ public class ProductLibraryFragment extends RoboFragment {
             new VIPAsyncTask<IVIPServiceAIDL, List<ProductMix>>(vipService, new GenericListener<List<ProductMix>>() {
                @Override
                public void handleEvent(List<ProductMix> productMixList) {
-                  ProductLibraryFragment.this.productMixList = productMixList;
-                  isProductMixListDelivered = true;
-                  checkMode();
                   populateProductMixes(productMixList);
                }
             }).execute(new LoadProductMixListCommand());
@@ -327,6 +327,7 @@ public class ProductLibraryFragment extends RoboFragment {
                @Override
                public void handleEvent(List<Variety> varietyList) {
                   log.debug("got variety list:" + varietyList);
+                  populateVarieties(varietyList);
                }
             }).execute(new GetVarietyListCommand());
 
@@ -472,11 +473,6 @@ public class ProductLibraryFragment extends RoboFragment {
       productLibrary = inflater.inflate(R.layout.product_library, container, false);
 
       disabled = (DisabledOverlay) productLibrary.findViewById(R.id.disabled_overlay);
-
-      if (productsPanel == null) {
-         productsPanel = (ProgressiveDisclosureView) productLibrary.findViewById(R.id.products_panel);
-      }
-
       tabView = (RelativeLayout) getActivity().findViewById(R.id.tab_activity_root);
       productSearch = (SearchInput) productLibrary.findViewById(R.id.product_search);
       productSearch.setTextSize(getResources().getDimension(R.dimen.product_search_text));
@@ -491,6 +487,8 @@ public class ProductLibraryFragment extends RoboFragment {
       productsPanel.setAutoResizable(true);
       productMixesPanel = (ProgressiveDisclosureView) productLibrary.findViewById(R.id.product_mix_panel);
       productMixesPanel.setAutoResizable(true);
+      varietiesPanel = (ProgressiveDisclosureView) productLibrary.findViewById(R.id.variety_panel);
+      varietiesPanel.setAutoResizable(true);
 
       productListView = (NestedExpandableListView) productLibrary.findViewById(R.id.product_list);
       productMixListView = (ExpandableListView) productLibrary.findViewById(R.id.product_mix_list);
@@ -547,12 +545,36 @@ public class ProductLibraryFragment extends RoboFragment {
       return productLibrary;
    }
 
-   private void initProductMixPanel() {
-      if (this.productMixList != null) {
-         productMixesPanel.setSubheading(getString(R.string.product_mix_subheader_total_mix, this.productMixList.size()));
+   private void setProductPanelSubheading(){
+      if (this.productList != null) {
+         productsPanel.setSubheading(getResources().getQuantityString(
+               R.plurals.product_section_subheader_format, this.productList.size(), this.productList.size())
+         );
       }
       else {
-         productMixesPanel.setSubheading(getString(R.string.product_mix_subheader_total_mix, 0));
+         productsPanel.setSubheading(getResources().getQuantityString(R.plurals.product_section_subheader_format, 0));
+      }
+   }
+
+   private void setProductMixPanelSubheading() {
+      if (this.productMixList != null) {
+         productMixesPanel.setSubheading(getResources().getQuantityString(
+               R.plurals.product_mix_subheader_total_mix_format, this.productMixList.size(), this.productMixList.size())
+         );
+      }
+      else {
+         productMixesPanel.setSubheading(getResources().getQuantityString(R.plurals.product_mix_subheader_total_mix_format, 0));
+      }
+   }
+
+   private void setVarietyPanelSubheading(){
+      if (this.varietyList != null) {
+         varietiesPanel.setSubheading(getResources().getQuantityString(
+               R.plurals.variety_section_subheader_format, this.varietyList.size(), this.varietyList.size())
+         );
+      }
+      else {
+         varietiesPanel.setSubheading(getResources().getQuantityString(R.plurals.variety_section_subheader_format, 0));
       }
    }
 
@@ -690,13 +712,24 @@ public class ProductLibraryFragment extends RoboFragment {
       productMixListView.setEmptyView(productMixEmptyView);
       productEmptyView.setVisibility(View.GONE);
       initProductSortHeader();
-      initProductMixPanel();
+      setProductMixPanelSubheading();
       initProductMixSortHeader();
+      setVarietyPanelSubheading();
+   }
+
+   private synchronized void populateVarieties(List<Variety> varietyList){
+      if (varietyList != null){
+         this.varietyList = varietyList;
+         setVarietyPanelSubheading();
+      }
    }
 
    private synchronized void populateProductMixes(List<ProductMix> incomingProductMixList) {
       if (incomingProductMixList != null) {
-         productMixesPanel.setSubheading(getString(R.string.product_mix_subheader_total_mix, incomingProductMixList.size()));
+         this.productMixList = incomingProductMixList;
+         isProductMixListDelivered = true;
+         checkMode();
+         setProductMixPanelSubheading();
          productMixAdapter = new ProductMixAdapter();
          productMixAdapter.setItems(incomingProductMixList);
          productMixListView.setAdapter(productMixAdapter);
@@ -826,6 +859,11 @@ public class ProductLibraryFragment extends RoboFragment {
          productMixesPanel.setInnerPaddingLeft(2);
          productMixesPanel.setInnerPaddingRight(2);
          productMixesPanel.collapse();
+      }
+      if (varietiesPanel != null) {
+         varietiesPanel.setInnerPaddingLeft(2);
+         varietiesPanel.setInnerPaddingRight(2);
+         varietiesPanel.collapse();
       }
    }
 
@@ -1419,7 +1457,7 @@ public class ProductLibraryFragment extends RoboFragment {
                productMixesPanel = (ProgressiveDisclosureView) productLibrary.findViewById(R.id.product_mix_panel);
             }
             if (productMixesPanel != null) {
-               productMixesPanel.setSubheading(String.format(getResources().getString(R.string.product_mix_subheader_total_mix), getItems().size()));
+               setProductMixPanelSubheading();
                productMixesPanel.invalidate();
             }
          }
@@ -1528,7 +1566,7 @@ public class ProductLibraryFragment extends RoboFragment {
                productsPanel = (ProgressiveDisclosureView) productLibrary.findViewById(R.id.products_panel);
             }
             if (productsPanel != null) {
-               productsPanel.setSubheading(String.format(getResources().getString(R.string.product_section_subheader_format), getItems().size()));
+               setProductPanelSubheading();
                productsPanel.invalidate();
             }
          }

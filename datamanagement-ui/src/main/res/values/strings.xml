@@ -105,7 +105,12 @@
     <string name="product_mix_default_text_edittext">Product Name</string>
     <string name="product_mix_default_text_picklist">Product Form</string>
     <string name="product_mix_search_hint">Product Mix, form, rate</string>
-    <string name="product_mix_subheader_total_mix">Total: %d Product mixes</string>
+    <string name="product_mix_subheader_total_mix">Total: 0 product mixes</string>
+    <plurals name="product_mix_subheader_total_mix_format">
+        <item quantity="zero">Total: 0 product mixes</item>
+        <item quantity="one">Total: 1 product mix</item>
+        <item quantity="other">Total: %1$d product mixes</item>
+    </plurals>
     <string name="product_mix_title">Product Mix</string>
     <string name="product_mix_text_button_add_product_mix">Add Product Mix +</string>
     <string name="product_mix_title_dialog_add_product_mix">Add Product Mix</string>
@@ -121,7 +126,7 @@
     <string name="product_mix_title_total_mix_amount">Total Mix Amount</string>
     <string name="product_mix_title_carrier_amount">Carrier Amount</string>
     <string name="product_mix_title_mix_products">Mix Products</string>
-    <string name="product_mix_title_product">Product %d</string>
+    <string name="product_mix_title_product">Product %1$d</string>
     <string name="product_mix_title_product_amount">Amount</string>
     <string name="product_mix_title_units">Units</string>
     <string name="product_mix_title_application_rates">Application Rates</string>
@@ -160,7 +165,11 @@
 
     <string name="product_section_header">Products</string>
     <string name="product_section_subheader">Total: 0 products</string>
-    <string name="product_section_subheader_format">Total: %1$s products</string>
+    <plurals name="product_section_subheader_format">
+        <item quantity="zero">Total: 0 products</item>
+        <item quantity="one">Total: 1 product</item>
+        <item quantity="other">Total: %1$d products</item>
+    </plurals>
     <string name="product_search_hint">Product, form, rate</string>
 
     <string name="tab_product_library">Product Library</string>
@@ -177,5 +186,19 @@
     <string name="alert_title">Alert</string>
     <string name="alert_dismiss">Dismiss</string>
     <string name="alert_in_use">This product is currently in use by a controller.</string>
+
+    <string name="variety_title">Varieties</string>
+    <string name="variety_section_subheader">Total: 0 varieties</string>
+    <plurals name="variety_section_subheader_format">
+        <item quantity="zero">Total: 0 varieties</item>
+        <item quantity="one">Total: 1 variety</item>
+        <item quantity="other">Total: %1$d varieties</item>
+    </plurals>
+    <string name="variety_search_hint">Variety, crop type</string>
+    <string name="variety_list_header_crop_type_text">CROP TYPE</string>
+    <string name="variety_list_header_name_text">NAME</string>
+    <string name="variety_not_available">You have no varieties added.</string>
+    <string name="variety_instruction_add">Add a variety using the "Add Variety" button above.</string>
+    <string name="variety_button_add_text">Create New</string>
     <!-- end of productlibrary-package usage -->
 </resources>
