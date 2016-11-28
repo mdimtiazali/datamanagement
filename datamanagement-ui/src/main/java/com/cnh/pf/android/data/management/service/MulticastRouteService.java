@@ -35,9 +35,8 @@ import com.cnh.pf.jgroups.ChannelModule;
 public class MulticastRouteService extends RoboService {
    private static final Logger log = LoggerFactory.getLogger(MulticastRouteService.class);
 
-   @Named("global")
    @Inject
-   private SharedPreferences prefs;
+   private GlobalPreferences prefs;
 
    @Override
    public void onCreate() {
@@ -51,16 +50,14 @@ public class MulticastRouteService extends RoboService {
    @Override
    public int onStartCommand(Intent intent, int flags, int startId) {
       if(intent == null) return START_STICKY;
-      if(intent.getAction().equals(Intent.ACTION_BOOT_COMPLETED)) {
-         if (!prefs.getBoolean(GlobalPreferences.PREF_PCM, false)) {
-            try {
-               Runtime.getRuntime().exec("su busybox ifconfig lo multicast".split(" "));
-               Runtime.getRuntime().exec("su busybox route add -net 224.0.0.0 netmask 240.0.0.0 dev lo".split(" "));
-               log.trace("Added loopback multicast route");
-            }
-            catch (IOException e) {
-               log.error("Error", e);
-            }
+      if (!prefs.hasPCM()) {
+         try {
+            Runtime.getRuntime().exec("su busybox ifconfig lo multicast".split(" "));
+            Runtime.getRuntime().exec("su busybox route add -net 224.0.0.0 netmask 240.0.0.0 dev lo".split(" "));
+            log.trace("Added loopback multicast route");
+         }
+         catch (IOException e) {
+            log.error("Error", e);
          }
       }
       return START_STICKY;

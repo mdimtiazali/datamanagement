@@ -28,16 +28,17 @@ public class TreeEntityHelper {
    this list will be grouped in ui.
     */
    public static Map<String, Integer> groupables = new HashMap<String, Integer>() {{
-      put("com.cnh.pf.model.pfds.Customer", R.string.pfds);
-      put("com.cnh.pf.model.pfds.Task", R.string.tasks);
-      put("com.cnh.pf.model.pfds.Prescription", R.string.prescriptions);
-      put("com.cnh.autoguidance.boundary.BoundaryItem", R.string.boundaries);
-      put("com.cnh.autoguidance.model.GuidanceGroup", R.string.guidance_groups);
-      put("com.cnh.autoguidance.boundary.LandmarkItem", R.string.obstacles);
-      put("com.cnh.pf.model.product.library.Product", R.string.products);
-      put("com.cnh.pf.model.product.library.ProductMix", R.string.product_mixes);
+      put(DataTypes.GROWER, R.string.pfds);
+      put(DataTypes.TASK, R.string.tasks);
+      put(DataTypes.RX, R.string.prescriptions);
+      put(DataTypes.BOUNDARY, R.string.boundaries);
+      put(DataTypes.GUIDANCE_GROUP, R.string.guidance_groups);
+      put(DataTypes.LANDMARK, R.string.obstacles);
+      put(DataTypes.PRODUCT, R.string.products);
+      put(DataTypes.PRODUCT_MIX, R.string.product_mixes);
       put(DataTypes.VEHICLE, R.string.vehicles);
       put(DataTypes.IMPLEMENT, R.string.imps);
+      put(DataTypes.NOTE, R.string.notes);
    }};
 
    public static String getGroupName(Context context, String type) {
