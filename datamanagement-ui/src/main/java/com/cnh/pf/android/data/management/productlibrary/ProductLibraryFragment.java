@@ -27,27 +27,26 @@ import android.view.View;
 import android.view.View.OnClickListener;
 import android.view.ViewGroup;
 import android.view.ViewGroup.LayoutParams;
+import android.widget.BaseAdapter;
 import android.widget.Button;
 import android.widget.ExpandableListView;
 import android.widget.FrameLayout;
 import android.widget.ImageButton;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
+import android.widget.ListView;
 import android.widget.RelativeLayout;
 import android.widget.TableLayout;
 import android.widget.TableRow;
 import android.widget.TextView;
 
-import com.cnh.android.dialog.DialogView;
 import com.cnh.android.dialog.DialogViewInterface;
 import com.cnh.android.dialog.DialogViewInterface.OnButtonClickListener;
 import com.cnh.android.dialog.TextDialogView;
 import com.cnh.android.pf.widget.controls.SearchInput;
-import com.cnh.android.pf.widget.controls.SegmentedToggleButtonGroupPickList;
 import com.cnh.android.pf.widget.utilities.MathUtility;
 import com.cnh.android.pf.widget.utilities.ProductHelperMethods;
 import com.cnh.android.pf.widget.utilities.UiUtility;
-import com.cnh.android.pf.widget.utilities.UnitsQueryHolder;
 import com.cnh.android.pf.widget.utilities.UnitsSettings;
 import com.cnh.android.pf.widget.utilities.commands.DeleteProductCommand;
 import com.cnh.android.pf.widget.utilities.commands.DeleteProductMixCommand;
@@ -63,13 +62,12 @@ import com.cnh.android.vip.aidl.IVIPListenerAIDL;
 import com.cnh.android.vip.aidl.IVIPServiceAIDL;
 import com.cnh.android.vip.aidl.SimpleVIPListener;
 import com.cnh.android.widget.activity.TabActivity;
-import com.cnh.android.widget.control.PickListAdapter;
-import com.cnh.android.widget.control.PickListItem;
 import com.cnh.android.widget.control.ProgressiveDisclosureView;
 import com.cnh.pf.android.data.management.DataManagementActivity;
 import com.cnh.pf.android.data.management.R;
 import com.cnh.pf.android.data.management.productlibrary.utility.MeasurementSystemAndUnitUtility;
 import com.cnh.pf.android.data.management.productlibrary.utility.SearchableSortableExpandableListAdapter;
+import com.cnh.pf.android.data.management.productlibrary.utility.UnitFormatter;
 import com.cnh.pf.android.data.management.productlibrary.utility.filters.ProductFilter;
 import com.cnh.pf.android.data.management.productlibrary.utility.filters.ProductMixFilter;
 import com.cnh.pf.android.data.management.productlibrary.utility.sorts.AbstractProductComparator;
@@ -93,12 +91,10 @@ import com.cnh.pf.model.product.configuration.Variety;
 import com.cnh.pf.model.product.library.CNHPlanterFanData;
 import com.cnh.pf.model.product.library.MeasurementSystem;
 import com.cnh.pf.model.product.library.Product;
-import com.cnh.pf.model.product.library.ProductDisplayItem;
 import com.cnh.pf.model.product.library.ProductForm;
 import com.cnh.pf.model.product.library.ProductMix;
 import com.cnh.pf.model.product.library.ProductMixRecipe;
 import com.cnh.pf.model.product.library.ProductUnits;
-import com.cnh.pf.model.product.library.ProductUsage;
 import com.cnh.pf.model.vip.vehimp.Implement;
 import com.cnh.pf.model.vip.vehimp.ImplementCurrent;
 import com.cnh.pf.units.unit_constantsConstants;
@@ -122,10 +118,6 @@ import roboguice.fragment.provided.RoboFragment;
 public class ProductLibraryFragment extends RoboFragment {
    private static final Logger log = LoggerFactory.getLogger(ProductLibraryFragment.class);
    private final String identifier = ProductLibraryFragment.class.getSimpleName() + System.identityHashCode(this);
-   private static final String CROP_TYPE_GENERIC = "GENERIC";
-   private static final String CORN_PRODUCT_CROP_TYPE_NAME = "CORN";
-   private static final String WHEAT_PRODUCT_CROP_TYPE_NAME = "WHEAT";
-   private static final String SOYBEANS_PRODUCT_CROP_TYPE_NAME = "SOYBEANS";
    private static final String PRODUCT_LIST = "product list";
    private static final String PRODUCT_UNITS_LIST = "product units list";
    private static final String CURRENT_PRODCUCT = "current product";
@@ -138,11 +130,9 @@ public class ProductLibraryFragment extends RoboFragment {
    private View productLibraryLayout;
    private ProductDialog addProductDialog;
    private ProductMixDialog addProductMixDialog;
-   private RelativeLayout tabView;
-   protected DisabledOverlay disabled;
+   protected DisabledOverlay disabledOverlay;
    private Drawable arrowCloseDetails;
    private Drawable arrowOpenDetails;
-   private Drawable alertIcon;
    private SearchInput productSearch;
    private SearchInput productMixSearch;
    private RelativeLayout productEmptyView;
@@ -153,7 +143,7 @@ public class ProductLibraryFragment extends RoboFragment {
    private List<Variety> varietyList;
    private ProgressiveDisclosureView varietiesPanel;
    private SearchInput varietiesSearch;
-   private ExpandableListView varietiesListView;
+   private ListView varietiesListView;
    private VarietyAdapter varietyAdapter;
 
    //Product Mixes
@@ -261,8 +251,8 @@ public class ProductLibraryFragment extends RoboFragment {
 
    private void checkMode() {
       if (isProductMixListDelivered && isProductListDelivered) {
-         disabled.setMode(DisabledOverlay.MODE.HIDDEN);
-         disabled.setVisibility(View.GONE);
+         disabledOverlay.setMode(DisabledOverlay.MODE.HIDDEN);
+         disabledOverlay.setVisibility(View.GONE);
       }
    }
 
@@ -280,8 +270,8 @@ public class ProductLibraryFragment extends RoboFragment {
             break;
          case WHAT_LOAD_PRODUCT_LIST:
             log.debug("Loading Product list...");
-            disabled.setVisibility(View.VISIBLE);
-            disabled.setMode(DisabledOverlay.MODE.LOADING);
+            disabledOverlay.setVisibility(View.VISIBLE);
+            disabledOverlay.setMode(DisabledOverlay.MODE.LOADING);
             try {
                vipService.requestProductList();
             }
@@ -303,11 +293,11 @@ public class ProductLibraryFragment extends RoboFragment {
             break;
          case WHAT_IMPLEMENT:
             log.debug("Loading current implement...");
-            populateImplement(msg.arg1 == 1);
+            populateImplement();
             break;
          case WHAT_PING:
-            disabled.setVisibility(View.VISIBLE);
-            disabled.setMode(pcmConnected ? DisabledOverlay.MODE.LOADING : DisabledOverlay.MODE.DISCONNECTED);
+            disabledOverlay.setVisibility(View.VISIBLE);
+            disabledOverlay.setMode(pcmConnected ? DisabledOverlay.MODE.LOADING : DisabledOverlay.MODE.DISCONNECTED);
             break;
          case WHAT_GET_VARIETY_LIST:
             log.debug("Loading Variety list");
@@ -366,86 +356,6 @@ public class ProductLibraryFragment extends RoboFragment {
    }
 
    /**
-    * Populate picklist adapter for forms dropdown on Add/Edit Product Dialog
-    */
-   private void populateForms(PickListAdapter formPickListAdapter) {
-      for (ProductForm form : ProductForm.values()) {
-         if (form != ProductForm.ANY) {
-            formPickListAdapter.add(new PickListItem(form.getValue(), friendlyName(form.name())));
-         }
-      }
-   }
-
-   /**
-    * Populate picklist adapter for usage dropdown on Add/Edit Product Dialog
-    */
-   private void populateUsages(PickListAdapter usagePickListAdapter) {
-      for (ProductUsage usage : ProductUsage.values()) {
-         usagePickListAdapter.add(new PickListItem(usage.getValue(), friendlyName(usage.name())));
-      }
-   }
-
-   /**
-    * Populate picklist adapter for crops dropdown on Add/Edit Product Dialog
-    */
-   private void populateCrops(PickListAdapter cropPickListAdapter) {
-      String[] crops = { CROP_TYPE_GENERIC, CORN_PRODUCT_CROP_TYPE_NAME, WHEAT_PRODUCT_CROP_TYPE_NAME, SOYBEANS_PRODUCT_CROP_TYPE_NAME };
-      int i = 0;
-      for (String crop : crops) {
-         cropPickListAdapter.add(new PickListItem(i++, friendlyName(crop)));
-      }
-   }
-
-   private List<ProductUnits> filterUnitList(ProductForm productForm, ProductDisplayItem displayItem, MeasurementSystem measurementSystem) {
-      List<ProductUnits> filteredList = new ArrayList<ProductUnits>();
-      for (ProductUnits p : productUnitsList) {
-         if (p.getForm() == productForm && p.getDisplayItem() == displayItem && p.getMeasurementSystem() == measurementSystem) {
-            filteredList.add(p);
-         }
-      }
-      return filteredList;
-   }
-
-   /**
-    * Fill UnitsQueryHolder with data from ProductUnits table on pcm
-    * @param targetUnitsQuery
-    * @param dialog
-    * @param chosenForm
-    * @param measurementSystem
-    */
-   private void retrieveUnitInfo(UnitsQueryHolder targetUnitsQuery, DialogView dialog, ProductForm chosenForm, MeasurementSystem measurementSystem) {
-      //possible optimizations include caching results and doing work in background thread
-      targetUnitsQuery.resultParent = dialog;
-      targetUnitsQuery.productForm = chosenForm;
-      targetUnitsQuery.measurementSystem = measurementSystem;
-
-      targetUnitsQuery.toggleMapProductDisplayItem.clear();
-      targetUnitsQuery.productDisplayItemMapUnits.clear();
-
-      targetUnitsQuery.toggleMapProductDisplayItem.put((SegmentedToggleButtonGroupPickList) targetUnitsQuery.resultParent.findViewById(R.id.product_units_toggle),
-            ProductDisplayItem.RATES);
-      List<ProductUnits> ratesList = filterUnitList(targetUnitsQuery.productForm, ProductDisplayItem.RATES, targetUnitsQuery.measurementSystem);
-      targetUnitsQuery.productDisplayItemMapUnits.put(ProductDisplayItem.RATES, ratesList);
-
-      targetUnitsQuery.toggleMapProductDisplayItem.put((SegmentedToggleButtonGroupPickList) targetUnitsQuery.resultParent.findViewById(R.id.product_density_toggle),
-            ProductDisplayItem.DENSITY);
-      List<ProductUnits> densityList = filterUnitList(ProductForm.ANY, ProductDisplayItem.DENSITY, targetUnitsQuery.measurementSystem);
-      targetUnitsQuery.productDisplayItemMapUnits.put(ProductDisplayItem.DENSITY, densityList);
-
-      targetUnitsQuery.toggleMapProductDisplayItem.put((SegmentedToggleButtonGroupPickList) targetUnitsQuery.resultParent.findViewById(R.id.product_package_toggle),
-            ProductDisplayItem.PACKAGE_SIZE);
-      List<ProductUnits> packageSizeList = filterUnitList(targetUnitsQuery.productForm, ProductDisplayItem.PACKAGE_SIZE, targetUnitsQuery.measurementSystem);
-      targetUnitsQuery.productDisplayItemMapUnits.put(ProductDisplayItem.PACKAGE_SIZE, packageSizeList);
-
-      targetUnitsQuery.toggleMapProductDisplayItem.put((SegmentedToggleButtonGroupPickList) targetUnitsQuery.resultParent.findViewById(R.id.product_unit_density_toggle),
-            ProductDisplayItem.UNIT_DENSITY);
-      List<ProductUnits> unitDensityList = filterUnitList(targetUnitsQuery.productForm, ProductDisplayItem.UNIT_DENSITY, targetUnitsQuery.measurementSystem);
-      targetUnitsQuery.productDisplayItemMapUnits.put(ProductDisplayItem.UNIT_DENSITY, unitDensityList);
-
-      ProductHelperMethods.populateUnitToggles(targetUnitsQuery);
-   }
-
-   /**
     * Inflate and return the default product library view
     * @param inflater
     * @param container
@@ -459,9 +369,7 @@ public class ProductLibraryFragment extends RoboFragment {
       this.unitRpm = resources.getString(R.string.unit_rpm);
 
       productLibraryLayout = inflater.inflate(R.layout.product_library, container, false);
-
-      disabled = (DisabledOverlay) productLibraryLayout.findViewById(R.id.disabled_overlay);
-      tabView = (RelativeLayout) getActivity().findViewById(R.id.tab_activity_root);
+      disabledOverlay = (DisabledOverlay) productLibraryLayout.findViewById(R.id.disabled_overlay);
 
       productsPanel = (ProgressiveDisclosureView) productLibraryLayout.findViewById(R.id.products_panel);
       productsPanel.setAutoResizable(true);
@@ -480,7 +388,7 @@ public class ProductLibraryFragment extends RoboFragment {
       varietiesPanel = (ProgressiveDisclosureView) productLibraryLayout.findViewById(R.id.variety_panel);
       varietiesPanel.setAutoResizable(true);
       varietiesSearch = (SearchInput) varietiesPanel.findViewById(R.id.variety_search);
-      varietiesListView = (ExpandableListView) varietiesPanel.findViewById(R.id.varieties_list);
+      varietiesListView = (ListView) varietiesPanel.findViewById(R.id.varieties_list);
 
       Button btnAddProduct = (Button) productsPanel.findViewById(R.id.add_product_button);
       btnAddProduct.setOnClickListener(new OnClickListener() {
@@ -530,7 +438,6 @@ public class ProductLibraryFragment extends RoboFragment {
       });
       arrowCloseDetails = getResources().getDrawable(R.drawable.arrow_down_expanded_productlist);
       arrowOpenDetails = getResources().getDrawable(R.drawable.arrow_up_expanded_productlist);
-      alertIcon = getResources().getDrawable(R.drawable.ic_fault_medium_badge);
       return productLibraryLayout;
    }
 
@@ -711,9 +618,9 @@ public class ProductLibraryFragment extends RoboFragment {
          this.varietyList = varietyList;
          setVarietyPanelSubheading();
          varietyAdapter = new VarietyAdapter();
+         varietyAdapter.setVarietyList(varietyList);
+         varietiesListView.setAdapter(varietyAdapter);
          // TODO: Under construction - I will use this code later in my implementation for Workitem 4187
-//         varietyAdapter.setItems(varietyList);
-//         varietiesListView.setAdapter(varietyAdapter);
 //         varietiesSearch.setSearchableContainer(varietyAdapter);
 //         varietiesSearch.addTextChangedListener(new SearchInputTextWatcher(varietiesSearch));
       }
@@ -770,9 +677,8 @@ public class ProductLibraryFragment extends RoboFragment {
 
    /**
     * Populate current implement
-    * @param refresh whether or not to select a different adapter, or keep the state
     */
-   private synchronized void populateImplement(boolean refresh) {
+   private synchronized void populateImplement() {
       if (getActivity() != null && getActivity() instanceof DataManagementActivity && currentImplement != null && currentImplement.getName() != null) {
          ((DataManagementActivity) getActivity()).setTabActivitySubheaderRight(currentImplement.getName());
       }
@@ -905,150 +811,11 @@ public class ProductLibraryFragment extends RoboFragment {
    }
 
    /**
-    * Retrieve rate unit values formatted properly per product settings
-    * @param product
-    * @param value
-    * @return appropriate formatted string for the unit
-    */
-   public String formatRateUnits(Product product, double value) {
-      String result = "";
-      boolean unitFound = false;
-      if (product.getRateDisplayUnitsImperial() != null) {
-         result = String.format("%2.2f", MathUtility.getConvertedFromBase(value, product.getRateDisplayUnitsImperial().getMultiplyFactorFromBaseUnits()));
-         if (product.getRateDisplayUnitsImperial().getName() != null) {
-            result = result + " " + product.getRateDisplayUnitsImperial().getName();
-            unitFound = true;
-         }
-      }
-      else if (product.getRateDisplayUnitsMetric() != null) {
-         result = String.format("%2.2f", MathUtility.getConvertedFromBase(value, product.getRateDisplayUnitsMetric().getMultiplyFactorFromBaseUnits()));
-         if (product.getRateDisplayUnitsMetric().getName() != null) {
-            result = result + " " + product.getRateDisplayUnitsMetric().getName();
-            unitFound = true;
-         }
-      }
-
-      else if (product.getRateDisplayUnitsUSA() != null) {
-         result = String.format("%2.2f", MathUtility.getConvertedFromBase(value, product.getRateDisplayUnitsUSA().getMultiplyFactorFromBaseUnits()));
-         if (product.getRateDisplayUnitsUSA().getName() != null) {
-            result = result + " " + product.getRateDisplayUnitsUSA().getName();
-            unitFound = true;
-         }
-      }
-
-      if (!unitFound) {
-         result = String.format("%1.2f", value);
-      }
-
-      return result;
-   }
-
-   /**
-    * Retrieve package unit values formatted properly per product settings
-    * @param product
-    * @param value
-    * @param unit
-    * @return appropriate formatted string for the unit
-    */
-   public String formatPackageUnits(Product product, double value, MeasurementSystem unit) {
-      String result = "";
-      switch (unit) {
-      case IMPERIAL:
-         if (product.getPackageSizeUnitsImperial() != null) {
-            result = String.format("%2.2f", MathUtility.getConvertedFromBase(value, product.getPackageSizeUnitsImperial().getMultiplyFactorFromBaseUnits()));
-            if (product.getPackageSizeUnitsImperial().getName() != null) {
-               result = result + " " + product.getPackageSizeUnitsImperial().getName();
-            }
-         }
-         else {
-            result = String.format("%1.2f", value);
-         }
-         break;
-      case METRIC:
-         if (product.getPackageSizeUnitsMetric() != null) {
-            result = String.format("%2.2f", MathUtility.getConvertedFromBase(value, product.getPackageSizeUnitsMetric().getMultiplyFactorFromBaseUnits()));
-            if (product.getPackageSizeUnitsMetric().getName() != null) {
-               result = result + " " + product.getPackageSizeUnitsMetric().getName();
-            }
-         }
-         else {
-            result = String.format("%1.2f", value);
-         }
-         break;
-      case USA:
-         if (product.getPackageSizeUnitsUSA() != null) {
-            result = String.format("%2.2f", MathUtility.getConvertedFromBase(value, product.getPackageSizeUnitsUSA().getMultiplyFactorFromBaseUnits()));
-            if (product.getPackageSizeUnitsUSA().getName() != null) {
-               result = result + " " + product.getPackageSizeUnitsUSA().getName();
-            }
-         }
-         else {
-            result = String.format("%1.2f", value);
-         }
-         break;
-      default:
-         result = String.format("%1.2f", value);
-         break;
-      }
-      return result;
-   }
-
-   /**
     * set VIPService to listen
     * @param vipService
     */
    public void setVipService(IVIPServiceAIDL vipService) {
       this.vipService = vipService;
-   }
-
-   /**
-    * Retrieve density unit values formatted properly per product settings
-    * @param product
-    * @param value
-    * @param unit
-    * @return appropriate formatted string for the unit
-    */
-   public String formatDensityUnits(Product product, double value, MeasurementSystem unit) {
-      String result = "";
-      switch (unit) {
-      case IMPERIAL:
-         if (product.getDensityUnitsImperial() != null) {
-            result = String.format("%2.2f", MathUtility.getConvertedFromBase(value, product.getDensityUnitsImperial().getMultiplyFactorFromBaseUnits()));
-            if (product.getDensityUnitsImperial().getName() != null) {
-               result = result + " " + product.getDensityUnitsImperial().getName();
-            }
-         }
-         else {
-            result = String.format("%1.2f", value);
-         }
-         break;
-      case METRIC:
-         if (product.getDensityUnitsMetric() != null) {
-            result = String.format("%2.2f", MathUtility.getConvertedFromBase(value, product.getDensityUnitsMetric().getMultiplyFactorFromBaseUnits()));
-            if (product.getDensityUnitsMetric().getName() != null) {
-               result = result + " " + product.getDensityUnitsMetric().getName();
-            }
-         }
-         else {
-            result = String.format("%1.2f", value);
-         }
-         break;
-      case USA:
-         if (product.getDensityUnitsUSA() != null) {
-            result = String.format("%2.2f", MathUtility.getConvertedFromBase(value, product.getDensityUnitsUSA().getMultiplyFactorFromBaseUnits()));
-            if (product.getDensityUnitsUSA().getName() != null) {
-               result = result + " " + product.getDensityUnitsUSA().getName();
-            }
-         }
-         else {
-            result = String.format("%1.2f", value);
-         }
-         break;
-      default:
-         result = String.format("%1.2f", value);
-         break;
-      }
-      return result;
    }
 
    private static class ProductMixGroupHolder {
@@ -1092,15 +859,6 @@ public class ProductLibraryFragment extends RoboFragment {
    }
 
    public class ProductMixAdapter extends SearchableSortableExpandableListAdapter<ProductMix> {
-
-      private View inflateView(int id, ViewGroup root) {
-         if (ProductLibraryFragment.this.getActivity() != null && ProductLibraryFragment.this.getActivity().getLayoutInflater() != null) {
-            return ProductLibraryFragment.this.getActivity().getLayoutInflater().inflate(id, root, false);
-         }
-         else {
-            return null;
-         }
-      }
 
       /**
        * Add all ProductMixRecipes to the Overviewtable
@@ -1217,7 +975,7 @@ public class ProductLibraryFragment extends RoboFragment {
             else {
                viewHolder.formText.setText(friendlyName(ProductForm.LIQUID.name()));
             }
-            viewHolder.rateText.setText(formatRateUnits(parameters, parameters.getDefaultRate()));
+            viewHolder.rateText.setText(UnitFormatter.formatRateUnits(parameters, parameters.getDefaultRate()));
          }
          viewHolder.groupIndicator.setImageDrawable(expanded ? arrowOpenDetails : arrowCloseDetails);
          view.setOnClickListener(listener);
@@ -1290,8 +1048,12 @@ public class ProductLibraryFragment extends RoboFragment {
          viewHolder.productMix = productDetail;
          if (viewHolder.productMix != null) {
             Product productMixParameter = viewHolder.productMix.getProductMixParameters();
-            viewHolder.appRate1Text.setText(formatRateUnits(productMixParameter, productDetail.getProductMixParameters().getDefaultRate()));
-            viewHolder.appRate2Text.setText(formatRateUnits(productMixParameter, productDetail.getProductMixParameters().getRate2()));
+            viewHolder.appRate1Text.setText(UnitFormatter.formatRateUnits(
+                  productMixParameter, productDetail.getProductMixParameters().getDefaultRate())
+            );
+            viewHolder.appRate2Text.setText(UnitFormatter.formatRateUnits(
+                  productMixParameter, productDetail.getProductMixParameters().getRate2())
+            );
             addProductsToTableLayout(viewHolder.productRecipeTable, viewHolder.productMix);
          }
          viewHolder.alertIcon.setOnClickListener(alertButtonClickListener);
@@ -1551,15 +1313,6 @@ public class ProductLibraryFragment extends RoboFragment {
 
    public class ProductAdapter extends SearchableSortableExpandableListAdapter<Product> {
 
-      private View inflateView(int id, ViewGroup root) {
-         if (ProductLibraryFragment.this.getActivity() != null && ProductLibraryFragment.this.getActivity().getLayoutInflater() != null) {
-            return ProductLibraryFragment.this.getActivity().getLayoutInflater().inflate(id, root, false);
-         }
-         else {
-            return null;
-         }
-      }
-
       //Perhaps consider rewriting findViewById references below with dependency injection
       @Override
       public void notifyDataSetChanged() {
@@ -1596,7 +1349,7 @@ public class ProductLibraryFragment extends RoboFragment {
          else {
             viewHolder.formText.setText(friendlyName(ProductForm.LIQUID.name()));
          }
-         viewHolder.rateText.setText(formatRateUnits(productDetail, productDetail.getDefaultRate()));
+         viewHolder.rateText.setText(UnitFormatter.formatRateUnits(productDetail, productDetail.getDefaultRate()));
          viewHolder.groupIndicator.setImageDrawable(expanded ? arrowOpenDetails : arrowCloseDetails);
          view.setOnClickListener(listener);
       }
@@ -1672,13 +1425,13 @@ public class ProductLibraryFragment extends RoboFragment {
 
          if (viewHolder.product != null) {
             MeasurementSystem measurementSystem = MeasurementSystemAndUnitUtility.getProductUnitMeasurementSystem(viewHolder.product, volumeMeasurementSystem, massMeasurementSystem);
-            viewHolder.appRate1Text.setText(formatRateUnits(productDetail, productDetail.getDefaultRate()));
-            viewHolder.appRate2Text.setText(formatRateUnits(productDetail, productDetail.getRate2()));
-            viewHolder.deltaRateText.setText(formatRateUnits(productDetail, productDetail.getDeltaRate()));
-            viewHolder.minRateText.setText(formatRateUnits(productDetail, productDetail.getMinRate()));
-            viewHolder.maxRateText.setText(formatRateUnits(productDetail, productDetail.getMaxRate()));
-            viewHolder.packageText.setText(formatPackageUnits(productDetail, productDetail.getPackageSize(), measurementSystem));
-            viewHolder.densityText.setText(formatDensityUnits(productDetail, productDetail.getDensity(), measurementSystem));
+            viewHolder.appRate1Text.setText(UnitFormatter.formatRateUnits(productDetail, productDetail.getDefaultRate()));
+            viewHolder.appRate2Text.setText(UnitFormatter.formatRateUnits(productDetail, productDetail.getRate2()));
+            viewHolder.deltaRateText.setText(UnitFormatter.formatRateUnits(productDetail, productDetail.getDeltaRate()));
+            viewHolder.minRateText.setText(UnitFormatter.formatRateUnits(productDetail, productDetail.getMinRate()));
+            viewHolder.maxRateText.setText(UnitFormatter.formatRateUnits(productDetail, productDetail.getMaxRate()));
+            viewHolder.packageText.setText(UnitFormatter.formatPackageUnits(productDetail, productDetail.getPackageSize(), measurementSystem));
+            viewHolder.densityText.setText(UnitFormatter.formatDensityUnits(productDetail, productDetail.getDensity(), measurementSystem));
 
             CNHPlanterFanData cnhPlanterFanData = productDetail.getCnhPlanterFanData();
 
@@ -1883,17 +1636,51 @@ public class ProductLibraryFragment extends RoboFragment {
    }
 
    // TODO: Under construction for Workitem #4187
-   public class VarietyAdapter extends SearchableSortableExpandableListAdapter<Variety> {
+   public class VarietyAdapter extends BaseAdapter {
 
-       @Override
-       public View getGroupView(int i, boolean b, View view, ViewGroup viewGroup) {
-           return null;
-       }
+      private List<Variety> varietyList;
 
-       @Override
-       public View getChildView(int i, int i1, boolean b, View view, ViewGroup viewGroup) {
-           return null;
-       }
+      public void setVarietyList(List<Variety> varietyList){
+         this.varietyList = varietyList;
+      }
+
+      @Override
+      public int getCount() {
+         return varietyList.size();
+      }
+
+      @Override
+      public Object getItem(int i) {
+         return varietyList.get(i);
+      }
+
+      @Override
+      public long getItemId(int i) {
+         return varietyList.get(i).hashCode();
+      }
+
+      @Override
+      public View getView(int i, View view, ViewGroup viewGroup) {
+         if (view == null) {
+            view = inflateView(R.layout.varietylist_item, viewGroup);
+         }
+         return view;
+      }
+   }
+
+   /**
+    * Inflates a view defined by a resource id and attaches it to the root
+    * @param resourceId the resource id of the view to inflate
+    * @param root the new parent of the view
+    * @return the created view, possibly returns null
+    */
+   private View inflateView(int resourceId, ViewGroup root) {
+      if (getActivity() != null && getActivity().getLayoutInflater() != null) {
+         return getActivity().getLayoutInflater().inflate(resourceId, root, false);
+      }
+      else {
+         return null;
+      }
    }
 
    /**

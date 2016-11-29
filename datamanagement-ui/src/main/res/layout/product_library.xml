@@ -167,7 +167,6 @@
                         android:groupIndicator="@android:color/transparent"
                         android:indicatorLeft="@dimen/product_library_sort_header_right_padding" />
 
-
             </com.cnh.android.widget.control.ProgressiveDisclosureView>
 
             <com.cnh.android.widget.control.ProgressiveDisclosureView
@@ -394,16 +393,13 @@
                             android:layout_weight="1.0" />
                 </LinearLayout>
 
-                <com.cnh.pf.android.data.management.productlibrary.views.NestedExpandableListView
+                <ListView
                         android:id="@+id/varieties_list"
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
-                        android:transcriptMode="alwaysScroll"
                         android:divider="@drawable/divider_line_controllers"
                         android:footerDividersEnabled="true"
-                        android:headerDividersEnabled="true"
-                        android:groupIndicator="@android:color/transparent"
-                        android:indicatorLeft="@dimen/product_library_sort_header_right_padding" />
+                        android:headerDividersEnabled="true"/>
 
                 <RelativeLayout
                         android:id="@+id/no_varieties"
