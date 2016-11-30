@@ -68,7 +68,8 @@ import com.cnh.android.widget.control.PickListItem;
 import com.cnh.android.widget.control.ProgressiveDisclosureView;
 import com.cnh.pf.android.data.management.DataManagementActivity;
 import com.cnh.pf.android.data.management.R;
-import com.cnh.pf.android.data.management.productlibrary.utility.ProductLibraryAdapter;
+import com.cnh.pf.android.data.management.productlibrary.utility.MeasurementSystemAndUnitUtility;
+import com.cnh.pf.android.data.management.productlibrary.utility.SearchableSortableExpandableListAdapter;
 import com.cnh.pf.android.data.management.productlibrary.utility.filters.ProductFilter;
 import com.cnh.pf.android.data.management.productlibrary.utility.filters.ProductMixFilter;
 import com.cnh.pf.android.data.management.productlibrary.utility.sorts.AbstractProductComparator;
@@ -119,8 +120,6 @@ import roboguice.fragment.provided.RoboFragment;
  */
 
 public class ProductLibraryFragment extends RoboFragment {
-   private static final String TAG = ProductLibraryFragment.class.getSimpleName();
-   private static final boolean DEBUG = false;
    private static final Logger log = LoggerFactory.getLogger(ProductLibraryFragment.class);
    private final String identifier = ProductLibraryFragment.class.getSimpleName() + System.identityHashCode(this);
    private static final String CROP_TYPE_GENERIC = "GENERIC";
@@ -136,7 +135,7 @@ public class ProductLibraryFragment extends RoboFragment {
    private static final int DIALOG_HEIGHT = 400;
    private boolean isProductMixListDelivered = false;
    private boolean isProductListDelivered = false;
-   private View productLibrary;
+   private View productLibraryLayout;
    private ProductDialog addProductDialog;
    private ProductMixDialog addProductMixDialog;
    private RelativeLayout tabView;
@@ -150,8 +149,12 @@ public class ProductLibraryFragment extends RoboFragment {
    private RelativeLayout productMixEmptyView;
    private ProgressiveDisclosureView productsPanel;
 
+   // Varieties
    private List<Variety> varietyList;
    private ProgressiveDisclosureView varietiesPanel;
+   private SearchInput varietiesSearch;
+   private ExpandableListView varietiesListView;
+   private VarietyAdapter varietyAdapter;
 
    //Product Mixes
    private ProgressiveDisclosureView productMixesPanel;
@@ -193,9 +196,7 @@ public class ProductLibraryFragment extends RoboFragment {
 
       @Override
       public void onTableChange(TableChangeEvent action, String tableName, String id) throws RemoteException {
-         if (DEBUG) {
-            log.debug("OnTableChange - Action: " + action + " tableName: " + tableName + " id: " + id);
-         }
+         log.debug("OnTableChange - Action:{}, tableName:{}, id:{}", action, tableName, id);
          if (tableName.equals("com.cnh.pf.model.product.library.Product")) {
             vipCommunicationHandler.obtainMessage(WHAT_LOAD_PRODUCT_LIST).sendToTarget();
          }
@@ -220,9 +221,7 @@ public class ProductLibraryFragment extends RoboFragment {
 
       @Override
       public void deliverImplementCurrent(final ImplementCurrent newImplement) throws RemoteException {
-         if (DEBUG) {
-            log.debug("deliverImplementCurrent");
-         }
+         log.debug("deliverImplementCurrent");
          ProductLibraryFragment.this.currentImplement = newImplement.getImplement();
          vipCommunicationHandler.obtainMessage(WHAT_IMPLEMENT, 1, 0, null).sendToTarget();
       }
@@ -235,9 +234,7 @@ public class ProductLibraryFragment extends RoboFragment {
 
       @Override
       public void deliverProductList(final List<Product> products) {
-         if (DEBUG) {
-            log.debug("deliverProductList");
-         }
+         log.debug("deliverProductList");
          getActivity().runOnUiThread(new Runnable() {
             @Override
             public void run() {
@@ -280,40 +277,32 @@ public class ProductLibraryFragment extends RoboFragment {
                   populateProductMixes(productMixList);
                }
             }).execute(new LoadProductMixListCommand());
-
             break;
-
          case WHAT_LOAD_PRODUCT_LIST:
-            if (DEBUG) {
-               log.debug("Loading Product list...");
-            }
+            log.debug("Loading Product list...");
             disabled.setVisibility(View.VISIBLE);
             disabled.setMode(DisabledOverlay.MODE.LOADING);
             try {
                vipService.requestProductList();
             }
             catch (RemoteException ex) {
-               log.error(TAG, "Error in WHAT_LOAD_PRODUCT_LIST handler", ex);
+               log.error("Error in WHAT_LOAD_PRODUCT_LIST handler", ex);
             }
             break;
          case WHAT_LOAD_UNIT_LIST:
-            if (DEBUG) {
-               log.debug("Loading Units list...");
-            }
+            log.debug("Loading Units list...");
             try {
                //query all ProductUnits
                vipService.requestProductUnitsList(null, null, null, null);
             }
             catch (RemoteException ex) {
-               log.error(TAG, "Error in WHAT_LOAD_UNIT_LIST handler", ex);
+               log.error("Error in WHAT_LOAD_UNIT_LIST handler", ex);
             }
             volumeMeasurementSystem = ProductHelperMethods.queryMeasurementSystem(getActivity(), UnitsSettings.VOLUME);
             massMeasurementSystem = ProductHelperMethods.queryMeasurementSystem(getActivity(), UnitsSettings.MASS);
             break;
          case WHAT_IMPLEMENT:
-            if (DEBUG) {
-               log.debug("Loading current implement...");
-            }
+            log.debug("Loading current implement...");
             populateImplement(msg.arg1 == 1);
             break;
          case WHAT_PING:
@@ -359,7 +348,6 @@ public class ProductLibraryFragment extends RoboFragment {
          else {
             c = Character.toLowerCase(c);
          }
-
          titleCase.append(c);
       }
 
@@ -470,30 +458,31 @@ public class ProductLibraryFragment extends RoboFragment {
       this.unitInH2O = resources.getString(R.string.unit_in_h2o);
       this.unitRpm = resources.getString(R.string.unit_rpm);
 
-      productLibrary = inflater.inflate(R.layout.product_library, container, false);
+      productLibraryLayout = inflater.inflate(R.layout.product_library, container, false);
 
-      disabled = (DisabledOverlay) productLibrary.findViewById(R.id.disabled_overlay);
+      disabled = (DisabledOverlay) productLibraryLayout.findViewById(R.id.disabled_overlay);
       tabView = (RelativeLayout) getActivity().findViewById(R.id.tab_activity_root);
-      productSearch = (SearchInput) productLibrary.findViewById(R.id.product_search);
-      productSearch.setTextSize(getResources().getDimension(R.dimen.product_search_text));
 
-      productMixSearch = (SearchInput) productLibrary.findViewById(R.id.product_mix_search);
-      productMixSearch.setTextSize(getResources().getDimension(R.dimen.product_search_text));
-
-      productEmptyView = (RelativeLayout) productLibrary.findViewById(R.id.product_empty);
-      productMixEmptyView = (RelativeLayout) productLibrary.findViewById(R.id.product_mix_empty);
-
-      productsPanel = (ProgressiveDisclosureView) productLibrary.findViewById(R.id.products_panel);
+      productsPanel = (ProgressiveDisclosureView) productLibraryLayout.findViewById(R.id.products_panel);
       productsPanel.setAutoResizable(true);
-      productMixesPanel = (ProgressiveDisclosureView) productLibrary.findViewById(R.id.product_mix_panel);
+      productSearch = (SearchInput) productsPanel.findViewById(R.id.product_search);
+      productSearch.setTextSize(getResources().getDimension(R.dimen.product_search_text));
+      productEmptyView = (RelativeLayout) productsPanel.findViewById(R.id.product_empty);
+      productListView = (NestedExpandableListView) productsPanel.findViewById(R.id.product_list);
+
+      productMixesPanel = (ProgressiveDisclosureView) productLibraryLayout.findViewById(R.id.product_mix_panel);
       productMixesPanel.setAutoResizable(true);
-      varietiesPanel = (ProgressiveDisclosureView) productLibrary.findViewById(R.id.variety_panel);
+      productMixSearch = (SearchInput) productMixesPanel.findViewById(R.id.product_mix_search);
+      productMixSearch.setTextSize(getResources().getDimension(R.dimen.product_search_text));
+      productMixEmptyView = (RelativeLayout) productMixesPanel.findViewById(R.id.product_mix_empty);
+      productMixListView = (ExpandableListView) productMixesPanel.findViewById(R.id.product_mix_list);
+
+      varietiesPanel = (ProgressiveDisclosureView) productLibraryLayout.findViewById(R.id.variety_panel);
       varietiesPanel.setAutoResizable(true);
+      varietiesSearch = (SearchInput) varietiesPanel.findViewById(R.id.variety_search);
+      varietiesListView = (ExpandableListView) varietiesPanel.findViewById(R.id.varieties_list);
 
-      productListView = (NestedExpandableListView) productLibrary.findViewById(R.id.product_list);
-      productMixListView = (ExpandableListView) productLibrary.findViewById(R.id.product_mix_list);
-
-      Button btnAddProduct = (Button) productLibrary.findViewById(R.id.add_product_button);
+      Button btnAddProduct = (Button) productsPanel.findViewById(R.id.add_product_button);
       btnAddProduct.setOnClickListener(new OnClickListener() {
 
          @Override
@@ -517,7 +506,7 @@ public class ProductLibraryFragment extends RoboFragment {
             addProductDialog.setDialogWidth(DIALOG_WIDTH);
          }
       });
-      Button btnAddProductMix = (Button) productLibrary.findViewById(R.id.add_mix_button);
+      Button btnAddProductMix = (Button) productMixesPanel.findViewById(R.id.add_mix_button);
       btnAddProductMix.setOnClickListener(new OnClickListener() {
          @Override
          public void onClick(View view) {
@@ -542,7 +531,7 @@ public class ProductLibraryFragment extends RoboFragment {
       arrowCloseDetails = getResources().getDrawable(R.drawable.arrow_down_expanded_productlist);
       arrowOpenDetails = getResources().getDrawable(R.drawable.arrow_up_expanded_productlist);
       alertIcon = getResources().getDrawable(R.drawable.ic_fault_medium_badge);
-      return productLibrary;
+      return productLibraryLayout;
    }
 
    private void setProductPanelSubheading(){
@@ -601,9 +590,9 @@ public class ProductLibraryFragment extends RoboFragment {
 
    private void initProductMixSortHeader() {
       final HashMap<Class, ListHeaderSortView> sortButtons = new HashMap<Class, ListHeaderSortView>();
-      sortButtons.put(ProductMixNameSortComparator.class, (ListHeaderSortView) productLibrary.findViewById(R.id.product_mix_header_product_name_sort));
-      sortButtons.put(ProductMixFormSortComparator.class, (ListHeaderSortView) productLibrary.findViewById(R.id.product_mix_header_product_form_sort));
-      sortButtons.put(ProductMixDefaultRateSortComparator.class, (ListHeaderSortView) productLibrary.findViewById(R.id.product_mix_header_product_default_rate_sort));
+      sortButtons.put(ProductMixNameSortComparator.class, (ListHeaderSortView) productLibraryLayout.findViewById(R.id.product_mix_header_product_name_sort));
+      sortButtons.put(ProductMixFormSortComparator.class, (ListHeaderSortView) productLibraryLayout.findViewById(R.id.product_mix_header_product_form_sort));
+      sortButtons.put(ProductMixDefaultRateSortComparator.class, (ListHeaderSortView) productLibraryLayout.findViewById(R.id.product_mix_header_product_default_rate_sort));
       OnClickListener sortClickHandler = new OnClickListener() {
          @Override
          public void onClick(View v) {
@@ -652,9 +641,9 @@ public class ProductLibraryFragment extends RoboFragment {
 
    private void initProductSortHeader() {
       final HashMap<Class, ListHeaderSortView> sortButtons = new HashMap<Class, ListHeaderSortView>();
-      sortButtons.put(NameSortComparator.class, (ListHeaderSortView) productLibrary.findViewById(R.id.header_name));
-      sortButtons.put(FormSortComparator.class, (ListHeaderSortView) productLibrary.findViewById(R.id.header_form));
-      sortButtons.put(DefaultRateSortComparator.class, (ListHeaderSortView) productLibrary.findViewById(R.id.header_default_rate));
+      sortButtons.put(NameSortComparator.class, (ListHeaderSortView) productLibraryLayout.findViewById(R.id.header_name));
+      sortButtons.put(FormSortComparator.class, (ListHeaderSortView) productLibraryLayout.findViewById(R.id.header_form));
+      sortButtons.put(DefaultRateSortComparator.class, (ListHeaderSortView) productLibraryLayout.findViewById(R.id.header_default_rate));
       OnClickListener sortClickHandler = new OnClickListener() {
          @Override
          public void onClick(View v) {
@@ -721,6 +710,12 @@ public class ProductLibraryFragment extends RoboFragment {
       if (varietyList != null){
          this.varietyList = varietyList;
          setVarietyPanelSubheading();
+         varietyAdapter = new VarietyAdapter();
+         // TODO: Under construction - I will use this code later in my implementation for Workitem 4187
+//         varietyAdapter.setItems(varietyList);
+//         varietiesListView.setAdapter(varietyAdapter);
+//         varietiesSearch.setSearchableContainer(varietyAdapter);
+//         varietiesSearch.addTextChangedListener(new SearchInputTextWatcher(varietiesSearch));
       }
    }
 
@@ -734,17 +729,7 @@ public class ProductLibraryFragment extends RoboFragment {
          productMixAdapter.setItems(incomingProductMixList);
          productMixListView.setAdapter(productMixAdapter);
          productMixSearch.setSearchableContainer(productMixAdapter);
-         productMixSearch.addTextChangedListener(new TextWatcherSceleton() {
-            @Override
-            public void afterTextChanged(Editable s) {
-               if (s.toString().isEmpty()) {
-                  productMixSearch.setClearIconEnabled(false);
-               }
-               else {
-                  productMixSearch.setClearIconEnabled(true);
-               }
-            }
-         });
+         productMixSearch.addTextChangedListener(new SearchInputTextWatcher(productMixSearch));
          productMixAdapter.setFilter(new ProductMixFilter(productMixAdapter, getActivity(), incomingProductMixList));
          productMixAdapter.notifyDataSetChanged();
          if (productMixComparator != null) {
@@ -763,9 +748,7 @@ public class ProductLibraryFragment extends RoboFragment {
       productList = incomingProductList;
       //TODO review this method and double check if refresh param is neccessary
       if (productListView != null && currentProduct != null && productListView.getSelectedItemId() != currentProduct.getId() && productListView.getSelectedId() > -1) {
-         if (DEBUG) {
-            log.debug(String.format("Changing selection id. old: %d  new: %d", productListView.getSelectedItemId(), currentProduct.getId()));
-         }
+         log.debug("Changing selection id. old: {}  new: {}", productListView.getSelectedItemId(), currentProduct.getId());
          currentProduct = productList.get((int) productListView.getSelectedId());
       }
       productAdapter = new ProductAdapter();
@@ -774,18 +757,7 @@ public class ProductLibraryFragment extends RoboFragment {
          productListView.setAdapter(productAdapter);
       }
       productSearch.setSearchableContainer(productAdapter);
-      productSearch.addTextChangedListener(new TextWatcherSceleton() {
-         @Override
-         public void afterTextChanged(Editable s) {
-            if (s.toString().isEmpty()) {
-               productSearch.setClearIconEnabled(false);
-            }
-            else {
-               productSearch.setClearIconEnabled(true);
-            }
-         }
-      });
-
+      productSearch.addTextChangedListener(new SearchInputTextWatcher(productSearch));
       productAdapter.setFilter(new ProductFilter(productAdapter, getActivity(), productList));
       productAdapter.notifyDataSetChanged();
       if (currentProduct == null && productList.size() > 0) {
@@ -813,9 +785,7 @@ public class ProductLibraryFragment extends RoboFragment {
    @Override
    public void onCreate(Bundle savedInstanceState) {
       super.onCreate(savedInstanceState);
-      if (DEBUG) {
-         log.debug(TAG, "onCreate");
-      }
+      log.debug("onCreate");
 
       if (savedInstanceState != null) {
          productList = savedInstanceState.getParcelableArrayList(PRODUCT_LIST);
@@ -832,9 +802,7 @@ public class ProductLibraryFragment extends RoboFragment {
    @Override
    public void onActivityCreated(Bundle savedInstanceState) {
       super.onActivityCreated(savedInstanceState);
-      if (DEBUG) {
-         log.debug(TAG, "onActivityCreated");
-      }
+      log.debug("onActivityCreated");
    }
 
    /**
@@ -845,9 +813,7 @@ public class ProductLibraryFragment extends RoboFragment {
    @Override
    public void onStart() {
       super.onStart();
-      if (DEBUG) {
-         log.debug(TAG, "onStart");
-      }
+      log.debug("onStart");
 
       //UI bug? causes the previously opened ProgressiveDisclosureView to contract when returning to the fragment
       if (productsPanel != null) {
@@ -918,9 +884,7 @@ public class ProductLibraryFragment extends RoboFragment {
     */
    @Override
    public void onStop() {
-      if (DEBUG) {
-         log.debug(TAG, "onStop");
-      }
+      log.debug("onStop");
       productSearch.setText("");
       productSearch.setClearIconEnabled(false);
       super.onStop();
@@ -934,9 +898,7 @@ public class ProductLibraryFragment extends RoboFragment {
    @Override
    public void onSaveInstanceState(Bundle outState) {
       super.onSaveInstanceState(outState);
-      if (DEBUG) {
-         log.debug(TAG, "onSaveInstanceState");
-      }
+      log.debug("onSaveInstanceState");
       outState.putParcelable(CURRENT_PRODCUCT, currentProduct);
       outState.putParcelableArrayList(PRODUCT_LIST, (ArrayList<Product>) productList);
       outState.putParcelableArrayList(PRODUCT_UNITS_LIST, (ArrayList<ProductUnits>) productUnitsList);
@@ -1129,7 +1091,7 @@ public class ProductLibraryFragment extends RoboFragment {
       }
    }
 
-   public class ProductMixAdapter extends ProductLibraryAdapter<ProductMix> {
+   public class ProductMixAdapter extends SearchableSortableExpandableListAdapter<ProductMix> {
 
       private View inflateView(int id, ViewGroup root) {
          if (ProductLibraryFragment.this.getActivity() != null && ProductLibraryFragment.this.getActivity().getLayoutInflater() != null) {
@@ -1189,8 +1151,11 @@ public class ProductLibraryFragment extends RoboFragment {
       private TableRow createTableRow(Product product) {
          TableRow tableRow = new TableRow(getActivity().getApplicationContext());
          if (product != null) {
-            ProductUnits unit = getApplicationRateProductUnit(product, getProductUnitMeasurementSystem(product, volumeMeasurementSystem, massMeasurementSystem));
-
+            ProductUnits unit = MeasurementSystemAndUnitUtility.getApplicationRateProductUnit(
+                  product, MeasurementSystemAndUnitUtility.getProductUnitMeasurementSystem(
+                        product, volumeMeasurementSystem, massMeasurementSystem
+                  )
+            );
             tableRow.setGravity(Gravity.CENTER);
             TextView productNameTextView = new TextView(getActivity().getApplicationContext());
             productNameTextView.setText(" " + product.getName());
@@ -1252,7 +1217,6 @@ public class ProductLibraryFragment extends RoboFragment {
             else {
                viewHolder.formText.setText(friendlyName(ProductForm.LIQUID.name()));
             }
-
             viewHolder.rateText.setText(formatRateUnits(parameters, parameters.getDefaultRate()));
          }
          viewHolder.groupIndicator.setImageDrawable(expanded ? arrowOpenDetails : arrowCloseDetails);
@@ -1293,7 +1257,6 @@ public class ProductLibraryFragment extends RoboFragment {
                         listView.expandGroup(groupId, true);
                      }
                      productMixesPanel.resizeContent(false);
-
                   }
                }
             });
@@ -1307,8 +1270,8 @@ public class ProductLibraryFragment extends RoboFragment {
          return view;
       }
 
-      private void initChildView(View view, final ProductMix productDetail, ViewGroup root, OnClickListener editButtonClickListener, OnClickListener copyButtonClickListener,
-            OnClickListener deleteButtonClickListener, OnClickListener alertButtonClickListener) {
+      private void initChildView(View view, final ProductMix productDetail, ViewGroup root, OnClickListener editButtonClickListener,
+            OnClickListener copyButtonClickListener, OnClickListener deleteButtonClickListener, OnClickListener alertButtonClickListener) {
          final ProductMixChildHolder viewHolder;
 
          if (view == null) {
@@ -1331,6 +1294,7 @@ public class ProductLibraryFragment extends RoboFragment {
             viewHolder.appRate2Text.setText(formatRateUnits(productMixParameter, productDetail.getProductMixParameters().getRate2()));
             addProductsToTableLayout(viewHolder.productRecipeTable, viewHolder.productMix);
          }
+         viewHolder.alertIcon.setOnClickListener(alertButtonClickListener);
          viewHolder.editButton.setOnClickListener(editButtonClickListener);
          viewHolder.copyButton.setOnClickListener(copyButtonClickListener);
          viewHolder.deleteButton.setOnClickListener(deleteButtonClickListener);
@@ -1353,97 +1317,12 @@ public class ProductLibraryFragment extends RoboFragment {
          final ProductMix productMixDetail = getChild(group, child);
          final Product parameters = productMixDetail.getProductMixParameters();
          final ProductMixChildHolder productMixChildHolder = (ProductMixChildHolder) view.getTag();
-         initChildView(view, productMixDetail, viewGroup, new OnClickListener() {
-            @Override
-            public void onClick(View view) {
-               ProductMixDialog editProductMixDialog = new ProductMixDialog(getActivity().getApplicationContext(), ProductMixesDialogActionType.EDIT, vipService, productMixDetail,
-                     new productMixCallBack() {
-                        @Override
-                        public void productMix(ProductMix productMix) {
-                           vipCommunicationHandler.obtainMessage(WHAT_LOAD_PRODUCT_MIX_LIST).sendToTarget();
-                        }
-                     });
-               editProductMixDialog.setFirstButtonText(getResources().getString(R.string.save)).setSecondButtonText(getResources().getString(R.string.product_dialog_cancel_button))
-                     .showThirdButton(false).showThirdButton(false).setTitle(getResources().getString(R.string.product_mix_title_dialog_edit_product_mix))
-                     .setBodyHeight(DIALOG_HEIGHT).setBodyHeight(DIALOG_HEIGHT).setBodyView(R.layout.product_mix_dialog);
-
-               TabActivity useModal = (DataManagementActivity) getActivity();
-               useModal.showModalPopup(editProductMixDialog);
-
-               editProductMixDialog.setContentPaddings(LEFT_RIGHT_MARGIN, TOP_BOTTOM_MARGIN, LEFT_RIGHT_MARGIN, TOP_BOTTOM_MARGIN);
-               editProductMixDialog.disableButtonFirst(true);
-               editProductMixDialog.setDialogWidth(DIALOG_WIDTH);
-            }
-         }, new OnClickListener() {
-            @Override
-            public void onClick(View view) {
-               ProductMixDialog copyProductMixDialog = new ProductMixDialog(getActivity().getApplicationContext(), ProductMixesDialogActionType.COPY, vipService, productMixDetail,
-                     new productMixCallBack() {
-                        @Override
-                        public void productMix(ProductMix productMix) {
-                           vipCommunicationHandler.obtainMessage(WHAT_LOAD_PRODUCT_MIX_LIST).sendToTarget();
-
-                        }
-                     });
-               copyProductMixDialog.setFirstButtonText(getResources().getString(R.string.product_dialog_add_button))
-                     .setSecondButtonText(getResources().getString(R.string.product_dialog_cancel_button)).showThirdButton(false).showThirdButton(false)
-                     .setTitle(getResources().getString(R.string.product_mix_title_dialog_copy_product_mix)).setBodyHeight(DIALOG_HEIGHT).setBodyHeight(DIALOG_HEIGHT)
-                     .setBodyView(R.layout.product_mix_dialog);
-
-               TabActivity useModal = (DataManagementActivity) getActivity();
-               useModal.showModalPopup(copyProductMixDialog);
-
-               copyProductMixDialog.setContentPaddings(LEFT_RIGHT_MARGIN, TOP_BOTTOM_MARGIN, LEFT_RIGHT_MARGIN, TOP_BOTTOM_MARGIN);
-               copyProductMixDialog.disableButtonFirst(true);
-               copyProductMixDialog.setDialogWidth(DIALOG_WIDTH);
-            }
-         }, new OnClickListener() {
-            @Override
-            public void onClick(View v) {
-               if (validateDeleteProduct(parameters)) {
-                  productMixChildHolder.alertIcon.setVisibility(View.GONE);
-                  final TextDialogView deleteDialog = new TextDialogView(getActivity().getApplicationContext());
-                  deleteDialog.setBodyText(getString(R.string.delete_product_dialog_body_text));
-                  deleteDialog.setFirstButtonText(getString(R.string.delete_dialog_confirm_button_text));
-                  deleteDialog.setSecondButtonText(getString(R.string.cancel));
-                  deleteDialog.showThirdButton(false);
-                  deleteDialog.setOnButtonClickListener(new OnButtonClickListener() {
-                     @Override
-                     public void onButtonClick(DialogViewInterface dialogViewInterface, int buttonNumber) {
-                        switch (buttonNumber) {
-                        case DialogViewInterface.BUTTON_FIRST:
-                           ProductMixCommandParams params = new ProductMixCommandParams();
-                           params.productMix = productMixDetail;
-                           params.vipService = vipService;
-                           new VIPAsyncTask<ProductMixCommandParams, ProductMix>(params, null).execute(new DeleteProductMixCommand());
-                           break;
-                        }
-                        deleteDialog.dismiss();
-                     }
-                  });
-                  TabActivity useModal = (DataManagementActivity) getActivity();
-                  useModal.showModalPopup(deleteDialog);
-               }
-               else {
-                  productMixChildHolder.alertIcon.setVisibility(View.VISIBLE);
-               }
-            }
-         }, new OnClickListener() {
-            @Override
-            public void onClick(View v) {
-               if (DEBUG) {
-                  log.debug("Alert button pressed for product: " + parameters.getName() + " " + productMixDetail.getId());
-               }
-               new AlertDialog.Builder(getActivity()).setTitle(R.string.alert_title).setMessage(R.string.alert_in_use)
-                     .setPositiveButton(R.string.alert_dismiss, new DialogInterface.OnClickListener() {
-                        @Override
-                        public void onClick(DialogInterface dialog, int which) {
-                           dialog.dismiss();
-                        }
-                     }).show();
-            }
-         });
-
+         initChildView(view, productMixDetail, viewGroup,
+               new OnEditButtonClickListener(productMixDetail),
+               new OnCopyButtonClickListener(productMixDetail),
+               new OnDeleteButtonClickListener(parameters, productMixChildHolder, productMixDetail),
+               new OnAlertButtonClickListener(parameters, productMixDetail)
+         );
          return view;
       }
 
@@ -1454,12 +1333,137 @@ public class ProductLibraryFragment extends RoboFragment {
          if (isAdded()) {
             super.notifyDataSetChanged();
             if (productMixesPanel == null) {
-               productMixesPanel = (ProgressiveDisclosureView) productLibrary.findViewById(R.id.product_mix_panel);
+               productMixesPanel = (ProgressiveDisclosureView) productLibraryLayout.findViewById(R.id.product_mix_panel);
             }
             if (productMixesPanel != null) {
                setProductMixPanelSubheading();
                productMixesPanel.invalidate();
             }
+         }
+      }
+
+      private class OnEditButtonClickListener implements OnClickListener {
+         private final ProductMix productMixDetail;
+
+         public OnEditButtonClickListener(ProductMix productMixDetail) {
+            this.productMixDetail = productMixDetail;
+         }
+
+         @Override
+         public void onClick(View view) {
+            ProductMixDialog editProductMixDialog = new ProductMixDialog(getActivity().getApplicationContext(), ProductMixesDialogActionType.EDIT, vipService, productMixDetail,
+                  new productMixCallBack() {
+                     @Override
+                     public void productMix(ProductMix productMix) {
+                        vipCommunicationHandler.obtainMessage(WHAT_LOAD_PRODUCT_MIX_LIST).sendToTarget();
+                     }
+                  });
+            editProductMixDialog.setFirstButtonText(getResources().getString(R.string.save)).setSecondButtonText(getResources().getString(R.string.product_dialog_cancel_button))
+                  .showThirdButton(false).showThirdButton(false).setTitle(getResources().getString(R.string.product_mix_title_dialog_edit_product_mix))
+                  .setBodyHeight(DIALOG_HEIGHT).setBodyHeight(DIALOG_HEIGHT).setBodyView(R.layout.product_mix_dialog);
+
+            TabActivity useModal = (DataManagementActivity) getActivity();
+            useModal.showModalPopup(editProductMixDialog);
+
+            editProductMixDialog.setContentPaddings(LEFT_RIGHT_MARGIN, TOP_BOTTOM_MARGIN, LEFT_RIGHT_MARGIN, TOP_BOTTOM_MARGIN);
+            editProductMixDialog.disableButtonFirst(true);
+            editProductMixDialog.setDialogWidth(DIALOG_WIDTH);
+         }
+      }
+
+      private class OnCopyButtonClickListener implements OnClickListener {
+         private final ProductMix productMixDetail;
+
+         public OnCopyButtonClickListener(ProductMix productMixDetail) {
+            this.productMixDetail = productMixDetail;
+         }
+
+         @Override
+         public void onClick(View view) {
+            ProductMixDialog copyProductMixDialog = new ProductMixDialog(getActivity().getApplicationContext(), ProductMixesDialogActionType.COPY, vipService, productMixDetail,
+                  new productMixCallBack() {
+                     @Override
+                     public void productMix(ProductMix productMix) {
+                        vipCommunicationHandler.obtainMessage(WHAT_LOAD_PRODUCT_MIX_LIST).sendToTarget();
+
+                     }
+                  });
+            copyProductMixDialog.setFirstButtonText(getResources().getString(R.string.product_dialog_add_button))
+                  .setSecondButtonText(getResources().getString(R.string.product_dialog_cancel_button)).showThirdButton(false).showThirdButton(false)
+                  .setTitle(getResources().getString(R.string.product_mix_title_dialog_copy_product_mix)).setBodyHeight(DIALOG_HEIGHT).setBodyHeight(DIALOG_HEIGHT)
+                  .setBodyView(R.layout.product_mix_dialog);
+
+            TabActivity useModal = (DataManagementActivity) getActivity();
+            useModal.showModalPopup(copyProductMixDialog);
+
+            copyProductMixDialog.setContentPaddings(LEFT_RIGHT_MARGIN, TOP_BOTTOM_MARGIN, LEFT_RIGHT_MARGIN, TOP_BOTTOM_MARGIN);
+            copyProductMixDialog.disableButtonFirst(true);
+            copyProductMixDialog.setDialogWidth(DIALOG_WIDTH);
+         }
+      }
+
+      private class OnDeleteButtonClickListener implements OnClickListener {
+         private final Product parameters;
+         private final ProductMixChildHolder productMixChildHolder;
+         private final ProductMix productMixDetail;
+
+         public OnDeleteButtonClickListener(Product parameters, ProductMixChildHolder productMixChildHolder, ProductMix productMixDetail) {
+            this.parameters = parameters;
+            this.productMixChildHolder = productMixChildHolder;
+            this.productMixDetail = productMixDetail;
+         }
+
+         @Override
+         public void onClick(View v) {
+            if (validateDeleteProduct(parameters)) {
+               productMixChildHolder.alertIcon.setVisibility(View.GONE);
+               final TextDialogView deleteDialog = new TextDialogView(getActivity().getApplicationContext());
+               deleteDialog.setBodyText(getString(R.string.delete_product_dialog_body_text));
+               deleteDialog.setFirstButtonText(getString(R.string.delete_dialog_confirm_button_text));
+               deleteDialog.setSecondButtonText(getString(R.string.cancel));
+               deleteDialog.showThirdButton(false);
+               deleteDialog.setOnButtonClickListener(new OnButtonClickListener() {
+                  @Override
+                  public void onButtonClick(DialogViewInterface dialogViewInterface, int buttonNumber) {
+                     switch (buttonNumber) {
+                     case DialogViewInterface.BUTTON_FIRST:
+                        ProductMixCommandParams params = new ProductMixCommandParams();
+                        params.productMix = productMixDetail;
+                        params.vipService = vipService;
+                        new VIPAsyncTask<ProductMixCommandParams, ProductMix>(params, null).execute(new DeleteProductMixCommand());
+                        break;
+                     }
+                     deleteDialog.dismiss();
+                  }
+               });
+               TabActivity useModal = (DataManagementActivity) getActivity();
+               useModal.showModalPopup(deleteDialog);
+            }
+            else {
+               productMixChildHolder.alertIcon.setVisibility(View.VISIBLE);
+            }
+         }
+      }
+
+      private class OnAlertButtonClickListener implements OnClickListener {
+         private final Product parameters;
+         private final ProductMix productMixDetail;
+
+         public OnAlertButtonClickListener(Product parameters, ProductMix productMixDetail) {
+            this.parameters = parameters;
+            this.productMixDetail = productMixDetail;
+         }
+
+         @Override
+         public void onClick(View v) {
+            log.debug("Alert button pressed for product - name: {}, id: {}", parameters.getName(), productMixDetail.getId());
+            new AlertDialog.Builder(getActivity()).setTitle(R.string.alert_title).setMessage(R.string.alert_in_use)
+                  .setPositiveButton(R.string.alert_dismiss, new DialogInterface.OnClickListener() {
+                     @Override
+                     public void onClick(DialogInterface dialog, int which) {
+                        dialog.dismiss();
+                     }
+                  }).show();
          }
       }
    }
@@ -1545,7 +1549,7 @@ public class ProductLibraryFragment extends RoboFragment {
       }
    }
 
-   public class ProductAdapter extends ProductLibraryAdapter<Product> {
+   public class ProductAdapter extends SearchableSortableExpandableListAdapter<Product> {
 
       private View inflateView(int id, ViewGroup root) {
          if (ProductLibraryFragment.this.getActivity() != null && ProductLibraryFragment.this.getActivity().getLayoutInflater() != null) {
@@ -1563,7 +1567,7 @@ public class ProductLibraryFragment extends RoboFragment {
          if (isAdded()) {
             super.notifyDataSetChanged();
             if (productsPanel == null) {
-               productsPanel = (ProgressiveDisclosureView) productLibrary.findViewById(R.id.products_panel);
+               productsPanel = (ProgressiveDisclosureView) productLibraryLayout.findViewById(R.id.products_panel);
             }
             if (productsPanel != null) {
                setProductPanelSubheading();
@@ -1584,9 +1588,7 @@ public class ProductLibraryFragment extends RoboFragment {
          else {
             viewHolder = (ProductGroupHolder) view.getTag();
          }
-
          viewHolder.product = productDetail;
-
          viewHolder.nameText.setText(productDetail.getName());
          if (productDetail.getForm() != null) {
             viewHolder.formText.setText(friendlyName(productDetail.getForm().name()));
@@ -1594,15 +1596,7 @@ public class ProductLibraryFragment extends RoboFragment {
          else {
             viewHolder.formText.setText(friendlyName(ProductForm.LIQUID.name()));
          }
-         String rateUnitSuffix;
-         if (productDetail.getRateDisplayUnitsUSA() != null && productDetail.getRateDisplayUnitsUSA().getName() != null) {
-            rateUnitSuffix = " " + productDetail.getRateDisplayUnitsUSA().getName();
-         }
-         else {
-            rateUnitSuffix = "";
-         }
          viewHolder.rateText.setText(formatRateUnits(productDetail, productDetail.getDefaultRate()));
-
          viewHolder.groupIndicator.setImageDrawable(expanded ? arrowOpenDetails : arrowCloseDetails);
          view.setOnClickListener(listener);
       }
@@ -1677,7 +1671,7 @@ public class ProductLibraryFragment extends RoboFragment {
          viewHolder.product = productDetail;
 
          if (viewHolder.product != null) {
-            MeasurementSystem measurementSystem = getProductUnitMeasurementSystem(viewHolder.product, volumeMeasurementSystem, massMeasurementSystem);
+            MeasurementSystem measurementSystem = MeasurementSystemAndUnitUtility.getProductUnitMeasurementSystem(viewHolder.product, volumeMeasurementSystem, massMeasurementSystem);
             viewHolder.appRate1Text.setText(formatRateUnits(productDetail, productDetail.getDefaultRate()));
             viewHolder.appRate2Text.setText(formatRateUnits(productDetail, productDetail.getRate2()));
             viewHolder.deltaRateText.setText(formatRateUnits(productDetail, productDetail.getDeltaRate()));
@@ -1689,7 +1683,6 @@ public class ProductLibraryFragment extends RoboFragment {
             CNHPlanterFanData cnhPlanterFanData = productDetail.getCnhPlanterFanData();
 
             if (productDetail.getForm() == ProductForm.SEED && cnhPlanterFanData != null) {
-
                double vacuumUiRate = MathUtility.getConvertedFromBase(cnhPlanterFanData.getVacuumFanDefaultRate1(), unit_constantsConstants.in_H2O_PER_kPa);
                double vacuumUiDelta = MathUtility.getConvertedFromBase(cnhPlanterFanData.getVacuumFanDeltaRate(), unit_constantsConstants.in_H2O_PER_kPa);
                viewHolder.vacuumFanRateText.setText(UiUtility.getValueAsString(vacuumUiRate, 1) + " " + unitInH2O);
@@ -1745,138 +1738,189 @@ public class ProductLibraryFragment extends RoboFragment {
          else {
             productChildHolder.alertIcon.setVisibility(View.VISIBLE);
          }
-         initChildView(view, productDetail, viewGroup, new OnClickListener() {
-            @Override
-            public void onClick(View v) {
-               final ProductDialog copyDialog;
-
-               copyDialog = new ProductDialog(getActivity().getApplicationContext(), vipService, ProductDialog.DialogActionType.COPY, productChildHolder.product, productUnitsList,
-                     new ProductDialog.productListCallback() {
-                        @Override
-                        public void productList(Product product) {
-                           productList.add(product);
-                           vipCommunicationHandler.obtainMessage(WHAT_LOAD_PRODUCT_LIST).sendToTarget();
-                        }
-                     }, ProductLibraryFragment.this.currentImplement, productList);
-               copyDialog.setFirstButtonText(getResources().getString(R.string.product_dialog_save_button))
-                     .setSecondButtonText(getResources().getString(R.string.product_dialog_cancel_button)).showThirdButton(false).showThirdButton(false)
-                     .setTitle(getResources().getString(R.string.product_dialog_copy_title)).setBodyHeight(DIALOG_HEIGHT);
-
-               TabActivity useModal = (DataManagementActivity) getActivity();
-               useModal.showModalPopup(copyDialog);
-
-               copyDialog.setDialogWidth(DIALOG_WIDTH);
-
-               copyDialog.disableButtonFirst(true);
-
-            }
-         }, new OnClickListener() {
-            @Override
-            public void onClick(View v) {
-               if (DEBUG) {
-                  log.debug("Edit button pressed for product: " + productDetail.getName() + " " + productDetail.getId());
-               }
-
-               ProductDialog editDialog;
-
-               editDialog = new ProductDialog(getActivity().getApplicationContext(), vipService, ProductDialog.DialogActionType.EDIT, productDetail, productUnitsList,
-                     new ProductDialog.productListCallback() {
-
-                        @Override
-                        public void productList(Product product) {
-                           vipCommunicationHandler.obtainMessage(WHAT_LOAD_PRODUCT_LIST).sendToTarget();
-                        }
-                     }, ProductLibraryFragment.this.currentImplement, productList);
-               editDialog.setFirstButtonText(getResources().getString(R.string.product_dialog_save_button))
-                     .setSecondButtonText(getResources().getString(R.string.product_dialog_cancel_button)).showThirdButton(false)
-                     .setTitle(getResources().getString(R.string.product_dialog_edit_title)).setBodyHeight(DIALOG_HEIGHT);
-
-               TabActivity useModal = (DataManagementActivity) getActivity();
-               useModal.showModalPopup(editDialog);
-
-               editDialog.setDialogWidth(DIALOG_WIDTH);
-
-               editDialog.disableButtonFirst(true);
-
-            }
-         }, new OnClickListener() {
-            @Override
-            public void onClick(View v) {
-               if (validateDeleteProduct(productDetail)) {
-                  productChildHolder.alertIcon.setVisibility(View.GONE);
-                  final TextDialogView deleteDialog = new TextDialogView(getActivity().getApplicationContext());
-                  deleteDialog.setBodyText(getString(R.string.delete_product_dialog_body_text));
-                  deleteDialog.setFirstButtonText(getString(R.string.delete_dialog_confirm_button_text));
-                  deleteDialog.setSecondButtonText(getString(R.string.cancel));
-                  deleteDialog.showThirdButton(false);
-                  deleteDialog.setOnButtonClickListener(new OnButtonClickListener() {
-                     @Override
-                     public void onButtonClick(DialogViewInterface dialogViewInterface, int buttonNumber) {
-                        if (buttonNumber == DialogViewInterface.BUTTON_FIRST) {
-                           deleteProduct();
-                        }
-                        deleteDialog.dismiss();
-                     }
-                  });
-                  TabActivity useModal = (DataManagementActivity) getActivity();
-                  useModal.showModalPopup(deleteDialog);
-               }
-               else {
-                  productChildHolder.alertIcon.setVisibility(View.VISIBLE);
-               }
-            }
-
-            private void deleteProduct() {
-               if (DEBUG) {
-                  log.debug("Delete button pressed for product: " + productDetail.getName() + " " + productDetail.getId());
-               }
-               productList.remove(productDetail);
-               ProductCommandParams params = new ProductCommandParams();
-               params.product = productDetail;
-               params.vipService = vipService;
-               new VIPAsyncTask<ProductCommandParams, Product>(params, new GenericListener<Product>() {
-                  @Override
-                  public void handleEvent(Product param) {
-                     if (param != null) {
-                        productAdapter.notifyDataSetChanged();
-                        productListView.invalidate();
-                     }
-                  }
-               }).execute(new DeleteProductCommand());
-            }
-         }, new OnClickListener() {
-            @Override
-            public void onClick(View v) {
-               if (DEBUG) {
-                  log.debug("Alert button pressed for product: " + productDetail.getName() + " " + productDetail.getId());
-               }
-               new AlertDialog.Builder(getActivity()).setTitle(R.string.alert_title).setMessage(R.string.alert_in_use)
-                     .setPositiveButton(R.string.alert_dismiss, new DialogInterface.OnClickListener() {
-                        @Override
-                        public void onClick(DialogInterface dialog, int which) {
-                           dialog.dismiss();
-                        }
-                     }).show();
-            }
-         });
+         initChildView(view, productDetail, viewGroup,
+               new OnCopyButtonClickListener(productChildHolder),
+               new OnEditButtonClickListener(productDetail),
+               new OnDeleteButtonClickListener(productDetail, productChildHolder),
+               new OnAlertButtonClickListener(productDetail)
+         );
          return view;
+      }
+
+      private class OnCopyButtonClickListener implements OnClickListener {
+         private final ProductChildHolder productChildHolder;
+
+         public OnCopyButtonClickListener(ProductChildHolder productChildHolder) {
+            this.productChildHolder = productChildHolder;
+         }
+
+         @Override
+         public void onClick(View v) {
+            final ProductDialog copyDialog;
+
+            copyDialog = new ProductDialog(getActivity().getApplicationContext(), vipService, ProductDialog.DialogActionType.COPY, productChildHolder.product, productUnitsList,
+                  new ProductDialog.productListCallback() {
+                     @Override
+                     public void productList(Product product) {
+                        productList.add(product);
+                        vipCommunicationHandler.obtainMessage(WHAT_LOAD_PRODUCT_LIST).sendToTarget();
+                     }
+                  }, ProductLibraryFragment.this.currentImplement, productList);
+            copyDialog.setFirstButtonText(getResources().getString(R.string.product_dialog_save_button))
+                  .setSecondButtonText(getResources().getString(R.string.product_dialog_cancel_button)).showThirdButton(false).showThirdButton(false)
+                  .setTitle(getResources().getString(R.string.product_dialog_copy_title)).setBodyHeight(DIALOG_HEIGHT);
+
+            TabActivity useModal = (DataManagementActivity) getActivity();
+            useModal.showModalPopup(copyDialog);
+
+            copyDialog.setDialogWidth(DIALOG_WIDTH);
+            copyDialog.disableButtonFirst(true);
+         }
+      }
+
+      private class OnEditButtonClickListener implements OnClickListener {
+         private final Product productDetail;
+
+         public OnEditButtonClickListener(Product productDetail) {
+            this.productDetail = productDetail;
+         }
+
+         @Override
+         public void onClick(View v) {
+            log.debug("Edit button pressed for product - name: {}, id: {}", productDetail.getName(), productDetail.getId());
+            ProductDialog editDialog = new ProductDialog(getActivity().getApplicationContext(), vipService, ProductDialog.DialogActionType.EDIT, productDetail, productUnitsList,
+                  new ProductDialog.productListCallback() {
+
+                     @Override
+                     public void productList(Product product) {
+                        vipCommunicationHandler.obtainMessage(WHAT_LOAD_PRODUCT_LIST).sendToTarget();
+                     }
+                  }, ProductLibraryFragment.this.currentImplement, productList);
+            editDialog.setFirstButtonText(getResources().getString(R.string.product_dialog_save_button))
+                  .setSecondButtonText(getResources().getString(R.string.product_dialog_cancel_button)).showThirdButton(false)
+                  .setTitle(getResources().getString(R.string.product_dialog_edit_title)).setBodyHeight(DIALOG_HEIGHT);
+
+            TabActivity useModal = (DataManagementActivity) getActivity();
+            useModal.showModalPopup(editDialog);
+
+            editDialog.setDialogWidth(DIALOG_WIDTH);
+            editDialog.disableButtonFirst(true);
+         }
+      }
+
+      private class OnDeleteButtonClickListener implements OnClickListener {
+         private final Product productDetail;
+         private final ProductChildHolder productChildHolder;
+
+         public OnDeleteButtonClickListener(Product productDetail, ProductChildHolder productChildHolder) {
+            this.productDetail = productDetail;
+            this.productChildHolder = productChildHolder;
+         }
+
+         @Override
+         public void onClick(View v) {
+            if (validateDeleteProduct(productDetail)) {
+               productChildHolder.alertIcon.setVisibility(View.GONE);
+               final TextDialogView deleteDialog = new TextDialogView(getActivity().getApplicationContext());
+               deleteDialog.setBodyText(getString(R.string.delete_product_dialog_body_text));
+               deleteDialog.setFirstButtonText(getString(R.string.delete_dialog_confirm_button_text));
+               deleteDialog.setSecondButtonText(getString(R.string.cancel));
+               deleteDialog.showThirdButton(false);
+               deleteDialog.setOnButtonClickListener(new OnButtonClickListener() {
+                  @Override
+                  public void onButtonClick(DialogViewInterface dialogViewInterface, int buttonNumber) {
+                     if (buttonNumber == DialogViewInterface.BUTTON_FIRST) {
+                        deleteProduct();
+                     }
+                     deleteDialog.dismiss();
+                  }
+               });
+               TabActivity useModal = (DataManagementActivity) getActivity();
+               useModal.showModalPopup(deleteDialog);
+            }
+            else {
+               productChildHolder.alertIcon.setVisibility(View.VISIBLE);
+            }
+         }
+
+         private void deleteProduct() {
+            log.debug("Delete button pressed for product - name: {}, id: {}", productDetail.getName(), productDetail.getId());
+            productList.remove(productDetail);
+            ProductCommandParams params = new ProductCommandParams();
+            params.product = productDetail;
+            params.vipService = vipService;
+            new VIPAsyncTask<ProductCommandParams, Product>(params, new GenericListener<Product>() {
+               @Override
+               public void handleEvent(Product param) {
+                  if (param != null) {
+                     productAdapter.notifyDataSetChanged();
+                     productListView.invalidate();
+                  }
+               }
+            }).execute(new DeleteProductCommand());
+         }
+      }
+
+      private class OnAlertButtonClickListener implements OnClickListener {
+         private final Product productDetail;
+
+         public OnAlertButtonClickListener(Product productDetail) {
+            this.productDetail = productDetail;
+         }
+
+         @Override
+         public void onClick(View v) {
+            log.debug("Alert button pressed for product - name: {}, id: {}", productDetail.getName(), productDetail.getId());
+            new AlertDialog.Builder(getActivity()).setTitle(R.string.alert_title).setMessage(R.string.alert_in_use)
+                  .setPositiveButton(R.string.alert_dismiss, new DialogInterface.OnClickListener() {
+                     @Override
+                     public void onClick(DialogInterface dialog, int which) {
+                        dialog.dismiss();
+                     }
+                  }).show();
+         }
       }
    }
 
-   public static class TextWatcherSceleton implements TextWatcher {
-      @Override
-      public void beforeTextChanged(CharSequence s, int start, int count, int after) {
+   // TODO: Under construction for Workitem #4187
+   public class VarietyAdapter extends SearchableSortableExpandableListAdapter<Variety> {
 
+       @Override
+       public View getGroupView(int i, boolean b, View view, ViewGroup viewGroup) {
+           return null;
+       }
+
+       @Override
+       public View getChildView(int i, int i1, boolean b, View view, ViewGroup viewGroup) {
+           return null;
+       }
+   }
+
+   /**
+    * TextWatcher for SearchInputs to setClearIconEnabled state of the SearchInput
+    */
+   private class SearchInputTextWatcher implements TextWatcher {
+
+      private final SearchInput searchInput;
+
+      SearchInputTextWatcher(SearchInput searchInput){
+         this.searchInput = searchInput;
       }
 
       @Override
-      public void onTextChanged(CharSequence s, int start, int before, int count) {
+      public void beforeTextChanged(CharSequence s, int start, int count, int after) {}
 
-      }
+      @Override
+      public void onTextChanged(CharSequence s, int start, int before, int count) {}
 
       @Override
       public void afterTextChanged(Editable s) {
-
+         if (s.toString().isEmpty()) {
+            searchInput.setClearIconEnabled(false);
+         }
+         else {
+            searchInput.setClearIconEnabled(true);
+         }
       }
    }
 }

@@ -199,6 +199,6 @@
     <string name="variety_list_header_name_text">NAME</string>
     <string name="variety_not_available">You have no varieties added.</string>
     <string name="variety_instruction_add">Add a variety using the "Add Variety" button above.</string>
-    <string name="variety_button_add_text">Create New</string>
+    <string name="variety_button_add_text">Add Variety +</string>
     <!-- end of productlibrary-package usage -->
 </resources>
