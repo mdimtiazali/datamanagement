@@ -43,11 +43,12 @@
     <color name="odd_rows">#16525252</color>
     <color name="even_rows">#ffffff</color>
 
-    <color name="e_product_name">#505050</color>
-    <color name="e_product_info">#505050</color>
     <color name="e_sort_header_text">#ffc6c6c6</color>
 
     <color name="divider_line">#ffa6a5a5</color>
     <!-- end of productlibrary-package usage -->
+
+    <color name="list_item_text_color">#505050</color>
+
 
 </resources>

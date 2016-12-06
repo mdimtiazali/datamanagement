@@ -12,8 +12,8 @@
 <RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
         android:id="@+id/product_item"
         android:layout_width="match_parent"
-        android:layout_height="50dp"
-        android:padding="4dp">
+        android:layout_height="@dimen/item_height"
+        android:padding="@dimen/item_padding">
 
     <TextView
             android:id="@+id/product_mix_name_text"
@@ -21,7 +21,7 @@
             android:layout_height="wrap_content"
             android:layout_centerVertical="true"
             style="@style/TextAppearance.Roboto.Bold"
-            android:textColor="@color/StandardBlackColor"
+            android:textColor="@color/list_item_text_color"
             android:textSize="@dimen/product_item_large_text_size"
             android:text="@string/product_mix_title_product"
             android:layout_marginStart="13.25dp"
@@ -34,7 +34,7 @@
             android:layout_toEndOf="@id/product_mix_name_text"
             android:layout_marginTop="@dimen/product_item_small_widget_margin"
             style="@style/TextAppearance.Roboto.Bold"
-            android:textColor="@color/StandardBlackColor"
+            android:textColor="@color/list_item_text_color"
             android:textSize="@dimen/product_item_large_text_size"
             android:text="@string/empty"
             android:layout_marginStart="5dp" />
@@ -46,7 +46,7 @@
             android:layout_toEndOf="@id/product_mix_form_text"
             android:layout_marginTop="@dimen/product_item_small_widget_margin"
             style="@style/TextAppearance.Roboto.Bold"
-            android:textColor="@color/StandardBlackColor"
+            android:textColor="@color/list_item_text_color"
             android:textSize="@dimen/product_item_large_text_size"
             android:text="@string/empty" />
 

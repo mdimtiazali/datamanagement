@@ -393,10 +393,10 @@
                             android:layout_weight="1.0" />
                 </LinearLayout>
 
-                <ListView
+                <com.cnh.pf.android.data.management.productlibrary.views.MaximizedListView
                         android:id="@+id/varieties_list"
                         android:layout_width="match_parent"
-                        android:layout_height="wrap_content"
+                        android:layout_height="match_parent"
                         android:divider="@drawable/divider_line_controllers"
                         android:footerDividersEnabled="true"
                         android:headerDividersEnabled="true"/>

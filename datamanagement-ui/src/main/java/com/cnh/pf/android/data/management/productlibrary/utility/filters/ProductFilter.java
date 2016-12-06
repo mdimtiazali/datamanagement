@@ -28,27 +28,26 @@ import java.util.List;
  */
 public class ProductFilter extends Filter {
 
-   private static final String TAG = ProductFilter.class.getSimpleName();
    private List<Product> fullProductList;
    private Context context;
    private ProductLibraryFragment.ProductAdapter productAdapter;
 
-   public ProductFilter(ProductLibraryFragment.ProductAdapter adapter, Context cntext, List<Product> fullList) {
+   public ProductFilter(ProductLibraryFragment.ProductAdapter adapter, Context context, List<Product> fullList) {
       super();
       productAdapter = adapter;
-      context = cntext;
+      this.context = context;
       fullProductList = fullList;
    }
 
    @Override
    protected FilterResults performFiltering(CharSequence charSequence) {
       FilterResults results = new FilterResults();
-      List<Product> productList = productAdapter.getItems();
       if (charSequence == null || charSequence.length() == 0) {
          results.values = fullProductList;
          results.count = fullProductList.size();
       }
       else {
+         List<Product> productList = productAdapter.getItems();
          // We perform filtering operation
          List<Product> nProductList = new ArrayList<Product>();
 

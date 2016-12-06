@@ -44,12 +44,12 @@ public class ProductMixFilter extends Filter {
    @Override
    protected FilterResults performFiltering(CharSequence charSequence) {
       FilterResults results = new FilterResults();
-      List<ProductMix> productMixList = productMixAdapter.getItems();
       if (charSequence == null || charSequence.length() == 0) {
          results.values = fullProductList;
          results.count = fullProductList.size();
       }
       else {
+         List<ProductMix> productMixList = productMixAdapter.getItems();
          // We perform filtering operation
          List<ProductMix> nProductList = new ArrayList<ProductMix>();
 

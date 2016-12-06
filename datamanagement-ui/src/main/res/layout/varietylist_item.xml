@@ -8,14 +8,30 @@
   ~ authorization from CNH Industrial NV.
   -->
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+              android:id="@+id/variety_list_item_layout"
               android:orientation="horizontal"
               android:layout_width="match_parent"
-              android:layout_height="wrap_content">
+              android:layout_height="@dimen/item_height"
+              android:padding="@dimen/item_padding"
+              android:gravity="center_vertical">
 
-    <!-- this is only a dummy layout to see something at the display -->
     <TextView
-            android:layout_width="match_parent"
-            android:layout_height="20dp"
-            android:text="testtext"/>
+            android:id="@+id/variety_name_textview"
+            android:layout_width="0dp"
+            android:layout_weight="1"
+            android:layout_height="wrap_content"
+            android:text="variety name"
+            style="@style/TextAppearance.Roboto.Bold"
+            android:textSize="@dimen/product_item_large_text_size"
+            android:textColor="@color/list_item_text_color"/>
 
+    <TextView
+            android:id="@+id/variety_crop_type_name"
+            android:layout_width="0dp"
+            android:layout_weight="1"
+            android:layout_height="wrap_content"
+            android:text="variety name crop type"
+            style="@style/TextAppearance.Roboto.Bold"
+            android:textSize="@dimen/product_item_large_text_size"
+            android:textColor="@color/list_item_text_color"/>
 </LinearLayout>

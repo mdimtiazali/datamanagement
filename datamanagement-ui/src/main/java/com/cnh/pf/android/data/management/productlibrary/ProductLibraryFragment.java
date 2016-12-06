@@ -10,6 +10,7 @@
 package com.cnh.pf.android.data.management.productlibrary;
 
 import android.app.AlertDialog;
+import android.content.Context;
 import android.content.DialogInterface;
 import android.content.res.Resources;
 import android.graphics.Typeface;
@@ -27,7 +28,7 @@ import android.view.View;
 import android.view.View.OnClickListener;
 import android.view.ViewGroup;
 import android.view.ViewGroup.LayoutParams;
-import android.widget.BaseAdapter;
+import android.widget.ArrayAdapter;
 import android.widget.Button;
 import android.widget.ExpandableListView;
 import android.widget.FrameLayout;
@@ -47,6 +48,7 @@ import com.cnh.android.pf.widget.controls.SearchInput;
 import com.cnh.android.pf.widget.utilities.MathUtility;
 import com.cnh.android.pf.widget.utilities.ProductHelperMethods;
 import com.cnh.android.pf.widget.utilities.UiUtility;
+import com.cnh.android.pf.widget.utilities.UnitUtility;
 import com.cnh.android.pf.widget.utilities.UnitsSettings;
 import com.cnh.android.pf.widget.utilities.commands.DeleteProductCommand;
 import com.cnh.android.pf.widget.utilities.commands.DeleteProductMixCommand;
@@ -54,6 +56,7 @@ import com.cnh.android.pf.widget.utilities.commands.GetVarietyListCommand;
 import com.cnh.android.pf.widget.utilities.commands.LoadProductMixListCommand;
 import com.cnh.android.pf.widget.utilities.commands.ProductCommandParams;
 import com.cnh.android.pf.widget.utilities.commands.ProductMixCommandParams;
+import com.cnh.android.pf.widget.utilities.EnumValueToUiStringUtility;
 import com.cnh.android.pf.widget.utilities.listeners.GenericListener;
 import com.cnh.android.pf.widget.utilities.tasks.VIPAsyncTask;
 import com.cnh.android.pf.widget.view.DisabledOverlay;
@@ -65,9 +68,7 @@ import com.cnh.android.widget.activity.TabActivity;
 import com.cnh.android.widget.control.ProgressiveDisclosureView;
 import com.cnh.pf.android.data.management.DataManagementActivity;
 import com.cnh.pf.android.data.management.R;
-import com.cnh.pf.android.data.management.productlibrary.utility.MeasurementSystemAndUnitUtility;
 import com.cnh.pf.android.data.management.productlibrary.utility.SearchableSortableExpandableListAdapter;
-import com.cnh.pf.android.data.management.productlibrary.utility.UnitFormatter;
 import com.cnh.pf.android.data.management.productlibrary.utility.filters.ProductFilter;
 import com.cnh.pf.android.data.management.productlibrary.utility.filters.ProductMixFilter;
 import com.cnh.pf.android.data.management.productlibrary.utility.sorts.AbstractProductComparator;
@@ -617,12 +618,12 @@ public class ProductLibraryFragment extends RoboFragment {
       if (varietyList != null){
          this.varietyList = varietyList;
          setVarietyPanelSubheading();
-         varietyAdapter = new VarietyAdapter();
-         varietyAdapter.setVarietyList(varietyList);
+         varietyAdapter = new VarietyAdapter(getActivity().getApplicationContext(), varietyList);
          varietiesListView.setAdapter(varietyAdapter);
          // TODO: Under construction - I will use this code later in my implementation for Workitem 4187
 //         varietiesSearch.setSearchableContainer(varietyAdapter);
 //         varietiesSearch.addTextChangedListener(new SearchInputTextWatcher(varietiesSearch));
+//         varietyAdapter.setFilter(new VarietyFilter(varietyAdapter, getActivity(), varietyList));
       }
    }
 
@@ -858,7 +859,7 @@ public class ProductLibraryFragment extends RoboFragment {
       }
    }
 
-   public class ProductMixAdapter extends SearchableSortableExpandableListAdapter<ProductMix> {
+   public final class ProductMixAdapter extends SearchableSortableExpandableListAdapter<ProductMix> {
 
       /**
        * Add all ProductMixRecipes to the Overviewtable
@@ -909,8 +910,8 @@ public class ProductLibraryFragment extends RoboFragment {
       private TableRow createTableRow(Product product) {
          TableRow tableRow = new TableRow(getActivity().getApplicationContext());
          if (product != null) {
-            ProductUnits unit = MeasurementSystemAndUnitUtility.getApplicationRateProductUnit(
-                  product, MeasurementSystemAndUnitUtility.getProductUnitMeasurementSystem(
+            ProductUnits unit = ProductHelperMethods.retrieveProductRateUnits(
+                  product, ProductHelperMethods.getMeasurementSystemForProduct(
                         product, volumeMeasurementSystem, massMeasurementSystem
                   )
             );
@@ -975,7 +976,7 @@ public class ProductLibraryFragment extends RoboFragment {
             else {
                viewHolder.formText.setText(friendlyName(ProductForm.LIQUID.name()));
             }
-            viewHolder.rateText.setText(UnitFormatter.formatRateUnits(parameters, parameters.getDefaultRate()));
+            viewHolder.rateText.setText(UnitUtility.formatRateUnits(parameters, parameters.getDefaultRate()));
          }
          viewHolder.groupIndicator.setImageDrawable(expanded ? arrowOpenDetails : arrowCloseDetails);
          view.setOnClickListener(listener);
@@ -1018,12 +1019,7 @@ public class ProductLibraryFragment extends RoboFragment {
                   }
                }
             });
-            if (groupId > 0 && groupId % 2 != 0) {
-               view.setBackgroundColor(getResources().getColor(R.color.odd_rows));
-            }
-            else {
-               view.setBackgroundColor(getResources().getColor(R.color.even_rows));
-            }
+            setAlternatingTableItemBackground(groupId, view);
          }
          return view;
       }
@@ -1048,10 +1044,10 @@ public class ProductLibraryFragment extends RoboFragment {
          viewHolder.productMix = productDetail;
          if (viewHolder.productMix != null) {
             Product productMixParameter = viewHolder.productMix.getProductMixParameters();
-            viewHolder.appRate1Text.setText(UnitFormatter.formatRateUnits(
+            viewHolder.appRate1Text.setText(UnitUtility.formatRateUnits(
                   productMixParameter, productDetail.getProductMixParameters().getDefaultRate())
             );
-            viewHolder.appRate2Text.setText(UnitFormatter.formatRateUnits(
+            viewHolder.appRate2Text.setText(UnitUtility.formatRateUnits(
                   productMixParameter, productDetail.getProductMixParameters().getRate2())
             );
             addProductsToTableLayout(viewHolder.productRecipeTable, viewHolder.productMix);
@@ -1230,6 +1226,15 @@ public class ProductLibraryFragment extends RoboFragment {
       }
    }
 
+   private void setAlternatingTableItemBackground(int groupOrPositionId, View view) {
+      if (groupOrPositionId > 0 && groupOrPositionId % 2 != 0) {
+         view.setBackgroundColor(getResources().getColor(R.color.odd_rows));
+      }
+      else {
+         view.setBackgroundColor(getResources().getColor(R.color.even_rows));
+      }
+   }
+
    /**
     * ProductGroupHolder
     * Wraps the outer "collapsed" view of a product list item
@@ -1311,7 +1316,7 @@ public class ProductLibraryFragment extends RoboFragment {
       }
    }
 
-   public class ProductAdapter extends SearchableSortableExpandableListAdapter<Product> {
+   public final class ProductAdapter extends SearchableSortableExpandableListAdapter<Product> {
 
       //Perhaps consider rewriting findViewById references below with dependency injection
       @Override
@@ -1349,7 +1354,7 @@ public class ProductLibraryFragment extends RoboFragment {
          else {
             viewHolder.formText.setText(friendlyName(ProductForm.LIQUID.name()));
          }
-         viewHolder.rateText.setText(UnitFormatter.formatRateUnits(productDetail, productDetail.getDefaultRate()));
+         viewHolder.rateText.setText(UnitUtility.formatRateUnits(productDetail, productDetail.getDefaultRate()));
          viewHolder.groupIndicator.setImageDrawable(expanded ? arrowOpenDetails : arrowCloseDetails);
          view.setOnClickListener(listener);
       }
@@ -1387,14 +1392,7 @@ public class ProductLibraryFragment extends RoboFragment {
                productsPanel.resizeContent(false);
             }
          });
-
-         if (position > 0 && position % 2 != 0) {
-            view.setBackgroundColor(getResources().getColor(R.color.odd_rows));
-         }
-         else {
-            view.setBackgroundColor(getResources().getColor(R.color.even_rows));
-         }
-
+         setAlternatingTableItemBackground(position, view);
          return view;
       }
 
@@ -1424,14 +1422,14 @@ public class ProductLibraryFragment extends RoboFragment {
          viewHolder.product = productDetail;
 
          if (viewHolder.product != null) {
-            MeasurementSystem measurementSystem = MeasurementSystemAndUnitUtility.getProductUnitMeasurementSystem(viewHolder.product, volumeMeasurementSystem, massMeasurementSystem);
-            viewHolder.appRate1Text.setText(UnitFormatter.formatRateUnits(productDetail, productDetail.getDefaultRate()));
-            viewHolder.appRate2Text.setText(UnitFormatter.formatRateUnits(productDetail, productDetail.getRate2()));
-            viewHolder.deltaRateText.setText(UnitFormatter.formatRateUnits(productDetail, productDetail.getDeltaRate()));
-            viewHolder.minRateText.setText(UnitFormatter.formatRateUnits(productDetail, productDetail.getMinRate()));
-            viewHolder.maxRateText.setText(UnitFormatter.formatRateUnits(productDetail, productDetail.getMaxRate()));
-            viewHolder.packageText.setText(UnitFormatter.formatPackageUnits(productDetail, productDetail.getPackageSize(), measurementSystem));
-            viewHolder.densityText.setText(UnitFormatter.formatDensityUnits(productDetail, productDetail.getDensity(), measurementSystem));
+            MeasurementSystem measurementSystem = ProductHelperMethods.getMeasurementSystemForProduct(viewHolder.product, volumeMeasurementSystem, massMeasurementSystem);
+            viewHolder.appRate1Text.setText(UnitUtility.formatRateUnits(productDetail, productDetail.getDefaultRate()));
+            viewHolder.appRate2Text.setText(UnitUtility.formatRateUnits(productDetail, productDetail.getRate2()));
+            viewHolder.deltaRateText.setText(UnitUtility.formatRateUnits(productDetail, productDetail.getDeltaRate()));
+            viewHolder.minRateText.setText(UnitUtility.formatRateUnits(productDetail, productDetail.getMinRate()));
+            viewHolder.maxRateText.setText(UnitUtility.formatRateUnits(productDetail, productDetail.getMaxRate()));
+            viewHolder.packageText.setText(UnitUtility.formatPackageUnits(productDetail, productDetail.getPackageSize(), measurementSystem));
+            viewHolder.densityText.setText(UnitUtility.formatDensityUnits(productDetail, productDetail.getDensity(), measurementSystem));
 
             CNHPlanterFanData cnhPlanterFanData = productDetail.getCnhPlanterFanData();
 
@@ -1635,36 +1633,23 @@ public class ProductLibraryFragment extends RoboFragment {
       }
    }
 
-   // TODO: Under construction for Workitem #4187
-   public class VarietyAdapter extends BaseAdapter {
-
-      private List<Variety> varietyList;
-
-      public void setVarietyList(List<Variety> varietyList){
-         this.varietyList = varietyList;
+   public final class VarietyAdapter extends ArrayAdapter<Variety> {
+      public VarietyAdapter(Context context, List<Variety> varieties) {
+         super(context, 0, varieties);
       }
 
       @Override
-      public int getCount() {
-         return varietyList.size();
-      }
-
-      @Override
-      public Object getItem(int i) {
-         return varietyList.get(i);
-      }
-
-      @Override
-      public long getItemId(int i) {
-         return varietyList.get(i).hashCode();
-      }
-
-      @Override
-      public View getView(int i, View view, ViewGroup viewGroup) {
-         if (view == null) {
-            view = inflateView(R.layout.varietylist_item, viewGroup);
+      public View getView(int position, View convertView, ViewGroup parent) {
+         Variety variety = getItem(position);
+         if (convertView == null) {
+            convertView = LayoutInflater.from(getContext()).inflate(R.layout.varietylist_item, parent, false);
          }
-         return view;
+         TextView nameTextView = (TextView) convertView.findViewById(R.id.variety_name_textview);
+         nameTextView.setText(variety.getName());
+         TextView cropTypeTextView = (TextView) convertView.findViewById(R.id.variety_crop_type_name);
+         cropTypeTextView.setText(EnumValueToUiStringUtility.getUiStringForCropType(variety.getCropType(), getContext()));
+         setAlternatingTableItemBackground(position, convertView);
+         return convertView;
       }
    }
 
