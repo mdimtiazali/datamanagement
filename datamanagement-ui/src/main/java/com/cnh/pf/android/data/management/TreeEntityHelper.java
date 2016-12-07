@@ -23,6 +23,32 @@ import java.util.Map;
  */
 public class TreeEntityHelper {
 
+   private static final Map<String, Integer> TYPE_ICONS = new HashMap<String, Integer>();
+
+   static {
+      TYPE_ICONS.put(DataTypes.GROWER, R.drawable.ic_datatree_grower);
+      TYPE_ICONS.put(DataTypes.FARM, R.drawable.ic_datatree_farm);
+      TYPE_ICONS.put(DataTypes.FIELD, R.drawable.ic_datatree_field);
+      TYPE_ICONS.put(DataTypes.TASK, R.drawable.ic_datatree_tasks);
+      TYPE_ICONS.put(DataTypes.RX, R.drawable.ic_datatree_prescription);
+      TYPE_ICONS.put(DataTypes.RX_PLAN, R.drawable.ic_datatree_prescription);
+      TYPE_ICONS.put(DataTypes.PRODUCT, R.drawable.ic_datatree_obstacles);
+      TYPE_ICONS.put(DataTypes.PRODUCT_MIX, R.drawable.ic_datatree_obstacles);
+      TYPE_ICONS.put(DataTypes.BOUNDARY, R.drawable.ic_datatree_boundaries);
+      TYPE_ICONS.put(DataTypes.LANDMARK, R.drawable.ic_datatree_obstacles);
+      TYPE_ICONS.put(DataTypes.GUIDANCE_GROUP, R.drawable.ic_datatree_swath);
+      TYPE_ICONS.put(DataTypes.GUIDANCE_PATTERN, R.drawable.ic_datatree_swath);
+      TYPE_ICONS.put(DataTypes.GUIDANCE_CONFIGURATION, R.drawable.ic_datatree_swath);
+      TYPE_ICONS.put(DataTypes.COVERAGE, R.drawable.ic_datatree_boundaries);
+      TYPE_ICONS.put(DataTypes.NOTE, R.drawable.ic_datatree_background_layers);
+      TYPE_ICONS.put(DataTypes.FILE, R.drawable.ic_datatree_background_layers);
+      TYPE_ICONS.put(DataTypes.VEHICLE, R.drawable.ic_datatree_copy);
+      TYPE_ICONS.put(DataTypes.VEHICLE_IMPLEMENT, R.drawable.ic_datatree_implements);
+      TYPE_ICONS.put(DataTypes.VEHICLE_IMPLEMENT_CONFIG, R.drawable.ic_datatree_background_layers);
+      TYPE_ICONS.put(DataTypes.IMPLEMENT, R.drawable.ic_datatree_implements);
+      TYPE_ICONS.put(DataTypes.IMPLEMENT_PRODUCT_CONFIG, R.drawable.ic_datatree_screenshots);
+   }
+
    /* Map lists all entities which are groupable in ui, entities with types specified in
    this list will be grouped in ui.
     */
@@ -48,5 +74,21 @@ public class TreeEntityHelper {
       }
       String name = type.substring(type.lastIndexOf('.') + 1);
       return CaseFormat.UPPER_UNDERSCORE.to(CaseFormat.UPPER_CAMEL, name) + "s";
+   }
+
+   /**
+    * @param type the ObjectGraph type
+    * @return  the icon resource id
+    */
+   public static int getIcon(String type) {
+      return TYPE_ICONS.get(type);
+   }
+
+   /**
+    * @param type the ObjectGraph type
+    * @return is there an icon for this type
+    */
+   public static boolean hasIcon(String type) {
+      return TYPE_ICONS.containsKey(type);
    }
 }
