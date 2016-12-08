@@ -391,7 +391,7 @@
                         android:id="@+id/delete_button"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:src="@drawable/delete_product_states"
+                        android:src="@drawable/delete_list_item_states"
                         android:background="@null" />
             </LinearLayout>
 

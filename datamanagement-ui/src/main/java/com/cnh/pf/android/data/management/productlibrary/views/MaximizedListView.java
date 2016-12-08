@@ -15,10 +15,14 @@ import android.widget.ListView;
 /**
  * ListView with maximum size.
  *
- * I don't understand why i don't get a ListView to show everything inside but this extension/override helps
+ * Remark: The onMeasure is copied from NestedExpandableListView. Setting the height to wrap_content is not working
+ * as expected. The list has the height of one element then.
+ *
  * @author waldschmidt
  */
 public class MaximizedListView extends ListView {
+
+   private static final int MEASURE_SPECIFICATION_SIZE = 99999;
 
    public MaximizedListView(Context context, AttributeSet attrs) {
       super(context, attrs);
@@ -26,6 +30,6 @@ public class MaximizedListView extends ListView {
 
    @Override
    protected void onMeasure(int widthMeasureSpec, int heightMeasureSpec) {
-      super.onMeasure(widthMeasureSpec, MeasureSpec.makeMeasureSpec(99999, MeasureSpec.AT_MOST));
+      super.onMeasure(widthMeasureSpec, MeasureSpec.makeMeasureSpec(MEASURE_SPECIFICATION_SIZE, MeasureSpec.AT_MOST));
    }
 }

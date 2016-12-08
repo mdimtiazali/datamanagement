@@ -11,8 +11,9 @@
               android:id="@+id/variety_list_item_layout"
               android:orientation="horizontal"
               android:layout_width="match_parent"
-              android:layout_height="@dimen/item_height"
-              android:padding="@dimen/item_padding"
+              android:layout_height="@dimen/list_item_height"
+              android:paddingTop="@dimen/list_item_padding"
+              android:paddingBottom="@dimen/list_item_padding"
               android:gravity="center_vertical">
 
     <TextView
@@ -20,18 +21,42 @@
             android:layout_width="0dp"
             android:layout_weight="1"
             android:layout_height="wrap_content"
-            android:text="variety name"
-            style="@style/TextAppearance.Roboto.Bold"
-            android:textSize="@dimen/product_item_large_text_size"
-            android:textColor="@color/list_item_text_color"/>
+            style="@style/TextAppearance.ItemList"
+            android:paddingLeft="@dimen/product_library_sort_header_left_padding"/>
 
-    <TextView
-            android:id="@+id/variety_crop_type_name"
-            android:layout_width="0dp"
+    <LinearLayout
+            android:orientation="horizontal"
             android:layout_weight="1"
+            android:layout_width="0dp"
             android:layout_height="wrap_content"
-            android:text="variety name crop type"
-            style="@style/TextAppearance.Roboto.Bold"
-            android:textSize="@dimen/product_item_large_text_size"
-            android:textColor="@color/list_item_text_color"/>
+            android:paddingLeft="@dimen/product_library_sort_header_left_padding"
+            android:paddingRight="@dimen/list_item_padding">
+        <TextView
+                android:id="@+id/variety_crop_type_name"
+                android:layout_weight="1"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                style="@style/TextAppearance.ItemList"/>
+        <ImageButton
+                android:id="@+id/variety_edit_button"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:src="@drawable/edit_product_states"
+                android:background="@null"
+                android:paddingLeft="@dimen/variety_delete_and_edit_button_side_padding"
+                android:paddingRight="@dimen/variety_delete_and_edit_button_side_padding"/>
+        <ImageView
+                android:layout_width="2dp"
+                android:layout_height="match_parent"
+                android:src="@drawable/divider_vertical_popover"
+                android:scaleType="fitXY"/>
+        <ImageButton
+                android:id="@+id/variety_delete_button"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:src="@drawable/delete_list_item_states"
+                android:background="@null"
+                android:paddingLeft="@dimen/variety_delete_and_edit_button_side_padding"
+                android:paddingRight="@dimen/variety_delete_and_edit_button_side_padding"/>
+    </LinearLayout>
 </LinearLayout>

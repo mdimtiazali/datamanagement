@@ -200,5 +200,8 @@
     <string name="variety_not_available">You have no varieties added.</string>
     <string name="variety_instruction_add">Add a variety using the "Add Variety" button above.</string>
     <string name="variety_button_add_text">Add Variety +</string>
+    <string name="variety_dialog_save_button_text">Save</string>
+    <string name="variety_dialog_cancel_button_text">Cancel</string>
+    <string name="variety_dialog_add_title_text">Add Variety</string>
     <!-- end of productlibrary-package usage -->
 </resources>

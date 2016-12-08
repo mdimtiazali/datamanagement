@@ -6,11 +6,9 @@
  * disclose in whole or in part any such information without written
  * authorization from CNH Industrial NV.
  */
-
 package com.cnh.pf.android.data.management.productlibrary;
 
 import android.app.AlertDialog;
-import android.content.Context;
 import android.content.DialogInterface;
 import android.content.res.Resources;
 import android.graphics.Typeface;
@@ -28,7 +26,6 @@ import android.view.View;
 import android.view.View.OnClickListener;
 import android.view.ViewGroup;
 import android.view.ViewGroup.LayoutParams;
-import android.widget.ArrayAdapter;
 import android.widget.Button;
 import android.widget.ExpandableListView;
 import android.widget.FrameLayout;
@@ -56,7 +53,6 @@ import com.cnh.android.pf.widget.utilities.commands.GetVarietyListCommand;
 import com.cnh.android.pf.widget.utilities.commands.LoadProductMixListCommand;
 import com.cnh.android.pf.widget.utilities.commands.ProductCommandParams;
 import com.cnh.android.pf.widget.utilities.commands.ProductMixCommandParams;
-import com.cnh.android.pf.widget.utilities.EnumValueToUiStringUtility;
 import com.cnh.android.pf.widget.utilities.listeners.GenericListener;
 import com.cnh.android.pf.widget.utilities.tasks.VIPAsyncTask;
 import com.cnh.android.pf.widget.view.DisabledOverlay;
@@ -68,22 +64,28 @@ import com.cnh.android.widget.activity.TabActivity;
 import com.cnh.android.widget.control.ProgressiveDisclosureView;
 import com.cnh.pf.android.data.management.DataManagementActivity;
 import com.cnh.pf.android.data.management.R;
+import com.cnh.pf.android.data.management.productlibrary.adapter.VarietyAdapter;
 import com.cnh.pf.android.data.management.productlibrary.utility.SearchableSortableExpandableListAdapter;
+import com.cnh.pf.android.data.management.productlibrary.utility.UiHelper;
 import com.cnh.pf.android.data.management.productlibrary.utility.filters.ProductFilter;
 import com.cnh.pf.android.data.management.productlibrary.utility.filters.ProductMixFilter;
 import com.cnh.pf.android.data.management.productlibrary.utility.sorts.AbstractProductComparator;
 import com.cnh.pf.android.data.management.productlibrary.utility.sorts.AbstractProductMixComparator;
+import com.cnh.pf.android.data.management.productlibrary.utility.sorts.AbstractVarietyComparator;
 import com.cnh.pf.android.data.management.productlibrary.utility.sorts.DefaultRateSortComparator;
 import com.cnh.pf.android.data.management.productlibrary.utility.sorts.FormSortComparator;
 import com.cnh.pf.android.data.management.productlibrary.utility.sorts.NameSortComparator;
 import com.cnh.pf.android.data.management.productlibrary.utility.sorts.ProductMixDefaultRateSortComparator;
 import com.cnh.pf.android.data.management.productlibrary.utility.sorts.ProductMixFormSortComparator;
 import com.cnh.pf.android.data.management.productlibrary.utility.sorts.ProductMixNameSortComparator;
+import com.cnh.pf.android.data.management.productlibrary.utility.sorts.VarietyByCropTypeComparator;
+import com.cnh.pf.android.data.management.productlibrary.utility.sorts.VarietyByNameComparator;
 import com.cnh.pf.android.data.management.productlibrary.views.ListHeaderSortView;
 import com.cnh.pf.android.data.management.productlibrary.views.NestedExpandableListView;
 import com.cnh.pf.android.data.management.productlibrary.views.ProductMixDialog;
 import com.cnh.pf.android.data.management.productlibrary.views.ProductMixDialog.ProductMixesDialogActionType;
 import com.cnh.pf.android.data.management.productlibrary.views.ProductMixDialog.productMixCallBack;
+import com.cnh.pf.android.data.management.productlibrary.views.VarietyDialog;
 import com.cnh.pf.model.TableChangeEvent;
 import com.cnh.pf.model.product.configuration.ControllerProductConfiguration;
 import com.cnh.pf.model.product.configuration.DriveProductConfiguration;
@@ -115,7 +117,6 @@ import roboguice.fragment.provided.RoboFragment;
  * Provides add/edit product functionality
  * Created by joorjitham on 3/27/2015.
  */
-
 public class ProductLibraryFragment extends RoboFragment {
    private static final Logger log = LoggerFactory.getLogger(ProductLibraryFragment.class);
    private final String identifier = ProductLibraryFragment.class.getSimpleName() + System.identityHashCode(this);
@@ -128,6 +129,7 @@ public class ProductLibraryFragment extends RoboFragment {
    private static final int DIALOG_HEIGHT = 400;
    private boolean isProductMixListDelivered = false;
    private boolean isProductListDelivered = false;
+   private boolean isVarietyListDelivered = false;
    private View productLibraryLayout;
    private ProductDialog addProductDialog;
    private ProductMixDialog addProductMixDialog;
@@ -146,6 +148,9 @@ public class ProductLibraryFragment extends RoboFragment {
    private SearchInput varietiesSearch;
    private ListView varietiesListView;
    private VarietyAdapter varietyAdapter;
+   private AbstractVarietyComparator varietyComparator;
+   private boolean varietySortAscending;
+   private VarietyDialog addVarietyDialog;
 
    //Product Mixes
    private ProgressiveDisclosureView productMixesPanel;
@@ -179,6 +184,8 @@ public class ProductLibraryFragment extends RoboFragment {
    private static final int WHAT_GET_VARIETY_LIST = 9;
    private IVIPServiceAIDL vipService;
    private IVIPListenerAIDL vipListener = new SimpleVIPListener() {
+
+      // TODO: deliverProductMix is missing to react on ProductMix updates when the fragment is visible ...
 
       @Override
       public void onError(String error) throws RemoteException {
@@ -248,10 +255,21 @@ public class ProductLibraryFragment extends RoboFragment {
             controllerProductConfigurationList = config.getControllers();
          }
       }
+
+      @Override
+      public void deliverVarietyList(final List<Variety> varietyList) throws RemoteException {
+         log.debug("deliverVarietyList");
+         getActivity().runOnUiThread(new Runnable() {
+            @Override
+            public void run() {
+               populateVarieties(varietyList);
+            }
+         });
+      }
    };
 
    private void checkMode() {
-      if (isProductMixListDelivered && isProductListDelivered) {
+      if (isProductMixListDelivered && isProductListDelivered && isVarietyListDelivered) {
          disabledOverlay.setMode(DisabledOverlay.MODE.HIDDEN);
          disabledOverlay.setVisibility(View.GONE);
       }
@@ -346,9 +364,13 @@ public class ProductLibraryFragment extends RoboFragment {
    }
 
    /**
+    * // FIXME: using enum names for ui is a bug - see
+    *  https://polarion.cnhind.com/polarion/#/project/pfhmidevdefects/workitem?id=pfhmi-dev-defects-3034
+    *
     * Makes ENUM_NAMES into friendlier Enum Names
     * @param input
     * @return converted string
+    * @deprecated never use see https://polarion.cnhind.com/polarion/#/project/pfhmidevdefects/workitem?id=pfhmi-dev-defects-3034
     */
    private String friendlyName(String input) {
       String spaced = input.replace("_", " ");
@@ -375,20 +397,21 @@ public class ProductLibraryFragment extends RoboFragment {
       productsPanel = (ProgressiveDisclosureView) productLibraryLayout.findViewById(R.id.products_panel);
       productsPanel.setAutoResizable(true);
       productSearch = (SearchInput) productsPanel.findViewById(R.id.product_search);
-      productSearch.setTextSize(getResources().getDimension(R.dimen.product_search_text));
+      productSearch.setTextSize(getResources().getDimension(R.dimen.search_text_size));
       productEmptyView = (RelativeLayout) productsPanel.findViewById(R.id.product_empty);
       productListView = (NestedExpandableListView) productsPanel.findViewById(R.id.product_list);
 
       productMixesPanel = (ProgressiveDisclosureView) productLibraryLayout.findViewById(R.id.product_mix_panel);
       productMixesPanel.setAutoResizable(true);
       productMixSearch = (SearchInput) productMixesPanel.findViewById(R.id.product_mix_search);
-      productMixSearch.setTextSize(getResources().getDimension(R.dimen.product_search_text));
+      productMixSearch.setTextSize(getResources().getDimension(R.dimen.search_text_size));
       productMixEmptyView = (RelativeLayout) productMixesPanel.findViewById(R.id.product_mix_empty);
       productMixListView = (ExpandableListView) productMixesPanel.findViewById(R.id.product_mix_list);
 
       varietiesPanel = (ProgressiveDisclosureView) productLibraryLayout.findViewById(R.id.variety_panel);
       varietiesPanel.setAutoResizable(true);
       varietiesSearch = (SearchInput) varietiesPanel.findViewById(R.id.variety_search);
+      varietiesSearch.setTextSize(getResources().getDimension(R.dimen.search_text_size));
       varietiesListView = (ListView) varietiesPanel.findViewById(R.id.varieties_list);
 
       Button btnAddProduct = (Button) productsPanel.findViewById(R.id.add_product_button);
@@ -407,7 +430,7 @@ public class ProductLibraryFragment extends RoboFragment {
             addProductDialog.setFirstButtonText(getResources().getString(R.string.product_dialog_save_button))
                   .setSecondButtonText(getResources().getString(R.string.product_dialog_cancel_button)).showThirdButton(false)
                   .setTitle(getResources().getString(R.string.product_dialog_add_tile)).setBodyHeight(DIALOG_HEIGHT);
-            TabActivity useModal = (DataManagementActivity) getActivity();
+            final TabActivity useModal = (DataManagementActivity) getActivity();
             useModal.showModalPopup(addProductDialog);
 
             addProductDialog.setContentPaddings(LEFT_RIGHT_MARGIN, TOP_BOTTOM_MARGIN, LEFT_RIGHT_MARGIN, TOP_BOTTOM_MARGIN);
@@ -426,15 +449,31 @@ public class ProductLibraryFragment extends RoboFragment {
                }
             });
             addProductMixDialog.setFirstButtonText(getResources().getString(R.string.product_dialog_add_button))
-                  .setSecondButtonText(getResources().getString(R.string.product_dialog_cancel_button)).showThirdButton(false).showThirdButton(false)
+                  .setSecondButtonText(getResources().getString(R.string.product_dialog_cancel_button)).showThirdButton(false)
                   .setTitle(getResources().getString(R.string.product_mix_title_dialog_add_product_mix)).setBodyHeight(DIALOG_HEIGHT).setBodyView(R.layout.product_mix_dialog);
 
-            TabActivity useModal = (DataManagementActivity) getActivity();
+            final TabActivity useModal = (DataManagementActivity) getActivity();
             useModal.showModalPopup(addProductMixDialog);
 
             addProductMixDialog.setContentPaddings(LEFT_RIGHT_MARGIN, TOP_BOTTOM_MARGIN, LEFT_RIGHT_MARGIN, TOP_BOTTOM_MARGIN);
             addProductMixDialog.disableButtonFirst(true);
             addProductMixDialog.setDialogWidth(DIALOG_WIDTH);
+         }
+      });
+      Button btnAddVariety = (Button) varietiesPanel.findViewById(R.id.variety_button_add);
+      btnAddVariety.setOnClickListener(new OnClickListener() {
+         @Override
+         public void onClick(View view) {
+            addVarietyDialog = new VarietyDialog(getActivity().getApplicationContext());
+            addVarietyDialog.setFirstButtonText(getResources().getString(R.string.variety_dialog_save_button_text))
+                  .setSecondButtonText(getResources().getString(R.string.variety_dialog_cancel_button_text))
+                  .showThirdButton(false).setTitle(getResources().getString(R.string.variety_dialog_add_title_text))
+                  .setBodyHeight(DIALOG_HEIGHT).setBodyView(R.layout.variety_dialog).setDialogWidth(DIALOG_WIDTH);
+
+            final TabActivity useModal = (DataManagementActivity) getActivity();
+            useModal.showModalPopup(addVarietyDialog);
+
+            // TODO: Workitem #4187: check if more is needed here like set content paddings
          }
       });
       arrowCloseDetails = getResources().getDrawable(R.drawable.arrow_down_expanded_productlist);
@@ -596,6 +635,51 @@ public class ProductLibraryFragment extends RoboFragment {
       currentSortButton.setState(ListHeaderSortView.STATE_SORT_ASC);
    }
 
+   private void initVarietySortHeader(){
+      final HashMap<Class, ListHeaderSortView> sortButtons = new HashMap<Class, ListHeaderSortView>();
+      sortButtons.put(VarietyByNameComparator.class, (ListHeaderSortView) varietiesPanel.findViewById(R.id.varieties_list_header_name));
+      sortButtons.put(VarietyByCropTypeComparator.class, (ListHeaderSortView) varietiesPanel.findViewById(R.id.varieties_list_header_crop_type));
+      OnClickListener sortClickHandler = new OnClickListener() {
+         @Override
+         public void onClick(View v) {
+            for (ListHeaderSortView sortButton : sortButtons.values()) {
+               if (sortButton != v) {
+                  sortButton.setState(ListHeaderSortView.STATE_NO_SORT);
+               }
+            }
+            ListHeaderSortView button = (ListHeaderSortView) v;
+
+            switch (v.getId()) {
+               case R.id.varieties_list_header_name:
+                  varietyComparator = new VarietyByNameComparator(getActivity().getApplicationContext());
+                  break;
+               case R.id.varieties_list_header_crop_type:
+                  varietyComparator = new VarietyByCropTypeComparator(getActivity().getApplicationContext());
+                  break;
+               default:
+                  varietyComparator = new VarietyByNameComparator(getActivity().getApplicationContext());
+                  break;
+            }
+            varietySortAscending = (button.getState() == ListHeaderSortView.STATE_SORT_ASC);
+            if (varietyAdapter != null) {
+               varietyAdapter.sort(varietyComparator, varietySortAscending);
+            }
+         }
+      };
+      for (ListHeaderSortView sortButton : sortButtons.values()) {
+         sortButton.setOnClickListener(sortClickHandler);
+      }
+
+      //Setup initial sort
+      varietyComparator = new VarietyByNameComparator(getActivity().getApplicationContext());
+      varietySortAscending = true;
+      if (varietyAdapter != null) {
+         varietyAdapter.sort(varietyComparator, varietySortAscending);
+      }
+      ListHeaderSortView currentSortButton = sortButtons.get(VarietyByNameComparator.class);
+      currentSortButton.setState(ListHeaderSortView.STATE_SORT_ASC);
+   }
+
    /**
     * Set initial state of product library view with overlays and empty messages as needed.
     * @param view
@@ -612,18 +696,29 @@ public class ProductLibraryFragment extends RoboFragment {
       setProductMixPanelSubheading();
       initProductMixSortHeader();
       setVarietyPanelSubheading();
+      initVarietySortHeader();
    }
 
    private synchronized void populateVarieties(List<Variety> varietyList){
       if (varietyList != null){
          this.varietyList = varietyList;
+         isVarietyListDelivered = true;
+         checkMode();
          setVarietyPanelSubheading();
-         varietyAdapter = new VarietyAdapter(getActivity().getApplicationContext(), varietyList);
-         varietiesListView.setAdapter(varietyAdapter);
-         // TODO: Under construction - I will use this code later in my implementation for Workitem 4187
-//         varietiesSearch.setSearchableContainer(varietyAdapter);
-//         varietiesSearch.addTextChangedListener(new SearchInputTextWatcher(varietiesSearch));
-//         varietyAdapter.setFilter(new VarietyFilter(varietyAdapter, getActivity(), varietyList));
+         if (varietyAdapter == null) {
+            varietyAdapter = new VarietyAdapter(getActivity().getApplicationContext(), varietyList);
+            varietiesListView.setAdapter(varietyAdapter);
+            varietiesSearch.setFilterable(varietyAdapter);
+            varietiesSearch.addTextChangedListener(new SearchInputTextWatcher(varietiesSearch));
+         } else {
+            varietyAdapter.setVarietyList(varietyList);
+         }
+         if (varietyComparator != null) {
+            varietyAdapter.sort(varietyComparator, varietySortAscending);
+         }
+         if (varietiesPanel.isExpanded()) {
+            varietiesPanel.resizeContent(false);
+         }
       }
    }
 
@@ -636,7 +731,7 @@ public class ProductLibraryFragment extends RoboFragment {
          productMixAdapter = new ProductMixAdapter();
          productMixAdapter.setItems(incomingProductMixList);
          productMixListView.setAdapter(productMixAdapter);
-         productMixSearch.setSearchableContainer(productMixAdapter);
+         productMixSearch.setFilterable(productMixAdapter);
          productMixSearch.addTextChangedListener(new SearchInputTextWatcher(productMixSearch));
          productMixAdapter.setFilter(new ProductMixFilter(productMixAdapter, getActivity(), incomingProductMixList));
          productMixAdapter.notifyDataSetChanged();
@@ -664,7 +759,7 @@ public class ProductLibraryFragment extends RoboFragment {
       if (productListView != null) {
          productListView.setAdapter(productAdapter);
       }
-      productSearch.setSearchableContainer(productAdapter);
+      productSearch.setFilterable(productAdapter);
       productSearch.addTextChangedListener(new SearchInputTextWatcher(productSearch));
       productAdapter.setFilter(new ProductFilter(productAdapter, getActivity(), productList));
       productAdapter.notifyDataSetChanged();
@@ -809,6 +904,8 @@ public class ProductLibraryFragment extends RoboFragment {
       outState.putParcelable(CURRENT_PRODCUCT, currentProduct);
       outState.putParcelableArrayList(PRODUCT_LIST, (ArrayList<Product>) productList);
       outState.putParcelableArrayList(PRODUCT_UNITS_LIST, (ArrayList<ProductUnits>) productUnitsList);
+
+      // TODO: Workitem #4187: Determine, if instance state handling for varieties in necessary here?
    }
 
    /**
@@ -1019,7 +1116,7 @@ public class ProductLibraryFragment extends RoboFragment {
                   }
                }
             });
-            setAlternatingTableItemBackground(groupId, view);
+            UiHelper.setAlternatingTableItemBackground(getActivity().getApplicationContext(), groupId, view);
          }
          return view;
       }
@@ -1226,15 +1323,6 @@ public class ProductLibraryFragment extends RoboFragment {
       }
    }
 
-   private void setAlternatingTableItemBackground(int groupOrPositionId, View view) {
-      if (groupOrPositionId > 0 && groupOrPositionId % 2 != 0) {
-         view.setBackgroundColor(getResources().getColor(R.color.odd_rows));
-      }
-      else {
-         view.setBackgroundColor(getResources().getColor(R.color.even_rows));
-      }
-   }
-
    /**
     * ProductGroupHolder
     * Wraps the outer "collapsed" view of a product list item
@@ -1392,7 +1480,7 @@ public class ProductLibraryFragment extends RoboFragment {
                productsPanel.resizeContent(false);
             }
          });
-         setAlternatingTableItemBackground(position, view);
+         UiHelper.setAlternatingTableItemBackground(getActivity().getApplicationContext(), position, view);
          return view;
       }
 
@@ -1630,26 +1718,6 @@ public class ProductLibraryFragment extends RoboFragment {
                      }
                   }).show();
          }
-      }
-   }
-
-   public final class VarietyAdapter extends ArrayAdapter<Variety> {
-      public VarietyAdapter(Context context, List<Variety> varieties) {
-         super(context, 0, varieties);
-      }
-
-      @Override
-      public View getView(int position, View convertView, ViewGroup parent) {
-         Variety variety = getItem(position);
-         if (convertView == null) {
-            convertView = LayoutInflater.from(getContext()).inflate(R.layout.varietylist_item, parent, false);
-         }
-         TextView nameTextView = (TextView) convertView.findViewById(R.id.variety_name_textview);
-         nameTextView.setText(variety.getName());
-         TextView cropTypeTextView = (TextView) convertView.findViewById(R.id.variety_crop_type_name);
-         cropTypeTextView.setText(EnumValueToUiStringUtility.getUiStringForCropType(variety.getCropType(), getContext()));
-         setAlternatingTableItemBackground(position, convertView);
-         return convertView;
       }
    }
 

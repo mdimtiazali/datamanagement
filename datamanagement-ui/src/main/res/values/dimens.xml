@@ -1,9 +1,12 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
 
+    <dimen name="list_item_height">50dp</dimen>
+    <dimen name="list_item_large_text_size">22sp</dimen>
+    <dimen name="list_item_padding">4dp</dimen>
+
     <dimen name="product_item_container_margin">20dp</dimen>
     <dimen name="product_item_image_margin">20dp</dimen>
-    <dimen name="product_item_large_text_size">22sp</dimen>
     <dimen name="product_item_small_widget_margin">8dp</dimen>
     <dimen name="product_item_small_text_size">18sp</dimen>
 
@@ -29,8 +32,6 @@
     <dimen name="product_mix_overview_application_rate_text_size">23sp</dimen>
     <dimen name="product_mix_application_rate_table_title_text_size">20sp</dimen>
 
-    <dimen name="product_search_text">23dp</dimen>
-
-    <dimen name="item_height">50dp</dimen>
-    <dimen name="item_padding">4dp</dimen>
+    <dimen name="search_text_size">23dp</dimen>
+    <dimen name="variety_delete_and_edit_button_side_padding">20dp</dimen>
 </resources>

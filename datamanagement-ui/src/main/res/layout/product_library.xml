@@ -382,7 +382,7 @@
                             android:textStyle="bold"
                             android:textColor="@color/e_sort_header_text"
                             android:gravity="start|center_vertical"
-                            android:id="@+id/variety_list_header_crop_type"
+                            android:id="@+id/varieties_list_header_crop_type"
                             android:background="@drawable/fault_chk_btn_bkg"
                             android:paddingLeft="@dimen/product_library_sort_header_left_padding"
                             android:layout_width="@dimen/product_library_empty"
