@@ -706,7 +706,7 @@ public class ProductLibraryFragment extends RoboFragment {
          checkMode();
          setVarietyPanelSubheading();
          if (varietyAdapter == null) {
-            varietyAdapter = new VarietyAdapter(getActivity().getApplicationContext(), varietyList);
+            varietyAdapter = new VarietyAdapter(getActivity().getApplicationContext(), varietyList, (TabActivity) getActivity(), vipService);
             varietiesListView.setAdapter(varietyAdapter);
             varietiesSearch.setFilterable(varietyAdapter);
             varietiesSearch.addTextChangedListener(new SearchInputTextWatcher(varietiesSearch));
@@ -914,6 +914,9 @@ public class ProductLibraryFragment extends RoboFragment {
     */
    public void setVipService(IVIPServiceAIDL vipService) {
       this.vipService = vipService;
+      if (varietyAdapter != null){
+         varietyAdapter.setVIPService(vipService);
+      }
    }
 
    private static class ProductMixGroupHolder {

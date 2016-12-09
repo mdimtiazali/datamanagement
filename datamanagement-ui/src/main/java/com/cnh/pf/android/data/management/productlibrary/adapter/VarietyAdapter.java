@@ -17,10 +17,20 @@ import android.widget.Filter;
 import android.widget.Filterable;
 import android.widget.ImageButton;
 import android.widget.TextView;
+
+import com.cnh.android.dialog.DialogViewInterface;
+import com.cnh.android.dialog.TextDialogView;
 import com.cnh.android.pf.widget.utilities.EnumValueToUiStringUtility;
+import com.cnh.android.pf.widget.utilities.commands.DeleteVarietyCommand;
+import com.cnh.android.pf.widget.utilities.commands.VarietyCommandParams;
+import com.cnh.android.pf.widget.utilities.listeners.GenericListener;
+import com.cnh.android.pf.widget.utilities.tasks.VIPAsyncTask;
+import com.cnh.android.vip.aidl.IVIPServiceAIDL;
+import com.cnh.android.widget.activity.TabActivity;
 import com.cnh.pf.android.data.management.R;
 import com.cnh.pf.android.data.management.productlibrary.utility.UiHelper;
 import com.cnh.pf.model.product.configuration.Variety;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -47,18 +57,32 @@ public final class VarietyAdapter extends BaseAdapter implements Filterable {
    private final Context context;
    private final OnEditButtonClickListener onEditButtonClickListener;
    private final OnDeleteButtonClickListener onDeleteButtonClickListener;
+   private final TabActivity activity;
+   private IVIPServiceAIDL vipService;
 
    /**
     * @param context the context of the adapter
     * @param varieties the list of varieties which should be shown.
+    * @param tabActivity the tabActivity
+    * @param vipService the vipService
     */
-   public VarietyAdapter(Context context, List<Variety> varieties) {
+   public VarietyAdapter(final Context context, final List<Variety> varieties, final TabActivity tabActivity, final IVIPServiceAIDL vipService) {
       this.context = context;
       // don't allow modifications from outside.
       // as long as the filtered list is "unfiltered", it's the list we get via parameter
       this.filteredList = new ArrayList<Variety>(varieties);
       onEditButtonClickListener = new OnEditButtonClickListener();
       onDeleteButtonClickListener = new OnDeleteButtonClickListener();
+      this.activity = tabActivity;
+      this.vipService = vipService;
+   }
+
+   /**
+    * Setter for the vipService.
+    * @param vipService the vipService
+    */
+   public void setVIPService(final IVIPServiceAIDL vipService){
+      this.vipService = vipService;
    }
 
    /**
@@ -66,10 +90,26 @@ public final class VarietyAdapter extends BaseAdapter implements Filterable {
     *
     * @param varieties
     */
-   public void setVarietyList(List<Variety> varieties){
+   public void setVarietyList(final List<Variety> varieties){
       synchronized (listsLock){
          filteredList = new ArrayList<Variety>(varieties);
          originalList = null;
+      }
+      notifyDataSetChanged();
+   }
+
+   /**
+    * Removes a variety.
+    * @param variety the variety to remove
+    */
+   public void removeVariety(Variety variety){
+      synchronized (listsLock){
+         if (filteredList != null) {
+            filteredList.remove(variety);
+         }
+         if (originalList != null) {
+            originalList.remove(variety);
+         }
       }
       notifyDataSetChanged();
    }
@@ -93,20 +133,45 @@ public final class VarietyAdapter extends BaseAdapter implements Filterable {
    public View getView(int position, View convertView, ViewGroup parent) {
       final Variety variety = (Variety) getItem(position);
       if (convertView == null) {
-         convertView = LayoutInflater.from(context).inflate(R.layout.varietylist_item, parent, false);
+         convertView = LayoutInflater.from(context).inflate(R.layout.variety_list_item, parent, false);
       }
       final TextView nameTextView = (TextView) convertView.findViewById(R.id.variety_name_textview);
       nameTextView.setText(variety.getName());
       final TextView cropTypeTextView = (TextView) convertView.findViewById(R.id.variety_crop_type_name);
-      cropTypeTextView.setText(EnumValueToUiStringUtility.getUiStringForCropType(variety.getCropType(), context));
+      cropTypeTextView.setText(getCropTypeText(variety));
       UiHelper.setAlternatingTableItemBackground(context, position, convertView);
       final ImageButton editButton = (ImageButton) convertView.findViewById(R.id.variety_edit_button);
-      editButton.setTag(variety);
-      editButton.setOnClickListener(onEditButtonClickListener);
+      if (variety.isUsed()){
+         editButton.setEnabled(false);
+         editButton.setClickable(false);
+      } else {
+         editButton.setTag(variety);
+         editButton.setEnabled(true);
+         editButton.setClickable(true);
+         editButton.setOnClickListener(onEditButtonClickListener);
+      }
       final ImageButton deleteButton = (ImageButton) convertView.findViewById(R.id.variety_delete_button);
-      deleteButton.setTag(variety);
-      deleteButton.setOnClickListener(onDeleteButtonClickListener);
+      if (variety.isUsed()){
+         deleteButton.setEnabled(false);
+         deleteButton.setClickable(false);
+      } else {
+         deleteButton.setTag(variety);
+         deleteButton.setEnabled(true);
+         deleteButton.setClickable(true);
+         deleteButton.setOnClickListener(onDeleteButtonClickListener);
+      }
       return convertView;
+   }
+
+   private String getCropTypeText(Variety variety) {
+      String cropTypeText;
+      try {
+         cropTypeText = EnumValueToUiStringUtility.getUiStringForCropType(variety.getCropType(), context);
+      }
+      catch (IllegalArgumentException e){
+         cropTypeText = "";
+      }
+      return cropTypeText;
    }
 
    /**
@@ -156,6 +221,44 @@ public final class VarietyAdapter extends BaseAdapter implements Filterable {
       @Override
       public void onClick(View view) {
          logger.debug("on delete button clicked for variety: " + ((Variety) view.getTag()).getName());
+         final Variety variety = (Variety) view.getTag();
+         final TextDialogView deleteDialog = new TextDialogView(VarietyAdapter.this.context);
+         deleteDialog.setBodyText(VarietyAdapter.this.activity.getResources().getString(R.string.variety_delete_dialog_body_text_delete_allowed));
+         deleteDialog.setTitle(VarietyAdapter.this.activity.getResources().getString(R.string.variety_dialog_delete_title_text));
+         deleteDialog.setFirstButtonEnabled(true);
+         deleteDialog.setFirstButtonText(VarietyAdapter.this.activity.getResources().getString(R.string.delete_dialog_confirm_button_text));
+         deleteDialog.setSecondButtonEnabled(true);
+         deleteDialog.setSecondButtonText(VarietyAdapter.this.activity.getResources().getString(R.string.cancel));
+         deleteDialog.showThirdButton(false);
+         deleteDialog.setOnButtonClickListener(new DialogViewInterface.OnButtonClickListener() {
+            @Override
+            public void onButtonClick(DialogViewInterface dialogViewInterface, int buttonNumber) {
+               if (buttonNumber == DialogViewInterface.BUTTON_FIRST) {
+                  deleteVariety(variety, VarietyAdapter.this.vipService);
+               }
+               deleteDialog.dismiss();
+            }
+
+            /**
+             * Deletes the variety
+             * @param variety Variety to delete
+             * @param vipService the vipService
+             */
+            private void deleteVariety(Variety variety, IVIPServiceAIDL vipService){
+               logger.debug("on okay button clicked on variety delete dialog for variety: " + variety.getName());
+               VarietyCommandParams params = new VarietyCommandParams(vipService, variety);
+               new VIPAsyncTask<VarietyCommandParams, Variety>(params, new GenericListener<Variety>() {
+                  @Override
+                  public void handleEvent(Variety variety) {
+                     if (variety != null) {
+                        VarietyAdapter.this.removeVariety(variety);
+                     }
+                  }
+               }).execute(new DeleteVarietyCommand());
+            }
+         });
+         TabActivity useModal = VarietyAdapter.this.activity;
+         useModal.showModalPopup(deleteDialog);
       }
    }
 
@@ -187,9 +290,10 @@ public final class VarietyAdapter extends BaseAdapter implements Filterable {
                   final String searchString = charSequence.toString().toLowerCase();
                   if (variety.getName().toLowerCase().contains(searchString)) {
                      newVarietyList.add(variety);
-                  } else if (EnumValueToUiStringUtility.getUiStringForCropType(variety.getCropType(), context)
-                        .toLowerCase().contains(charSequence)) {
-                     newVarietyList.add(variety);
+                  } else {
+                     if (getCropTypeText(variety).toLowerCase().contains(charSequence)) {
+                        newVarietyList.add(variety);
+                     }
                   }
                }
             }

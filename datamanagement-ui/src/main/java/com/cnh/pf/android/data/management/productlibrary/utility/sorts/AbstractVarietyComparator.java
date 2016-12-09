@@ -13,6 +13,8 @@ import android.content.Context;
 import com.cnh.android.pf.widget.utilities.EnumValueToUiStringUtility;
 import com.cnh.pf.model.product.configuration.Variety;
 import com.cnh.pf.model.product.library.CropType;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.util.Comparator;
 
@@ -22,6 +24,8 @@ import java.util.Comparator;
  * @author waldschmidt
  */
 public abstract class AbstractVarietyComparator implements Comparator<Variety>{
+
+   private static final Logger logger = LoggerFactory.getLogger(AbstractVarietyComparator.class);
 
    /**
     * Compares the name of the varieties v1 and v2
@@ -41,8 +45,19 @@ public abstract class AbstractVarietyComparator implements Comparator<Variety>{
     * @return the compareTo result returned by {@link String#compareTo(String)} for the localized strings of the cropTypes
     */
    protected int compareCropType(Variety v1, Variety v2, Context context){
-      return EnumValueToUiStringUtility.getUiStringForCropType(v1.getCropType(), context)
-            .compareTo(EnumValueToUiStringUtility.getUiStringForCropType(v2.getCropType(), context));
+      String cropTypeText1 = "";
+      String cropTypeText2 = "";
+      try {
+         cropTypeText1 = EnumValueToUiStringUtility.getUiStringForCropType(v1.getCropType(), context);
+      } catch (IllegalArgumentException e){
+         logger.error(this.getClass().getName(), e);
+      }
+      try {
+         cropTypeText2 = EnumValueToUiStringUtility.getUiStringForCropType(v2.getCropType(), context);
+      } catch (IllegalArgumentException e){
+         logger.error(this.getClass().getName(), e);
+      }
+      return cropTypeText1.compareTo(cropTypeText2);
    }
 
    /**

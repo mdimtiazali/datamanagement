@@ -170,7 +170,7 @@
                     android:id="@+id/edit_button"
                     android:layout_width="0dp"
                     android:layout_height="wrap_content"
-                    android:src="@drawable/edit_product_states"
+                    android:src="@drawable/edit_list_item_states"
                     android:background="@null"
                     android:layout_weight="1" />
 
@@ -178,7 +178,7 @@
                     android:id="@+id/copy_button"
                     android:layout_width="0dp"
                     android:layout_height="wrap_content"
-                    android:src="@drawable/copy_product_states"
+                    android:src="@drawable/copy_list_item_states"
                     android:background="@null"
                     android:layout_weight="1" />
 

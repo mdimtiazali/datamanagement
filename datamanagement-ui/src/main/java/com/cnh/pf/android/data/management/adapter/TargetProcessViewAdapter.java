@@ -26,7 +26,6 @@ import com.cnh.pf.android.data.management.R;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.util.ArrayList;
 import java.util.List;
 
 /**
@@ -86,9 +85,7 @@ public class TargetProcessViewAdapter extends DataManagementBaseAdapter {
             //for now select first option
             List<String> options = ((MultiSetObjectGraph) operation.getData()).getOptions();
             String firstOption = ((MultiSetObjectGraph) operation.getData()).getOptions().get(0);
-            ArrayList<String> selected = new ArrayList<String>();
-            selected.add(firstOption);
-            ((MultiSetObjectGraph) operation.getData()).setSelectedOptions(selected);
+            ((MultiSetObjectGraph) operation.getData()).setSelectedOption(firstOption);
          }
          viewHolder.typeView.setText(operation.getData().getType());
          viewHolder.nameView.setText(operation.getData().getName());

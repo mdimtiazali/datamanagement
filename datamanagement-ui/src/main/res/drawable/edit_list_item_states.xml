@@ -7,7 +7,8 @@
   ~ disclose in whole or in part any such information without written
   ~ authorization from CNH Industrial NV.
   -->
-<resources>
-    <integer name="application_rate_max">10000</integer>
-    <integer name="application_rate_min">0</integer>
-</resources>
+<selector xmlns:android="http://schemas.android.com/apk/res/android">
+    <item android:state_enabled="true" android:state_pressed="true" android:drawable="@drawable/ic_edit_pressed" />
+    <item android:state_enabled="false" android:drawable="@drawable/ic_edit_grey"/>
+    <item android:drawable="@drawable/product_edit" />
+</selector>

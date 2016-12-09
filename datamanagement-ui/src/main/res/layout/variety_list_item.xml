@@ -41,7 +41,7 @@
                 android:id="@+id/variety_edit_button"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:src="@drawable/edit_product_states"
+                android:src="@drawable/edit_list_item_states"
                 android:background="@null"
                 android:paddingLeft="@dimen/variety_delete_and_edit_button_side_padding"
                 android:paddingRight="@dimen/variety_delete_and_edit_button_side_padding"/>

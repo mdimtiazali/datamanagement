@@ -1,4 +1,12 @@
 <?xml version="1.0" encoding="utf-8"?>
+<!--
+  ~ Copyright (C) 2016 CNH Industrial NV. All rights reserved.
+  ~
+  ~ This software contains proprietary information of CNH Industrial NV. Neither
+  ~ receipt nor possession thereof confers any right to reproduce, use, or
+  ~ disclose in whole or in part any such information without written
+  ~ authorization from CNH Industrial NV.
+  -->
 <resources>
     <string name="app_name">Data Management</string>
     <string name="tab_import">Import</string>
@@ -194,14 +202,16 @@
         <item quantity="one">Total: 1 variety</item>
         <item quantity="other">Total: %1$d varieties</item>
     </plurals>
-    <string name="variety_search_hint">Variety, crop type</string>
+    <string name="variety_button_add_text">Add Variety +</string>
+    <string name="variety_dialog_add_title_text">Add Variety</string>
+    <string name="variety_dialog_cancel_button_text">Cancel</string>
+    <string name="variety_dialog_delete_title_text">Delete Variety</string>
+    <string name="variety_delete_dialog_body_text_delete_allowed">This will permanently delete this variety and its settings.</string>
+    <string name="variety_dialog_save_button_text">Save</string>
+    <string name="variety_instruction_add">Add a variety using the "Add Variety" button above.</string>
     <string name="variety_list_header_crop_type_text">CROP TYPE</string>
     <string name="variety_list_header_name_text">NAME</string>
     <string name="variety_not_available">You have no varieties added.</string>
-    <string name="variety_instruction_add">Add a variety using the "Add Variety" button above.</string>
-    <string name="variety_button_add_text">Add Variety +</string>
-    <string name="variety_dialog_save_button_text">Save</string>
-    <string name="variety_dialog_cancel_button_text">Cancel</string>
-    <string name="variety_dialog_add_title_text">Add Variety</string>
+    <string name="variety_search_hint">Variety, crop type</string>
     <!-- end of productlibrary-package usage -->
 </resources>
