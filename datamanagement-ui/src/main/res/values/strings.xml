@@ -183,8 +183,8 @@
     <string name="tab_product_library">Product Library</string>
     <string name="create_product_button">Add Product +</string>
     <string name="no_available_products">You have no products added.</string>
-    <string name="add_product_instructions">Add a product using the "Add Product" button above.</string>
-    <string name="add_product_mix_instructions">Add a productmix using the "Add Product Mix" button above.</string>
+    <string name="add_product_instructions">Add a product using the \"Add Product\" button above.</string>
+    <string name="add_product_mix_instructions">Add a productmix using the \"Add Product Mix\" button above.</string>
 
     <string name="unit_gal_per_acre">gal/ac</string>
 
@@ -203,12 +203,15 @@
         <item quantity="other">Total: %1$d varieties</item>
     </plurals>
     <string name="variety_button_add_text">Add Variety +</string>
-    <string name="variety_dialog_add_title_text">Add Variety</string>
-    <string name="variety_dialog_cancel_button_text">Cancel</string>
-    <string name="variety_dialog_delete_title_text">Delete Variety</string>
+    <string name="variety_add_dialog_title_text">Add Variety</string>
+    <string name="variety_add_or_edit_dialog_crop_type_header_text">Crop Type</string>
+    <string name="variety_add_or_edit_dialog_name_header_text">Name</string>
+    <string name="variety_delete_dialog_delete_title_text">Delete Variety</string>
     <string name="variety_delete_dialog_body_text_delete_allowed">This will permanently delete this variety and its settings.</string>
+    <string name="variety_dialog_cancel_button_text">Cancel</string>
     <string name="variety_dialog_save_button_text">Save</string>
-    <string name="variety_instruction_add">Add a variety using the "Add Variety" button above.</string>
+    <string name="variety_edit_dialog_title">Edit Variety</string>
+    <string name="variety_instruction_add">Add a variety using the \"Add Variety\" button above.</string>
     <string name="variety_list_header_crop_type_text">CROP TYPE</string>
     <string name="variety_list_header_name_text">NAME</string>
     <string name="variety_not_available">You have no varieties added.</string>

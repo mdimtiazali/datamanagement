@@ -402,13 +402,13 @@
                         android:headerDividersEnabled="true"/>
 
                 <RelativeLayout
-                        android:id="@+id/no_varieties"
+                        android:id="@+id/no_avaiblable_varieties"
                         android:layout_width="match_parent"
                         android:layout_height="match_parent"
                         android:visibility="gone">
 
                     <TextView
-                            android:id="@+id/no_available_varieties"
+                            android:id="@+id/no_available_varieties_text_view"
                             style="@style/TextAppearance.Roboto.Bold"
                             android:layout_width="match_parent"
                             android:layout_height="130dp"
@@ -423,7 +423,7 @@
                             style="@style/TextAppearance.Roboto.Bold"
                             android:layout_width="match_parent"
                             android:layout_height="84dp"
-                            android:layout_below="@id/no_available_varieties"
+                            android:layout_below="@id/no_available_varieties_text_view"
                             android:background="@drawable/box_no_available_controllers"
                             android:gravity="center"
                             android:text="@string/variety_instruction_add"
@@ -441,6 +441,4 @@
             android:layout_width="match_parent"
             android:layout_height="match_parent"
             android:layout_gravity="center" />
-
-
 </FrameLayout>

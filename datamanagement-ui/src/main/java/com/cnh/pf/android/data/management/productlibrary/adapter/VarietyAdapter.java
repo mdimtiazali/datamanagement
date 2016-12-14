@@ -28,7 +28,9 @@ import com.cnh.android.pf.widget.utilities.tasks.VIPAsyncTask;
 import com.cnh.android.vip.aidl.IVIPServiceAIDL;
 import com.cnh.android.widget.activity.TabActivity;
 import com.cnh.pf.android.data.management.R;
+import com.cnh.pf.android.data.management.productlibrary.ProductLibraryFragment;
 import com.cnh.pf.android.data.management.productlibrary.utility.UiHelper;
+import com.cnh.pf.android.data.management.productlibrary.views.AddOrEditVarietyDialog;
 import com.cnh.pf.model.product.configuration.Variety;
 
 import org.slf4j.Logger;
@@ -59,6 +61,7 @@ public final class VarietyAdapter extends BaseAdapter implements Filterable {
    private final OnDeleteButtonClickListener onDeleteButtonClickListener;
    private final TabActivity activity;
    private IVIPServiceAIDL vipService;
+   private AddOrEditVarietyDialog editVarietyDialog;
 
    /**
     * @param context the context of the adapter
@@ -83,6 +86,7 @@ public final class VarietyAdapter extends BaseAdapter implements Filterable {
     */
    public void setVIPService(final IVIPServiceAIDL vipService){
       this.vipService = vipService;
+      editVarietyDialog.setVIPService(vipService);
    }
 
    /**
@@ -212,7 +216,23 @@ public final class VarietyAdapter extends BaseAdapter implements Filterable {
 
       @Override
       public void onClick(View view) {
-         logger.debug("on edit button clicked for variety: " + ((Variety) view.getTag()).getName());
+         logger.debug("on edit button clicked for variety: {}", ((Variety) view.getTag()).getName());
+         final Variety variety = (Variety) view.getTag();
+         editVarietyDialog = new AddOrEditVarietyDialog(context);
+         editVarietyDialog.setCurrentVariety(variety);
+         synchronized (listsLock) {
+            editVarietyDialog.setVarietyList(originalList != null ? originalList : filteredList);
+         }
+         editVarietyDialog.setVIPService(vipService);
+         editVarietyDialog.setFirstButtonText(activity.getResources().getString(R.string.variety_dialog_save_button_text))
+               .setSecondButtonText(activity.getResources().getString(R.string.variety_dialog_cancel_button_text))
+               .showThirdButton(false).setTitle(activity.getResources().getString(R.string.variety_edit_dialog_title))
+               .setBodyHeight(ProductLibraryFragment.DIALOG_HEIGHT).setBodyView(R.layout.variety_add_or_edit_dialog)
+               .setDialogWidth(ProductLibraryFragment.DIALOG_WIDTH);
+
+         editVarietyDialog.setActionType(AddOrEditVarietyDialog.VarietyDialogActionType.EDIT);
+         final TabActivity useModal = activity;
+         useModal.showModalPopup(editVarietyDialog);
       }
    }
 
@@ -220,11 +240,11 @@ public final class VarietyAdapter extends BaseAdapter implements Filterable {
 
       @Override
       public void onClick(View view) {
-         logger.debug("on delete button clicked for variety: " + ((Variety) view.getTag()).getName());
+         logger.debug("on delete button clicked for variety: {}", ((Variety) view.getTag()).getName());
          final Variety variety = (Variety) view.getTag();
          final TextDialogView deleteDialog = new TextDialogView(VarietyAdapter.this.context);
          deleteDialog.setBodyText(VarietyAdapter.this.activity.getResources().getString(R.string.variety_delete_dialog_body_text_delete_allowed));
-         deleteDialog.setTitle(VarietyAdapter.this.activity.getResources().getString(R.string.variety_dialog_delete_title_text));
+         deleteDialog.setTitle(VarietyAdapter.this.activity.getResources().getString(R.string.variety_delete_dialog_delete_title_text));
          deleteDialog.setFirstButtonEnabled(true);
          deleteDialog.setFirstButtonText(VarietyAdapter.this.activity.getResources().getString(R.string.delete_dialog_confirm_button_text));
          deleteDialog.setSecondButtonEnabled(true);
@@ -245,7 +265,7 @@ public final class VarietyAdapter extends BaseAdapter implements Filterable {
              * @param vipService the vipService
              */
             private void deleteVariety(Variety variety, IVIPServiceAIDL vipService){
-               logger.debug("on okay button clicked on variety delete dialog for variety: " + variety.getName());
+               logger.debug("on okay button clicked on variety delete dialog for variety: {}", variety.getName());
                VarietyCommandParams params = new VarietyCommandParams(vipService, variety);
                new VIPAsyncTask<VarietyCommandParams, Variety>(params, new GenericListener<Variety>() {
                   @Override
