@@ -84,8 +84,8 @@ import com.cnh.pf.android.data.management.productlibrary.views.ListHeaderSortVie
 import com.cnh.pf.android.data.management.productlibrary.views.NestedExpandableListView;
 import com.cnh.pf.android.data.management.productlibrary.views.ProductMixDialog;
 import com.cnh.pf.android.data.management.productlibrary.views.ProductMixDialog.ProductMixesDialogActionType;
-import com.cnh.pf.android.data.management.productlibrary.views.ProductMixDialog.productMixCallBack;
 import com.cnh.pf.android.data.management.productlibrary.views.AddOrEditVarietyDialog;
+import com.cnh.pf.android.data.management.productlibrary.views.ProductMixDialog.ProductMixCallBack;
 import com.cnh.pf.model.TableChangeEvent;
 import com.cnh.pf.model.product.configuration.ControllerProductConfiguration;
 import com.cnh.pf.model.product.configuration.DriveProductConfiguration;
@@ -117,7 +117,7 @@ import roboguice.fragment.provided.RoboFragment;
  * Provides add/edit product functionality
  * Created by joorjitham on 3/27/2015.
  */
-public class ProductLibraryFragment extends RoboFragment {
+public class ProductLibraryFragment extends RoboFragment implements ProductMixCallBack {
    private static final Logger log = LoggerFactory.getLogger(ProductLibraryFragment.class);
    private final String identifier = ProductLibraryFragment.class.getSimpleName() + System.identityHashCode(this);
    private static final String PRODUCT_LIST = "product list";
@@ -375,8 +375,7 @@ public class ProductLibraryFragment extends RoboFragment {
     */
    private String friendlyName(String input) {
       String spaced = input.replace("_", " ");
-      String capped = toTitleCase(spaced);
-      return capped;
+      return toTitleCase(spaced);
    }
 
    /**
@@ -445,12 +444,7 @@ public class ProductLibraryFragment extends RoboFragment {
       btnAddProductMix.setOnClickListener(new OnClickListener() {
          @Override
          public void onClick(View view) {
-            addProductMixDialog = new ProductMixDialog(getActivity().getApplicationContext(), vipService, new productMixCallBack() {
-               @Override
-               public void productMix(ProductMix productMix) {
-                  vipCommunicationHandler.obtainMessage(WHAT_LOAD_PRODUCT_MIX_LIST).sendToTarget();
-               }
-            });
+            addProductMixDialog = new ProductMixDialog(getActivity().getApplicationContext(), vipService, ProductLibraryFragment.this);
             addProductMixDialog.setFirstButtonText(getResources().getString(R.string.product_dialog_add_button))
                   .setSecondButtonText(getResources().getString(R.string.product_dialog_cancel_button)).showThirdButton(false)
                   .setTitle(getResources().getString(R.string.product_mix_title_dialog_add_product_mix)).setBodyHeight(DIALOG_HEIGHT).setBodyView(R.layout.product_mix_dialog);
@@ -930,6 +924,11 @@ public class ProductLibraryFragment extends RoboFragment {
       }
    }
 
+   @Override
+   public void loadProductMix(ProductMix productMix) {
+      vipCommunicationHandler.obtainMessage(WHAT_LOAD_PRODUCT_MIX_LIST).sendToTarget();
+   }
+
    private static class ProductMixGroupHolder {
       public TextView nameText;
       public TextView formText;
@@ -1220,13 +1219,7 @@ public class ProductLibraryFragment extends RoboFragment {
 
          @Override
          public void onClick(View view) {
-            ProductMixDialog editProductMixDialog = new ProductMixDialog(getActivity().getApplicationContext(), ProductMixesDialogActionType.EDIT, vipService, productMixDetail,
-                  new productMixCallBack() {
-                     @Override
-                     public void productMix(ProductMix productMix) {
-                        vipCommunicationHandler.obtainMessage(WHAT_LOAD_PRODUCT_MIX_LIST).sendToTarget();
-                     }
-                  });
+            ProductMixDialog editProductMixDialog = new ProductMixDialog(getActivity().getApplicationContext(), ProductMixesDialogActionType.EDIT, vipService, productMixDetail, ProductLibraryFragment.this);
             editProductMixDialog.setFirstButtonText(getResources().getString(R.string.save)).setSecondButtonText(getResources().getString(R.string.product_dialog_cancel_button))
                   .showThirdButton(false).showThirdButton(false).setTitle(getResources().getString(R.string.product_mix_title_dialog_edit_product_mix))
                   .setBodyHeight(DIALOG_HEIGHT).setBodyHeight(DIALOG_HEIGHT).setBodyView(R.layout.product_mix_dialog);
@@ -1249,14 +1242,7 @@ public class ProductLibraryFragment extends RoboFragment {
 
          @Override
          public void onClick(View view) {
-            ProductMixDialog copyProductMixDialog = new ProductMixDialog(getActivity().getApplicationContext(), ProductMixesDialogActionType.COPY, vipService, productMixDetail,
-                  new productMixCallBack() {
-                     @Override
-                     public void productMix(ProductMix productMix) {
-                        vipCommunicationHandler.obtainMessage(WHAT_LOAD_PRODUCT_MIX_LIST).sendToTarget();
-
-                     }
-                  });
+            ProductMixDialog copyProductMixDialog = new ProductMixDialog(getActivity().getApplicationContext(), ProductMixesDialogActionType.COPY, vipService, productMixDetail, ProductLibraryFragment.this);
             copyProductMixDialog.setFirstButtonText(getResources().getString(R.string.product_dialog_add_button))
                   .setSecondButtonText(getResources().getString(R.string.product_dialog_cancel_button)).showThirdButton(false).showThirdButton(false)
                   .setTitle(getResources().getString(R.string.product_mix_title_dialog_copy_product_mix)).setBodyHeight(DIALOG_HEIGHT).setBodyHeight(DIALOG_HEIGHT)
