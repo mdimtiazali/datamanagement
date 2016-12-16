@@ -80,12 +80,12 @@ import com.cnh.pf.android.data.management.productlibrary.utility.sorts.ProductMi
 import com.cnh.pf.android.data.management.productlibrary.utility.sorts.ProductMixNameSortComparator;
 import com.cnh.pf.android.data.management.productlibrary.utility.sorts.VarietyByCropTypeComparator;
 import com.cnh.pf.android.data.management.productlibrary.utility.sorts.VarietyByNameComparator;
+import com.cnh.pf.android.data.management.productlibrary.views.AddOrEditVarietyDialog;
 import com.cnh.pf.android.data.management.productlibrary.views.ListHeaderSortView;
 import com.cnh.pf.android.data.management.productlibrary.views.NestedExpandableListView;
 import com.cnh.pf.android.data.management.productlibrary.views.ProductMixDialog;
-import com.cnh.pf.android.data.management.productlibrary.views.ProductMixDialog.ProductMixesDialogActionType;
-import com.cnh.pf.android.data.management.productlibrary.views.AddOrEditVarietyDialog;
 import com.cnh.pf.android.data.management.productlibrary.views.ProductMixDialog.ProductMixCallBack;
+import com.cnh.pf.android.data.management.productlibrary.views.ProductMixDialog.ProductMixesDialogActionType;
 import com.cnh.pf.model.TableChangeEvent;
 import com.cnh.pf.model.product.configuration.ControllerProductConfiguration;
 import com.cnh.pf.model.product.configuration.DriveProductConfiguration;
@@ -444,7 +444,7 @@ public class ProductLibraryFragment extends RoboFragment implements ProductMixCa
       btnAddProductMix.setOnClickListener(new OnClickListener() {
          @Override
          public void onClick(View view) {
-            addProductMixDialog = new ProductMixDialog(getActivity().getApplicationContext(), vipService, ProductLibraryFragment.this);
+            addProductMixDialog = new ProductMixDialog(getActivity().getApplicationContext(), vipService, ProductLibraryFragment.this, productMixList);
             addProductMixDialog.setFirstButtonText(getResources().getString(R.string.product_dialog_add_button))
                   .setSecondButtonText(getResources().getString(R.string.product_dialog_cancel_button)).showThirdButton(false)
                   .setTitle(getResources().getString(R.string.product_mix_title_dialog_add_product_mix)).setBodyHeight(DIALOG_HEIGHT).setBodyView(R.layout.product_mix_dialog);
@@ -1219,7 +1219,8 @@ public class ProductLibraryFragment extends RoboFragment implements ProductMixCa
 
          @Override
          public void onClick(View view) {
-            ProductMixDialog editProductMixDialog = new ProductMixDialog(getActivity().getApplicationContext(), ProductMixesDialogActionType.EDIT, vipService, productMixDetail, ProductLibraryFragment.this);
+            ProductMixDialog editProductMixDialog = new ProductMixDialog(getActivity().getApplicationContext(), ProductMixesDialogActionType.EDIT, vipService, productMixDetail,
+                  ProductLibraryFragment.this, productMixList);
             editProductMixDialog.setFirstButtonText(getResources().getString(R.string.save)).setSecondButtonText(getResources().getString(R.string.product_dialog_cancel_button))
                   .showThirdButton(false).showThirdButton(false).setTitle(getResources().getString(R.string.product_mix_title_dialog_edit_product_mix))
                   .setBodyHeight(DIALOG_HEIGHT).setBodyHeight(DIALOG_HEIGHT).setBodyView(R.layout.product_mix_dialog);
@@ -1242,7 +1243,8 @@ public class ProductLibraryFragment extends RoboFragment implements ProductMixCa
 
          @Override
          public void onClick(View view) {
-            ProductMixDialog copyProductMixDialog = new ProductMixDialog(getActivity().getApplicationContext(), ProductMixesDialogActionType.COPY, vipService, productMixDetail, ProductLibraryFragment.this);
+            ProductMixDialog copyProductMixDialog = new ProductMixDialog(getActivity().getApplicationContext(), ProductMixesDialogActionType.COPY, vipService, productMixDetail,
+                  ProductLibraryFragment.this, productMixList);
             copyProductMixDialog.setFirstButtonText(getResources().getString(R.string.product_dialog_add_button))
                   .setSecondButtonText(getResources().getString(R.string.product_dialog_cancel_button)).showThirdButton(false).showThirdButton(false)
                   .setTitle(getResources().getString(R.string.product_mix_title_dialog_copy_product_mix)).setBodyHeight(DIALOG_HEIGHT).setBodyHeight(DIALOG_HEIGHT)
