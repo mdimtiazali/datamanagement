@@ -14,7 +14,9 @@ import android.graphics.Typeface;
 import android.os.Handler;
 import android.os.Looper;
 import android.os.RemoteException;
+import android.text.Editable;
 import android.text.TextUtils.TruncateAt;
+import android.text.TextWatcher;
 import android.view.Gravity;
 import android.view.KeyEvent;
 import android.view.View;
@@ -526,7 +528,7 @@ public class ProductMixDialog extends DialogView {
       }
    }
 
-   private void setUnitToStepper(StepperView stepper, String unit) {
+   private static void setUnitToStepper(StepperView stepper, String unit) {
       if (stepper != null) {
          stepper.setParameters(BigDecimal.valueOf(MIN_STEPPER), BigDecimal.valueOf(MAX_STEPPER), BigDecimal.valueOf(STEP_SIZE), BigDecimal.valueOf(stepper.getValue()), PRECISION,
                unit);
@@ -611,7 +613,15 @@ public class ProductMixDialog extends DialogView {
                         productElement.productUnit.setToggleListSelectionListener(new SegmentedTogglePickListListener() {
                            @Override
                            public void onToggleButtonCheckedChanged(RadioGroup radioGroup, int position) {
+                              updateHolderAndStepper(position);
+                           }
 
+                           @Override
+                           public void onListItemSelected(AdapterView<?> adapterView, View view, int position, long id, boolean fromUser) {
+                              updateHolderAndStepper(position);
+                           }
+
+                           private void updateHolderAndStepper(int position) {
                               UnitsToggleHolder unit = (UnitsToggleHolder) productElement.productUnit.getTag();
                               if (unit.unitChoices.size() > position) {
                                  unit.currentChoice = unit.unitChoices.get(position);
@@ -620,19 +630,6 @@ public class ProductMixDialog extends DialogView {
                                  setUnitToStepper(productElement.productAmount, unit.currentChoice.getName());
                               }
                               calculateTotalAmountForProductMix();
-                           }
-
-                           @Override
-                           public void onListItemSelected(AdapterView<?> adapterView, View view, int position, long id, boolean fromUser) {
-                              UnitsToggleHolder unit = (UnitsToggleHolder) productElement.productUnit.getTag();
-                              if (unit.unitChoices.size() > position) {
-                                 unit.currentChoice = unit.unitChoices.get(position);
-                              }
-
-                              if (unit.currentChoice != null) {
-                                 setUnitToStepper(productElement.productAmount, unit.currentChoice.getName());
-                                 calculateTotalAmountForProductMix();
-                              }
                            }
 
                            @Override
@@ -674,14 +671,32 @@ public class ProductMixDialog extends DialogView {
       }
    }
 
+   /**
+    * Checks if the title for a new product is not empty and not null and if no other product is using this title.
+    * @param title the new title to check
+    * @return true if the title is valid false otherwise
+    */
+   private boolean isNewProductTitleValid(Editable title){
+      if (title == null || title.toString() == null || title.toString().isEmpty()){
+         return false;
+      }
+      String titleString = title.toString();
+      for (Product product: productList){
+         if (product.getName().equals(titleString)){
+            return false;
+         }
+      }
+      return true;
+   }
+
    private void createNewProductDialog(final LinearLayout productElementView, final ProductMixElementHolder productElement) {
       productElement.productPickList.setOnItemActionListener(new OnPickListItemActionListener() {
-         private boolean isTitleSet = false;
+         private boolean isTitleValid = false;
          private boolean isFormSet = false;
 
-         private void checkSaveButton(Button saveButton) {
-            if (saveButton != null && isTitleSet && isFormSet) {
-               saveButton.setEnabled(true);
+         private void updateAddButtonState(Button saveButton) {
+            if (saveButton != null) {
+               saveButton.setEnabled(isTitleValid && isFormSet);
             }
          }
 
@@ -736,14 +751,8 @@ public class ProductMixDialog extends DialogView {
             newProductFormPickList.setOnItemSelectedListener(new PickListEditable.OnItemSelectedListener() {
                @Override
                public void onItemSelected(AdapterView<?> adapterView, View view, int i, long l, boolean fromUser) {
-                  isProductMixFormSet = true;
-                  checkSaveButton(newProductButtonAdd);
-                  if (newProductEditText.getText().toString().length() > 0) {
-                     newProductButtonAdd.setEnabled(true);
-                  }
-                  else {
-                     newProductButtonAdd.setEnabled(false);
-                  }
+                  isFormSet = true;
+                  updateAddButtonState(newProductButtonAdd);
                }
 
                @Override
@@ -751,27 +760,23 @@ public class ProductMixDialog extends DialogView {
 
                }
             });
-            newProductEditText.setOnEditorActionListener(new OnEditorActionListener() {
+            newProductEditText.addTextChangedListener(new TextWatcher() {
                @Override
-               public boolean onEditorAction(TextView textView, int actionId, KeyEvent keyEvent) {
-                  if (actionId == EditorInfo.IME_ACTION_DONE) {
-                     if (productMixTitleEditText.getText().toString().length() > 0) {
-                        isTitleSet = true;
-                        checkSaveButton(newProductButtonAdd);
-                        if (newProductFormPickList.getSelectedItemPosition() >= 0) {
-                           newProductButtonAdd.setEnabled(true);
-                        }
-                        else {
-                           newProductButtonAdd.setEnabled(false);
-                        }
-                     }
-                  }
-                  return false;
+               public void beforeTextChanged(CharSequence s, int start, int count, int after) {}
+
+               @Override
+               public void onTextChanged(CharSequence s, int start, int before, int count) {}
+
+               @Override
+               public void afterTextChanged(Editable newTitle) {
+                  isTitleValid = isNewProductTitleValid(newTitle);
+                  updateAddButtonState(newProductButtonAdd);
                }
             });
             newProductButtonAdd.setOnClickListener(new OnClickListener() {
                @Override
                public void onClick(View view) {
+                  log.debug("saving new product clicked");
                   Product newProduct = new Product();
                   newProduct.setName(newProductEditText.getText().toString());
                   newProduct.setForm(ProductForm.findByValue(newProductFormPickList.getSelectedItemPosition()));
@@ -1100,21 +1105,15 @@ public class ProductMixDialog extends DialogView {
             carrierProductHolder.productUnit.setToggleListSelectionListener(new SegmentedTogglePickListListener() {
                @Override
                public void onToggleButtonCheckedChanged(RadioGroup radioGroup, int position) {
-                  UnitsToggleHolder unit = (UnitsToggleHolder) carrierProductHolder.productUnit.getTag();
-                  if (unit != null) {
-                     if (unit.currentChoice != null) {
-                        if (unit.unitChoices.size() > position) {
-                           unit.currentChoice = unit.unitChoices.get(position);
-                        }
-                        setUnitToStepper(carrierProductHolder.productAmount, unit.currentChoice.getName());
-                        carrierProductHolder.productUnit.setTag(unit);
-                     }
-                  }
-                  calculateTotalAmountForProductMix();
+                  updateHolder(position);
                }
 
                @Override
                public void onListItemSelected(AdapterView<?> adapterView, View view, int position, long id, boolean fromUser) {
+                  updateHolder(position);
+               }
+
+               private void updateHolder(int position) {
                   UnitsToggleHolder unit = (UnitsToggleHolder) carrierProductHolder.productUnit.getTag();
                   if (unit != null) {
                      if (unit.currentChoice != null) {
@@ -1154,16 +1153,16 @@ public class ProductMixDialog extends DialogView {
 
    private class OnProductPickListItemActionListener implements OnPickListItemActionListener {
       private final LinearLayout productElement;
-      private boolean isTitleSet = false;
+      private boolean isTitleValid = false;
       private boolean isFormSet = false;
 
       private OnProductPickListItemActionListener(LinearLayout productElement){
          this.productElement = productElement;
       }
 
-      private void checkSaveButton(Button saveButton) {
-         if (saveButton != null && isTitleSet && isFormSet) {
-            saveButton.setEnabled(true);
+      private void updateAddButtonState(Button saveButton) {
+         if (saveButton != null) {
+            saveButton.setEnabled(isTitleValid && isFormSet);
          }
       }
 
@@ -1223,11 +1222,8 @@ public class ProductMixDialog extends DialogView {
          newProductFormPickList.setOnItemSelectedListener(new PickListEditable.OnItemSelectedListener() {
             @Override
             public void onItemSelected(AdapterView<?> adapterView, View view, int position, long l, boolean fromUser) {
-               isProductMixFormSet = true;
-               checkSaveButton(newProductButtonAdd);
-               if (newProductEditText.getText().toString().length() > 0) {
-                  newProductButtonAdd.setEnabled(true);
-               }
+               isFormSet = true;
+               updateAddButtonState(newProductButtonAdd);
                productMixFormPickList.setSelectionByPosition(position);
             }
 
@@ -1249,21 +1245,17 @@ public class ProductMixDialog extends DialogView {
             newProductFormPickList.setEnabled(true);
             productMixFormPickList.setEnabled(true);
          }*/
-         newProductEditText.setOnEditorActionListener(new OnEditorActionListener() {
+         newProductEditText.addTextChangedListener(new TextWatcher() {
             @Override
-            public boolean onEditorAction(TextView textView, int actionId, KeyEvent keyEvent) {
-               if (actionId == EditorInfo.IME_ACTION_DONE) {
-                  if (isTitleSet = !newProductEditText.getText().toString().isEmpty()) {
-                     checkSaveButton(newProductButtonAdd);
-                     if (newProductFormPickList.getSelectedItemPosition() >= 0) {
-                        newProductButtonAdd.setEnabled(true);
-                     }
-                  }
-                  else {
-                     newProductButtonAdd.setEnabled(false);
-                  }
-               }
-               return false;
+            public void beforeTextChanged(CharSequence s, int start, int count, int after) {}
+
+            @Override
+            public void onTextChanged(CharSequence s, int start, int before, int count) {}
+
+            @Override
+            public void afterTextChanged(Editable newTitle) {
+               isTitleValid = isNewProductTitleValid(newTitle);
+               updateAddButtonState(newProductButtonAdd);
             }
          });
          newProductButtonAdd.setOnClickListener(new OnClickListener() {
@@ -1401,20 +1393,15 @@ public class ProductMixDialog extends DialogView {
          applicationRatesUnitsPickList.setToggleListSelectionListener(new SegmentedTogglePickListListener() {
             @Override
             public void onToggleButtonCheckedChanged(RadioGroup radioGroup, int position) {
-               UnitsToggleHolder holder = (UnitsToggleHolder) applicationRatesUnitsPickList.getTag();
-               if (holder.unitChoices.size() > position) {
-                  holder.currentChoice = holder.unitChoices.get(position);
-                  if (holder.currentChoice != null) {
-                     updateApplicationRatesView(holder.currentChoice.getName());
-                  }
-                  applicationRatesUnitsPickList.setTag(holder);
-                  calculateNewApplicationRate1PerProduct();
-                  calculateNewApplicationRate2PerProduct();
-               }
+               updateHolder(position);
             }
 
             @Override
             public void onListItemSelected(AdapterView<?> adapterView, View view, int position, long id, boolean fromUser) {
+               updateHolder(position);
+            }
+
+            private void updateHolder(int position) {
                UnitsToggleHolder holder = (UnitsToggleHolder) applicationRatesUnitsPickList.getTag();
                if (holder.unitChoices.size() > position) {
                   holder.currentChoice = holder.unitChoices.get(position);
@@ -1451,7 +1438,6 @@ public class ProductMixDialog extends DialogView {
       productUsagePickList.setAdapter(advancedUsagePicklistAdapter);
       initializePackageSizeUnits();
       initializeDensityUnits();
-
    }
 
    /**
@@ -1463,17 +1449,15 @@ public class ProductMixDialog extends DialogView {
          packageSizeUnitPickList.setToggleListSelectionListener(new SegmentedTogglePickListListener() {
             @Override
             public void onToggleButtonCheckedChanged(RadioGroup radioGroup, int position) {
-               UnitsToggleHolder holder = (UnitsToggleHolder) packageSizeUnitPickList.getTag();
-               if (holder.unitChoices.size() > position) {
-                  holder.currentChoice = holder.unitChoices.get(position);
-                  if (holder.currentChoice != null) {
-                     setPackageSizeUnitToUnitText(holder.currentChoice.getName());
-                  }
-               }
+               updateHolder(position);
             }
 
             @Override
             public void onListItemSelected(AdapterView<?> adapterView, View view, int position, long id, boolean fromUser) {
+               updateHolder(position);
+            }
+
+            private void updateHolder(int position) {
                UnitsToggleHolder holder = (UnitsToggleHolder) packageSizeUnitPickList.getTag();
                if (holder.unitChoices.size() > position) {
                   holder.currentChoice = holder.unitChoices.get(position);
