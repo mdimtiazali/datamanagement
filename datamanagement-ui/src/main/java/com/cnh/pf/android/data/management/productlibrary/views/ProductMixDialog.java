@@ -142,6 +142,7 @@ public class ProductMixDialog extends DialogView {
    private EditText productMixTitleEditText;
    private PickList productMixFormPickList;
    private DisabledOverlay overlay;
+   private boolean isAddNewProductOpen = false;
 
    private CategoryButtonsEventListener eventListener = new CategoryButtonsEventListener() {
       @Override
@@ -694,6 +695,11 @@ public class ProductMixDialog extends DialogView {
          private boolean isTitleValid = false;
          private boolean isFormSet = false;
 
+         //instance initializer
+         {
+            productElement.productPickList.setAllowNewItemsCreation(!isAddNewProductOpen);
+         }
+
          private void updateAddButtonState(Button saveButton) {
             if (saveButton != null) {
                saveButton.setEnabled(isTitleValid && isFormSet);
@@ -724,6 +730,7 @@ public class ProductMixDialog extends DialogView {
 
          @Override
          public void onButton1Press() {
+            enableAddNewProductButtons(false);
             final LinearLayout selectProductView = (LinearLayout) productElementView.findViewById(R.id.product_mix_product_left_select_product);
             selectProductView.setVisibility(GONE);
             final LinearLayout newProductView = (LinearLayout) productElementView.findViewById(R.id.product_mix_product_left_new_product);
@@ -731,12 +738,13 @@ public class ProductMixDialog extends DialogView {
             final EditText newProductEditText = (EditText) newProductView.findViewById(R.id.product_mix_product_edittext_add_new_product);
             newProductEditText.setText("");
             final PickList newProductFormPickList = (PickList) newProductView.findViewById(R.id.product_mix_product_picklist_product_type);
-            Button newProductButtonCancel = (Button) newProductView.findViewById(R.id.product_mix_product_left_button_cancel);
+            final Button newProductButtonCancel = (Button) newProductView.findViewById(R.id.product_mix_product_left_button_cancel);
             newProductButtonCancel.setOnClickListener(new OnClickListener() {
                @Override
                public void onClick(View view) {
                   selectProductView.setVisibility(VISIBLE);
                   newProductView.setVisibility(GONE);
+                  enableAddNewProductButtons(true);
                }
             });
             final Button newProductButtonAdd = (Button) newProductView.findViewById(R.id.product_mix_product_left_button_add);
@@ -799,6 +807,7 @@ public class ProductMixDialog extends DialogView {
                         productElement.productPickList.setSelectionByPosition(adapter.getCount() - 1);
                         selectProductView.setVisibility(VISIBLE);
                         newProductView.setVisibility(GONE);
+                        enableAddNewProductButtons(true);
                      }
                   }).execute(new SaveProductCommand());
 
@@ -1190,6 +1199,7 @@ public class ProductMixDialog extends DialogView {
 
       @Override
       public void onButton1Press() {
+         enableAddNewProductButtons(false);
          final LinearLayout selectProductView = (LinearLayout) productElement.findViewById(R.id.product_mix_product_left_select_product);
          selectProductView.setVisibility(GONE);
          final LinearLayout newProductView = (LinearLayout) productElement.findViewById(R.id.product_mix_product_left_new_product);
@@ -1201,13 +1211,14 @@ public class ProductMixDialog extends DialogView {
          newProductEditText.setHint(getResources().getString(R.string.product_mix_title_carrier));
          newProductEditText.setImeOptions(EditorInfo.IME_FLAG_NO_EXTRACT_UI | EditorInfo.IME_ACTION_DONE);
          final PickList newProductFormPickList = (PickList) newProductView.findViewById(R.id.product_mix_product_picklist_product_type);
-         Button newProductButtonCancel = (Button) newProductView.findViewById(R.id.product_mix_product_left_button_cancel);
+         final Button newProductButtonCancel = (Button) newProductView.findViewById(R.id.product_mix_product_left_button_cancel);
          newProductButtonCancel.setOnClickListener(new OnClickListener() {
             @Override
             public void onClick(View view) {
                selectProductView.setVisibility(VISIBLE);
                newProductView.setVisibility(GONE);
                productMixFormPickList.setEnabled(true);
+               enableAddNewProductButtons(true);
             }
          });
          final Button newProductButtonAdd = (Button) newProductView.findViewById(R.id.product_mix_product_left_button_add);
@@ -1278,6 +1289,7 @@ public class ProductMixDialog extends DialogView {
                      carrierProductHolder.productPickList.setSelectionByPosition(adapter.getCount() - 1);
                      selectProductView.setVisibility(VISIBLE);
                      newProductView.setVisibility(GONE);
+                     enableAddNewProductButtons(true);
                   }
                }).execute(new SaveProductCommand());
                productMixFormPickList.setSelectionByPosition(newProductFormPickList.getSelectedItemPosition());
@@ -1301,7 +1313,7 @@ public class ProductMixDialog extends DialogView {
    }
 
    /**
-    * will initialize the Mix Products segement.
+    * will initialize the Mix Products segment.
     */
    private void initializeMixProductsView() {
       if (mixProductsLayout != null) {
@@ -1971,6 +1983,16 @@ public class ProductMixDialog extends DialogView {
       }
       catch (RemoteException e) {
          log.error("failed");
+      }
+   }
+
+   private void enableAddNewProductButtons(boolean enable){
+      isAddNewProductOpen = !enable;
+      for (ProductMixElementHolder productMixElementHolder: productMixElementHolderList){
+         productMixElementHolder.productPickList.setAllowNewItemsCreation(enable);
+      }
+      if (carrierProductHolder != null) {
+         carrierProductHolder.productPickList.setAllowNewItemsCreation(enable);
       }
    }
 
