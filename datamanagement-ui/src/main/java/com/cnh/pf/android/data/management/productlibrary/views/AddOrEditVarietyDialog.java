@@ -12,15 +12,17 @@ import android.content.Context;
 import android.text.Editable;
 import android.text.TextWatcher;
 import android.view.View;
-
 import android.widget.AdapterView;
+
 import com.cnh.android.dialog.DialogView;
+import com.cnh.android.pf.widget.controls.PickListItemWithTag;
 import com.cnh.android.pf.widget.utilities.EnumValueToUiStringUtility;
 import com.cnh.android.pf.widget.utilities.commands.SaveVarietyCommand;
 import com.cnh.android.pf.widget.utilities.commands.VarietyCommandParams;
 import com.cnh.android.pf.widget.utilities.listeners.GenericListener;
 import com.cnh.android.pf.widget.utilities.tasks.VIPAsyncTask;
 import com.cnh.android.vip.aidl.IVIPServiceAIDL;
+import com.cnh.android.widget.Widget;
 import com.cnh.android.widget.control.InputField;
 import com.cnh.android.widget.control.PickList;
 import com.cnh.android.widget.control.PickListAdapter;
@@ -30,7 +32,6 @@ import com.cnh.pf.android.data.management.productlibrary.adapter.VarietyAdapter;
 import com.cnh.pf.android.data.management.productlibrary.utility.sorts.CropTypeComparator;
 import com.cnh.pf.model.product.configuration.Variety;
 import com.cnh.pf.model.product.library.CropType;
-import com.cnh.android.pf.widget.controls.PickListItemWithTag;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -72,14 +73,15 @@ public class AddOrEditVarietyDialog extends DialogView {
 
    /**
     * Setter for the varietyList.
+    * @param varieties the varieties list
     */
    public void setVarietyList(List<Variety> varieties){
       this.varieties = new ArrayList<Variety>(varieties);
    }
 
    /**
-    * Setter vor vipService.
-    * @return the VarietyDialog
+    * Setter for the vipService.
+    * @param vipService the vipService
     */
    public void setVIPService(IVIPServiceAIDL vipService){
       this.vipService = vipService;
@@ -135,7 +137,7 @@ public class AddOrEditVarietyDialog extends DialogView {
                   EnumValueToUiStringUtility.getUiStringForCropType(cropType, getContext()),
                   true, false, false, false, false, cropType)
             );
-            if (actionType.equals(actionType.EDIT) && modifiedVariety != null){
+            if (actionType.equals(VarietyDialogActionType.EDIT) && modifiedVariety != null){
                if (modifiedVariety.getCropType().equals(cropType)) {
                   selectedId = i;
                }
@@ -146,7 +148,7 @@ public class AddOrEditVarietyDialog extends DialogView {
       pickList.setAdapter(pickListAdapter);
       PickList.OnItemSelectedListener onItemSelectedListener = new OnItemSelectedListener();
       pickList.setOnItemSelectedListener(onItemSelectedListener);
-      if (actionType.equals(actionType.EDIT) && modifiedVariety != null && selectedId != null){
+      if (actionType.equals(VarietyDialogActionType.EDIT) && modifiedVariety != null && selectedId != null){
          pickList.setSelectionById(selectedId);
       }
    }
@@ -213,33 +215,40 @@ public class AddOrEditVarietyDialog extends DialogView {
       switch (actionType) {
       case EDIT:
          // check if something has changed
-         if (currentVariety.getName().equals(newName) && modifiedVariety.getCropType().equals(currentVariety.getCropType())) {
-            setFirstButtonEnabled(false);
-            return;
-         }
+         // check name first, then cropType. Reason: to set the error indicator always to the right value.
          for (Variety variety : varieties) {
             if (variety.getId() != modifiedVariety.getId() && variety.getName().equals(newName)) {
                // name already used by other variety
                setFirstButtonEnabled(false);
+               inputField.setErrorIndicator(Widget.ErrorIndicator.INVALID);
                return;
             }
          }
-         break;
-      case ADD:
-         if (modifiedVariety.getCropType() == null) {
+         inputField.setErrorIndicator(Widget.ErrorIndicator.NONE);
+         if (currentVariety.getName().equals(newName) && modifiedVariety.getCropType().equals(currentVariety.getCropType())) {
             setFirstButtonEnabled(false);
             return;
          }
+         break;
+      case ADD:
+         /// check name first, then cropType. Reason: to set the error indicator always to the right value.
          for (Variety variety : varieties) {
             if (variety.getName().equals(newName)) {
                // name already used by other variety
                setFirstButtonEnabled(false);
+               inputField.setErrorIndicator(Widget.ErrorIndicator.NEEDS_CHECKING);
                return;
             }
+         }
+         inputField.setErrorIndicator(Widget.ErrorIndicator.NONE);
+         if (modifiedVariety.getCropType() == null) {
+            setFirstButtonEnabled(false);
+            return;
          }
          break;
       default:
          setFirstButtonEnabled(false);
+         inputField.setErrorIndicator(Widget.ErrorIndicator.INVALID);
          return;
       }
       setFirstButtonEnabled(true);
