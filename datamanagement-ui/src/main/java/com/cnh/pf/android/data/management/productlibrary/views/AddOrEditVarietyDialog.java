@@ -175,7 +175,7 @@ public class AddOrEditVarietyDialog extends DialogView {
             if (modifiedVariety == null){
                modifiedVariety = new Variety();
             }
-            modifiedVariety.setName(editable.toString());
+            modifiedVariety.setName(editable.toString().trim());
             AddOrEditVarietyDialog.this.updateSaveButtonState();
          }
       });
@@ -186,7 +186,7 @@ public class AddOrEditVarietyDialog extends DialogView {
     * @param variety Variety to delete
     * @param vipService the vipService
     */
-   private void saveVariety(Variety variety, IVIPServiceAIDL vipService){
+   private static void saveVariety(Variety variety, IVIPServiceAIDL vipService){
       logger.debug("on save button clicked in variety dialog: {}", variety.getName());
       VarietyCommandParams params = new VarietyCommandParams(vipService, variety);
       new VIPAsyncTask<VarietyCommandParams, Variety>(params, new GenericListener<Variety>() {
