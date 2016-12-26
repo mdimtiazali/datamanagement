@@ -70,7 +70,7 @@
        <dependency>
           <groupId>com.cnh.pf</groupId>
           <artifactId>corelib</artifactId>
-          <version>7.12.0</version>
+          <version>7.13.0</version>
           <type>aar</type>
            <exclusions>
                <exclusion>
