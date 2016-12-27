@@ -60,24 +60,37 @@ public class DataConflictViewAdapter extends DataManagementBaseAdapter {
       RoboGuice.getInjector(context).injectMembersWithoutViews(this);
    }
 
-   private class ColumnViewHolder {
-      TextView conflictFileTv;
-      LinearLayout exitingFile;
-      LinearLayout columnsLayout;
-      LinearLayout newFile;
+   private static class ColumnViewHolder extends ViewHolder{
+      final TextView conflictFileTv;
+      final LinearLayout exitingFile;
+      final LinearLayout columnsLayout;
+      final LinearLayout newFile;
+
+      public ColumnViewHolder(View root) {
+         super(root);
+         conflictFileTv = (TextView) root.findViewById(R.id.conflict_file_tv);
+         exitingFile = (LinearLayout) root.findViewById(R.id.existing_file);
+         columnsLayout = (LinearLayout) root.findViewById(R.id.description_columns);
+         newFile = (LinearLayout) root.findViewById(R.id.new_file);
+      }
    }
 
-   private class LayoutViewHolder {
-      TextView headerTv;
-      LinearLayout descriptionArea;
-      List<TextView> columns;
+   private static class LayoutViewHolder {
+      final TextView headerTv;
+      final LinearLayout descriptionArea;
+      final List<TextView> columns = new ArrayList<TextView>();
+
+      public LayoutViewHolder(View root) {
+         headerTv = (TextView) root.findViewById(R.id.header_tv);
+         descriptionArea = (LinearLayout) root.findViewById(R.id.description_area);
+      }
    }
 
    private OnActionSelectedListener actionListener = new OnActionSelectedListener() {
       @Override
-      public void onButtonSelected(final DialogView dialog, Operation.Action action) {
-         if (Operation.Action.COPY_AND_KEEP.equals(action)) {
-            Operation op = operationList.get(activeOperation);
+      public void onButtonSelected(final DialogView dialog, Action action) {
+         if (Action.ACTION1.equals(action)) {
+            Operation op = operationList.get(position);
             final DialogView newNameDialog = new DialogView(context);
             newNameDialog.setTitle(context.getResources().getString(R.string.new_id_title));
             View view = layoutInflater.inflate(R.layout.rename_file, null);
@@ -95,10 +108,10 @@ public class DataConflictViewAdapter extends DataManagementBaseAdapter {
                   if (which == DialogViewInterface.BUTTON_FIRST) {
                      String newName = textEntry.getText().toString();
                      if (!Strings.isNullOrEmpty(newName)) {
-                        operationList.get(activeOperation).setNewName(newName);
-                        operationList.get(activeOperation).setAction(Operation.Action.COPY_AND_KEEP);
+                        operationList.get(position).setNewName(newName);
+                        operationList.get(position).setAction(Operation.Action.COPY_AND_KEEP);
                         newNameDialog.dismiss();
-                        activeOperation++;
+                        position++;
                         checkAndUpdateActive();
                      }
                   }
@@ -111,9 +124,9 @@ public class DataConflictViewAdapter extends DataManagementBaseAdapter {
             enableButtons(dialog, false);
             ((TabActivity) newNameDialog.getContext()).showPopup(newNameDialog, true);
          }
-         else if (Operation.Action.COPY_AND_REPLACE.equals(action)) {
-            operationList.get(activeOperation).setAction(Operation.Action.COPY_AND_REPLACE);
-            activeOperation++;
+         else if (Action.ACTION2.equals(action)) {
+            operationList.get(position).setAction(Operation.Action.COPY_AND_REPLACE);
+            position++;
             checkAndUpdateActive();
          }
       }
@@ -126,27 +139,18 @@ public class DataConflictViewAdapter extends DataManagementBaseAdapter {
    }
 
    @Override
-   public View getView(View convertView) {
-      View newView = convertView;
-      if (activeOperation < totalOperation) {
-         Operation operation = operationList.get(activeOperation);
-         if (convertView == null) {
-            newView = layoutInflater.inflate(R.layout.data_conflict, null);
-            ColumnViewHolder viewHolder = new ColumnViewHolder();
-            viewHolder.conflictFileTv = (TextView) newView.findViewById(R.id.conflict_file_tv);
-            viewHolder.exitingFile = (LinearLayout) newView.findViewById(R.id.existing_file);
-            viewHolder.columnsLayout = (LinearLayout) newView.findViewById(R.id.description_columns);
-            viewHolder.newFile = (LinearLayout) newView.findViewById(R.id.new_file);
-            newView.setTag(viewHolder);
-         }
-         ColumnViewHolder viewHolder = (ColumnViewHolder) newView.getTag();
+   protected ViewHolder updateView(ViewHolder convertView) {
+      final Operation operation = operationList.get(position);
+      final ColumnViewHolder viewHolder = (ColumnViewHolder) convertView;
+      //a <type> named <name> already exists
+      viewHolder.conflictFileTv.setText(context.getResources().getString(R.string.duplicate_file, getTypeString(operation.getData().getType()), operation.getData().getName()));
+      populateDescriptionLayout(viewHolder.columnsLayout, viewHolder.exitingFile, viewHolder.newFile, operation.getConflictDataTyped(), operation.getData().getData());
+      return convertView;
+   }
 
-         //a <type> named <name> already exists
-         viewHolder.conflictFileTv.setText(context.getResources().getString(R.string.duplicate_file, getTypeString(operation.getData().getType()), operation.getData().getName()));
-         populateDescriptionLayout(viewHolder.columnsLayout, viewHolder.exitingFile, viewHolder.newFile, operation.getConflictDataTyped(), operation.getData().getData());
-      }
-      targetView = newView;
-      return newView;
+   @Override
+   protected ViewHolder createView() {
+      return new ColumnViewHolder(layoutInflater.inflate(R.layout.data_conflict, null));
    }
 
    private String getTypeString(String type) {
@@ -159,13 +163,9 @@ public class DataConflictViewAdapter extends DataManagementBaseAdapter {
       /** Viewholder to re-use textviews within description area*/
       LayoutViewHolder existingFileVH = getViewHolder(existingFileLayout);
       LayoutViewHolder newFileVH = getViewHolder(newFileLayout);
-      LayoutViewHolder rowVH = (LayoutViewHolder) rowLayout.getTag();
-      if (rowVH == null) {
-         rowVH = new LayoutViewHolder();
-         rowVH.columns = new ArrayList<TextView>();
-         rowLayout.setTag(rowVH);
-      }
-      Operation op = operationList.get(activeOperation);
+      LayoutViewHolder rowVH = getViewHolder(rowLayout);
+
+      Operation op = operationList.get(position);
       String type = getTypeString(op.getData().getType());
       if (existingFileVH.headerTv.getText() == null || existingFileVH.headerTv.getText().equals("")) {
          existingFileVH.headerTv.setText(context.getResources().getString(R.string.existing_file));
@@ -235,12 +235,9 @@ public class DataConflictViewAdapter extends DataManagementBaseAdapter {
    }
 
    /** Finds ViewHolder contained within layout, else it creates one */
-   private LayoutViewHolder getViewHolder(LinearLayout layout) {
+   private static LayoutViewHolder getViewHolder(LinearLayout layout) {
       if (layout.getTag() == null) {
-         LayoutViewHolder lHolder = new LayoutViewHolder();
-         lHolder.headerTv = (TextView) layout.findViewById(R.id.header_tv);
-         lHolder.descriptionArea = (LinearLayout) layout.findViewById(R.id.description_area);
-         lHolder.columns = new ArrayList<TextView>();
+         LayoutViewHolder lHolder = new LayoutViewHolder(layout);
          layout.setTag(lHolder);
       }
       return (LayoutViewHolder) layout.getTag();
@@ -263,16 +260,7 @@ public class DataConflictViewAdapter extends DataManagementBaseAdapter {
    }
 
    @Override
-   protected void checkAndUpdateActive() {
-      logger.debug("active:" + activeOperation + ", total:" + totalOperation);
-      while (activeOperation < totalOperation && !operationList.get(activeOperation).isConflict()) {
-         activeOperation++;
-      }
-      if (activeOperation == totalOperation) {
-         onTargetsSelectedListener.onCompletion(operationList);
-      }
-      else {
-         onTargetSelectedListener.onTargetSelected(false, targetView);
-      }
+   protected boolean shouldShowView() {
+      return operationList.get(position).isConflict();
    }
 }

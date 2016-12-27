@@ -53,14 +53,7 @@ public class PathTreeViewAdapter extends AbstractTreeViewAdapter<File> {
    @Override
    public View getNewChildView(TreeNodeInfo treeNodeInfo) {
       final TextView nameView = (TextView) getActivity().getLayoutInflater().inflate(R.layout.tree_list_item_simple, null);
-      XmlResourceParser xrp = getActivity().getResources().getXml(R.drawable.tree_text_color);
-      try {
-         ColorStateList csl = ColorStateList.createFromXml(getActivity().getResources(), xrp);
-         nameView.setTextColor(csl);
-      }
-      catch (Exception e) {
-         logger.error("error loading text color resource", e);
-      }
+      nameView.setTextColor(getActivity().getResources().getColorStateList(R.color.tree_text_color));
       return updateView(nameView, treeNodeInfo);
    }
 

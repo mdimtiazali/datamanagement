@@ -41,14 +41,4 @@
                 android:textSize="24dp" />
     </LinearLayout>
 
-    <com.cnh.android.widget.control.PickListEditable
-            android:id="@+id/target_picklist"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            cnh:title="@string/target"
-            cnh:allowItemCreation="false"
-            cnh:allowItemDeletion="false"
-            cnh:allowItemManagement="false"
-            cnh:allowItemCopying="false"
-            cnh:allowItemEditing="false" />
 </LinearLayout>

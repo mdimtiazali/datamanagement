@@ -33,6 +33,7 @@
     <string name="importing">Importing...</string>
     <string name="select_path">Select Path...</string>
     <string name="continue_string">Continue</string>
+    <string name="next">Next</string>
 
     <string name="pfds">Grower / Farm / Field</string>
     <string name="vehicles">Vehicles</string>

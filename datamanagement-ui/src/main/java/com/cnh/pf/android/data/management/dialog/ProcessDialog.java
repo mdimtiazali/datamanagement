@@ -9,6 +9,9 @@
  */
 package com.cnh.pf.android.data.management.dialog;
 
+import java.util.HashMap;
+import java.util.Map;
+
 import static org.jgroups.conf.ProtocolConfiguration.log;
 
 import android.app.Activity;
@@ -38,20 +41,17 @@ import roboguice.inject.InjectResource;
 public class ProcessDialog extends DialogView {
    private static final Logger logger = LoggerFactory.getLogger(ProcessDialog.class);
 
-   @InjectResource(R.string.keep_both)
-   String keepBothStr;
-   @InjectResource(R.string.copy_and_replace)
-   String replaceStr;
    @InjectResource(R.string.cancel)
    String cancelStr;
-   @InjectResource(R.string.data_conflict)
-   String dataConflictStr;
+
    private DataManagementBaseAdapter adapter;
-   private View activeView;
    private Activity context;
    private ProgressBarView pbBar;
-
+   private View body;
    private DataConflictViewAdapter.OnActionSelectedListener listener;
+
+   // maps from object type to ViewHolder cache
+   private final Map<String, DataManagementBaseAdapter.ViewHolder> viewCache = new HashMap<String, DataManagementBaseAdapter.ViewHolder>();
 
    public ProcessDialog(Activity context) {
       super(context);
@@ -61,8 +61,6 @@ public class ProcessDialog extends DialogView {
    }
 
    public void init() {
-      setFirstButtonText(keepBothStr);
-      setSecondButtonText(replaceStr);
       setThirdButtonText(cancelStr);
       showSecondButton(false);
       showFirstButton(false);
@@ -72,10 +70,8 @@ public class ProcessDialog extends DialogView {
       View view = inflater.inflate(R.layout.progress_layout, null);
       pbBar = (ProgressBarView) view.findViewById(R.id.progress_bar);
       pbBar.setProgress(0);
-      activeView = this.setBodyView(view);
+      setBodyView(view);
    }
-
-   private View body;
 
    @Override
    public DialogView setBodyView(View view) {
@@ -91,18 +87,16 @@ public class ProcessDialog extends DialogView {
     */
    public void clearLoading() {
       pbBar.setVisibility(GONE);
-      setBodyView(adapter.getView(null));
       listener = adapter.getActionListener();
-      setTitle(dataConflictStr);
 
       setOnButtonClickListener(new OnButtonClickListener() {
          @Override
          public void onButtonClick(DialogViewInterface dialog, int which) {
             if (which == DialogViewInterface.BUTTON_FIRST) {
-               listener.onButtonSelected(ProcessDialog.this, Operation.Action.COPY_AND_KEEP);
+               listener.onButtonSelected(ProcessDialog.this, DataManagementBaseAdapter.Action.ACTION1);
             }
             else if (which == DialogViewInterface.BUTTON_SECOND) {
-               listener.onButtonSelected(ProcessDialog.this, Operation.Action.COPY_AND_REPLACE);
+               listener.onButtonSelected(ProcessDialog.this, DataManagementBaseAdapter.Action.ACTION2);
             }
             else if (which == DialogViewInterface.BUTTON_THIRD) {
                listener.onButtonSelected(ProcessDialog.this, null);
@@ -113,19 +107,31 @@ public class ProcessDialog extends DialogView {
 
       adapter.setOnTargetSelectedListener(new DataManagementBaseAdapter.OnTargetSelectedListener() {
          @Override
-         public void onTargetSelected(boolean done, View convertView) {
-            log.trace("onTargetSelected({}, {})", done, convertView);
-            if (!done) {
-               View targetView = adapter.getView(convertView);
-               if (targetView == null) {
-                  ProcessDialog.this.hide();
-               }
-            }
-            else {
-               ProcessDialog.this.hide();
-            }
+         public void onTargetSelected() {
+            updateView();
          }
       });
+
+      updateView();
+   }
+
+   //let adapter either create new or reuse existing view
+   private void updateView() {
+      final String nextType = adapter.getType(adapter.getPosition());
+      DataManagementBaseAdapter.ViewHolder targetView = null;
+      if(viewCache.containsKey(nextType)) {
+         targetView = adapter.getView(viewCache.get(nextType));
+      }
+      else {
+         targetView = adapter.getView(null);
+         viewCache.put(nextType, targetView);
+      }
+      if (targetView == null) {
+         hide();
+      }
+      else if (targetView.getRoot() != body){
+         setBodyView(targetView.getRoot());
+      }
    }
 
    /**

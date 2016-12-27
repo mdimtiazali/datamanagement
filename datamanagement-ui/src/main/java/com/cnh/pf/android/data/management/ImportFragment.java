@@ -45,6 +45,7 @@ import java.util.Set;
 
 import roboguice.event.EventThread;
 import roboguice.event.Observes;
+import roboguice.inject.InjectResource;
 import roboguice.inject.InjectView;
 
 /**
@@ -73,6 +74,18 @@ public class ImportFragment extends BaseDataFragment {
    ProcessDialog processDialog;
    //store original data in case cancel is pressed.  so we can restore it.
    private List<ObjectGraph> originalData;
+
+   @InjectResource(R.string.keep_both)
+   String keepBothStr;
+   @InjectResource(R.string.copy_and_replace)
+   String replaceStr;
+   @InjectResource(R.string.data_conflict)
+   String dataConflictStr;
+   @InjectResource(R.string.select_target)
+   String selectTargetStr;
+   @InjectResource(R.string.next)
+   String nextStr;
+
 
    @Override
    public void inflateViews(LayoutInflater inflater, View leftPanel) {
@@ -200,8 +213,11 @@ public class ImportFragment extends BaseDataFragment {
          if (hasMultipleTargets) {
             TargetProcessViewAdapter adapter = new TargetProcessViewAdapter(getActivity(), getSession().getData());
             processDialog.setAdapter(adapter);
+            processDialog.setTitle(selectTargetStr);
+            processDialog.setFirstButtonText(nextStr);
+            processDialog.showFirstButton(true);
+            processDialog.showSecondButton(false);
             processDialog.clearLoading();
-            processDialog.setTitle(getResources().getString(R.string.select_target));
             adapter.setOnTargetsSelectedListener(new TargetProcessViewAdapter.OnTargetsSelectedListener() {
                @Override
                public void onCompletion(List<Operation> operations) {
@@ -229,8 +245,11 @@ public class ImportFragment extends BaseDataFragment {
          if (hasConflicts) {
             DataConflictViewAdapter adapter = new DataConflictViewAdapter(getActivity(), getSession().getData());
             processDialog.setAdapter(adapter);
+            processDialog.setTitle(dataConflictStr);
             processDialog.showFirstButton(true);
+            processDialog.setFirstButtonText(keepBothStr);
             processDialog.showSecondButton(true);
+            processDialog.setSecondButtonText(replaceStr);
             processDialog.clearLoading();
             adapter.setOnTargetsSelectedListener(new DataManagementBaseAdapter.OnTargetsSelectedListener() {
                @Override
