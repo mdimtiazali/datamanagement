@@ -220,7 +220,7 @@ public class AddOrEditVarietyDialog extends DialogView {
             if (variety.getId() != modifiedVariety.getId() && variety.getName().equals(newName)) {
                // name already used by other variety
                setFirstButtonEnabled(false);
-               inputField.setErrorIndicator(Widget.ErrorIndicator.INVALID);
+               inputField.setErrorIndicator(Widget.ErrorIndicator.NEEDS_CHECKING);
                return;
             }
          }
