@@ -54,9 +54,11 @@ import com.cnh.android.pf.widget.view.DisabledOverlay.MODE;
 import com.cnh.android.vip.aidl.IVIPListenerAIDL;
 import com.cnh.android.vip.aidl.IVIPServiceAIDL;
 import com.cnh.android.vip.aidl.SimpleVIPListener;
+import com.cnh.android.widget.Widget;
 import com.cnh.android.widget.control.AbstractStepperView;
 import com.cnh.android.widget.control.CategoryButtons;
 import com.cnh.android.widget.control.CategoryButtons.CategoryButtonsEventListener;
+import com.cnh.android.widget.control.InputField;
 import com.cnh.android.widget.control.PickList;
 import com.cnh.android.widget.control.PickListAdapter;
 import com.cnh.android.widget.control.PickListEditable;
@@ -139,7 +141,7 @@ public class ProductMixDialog extends DialogView {
    private TextView densityValueTitleText;
    private SegmentedToggleButtonGroupPickList densityUnitPickList;
    private Button addMoreButton;
-   private EditText productMixTitleEditText;
+   private InputField productMixNameInputField;
    private PickList productMixFormPickList;
    private DisabledOverlay overlay;
    private boolean isAddNewProductOpen = false;
@@ -148,7 +150,7 @@ public class ProductMixDialog extends DialogView {
       @Override
       public void onCategoryButtonsBeforeExpand(CategoryButtons categoryButtons) {
          InputMethodManager imm = (InputMethodManager) getContext().getSystemService(Context.INPUT_METHOD_SERVICE);
-         imm.hideSoftInputFromWindow(productMixTitleEditText.getWindowToken(), 0);
+         imm.hideSoftInputFromWindow(productMixNameInputField.getWindowToken(), 0);
       }
 
       @Override
@@ -292,7 +294,7 @@ public class ProductMixDialog extends DialogView {
 
       if (actionType == ProductMixesDialogActionType.COPY) {
          if (productMix != null && productMix.getProductMixParameters() != null) {
-            productMixTitleEditText.setText(String.format("%s -%s", productMix.getProductMixParameters().getName(), getContext().getString(R.string.copy)));
+            productMixNameInputField.setText(String.format("%s -%s", productMix.getProductMixParameters().getName(), getContext().getString(R.string.copy)));
          }
       }
       return this;
@@ -328,8 +330,8 @@ public class ProductMixDialog extends DialogView {
       applicationRateMinStepper = (StepperView) this.findViewById(R.id.product_mix_application_rates_stepperview_rate_min);
       applicationRatesUnitsPickList = (SegmentedToggleButtonGroupPickList) this.findViewById(R.id.product_mix_application_rates_segmentedtogglebuttongroup_units);
       productMixTable = (TableLayout) this.findViewById(R.id.product_mix_dialog_application_rates_table);
-      productMixTitleEditText = (EditText) this.findViewById(R.id.product_mix_edittext_product_mix_name);
-      productMixTitleEditText.setImeOptions(EditorInfo.IME_FLAG_NO_EXTRACT_UI | EditorInfo.IME_ACTION_DONE);
+      productMixNameInputField = (InputField) this.findViewById(R.id.product_mix_name_input_field);
+      productMixNameInputField.setImeOptions(EditorInfo.IME_FLAG_NO_EXTRACT_UI | EditorInfo.IME_ACTION_DONE);
       productMixFormPickList = (PickList) this.findViewById(R.id.product_mix_picklist_product_form);
       mixProductsLayout = (LinearLayout) this.findViewById(R.id.product_mix_product_list_view);
       mixProductCategoryButton = (CategoryButtons) this.findViewById(R.id.product_mix_categorybuttons_mix_product_view);
@@ -350,14 +352,21 @@ public class ProductMixDialog extends DialogView {
       if (this.actionType == ProductMixesDialogActionType.ADD) {
          this.productMix = new ProductMix();
       }
-      if (productMixTitleEditText != null) {
-         productMixTitleEditText.setOnEditorActionListener(new OnEditorActionListener() {
+      if (productMixNameInputField != null) {
+         productMixNameInputField.addTextChangedListener(new TextWatcher() {
             @Override
-            public boolean onEditorAction(TextView textView, int actionId, KeyEvent keyEvent) {
-               if (actionId == EditorInfo.IME_ACTION_DONE) {
-                  updateAddButtonState();
-               }
-               return false;
+            public void beforeTextChanged(CharSequence charSequence, int i, int i1, int i2) {
+
+            }
+
+            @Override
+            public void onTextChanged(CharSequence charSequence, int i, int i1, int i2) {
+
+            }
+
+            @Override
+            public void afterTextChanged(Editable editable) {
+               updateAddButtonState();
             }
          });
       }
@@ -410,7 +419,7 @@ public class ProductMixDialog extends DialogView {
       Product productMixParameters = productMix.getProductMixParameters();
       //Add Product mix name and form to UI
       {
-         productMixTitleEditText.setText(productMixParameters.getName());
+         productMixNameInputField.setText(productMixParameters.getName());
          productMixForm = productMixParameters.getForm();
          productMixFormPickList.setSelectionByPosition(ProductForm.valueOf(productMixForm.name()).ordinal());
       }
@@ -485,7 +494,7 @@ public class ProductMixDialog extends DialogView {
       }
       if (actionType == ProductMixesDialogActionType.COPY) {
          if (productMix != null && productMix.getProductMixParameters() != null) {
-            productMixTitleEditText.setText(String.format("%s - %s", productMix.getProductMixParameters().getName(), getContext().getString(R.string.copy)));
+            productMixNameInputField.setText(String.format("%s - %s", productMix.getProductMixParameters().getName(), getContext().getString(R.string.copy)));
          }
          updateAddButtonState();
       }
@@ -947,7 +956,7 @@ public class ProductMixDialog extends DialogView {
          tempProductMix.setMixType(MixType.FORMULA);
          tempProductMix.setProductCarrier(productCarrier);
          tempProductMix.setRecipe(createProductRecipeList());
-         productMixParameters.setName(productMixTitleEditText.getText().toString());
+         productMixParameters.setName(productMixNameInputField.getText().toString());
          tempProductMix.setProductMixParameters(productMixParameters);
          tempProductMix.setMixTotalAmount(totalAmount);
 
@@ -1830,9 +1839,13 @@ public class ProductMixDialog extends DialogView {
     * If all required data will set, the "add" button will enable
     */
    private void updateAddButtonState() {
-      String productMixName = productMixTitleEditText.getText().toString();
-      if (this.applicationRate1Stepper != null && this.applicationRate1Stepper.getValue() > 0 && isCarrierSet && isOneProductMixSet && isProductMixFormSet
-            && !productMixName.isEmpty() && this.carrierProductHolder != null && this.carrierProductHolder.productAmount.getValue() > 0) {
+      String productMixName = productMixNameInputField.getText().toString().trim();
+      if (productMixName.isEmpty()){
+         this.setFirstButtonEnabled(false);
+         productMixNameInputField.setErrorIndicator(Widget.ErrorIndicator.NONE);
+         return;
+      }
+      else {
          for (ProductMix productMix: productMixes){
             if (this.actionType.equals(ProductMixesDialogActionType.EDIT)){
                if (productMix.getId() == this.productMix.getId()){
@@ -1841,9 +1854,15 @@ public class ProductMixDialog extends DialogView {
             }
             if (productMixName.equals(productMix.getProductMixParameters().getName())){
                this.setFirstButtonEnabled(false);
+               productMixNameInputField.setErrorIndicator(Widget.ErrorIndicator.NEEDS_CHECKING);
                return;
             }
          }
+         productMixNameInputField.setErrorIndicator(Widget.ErrorIndicator.NONE);
+      }
+      if (this.applicationRate1Stepper != null && this.applicationRate1Stepper.getValue() > 0 && isCarrierSet
+              && isOneProductMixSet && isProductMixFormSet && this.carrierProductHolder != null
+              && this.carrierProductHolder.productAmount.getValue() > 0) {
          this.setFirstButtonEnabled(true);
       }
       else {

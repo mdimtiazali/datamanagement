@@ -33,48 +33,27 @@
                     android:orientation="horizontal"
                     android:layout_marginBottom="20dp">
 
-                <LinearLayout
+                <com.cnh.android.widget.control.InputField
+                        android:id="@+id/product_mix_name_input_field"
                         android:layout_width="0dp"
                         android:layout_height="wrap_content"
                         android:layout_weight="1"
-                        android:layout_marginEnd="15dp"
-                        android:orientation="vertical">
+                        android:layout_marginEnd="10dp"
+                        android:imeOptions="actionDone"
+                        cnh:searchIcon="false"
+                        cnh:clearIcon="false"
+                        android:singleLine="true"
+                        android:inputType="textCapWords"
+                        cnh:headerText="@string/product_mix_title_name"/>
 
-                    <TextView
-                            android:layout_width="wrap_content"
-                            android:layout_height="wrap_content"
-                            style="@style/TextAppearance.Widget.Header"
-                            android:text="@string/product_mix_title_name" />
-
-                    <EditText
-                            android:id="@+id/product_mix_edittext_product_mix_name"
-                            android:layout_width="match_parent"
-                            android:layout_height="wrap_content"
-                            style="@style/EditText"
-                            android:imeOptions="actionDone"
-                            android:singleLine="true" />
-
-                </LinearLayout>
-
-                <LinearLayout
-                        android:layout_width="0dp"
-                        android:layout_height="match_parent"
+                <com.cnh.android.widget.control.PickList
+                        android:id="@+id/product_mix_picklist_product_form"
+                        android:layout_marginStart="10dp"
                         android:layout_weight="1"
-                        android:layout_marginStart="5dp"
-                        android:orientation="vertical">
-
-                    <TextView
-                            android:layout_width="wrap_content"
-                            android:layout_height="wrap_content"
-                            style="@style/TextAppearance.Widget.Header"
-                            android:text="@string/product_mix_title_product_mix_form" />
-
-                    <com.cnh.android.widget.control.PickList
-                            android:id="@+id/product_mix_picklist_product_form"
-                            android:layout_width="match_parent"
-                            android:layout_height="wrap_content"
-                            cnh:defaultPickListTextId="@string/product_mix_title_picklist_default_select" />
-                </LinearLayout>
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        cnh:defaultPickListTextId="@string/product_mix_title_picklist_default_select"
+                        cnh:headerText="@string/product_mix_title_product_mix_form"/>
             </LinearLayout>
 
             <LinearLayout
