@@ -715,6 +715,8 @@ public class ProductLibraryFragment extends RoboFragment implements ProductMixCa
             varietiesSearch.addTextChangedListener(new SearchInputTextWatcher(varietiesSearch));
          } else {
             varietyAdapter.setVarietyList(varietyList);
+            // the new varietyList needs to be filtered with the old filter input
+            varietyAdapter.getFilter().filter(varietiesSearch.getText());
             varietiesListView.setAdapter(varietyAdapter);
          }
          if (varietyComparator != null) {
