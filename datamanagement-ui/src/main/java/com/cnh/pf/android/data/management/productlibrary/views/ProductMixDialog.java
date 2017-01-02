@@ -687,10 +687,13 @@ public class ProductMixDialog extends DialogView {
     * @return true if the title is valid false otherwise
     */
    private boolean isNewProductTitleValid(Editable title){
-      if (title == null || title.toString() == null || title.toString().isEmpty()){
+      if (title == null || title.toString() == null){
          return false;
       }
-      String titleString = title.toString();
+      String titleString = title.toString().trim();
+      if (titleString.isEmpty()){
+         return false;
+      }
       for (Product product: productList){
          if (product.getName().equals(titleString)){
             return false;
