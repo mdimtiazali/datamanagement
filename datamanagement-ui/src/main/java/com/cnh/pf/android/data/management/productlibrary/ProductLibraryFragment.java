@@ -321,20 +321,18 @@ public class ProductLibraryFragment extends RoboFragment implements ProductMixCa
             break;
          case WHAT_GET_VARIETY_LIST:
             log.debug("Loading Variety list");
-
             new VIPAsyncTask<IVIPServiceAIDL, List<Variety>>(vipService, new GenericListener<List<Variety>>() {
                @Override
                public void handleEvent(final List<Variety> newVarietyList) {
-                  log.debug("got variety list:" + newVarietyList);
+                  log.debug("got variety list: {}", newVarietyList);
                   populateVarieties(newVarietyList);
                }
             }).execute(new GetVarietyListCommand());
-
+            break;
          default:
             log.info("Unexpected default case in vip handler");
             break;
          }
-
       }
    };
 
@@ -710,15 +708,17 @@ public class ProductLibraryFragment extends RoboFragment implements ProductMixCa
          setVarietyPanelSubheading();
          if (varietyAdapter == null) {
             varietyAdapter = new VarietyAdapter(getActivity().getApplicationContext(), varietyList, (TabActivity) getActivity(), vipService);
-            varietiesListView.setAdapter(varietyAdapter);
-            varietiesSearch.setFilterable(varietyAdapter);
-            varietiesSearch.addTextChangedListener(new SearchInputTextWatcher(varietiesSearch));
-         } else {
+         }
+         else {
             varietyAdapter.setVarietyList(varietyList);
             // the new varietyList needs to be filtered with the old filter input
             varietyAdapter.getFilter().filter(varietiesSearch.getText());
-            varietiesListView.setAdapter(varietyAdapter);
          }
+         // Because android creates new views during onCreateView which is also called the user switches the tab and
+         // returns to this tab/fragment the next lines have to be executed whether we create a new adapter or not.
+         varietiesListView.setAdapter(varietyAdapter);
+         varietiesSearch.setFilterable(varietyAdapter);
+         varietiesSearch.addTextChangedListener(new SearchInputTextWatcher(varietiesSearch));
          if (varietyComparator != null) {
             varietyAdapter.sort(varietyComparator, varietySortAscending);
          }

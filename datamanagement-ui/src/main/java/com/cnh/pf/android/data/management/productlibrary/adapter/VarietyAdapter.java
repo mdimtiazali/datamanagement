@@ -120,12 +120,16 @@ public final class VarietyAdapter extends BaseAdapter implements Filterable {
 
    @Override
    public int getCount() {
-      return filteredList.size();
+      synchronized (listsLock) {
+         return filteredList.size();
+      }
    }
 
    @Override
    public Object getItem(int i) {
-      return filteredList.get(i);
+      synchronized (listsLock) {
+         return filteredList.get(i);
+      }
    }
 
    @Override
@@ -291,42 +295,41 @@ public final class VarietyAdapter extends BaseAdapter implements Filterable {
       @Override
       protected FilterResults performFiltering(CharSequence charSequence) {
          final FilterResults results = new FilterResults();
-         if (originalList == null){
-            synchronized (listsLock) {
-               originalList = new ArrayList<Variety>(filteredList);
-            }
-         }
          final ArrayList<Variety> copyOfOriginalList;
          synchronized (listsLock) {
+            if (originalList == null) {
+               originalList = new ArrayList<Variety>(filteredList);
+            }
             copyOfOriginalList = new ArrayList<Variety>(originalList);
-         }
-         if (charSequence == null || charSequence.length() == 0) {
-            results.values = copyOfOriginalList;
-            results.count = copyOfOriginalList.size();
-         } else {
-            final ArrayList<Variety> newVarietyList = new ArrayList<Variety>();
-            for (Variety variety : copyOfOriginalList) {
-               if (variety != null) {
-                  final String searchString = charSequence.toString().toLowerCase();
-                  if (variety.getName().toLowerCase().contains(searchString)) {
-                     newVarietyList.add(variety);
-                  } else {
-                     if (getCropTypeText(variety).toLowerCase().contains(charSequence)) {
+            if (charSequence == null || charSequence.length() == 0) {
+               results.values = copyOfOriginalList;
+               results.count = copyOfOriginalList.size();
+            }
+            else {
+               final ArrayList<Variety> newVarietyList = new ArrayList<Variety>();
+               for (Variety variety : copyOfOriginalList) {
+                  if (variety != null) {
+                     final String searchString = charSequence.toString().toLowerCase();
+                     if (variety.getName().toLowerCase().contains(searchString)) {
                         newVarietyList.add(variety);
+                     }
+                     else {
+                        if (getCropTypeText(variety).toLowerCase().contains(charSequence)) {
+                           newVarietyList.add(variety);
+                        }
                      }
                   }
                }
+               results.values = newVarietyList;
+               results.count = newVarietyList.size();
             }
-            results.values = newVarietyList;
-            results.count = newVarietyList.size();
+            filteredList = (List<Variety>) results.values;
          }
          return results;
       }
 
       @Override
       protected void publishResults(CharSequence constraint, FilterResults results) {
-         //noinspection unchecked
-         filteredList = (List<Variety>) results.values;
          if (results.count > 0) {
             notifyDataSetChanged();
          } else {
