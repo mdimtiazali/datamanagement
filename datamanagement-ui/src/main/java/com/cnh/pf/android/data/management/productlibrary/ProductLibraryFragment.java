@@ -11,7 +11,6 @@ package com.cnh.pf.android.data.management.productlibrary;
 import android.app.AlertDialog;
 import android.content.DialogInterface;
 import android.content.res.Resources;
-import android.graphics.Typeface;
 import android.graphics.drawable.Drawable;
 import android.os.Bundle;
 import android.os.Handler;
@@ -20,22 +19,17 @@ import android.os.Message;
 import android.os.RemoteException;
 import android.text.Editable;
 import android.text.TextWatcher;
-import android.view.Gravity;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.View.OnClickListener;
 import android.view.ViewGroup;
-import android.view.ViewGroup.LayoutParams;
 import android.widget.Button;
 import android.widget.ExpandableListView;
-import android.widget.FrameLayout;
 import android.widget.ImageButton;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.ListView;
 import android.widget.RelativeLayout;
-import android.widget.TableLayout;
-import android.widget.TableRow;
 import android.widget.TextView;
 
 import com.cnh.android.dialog.DialogViewInterface;
@@ -48,11 +42,9 @@ import com.cnh.android.pf.widget.utilities.UiUtility;
 import com.cnh.android.pf.widget.utilities.UnitUtility;
 import com.cnh.android.pf.widget.utilities.UnitsSettings;
 import com.cnh.android.pf.widget.utilities.commands.DeleteProductCommand;
-import com.cnh.android.pf.widget.utilities.commands.DeleteProductMixCommand;
 import com.cnh.android.pf.widget.utilities.commands.GetVarietyListCommand;
 import com.cnh.android.pf.widget.utilities.commands.LoadProductMixListCommand;
 import com.cnh.android.pf.widget.utilities.commands.ProductCommandParams;
-import com.cnh.android.pf.widget.utilities.commands.ProductMixCommandParams;
 import com.cnh.android.pf.widget.utilities.listeners.GenericListener;
 import com.cnh.android.pf.widget.utilities.tasks.VIPAsyncTask;
 import com.cnh.android.pf.widget.view.DisabledOverlay;
@@ -64,11 +56,11 @@ import com.cnh.android.widget.activity.TabActivity;
 import com.cnh.android.widget.control.ProgressiveDisclosureView;
 import com.cnh.pf.android.data.management.DataManagementActivity;
 import com.cnh.pf.android.data.management.R;
+import com.cnh.pf.android.data.management.productlibrary.adapter.ProductMixAdapter;
 import com.cnh.pf.android.data.management.productlibrary.adapter.VarietyAdapter;
 import com.cnh.pf.android.data.management.productlibrary.utility.SearchableSortableExpandableListAdapter;
 import com.cnh.pf.android.data.management.productlibrary.utility.UiHelper;
 import com.cnh.pf.android.data.management.productlibrary.utility.filters.ProductFilter;
-import com.cnh.pf.android.data.management.productlibrary.utility.filters.ProductMixFilter;
 import com.cnh.pf.android.data.management.productlibrary.utility.sorts.AbstractProductComparator;
 import com.cnh.pf.android.data.management.productlibrary.utility.sorts.AbstractProductMixComparator;
 import com.cnh.pf.android.data.management.productlibrary.utility.sorts.AbstractVarietyComparator;
@@ -85,7 +77,6 @@ import com.cnh.pf.android.data.management.productlibrary.views.ListHeaderSortVie
 import com.cnh.pf.android.data.management.productlibrary.views.NestedExpandableListView;
 import com.cnh.pf.android.data.management.productlibrary.views.ProductMixDialog;
 import com.cnh.pf.android.data.management.productlibrary.views.ProductMixDialog.ProductMixCallBack;
-import com.cnh.pf.android.data.management.productlibrary.views.ProductMixDialog.ProductMixesDialogActionType;
 import com.cnh.pf.model.TableChangeEvent;
 import com.cnh.pf.model.product.configuration.ControllerProductConfiguration;
 import com.cnh.pf.model.product.configuration.DriveProductConfiguration;
@@ -96,7 +87,6 @@ import com.cnh.pf.model.product.library.MeasurementSystem;
 import com.cnh.pf.model.product.library.Product;
 import com.cnh.pf.model.product.library.ProductForm;
 import com.cnh.pf.model.product.library.ProductMix;
-import com.cnh.pf.model.product.library.ProductMixRecipe;
 import com.cnh.pf.model.product.library.ProductUnits;
 import com.cnh.pf.model.vip.vehimp.Implement;
 import com.cnh.pf.model.vip.vehimp.ImplementCurrent;
@@ -123,8 +113,8 @@ public class ProductLibraryFragment extends RoboFragment implements ProductMixCa
    private static final String PRODUCT_LIST = "product list";
    private static final String PRODUCT_UNITS_LIST = "product units list";
    private static final String CURRENT_PRODUCT = "current product";
-   private static final int LEFT_RIGHT_MARGIN = 42;
-   private static final int TOP_BOTTOM_MARGIN = 1;
+   public static final int LEFT_RIGHT_MARGIN = 42;
+   public static final int TOP_BOTTOM_MARGIN = 1;
    public static final int DIALOG_WIDTH = 817;
    public static final int DIALOG_HEIGHT = 400;
    private boolean isProductMixListDelivered = false;
@@ -341,7 +331,7 @@ public class ProductLibraryFragment extends RoboFragment implements ProductMixCa
     * @param input
     * @return string
     */
-   private String toTitleCase(String input) {
+   private static String toTitleCase(String input) {
       StringBuilder titleCase = new StringBuilder();
       boolean nextTitleCase = true;
 
@@ -371,7 +361,7 @@ public class ProductLibraryFragment extends RoboFragment implements ProductMixCa
     * @return converted string
     * @deprecated never use see https://polarion.cnhind.com/polarion/#/project/pfhmidevdefects/workitem?id=pfhmi-dev-defects-3034
     */
-   private String friendlyName(String input) {
+   public static String friendlyName(String input) {
       String spaced = input.replace("_", " ");
       return toTitleCase(spaced);
    }
@@ -513,7 +503,7 @@ public class ProductLibraryFragment extends RoboFragment implements ProductMixCa
    }
 
    //TODO: Current Validate only Product not Product mixes
-   private boolean validateDeleteProduct(Product product) {
+   public boolean validateDeleteProduct(Product product) {
       if (controllerProductConfigurationList == null || controllerProductConfigurationList.isEmpty()) {
          return true;
       }
@@ -734,12 +724,12 @@ public class ProductLibraryFragment extends RoboFragment implements ProductMixCa
          isProductMixListDelivered = true;
          checkMode();
          setProductMixPanelSubheading();
-         productMixAdapter = new ProductMixAdapter();
+         productMixAdapter = new ProductMixAdapter(getActivity().getApplicationContext(), incomingProductMixList, (TabActivity) getActivity(), vipService, volumeMeasurementSystem,
+               massMeasurementSystem, this);
          productMixAdapter.setItems(incomingProductMixList);
          productMixListView.setAdapter(productMixAdapter);
          productMixSearch.setFilterable(productMixAdapter);
          productMixSearch.addTextChangedListener(new SearchInputTextWatcher(productMixSearch));
-         productMixAdapter.setFilter(new ProductMixFilter(productMixAdapter, getActivity(), incomingProductMixList));
          productMixAdapter.notifyDataSetChanged();
          if (productMixComparator != null) {
             productMixAdapter.sort(productMixComparator, productMixSortAscending);
@@ -929,402 +919,6 @@ public class ProductLibraryFragment extends RoboFragment implements ProductMixCa
    @Override
    public void loadProductMix(ProductMix productMix) {
       vipCommunicationHandler.obtainMessage(WHAT_LOAD_PRODUCT_MIX_LIST).sendToTarget();
-   }
-
-   private static class ProductMixGroupHolder {
-      public TextView nameText;
-      public TextView formText;
-      public TextView rateText;
-      public ImageView groupIndicator;
-      public ProductMix productMix;
-
-      public ProductMixGroupHolder(View view) {
-         if (view != null) {
-            this.nameText = (TextView) view.findViewById(R.id.product_mix_name_text);
-            this.formText = (TextView) view.findViewById(R.id.product_mix_form_text);
-            this.rateText = (TextView) view.findViewById(R.id.product_mix_rate_text);
-            this.groupIndicator = (ImageView) view.findViewById(R.id.product_mix_group_indicator);
-         }
-      }
-   }
-
-   private static class ProductMixChildHolder {
-      public TextView appRate1Text;
-      public TextView appRate2Text;
-      public ImageButton editButton;
-      public ImageButton copyButton;
-      public ImageButton deleteButton;
-      public TableLayout productRecipeTable;
-      public ImageView alertIcon;
-      public ProductMix productMix;
-
-      public ProductMixChildHolder(View view) {
-         if (view != null) {
-            this.appRate1Text = (TextView) view.findViewById(R.id.app_rate1_text);
-            this.appRate2Text = (TextView) view.findViewById(R.id.app_rate2_text);
-            this.productRecipeTable = (TableLayout) view.findViewById(R.id.product_mix_recipe_list);
-            this.editButton = (ImageButton) view.findViewById(R.id.edit_button);
-            this.copyButton = (ImageButton) view.findViewById(R.id.copy_button);
-            this.deleteButton = (ImageButton) view.findViewById(R.id.delete_button);
-            this.alertIcon = (ImageView) view.findViewById(R.id.alert_icon);
-         }
-      }
-   }
-
-   public final class ProductMixAdapter extends SearchableSortableExpandableListAdapter<ProductMix> {
-
-      /**
-       * Add all ProductMixRecipes to the Overviewtable
-       * @param tableLayout
-       * @param productMix
-       */
-      private void addProductsToTableLayout(TableLayout tableLayout, ProductMix productMix) {
-         if (tableLayout != null && productMix != null) {
-            int childCounter = tableLayout.getChildCount();
-            for (int i = 1; i < childCounter; i++) {
-               tableLayout.removeViewAt(1);
-            }
-            int viewCounter = 1;
-            Product carrierProduct = productMix.getProductCarrier().getProduct();
-            double defaultRate = productMix.getProductMixParameters().getDefaultRate();
-            double rate2 = productMix.getProductMixParameters().getRate2();
-            double totalAmount = productMix.getMixTotalAmount();
-            carrierProduct.setDefaultRate(calculateApplicationRate(productMix.getProductCarrier().getAmount(), defaultRate, totalAmount));
-            carrierProduct.setRate2(calculateApplicationRate(productMix.getProductCarrier().getAmount(), rate2, totalAmount));
-            tableLayout.addView(createTableRow(carrierProduct), viewCounter++);
-
-            for (ProductMixRecipe recipeElement : productMix.getRecipe()) {
-               Product product = recipeElement.getProduct();
-               product.setDefaultRate(calculateApplicationRate(recipeElement.getAmount(), defaultRate, totalAmount));
-               product.setRate2(calculateApplicationRate(recipeElement.getAmount(), rate2, totalAmount));
-               tableLayout.addView(createTableRow(product), viewCounter++);
-            }
-         }
-      }
-
-      /**
-       * Calculate the Application Rate for an ProductMix Element
-       * @param amount productmix amount
-       * @param productMixRate the
-       * @param totalAmount
-       * @return
-       */
-      private double calculateApplicationRate(double amount, double productMixRate, double totalAmount) {
-         double result = amount / totalAmount;
-         return productMixRate * result;
-      }
-
-      /**
-       * create Tablerow with product data
-       * @param product current product to extract the data into the several cells
-       * @return created TableRow
-       */
-      private TableRow createTableRow(Product product) {
-         TableRow tableRow = new TableRow(getActivity().getApplicationContext());
-         if (product != null) {
-            ProductUnits unit = ProductHelperMethods.retrieveProductRateUnits(
-                  product, ProductHelperMethods.getMeasurementSystemForProduct(
-                        product, volumeMeasurementSystem, massMeasurementSystem
-                  )
-            );
-            tableRow.setGravity(Gravity.CENTER);
-            TextView productNameTextView = new TextView(getActivity().getApplicationContext());
-            productNameTextView.setText(" " + product.getName());
-            productNameTextView.setTextSize(getResources().getDimensionPixelSize(R.dimen.product_mix_overview_application_rate_text_size));
-            productNameTextView.setTextColor(getResources().getColor(R.color.defaultTextColor));
-            productNameTextView.setTypeface(null, Typeface.BOLD);
-            productNameTextView.setBackgroundResource(R.drawable.product_mix_dialog_application_rates_table_background_cell);
-            tableRow.addView(productNameTextView, LayoutParams.MATCH_PARENT, LayoutParams.MATCH_PARENT);
-
-            TextView applicationRate1TextView = new TextView(getActivity().getApplicationContext());
-            applicationRate1TextView.setTextSize(getResources().getDimensionPixelSize(R.dimen.product_mix_overview_application_rate_text_size));
-            applicationRate1TextView.setTextColor(getResources().getColor(R.color.defaultTextColor));
-            applicationRate1TextView.setTypeface(null, Typeface.BOLD);
-            applicationRate1TextView.setBackgroundResource(R.drawable.product_mix_dialog_application_rates_table_background_cell);
-            if (unit != null) {
-               applicationRate1TextView.setText(String.format(" %.2f %s", product.getDefaultRate() * unit.getMultiplyFactorFromBaseUnits(), unit.getName()));
-            }
-            else {
-               applicationRate1TextView.setText(String.format(" %.2f %s", product.getDefaultRate(), ""));
-            }
-            tableRow.addView(applicationRate1TextView, FrameLayout.LayoutParams.MATCH_PARENT, FrameLayout.LayoutParams.MATCH_PARENT);
-
-            TextView applicationRate2TextView = new TextView(getActivity().getApplicationContext());
-            applicationRate2TextView.setTextSize(getResources().getDimensionPixelSize(R.dimen.product_mix_overview_application_rate_text_size));
-            applicationRate2TextView.setTextColor(getResources().getColor(R.color.defaultTextColor));
-            applicationRate2TextView.setTypeface(null, Typeface.BOLD);
-            applicationRate2TextView.setBackgroundResource(R.drawable.product_mix_dialog_application_rates_table_background_cell);
-            if (unit != null) {
-               applicationRate2TextView.setText(String.format(" %.2f %s", product.getRate2() * unit.getMultiplyFactorFromBaseUnits(), unit.getName()));
-            }
-            else {
-               applicationRate2TextView.setText(String.format(" %.2f %s", product.getRate2(), ""));
-            }
-            tableRow.addView(applicationRate2TextView, FrameLayout.LayoutParams.MATCH_PARENT, FrameLayout.LayoutParams.MATCH_PARENT);
-         }
-         return tableRow;
-      }
-
-      private void initGroupView(View view, ProductMix productDetail, boolean expanded, ViewGroup root, OnClickListener listener) {
-         ProductMixGroupHolder viewHolder;
-         if (view == null) {
-            view = inflateView(R.layout.product_mix_item, root);
-         }
-         if (view.getTag() == null) {
-            viewHolder = new ProductMixGroupHolder(view);
-            view.setTag(viewHolder);
-         }
-         else {
-            viewHolder = (ProductMixGroupHolder) view.getTag();
-         }
-
-         viewHolder.productMix = productDetail;
-         Product parameters = viewHolder.productMix.getProductMixParameters();
-         if (parameters != null) {
-            viewHolder.nameText.setText(parameters.getName());
-            if (parameters.getForm() != null) {
-               viewHolder.formText.setText(friendlyName(parameters.getForm().name()));
-            }
-            else {
-               viewHolder.formText.setText(friendlyName(ProductForm.LIQUID.name()));
-            }
-            viewHolder.rateText.setText(UnitUtility.formatRateUnits(parameters, parameters.getDefaultRate()));
-         }
-         viewHolder.groupIndicator.setImageDrawable(expanded ? arrowOpenDetails : arrowCloseDetails);
-         view.setOnClickListener(listener);
-      }
-
-      /**
-       * Retrieve the outer "collapsed" view of a product list item
-       * @param groupId
-       * @param expanded
-       * @param view
-       * @param viewGroup
-       * @return outer view of a product list item
-       */
-      public View getGroupView(final int groupId, boolean expanded, View view, final ViewGroup viewGroup) {
-         ProductMix productDetail = getGroup(groupId);
-         if (productDetail != null) {
-            if (view == null) {
-               view = inflateView(R.layout.product_mix_item, viewGroup);
-               if (view != null) {
-                  view.setTag(new ProductMixGroupHolder(view));
-               }
-            }
-            initGroupView(view, productDetail, expanded, viewGroup, new OnClickListener() {
-               @Override
-               public void onClick(View v) {
-                  if (viewGroup != null) {
-                     ExpandableListView listView = (ExpandableListView) viewGroup;
-                     for (int i = 0; i < getGroupCount(); i++) {
-                        if (i != groupId) {
-                           listView.collapseGroup(i);
-                        }
-                     }
-                     if (listView.isGroupExpanded(groupId)) {
-                        listView.collapseGroup(groupId);
-                     }
-                     else {
-                        listView.expandGroup(groupId, true);
-                     }
-                     productMixesPanel.resizeContent(false);
-                  }
-               }
-            });
-            UiHelper.setAlternatingTableItemBackground(getActivity().getApplicationContext(), groupId, view);
-         }
-         return view;
-      }
-
-      private void initChildView(View view, final ProductMix productDetail, ViewGroup root, OnClickListener editButtonClickListener,
-            OnClickListener copyButtonClickListener, OnClickListener deleteButtonClickListener, OnClickListener alertButtonClickListener) {
-         final ProductMixChildHolder viewHolder;
-
-         if (view == null) {
-            view = inflateView(R.layout.product_mix_item_child_details, root);
-         }
-
-         if (view.getTag() == null) {
-            viewHolder = new ProductMixChildHolder(view);
-            viewHolder.productMix = productDetail;
-            view.setTag(viewHolder);
-         }
-         else {
-            viewHolder = (ProductMixChildHolder) view.getTag();
-         }
-
-         viewHolder.productMix = productDetail;
-         if (viewHolder.productMix != null) {
-            Product productMixParameter = viewHolder.productMix.getProductMixParameters();
-            viewHolder.appRate1Text.setText(UnitUtility.formatRateUnits(
-                  productMixParameter, productDetail.getProductMixParameters().getDefaultRate())
-            );
-            viewHolder.appRate2Text.setText(UnitUtility.formatRateUnits(
-                  productMixParameter, productDetail.getProductMixParameters().getRate2())
-            );
-            addProductsToTableLayout(viewHolder.productRecipeTable, viewHolder.productMix);
-         }
-         viewHolder.alertIcon.setOnClickListener(alertButtonClickListener);
-         viewHolder.editButton.setOnClickListener(editButtonClickListener);
-         viewHolder.copyButton.setOnClickListener(copyButtonClickListener);
-         viewHolder.deleteButton.setOnClickListener(deleteButtonClickListener);
-      }
-
-      /**
-       * Retrieve the "expanded" view of a product list item
-       * @param group
-       * @param child
-       * @param expanded
-       * @param view
-       * @param viewGroup
-       * @return fully expanded product list item view
-       */
-      public View getChildView(final int group, int child, boolean expanded, View view, ViewGroup viewGroup) {
-         if (view == null) {
-            view = inflateView(R.layout.product_mix_item_child_details, viewGroup);
-            view.setTag(new ProductMixChildHolder(view));
-         }
-         final ProductMix productMixDetail = getChild(group, child);
-         final Product parameters = productMixDetail.getProductMixParameters();
-         final ProductMixChildHolder productMixChildHolder = (ProductMixChildHolder) view.getTag();
-         initChildView(view, productMixDetail, viewGroup,
-               new OnEditButtonClickListener(productMixDetail),
-               new OnCopyButtonClickListener(productMixDetail),
-               new OnDeleteButtonClickListener(parameters, productMixChildHolder, productMixDetail),
-               new OnAlertButtonClickListener(parameters, productMixDetail)
-         );
-         return view;
-      }
-
-      //Perhaps consider rewriting findViewById references below with dependency injection
-      @Override
-      public void notifyDataSetChanged() {
-         //only update if fragment is attached [filter class is executing publishResults when activity is closed]
-         if (isAdded()) {
-            super.notifyDataSetChanged();
-            if (productMixesPanel == null) {
-               productMixesPanel = (ProgressiveDisclosureView) productLibraryLayout.findViewById(R.id.product_mix_panel);
-            }
-            if (productMixesPanel != null) {
-               setProductMixPanelSubheading();
-               productMixesPanel.invalidate();
-            }
-         }
-      }
-
-      private class OnEditButtonClickListener implements OnClickListener {
-         private final ProductMix productMixDetail;
-
-         public OnEditButtonClickListener(ProductMix productMixDetail) {
-            this.productMixDetail = productMixDetail;
-         }
-
-         @Override
-         public void onClick(View view) {
-            ProductMixDialog editProductMixDialog = new ProductMixDialog(getActivity().getApplicationContext(), ProductMixesDialogActionType.EDIT, vipService, productMixDetail,
-                  ProductLibraryFragment.this, productMixList);
-            editProductMixDialog.setFirstButtonText(getResources().getString(R.string.save)).setSecondButtonText(getResources().getString(R.string.product_dialog_cancel_button))
-                  .showThirdButton(false).showThirdButton(false).setTitle(getResources().getString(R.string.product_mix_title_dialog_edit_product_mix))
-                  .setBodyHeight(DIALOG_HEIGHT).setBodyHeight(DIALOG_HEIGHT).setBodyView(R.layout.product_mix_dialog);
-
-            TabActivity useModal = (DataManagementActivity) getActivity();
-            useModal.showModalPopup(editProductMixDialog);
-
-            editProductMixDialog.setContentPaddings(LEFT_RIGHT_MARGIN, TOP_BOTTOM_MARGIN, LEFT_RIGHT_MARGIN, TOP_BOTTOM_MARGIN);
-            editProductMixDialog.disableButtonFirst(true);
-            editProductMixDialog.setDialogWidth(DIALOG_WIDTH);
-         }
-      }
-
-      private class OnCopyButtonClickListener implements OnClickListener {
-         private final ProductMix productMixDetail;
-
-         public OnCopyButtonClickListener(ProductMix productMixDetail) {
-            this.productMixDetail = productMixDetail;
-         }
-
-         @Override
-         public void onClick(View view) {
-            ProductMixDialog copyProductMixDialog = new ProductMixDialog(getActivity().getApplicationContext(), ProductMixesDialogActionType.COPY, vipService, productMixDetail,
-                  ProductLibraryFragment.this, productMixList);
-            copyProductMixDialog.setFirstButtonText(getResources().getString(R.string.product_dialog_add_button))
-                  .setSecondButtonText(getResources().getString(R.string.product_dialog_cancel_button)).showThirdButton(false).showThirdButton(false)
-                  .setTitle(getResources().getString(R.string.product_mix_title_dialog_copy_product_mix)).setBodyHeight(DIALOG_HEIGHT).setBodyHeight(DIALOG_HEIGHT)
-                  .setBodyView(R.layout.product_mix_dialog);
-
-            TabActivity useModal = (DataManagementActivity) getActivity();
-            useModal.showModalPopup(copyProductMixDialog);
-
-            copyProductMixDialog.setContentPaddings(LEFT_RIGHT_MARGIN, TOP_BOTTOM_MARGIN, LEFT_RIGHT_MARGIN, TOP_BOTTOM_MARGIN);
-            copyProductMixDialog.disableButtonFirst(true);
-            copyProductMixDialog.setDialogWidth(DIALOG_WIDTH);
-         }
-      }
-
-      private class OnDeleteButtonClickListener implements OnClickListener {
-         private final Product parameters;
-         private final ProductMixChildHolder productMixChildHolder;
-         private final ProductMix productMixDetail;
-
-         public OnDeleteButtonClickListener(Product parameters, ProductMixChildHolder productMixChildHolder, ProductMix productMixDetail) {
-            this.parameters = parameters;
-            this.productMixChildHolder = productMixChildHolder;
-            this.productMixDetail = productMixDetail;
-         }
-
-         @Override
-         public void onClick(View v) {
-            if (validateDeleteProduct(parameters)) {
-               productMixChildHolder.alertIcon.setVisibility(View.GONE);
-               final TextDialogView deleteDialog = new TextDialogView(getActivity().getApplicationContext());
-               deleteDialog.setBodyText(getString(R.string.delete_product_dialog_body_text));
-               deleteDialog.setFirstButtonText(getString(R.string.delete_dialog_confirm_button_text));
-               deleteDialog.setSecondButtonText(getString(R.string.cancel));
-               deleteDialog.showThirdButton(false);
-               deleteDialog.setOnButtonClickListener(new OnButtonClickListener() {
-                  @Override
-                  public void onButtonClick(DialogViewInterface dialogViewInterface, int buttonNumber) {
-                     switch (buttonNumber) {
-                     case DialogViewInterface.BUTTON_FIRST:
-                        ProductMixCommandParams params = new ProductMixCommandParams();
-                        params.productMix = productMixDetail;
-                        params.vipService = vipService;
-                        new VIPAsyncTask<ProductMixCommandParams, ProductMix>(params, null).execute(new DeleteProductMixCommand());
-                        break;
-                     }
-                     deleteDialog.dismiss();
-                  }
-               });
-               TabActivity useModal = (DataManagementActivity) getActivity();
-               useModal.showModalPopup(deleteDialog);
-            }
-            else {
-               productMixChildHolder.alertIcon.setVisibility(View.VISIBLE);
-            }
-         }
-      }
-
-      private class OnAlertButtonClickListener implements OnClickListener {
-         private final Product parameters;
-         private final ProductMix productMixDetail;
-
-         public OnAlertButtonClickListener(Product parameters, ProductMix productMixDetail) {
-            this.parameters = parameters;
-            this.productMixDetail = productMixDetail;
-         }
-
-         @Override
-         public void onClick(View v) {
-            log.debug("Alert button pressed for product - name: {}, id: {}", parameters.getName(), productMixDetail.getId());
-            new AlertDialog.Builder(getActivity()).setTitle(R.string.alert_title).setMessage(R.string.alert_in_use)
-                  .setPositiveButton(R.string.alert_dismiss, new DialogInterface.OnClickListener() {
-                     @Override
-                     public void onClick(DialogInterface dialog, int which) {
-                        dialog.dismiss();
-                     }
-                  }).show();
-         }
-      }
    }
 
    /**
@@ -1726,7 +1320,7 @@ public class ProductLibraryFragment extends RoboFragment implements ProductMixCa
    }
 
    /**
-    * Inflates a view defined by a resource id and attaches it to the root
+    * Inflates a view defined by a resource id and don't attach it to the root
     * @param resourceId the resource id of the view to inflate
     * @param root the new parent of the view
     * @return the created view, possibly returns null
@@ -1766,5 +1360,9 @@ public class ProductLibraryFragment extends RoboFragment implements ProductMixCa
             searchInput.setClearIconEnabled(true);
          }
       }
+   }
+
+   public ProgressiveDisclosureView getProductMixesPanel() {
+      return productMixesPanel;
    }
 }
