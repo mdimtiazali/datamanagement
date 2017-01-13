@@ -39,7 +39,8 @@
                     android:gravity="start"
                     android:text="@string/product_text_rate_one_label"
                     android:textSize="@dimen/product_item_small_text_size"
-                    android:textStyle="bold" />
+                    android:textStyle="bold"
+                    android:textColor="@android:color/black"/>
 
             <TextView
                     android:id="@+id/app_rate1_text"
@@ -48,7 +49,8 @@
                     android:gravity="end"
                     android:padding="@dimen/product_dialog_expand_small_top_margin"
                     android:text="@string/product_text_empty"
-                    android:textSize="@dimen/product_item_small_text_size" />
+                    android:textSize="@dimen/product_item_small_text_size"
+                    android:textColor="@android:color/black"/>
 
         </LinearLayout>
 
@@ -65,7 +67,8 @@
                     android:padding="@dimen/product_dialog_expand_small_top_margin"
                     android:text="@string/product_text_rate_two_label"
                     android:textSize="@dimen/product_item_small_text_size"
-                    android:textStyle="bold" />
+                    android:textStyle="bold"
+                    android:textColor="@android:color/black"/>
 
             <TextView
                     android:id="@+id/app_rate2_text"
@@ -74,7 +77,8 @@
                     android:gravity="end"
                     android:padding="@dimen/product_dialog_expand_small_top_margin"
                     android:text="@string/product_text_empty"
-                    android:textSize="@dimen/product_item_small_text_size" />
+                    android:textSize="@dimen/product_item_small_text_size"
+                    android:textColor="@android:color/black"/>
 
         </LinearLayout>
 
@@ -91,7 +95,8 @@
                     android:padding="@dimen/product_dialog_expand_small_top_margin"
                     android:text="@string/product_text_rate_delta_label"
                     android:textSize="@dimen/product_item_small_text_size"
-                    android:textStyle="bold" />
+                    android:textStyle="bold"
+                    android:textColor="@android:color/black"/>
 
             <TextView
                     android:id="@+id/delta_rate_text"
@@ -100,7 +105,8 @@
                     android:gravity="end"
                     android:padding="@dimen/product_dialog_expand_small_top_margin"
                     android:text="@string/product_text_empty"
-                    android:textSize="@dimen/product_item_small_text_size" />
+                    android:textSize="@dimen/product_item_small_text_size"
+                    android:textColor="@android:color/black"/>
 
         </LinearLayout>
 
@@ -118,7 +124,8 @@
                     android:padding="@dimen/product_dialog_expand_small_top_margin"
                     android:text="@string/product_text_vacuum_fan_rate_label"
                     android:textSize="@dimen/product_item_small_text_size"
-                    android:textStyle="bold" />
+                    android:textStyle="bold"
+                    android:textColor="@android:color/black"/>
 
             <TextView
                     android:id="@+id/vacuum_fan_rate_text"
@@ -127,7 +134,8 @@
                     android:gravity="end"
                     android:padding="@dimen/product_dialog_expand_small_top_margin"
                     android:text="@string/product_text_empty"
-                    android:textSize="@dimen/product_item_small_text_size" />
+                    android:textSize="@dimen/product_item_small_text_size"
+                    android:textColor="@android:color/black"/>
 
         </LinearLayout>
 
@@ -145,7 +153,8 @@
                     android:padding="@dimen/product_dialog_expand_small_top_margin"
                     android:text="@string/product_text_bulk_fill_fan_rate_label"
                     android:textSize="@dimen/product_item_small_text_size"
-                    android:textStyle="bold" />
+                    android:textStyle="bold"
+                    android:textColor="@android:color/black"/>
 
             <TextView
                     android:id="@+id/bulk_fill_fan_rate_text"
@@ -154,7 +163,8 @@
                     android:gravity="end"
                     android:padding="@dimen/product_dialog_expand_small_top_margin"
                     android:text="@string/product_text_empty"
-                    android:textSize="@dimen/product_item_small_text_size" />
+                    android:textSize="@dimen/product_item_small_text_size"
+                    android:textColor="@android:color/black"/>
 
         </LinearLayout>
 
@@ -171,7 +181,8 @@
                     android:padding="@dimen/product_dialog_expand_small_top_margin"
                     android:text="@string/product_text_package_label"
                     android:textSize="@dimen/product_item_small_text_size"
-                    android:textStyle="bold" />
+                    android:textStyle="bold"
+                    android:textColor="@android:color/black"/>
 
             <TextView
                     android:id="@+id/package_text"
@@ -180,7 +191,8 @@
                     android:gravity="end"
                     android:padding="@dimen/product_dialog_expand_small_top_margin"
                     android:text="@string/product_text_empty"
-                    android:textSize="@dimen/product_item_small_text_size" />
+                    android:textSize="@dimen/product_item_small_text_size"
+                    android:textColor="@android:color/black"/>
         </LinearLayout>
     </LinearLayout>
 
@@ -208,7 +220,8 @@
                     android:padding="@dimen/product_dialog_expand_small_top_margin"
                     android:text="@string/product_text_rate_min_label"
                     android:textSize="@dimen/product_item_small_text_size"
-                    android:textStyle="bold" />
+                    android:textStyle="bold"
+                    android:textColor="@android:color/black"/>
 
             <TextView
                     android:id="@+id/min_rate_text"
@@ -217,7 +230,8 @@
                     android:gravity="end"
                     android:padding="@dimen/product_dialog_expand_small_top_margin"
                     android:text="@string/product_text_empty"
-                    android:textSize="@dimen/product_item_small_text_size" />
+                    android:textSize="@dimen/product_item_small_text_size"
+                    android:textColor="@android:color/black"/>
 
         </LinearLayout>
 
@@ -234,7 +248,8 @@
                     android:padding="@dimen/product_dialog_expand_small_top_margin"
                     android:text="@string/product_text_rate_max_label"
                     android:textSize="@dimen/product_item_small_text_size"
-                    android:textStyle="bold" />
+                    android:textStyle="bold"
+                    android:textColor="@android:color/black"/>
 
             <TextView
                     android:id="@+id/max_rate_text"
@@ -243,7 +258,8 @@
                     android:gravity="end"
                     android:padding="@dimen/product_dialog_expand_small_top_margin"
                     android:text="@string/product_text_empty"
-                    android:textSize="@dimen/product_item_small_text_size" />
+                    android:textSize="@dimen/product_item_small_text_size"
+                    android:textColor="@android:color/black"/>
 
         </LinearLayout>
 
@@ -260,7 +276,8 @@
                     android:padding="@dimen/product_dialog_expand_small_top_margin"
                     android:text="@string/product_text_density_label"
                     android:textSize="@dimen/product_item_small_text_size"
-                    android:textStyle="bold" />
+                    android:textStyle="bold"
+                    android:textColor="@android:color/black"/>
 
             <TextView
                     android:id="@+id/density_text"
@@ -269,7 +286,8 @@
                     android:gravity="end"
                     android:padding="@dimen/product_dialog_expand_small_top_margin"
                     android:text="@string/product_text_empty"
-                    android:textSize="@dimen/product_item_small_text_size" />
+                    android:textSize="@dimen/product_item_small_text_size"
+                    android:textColor="@android:color/black"/>
 
         </LinearLayout>
 
@@ -287,7 +305,8 @@
                     android:padding="@dimen/product_dialog_expand_small_top_margin"
                     android:text="@string/product_text_vacuum_fan_delta_label"
                     android:textSize="@dimen/product_item_small_text_size"
-                    android:textStyle="bold" />
+                    android:textStyle="bold"
+                    android:textColor="@android:color/black"/>
 
             <TextView
                     android:id="@+id/vacuum_fan_delta_text"
@@ -296,7 +315,8 @@
                     android:gravity="end"
                     android:padding="@dimen/product_dialog_expand_small_top_margin"
                     android:text="@string/product_text_empty"
-                    android:textSize="@dimen/product_item_small_text_size" />
+                    android:textSize="@dimen/product_item_small_text_size"
+                    android:textColor="@android:color/black"/>
 
         </LinearLayout>
 
@@ -314,7 +334,8 @@
                     android:padding="@dimen/product_dialog_expand_small_top_margin"
                     android:text="@string/product_text_bulk_fill_fan_delta_label"
                     android:textSize="@dimen/product_item_small_text_size"
-                    android:textStyle="bold" />
+                    android:textStyle="bold"
+                    android:textColor="@android:color/black"/>
 
             <TextView
                     android:id="@+id/bulk_fill_fan_delta_text"
@@ -323,7 +344,8 @@
                     android:gravity="end"
                     android:padding="@dimen/product_dialog_expand_small_top_margin"
                     android:text="@string/product_text_empty"
-                    android:textSize="@dimen/product_item_small_text_size" />
+                    android:textSize="@dimen/product_item_small_text_size"
+                    android:textColor="@android:color/black"/>
         </LinearLayout>
     </LinearLayout>
 

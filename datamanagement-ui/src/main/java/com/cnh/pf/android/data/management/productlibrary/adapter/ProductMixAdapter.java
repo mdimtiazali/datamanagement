@@ -58,7 +58,7 @@ import java.util.List;
 
 /**
  * Adapter for ProductMix-ListView.
- *
+ * @author waldschmidt (original coppied from joorjitham or helmig)
  */
 public final class ProductMixAdapter extends SearchableSortableExpandableListAdapter<ProductMix> {
 
@@ -84,7 +84,7 @@ public final class ProductMixAdapter extends SearchableSortableExpandableListAda
     * @param productLibraryFragment the productLibraryFragment this adapter is connected to
     */
    public ProductMixAdapter(final Context context, final List<ProductMix> productMixes, final TabActivity tabActivity, final IVIPServiceAIDL vipService,
-         MeasurementSystem volumeMeasurementSystem, MeasurementSystem massMeasurementSystem, ProductLibraryFragment productLibraryFragment) {
+         final MeasurementSystem volumeMeasurementSystem, final MeasurementSystem massMeasurementSystem, final ProductLibraryFragment productLibraryFragment) {
       super();
       setItems(productMixes);
       this.context = context;
@@ -92,8 +92,8 @@ public final class ProductMixAdapter extends SearchableSortableExpandableListAda
       this.vipService = vipService;
       this.volumeMeasurementSystem = volumeMeasurementSystem;
       this.massMeasurementSystem = massMeasurementSystem;
-      arrowCloseDetails = activity.getResources().getDrawable(R.drawable.arrow_down_expanded_productlist);
-      arrowOpenDetails = activity.getResources().getDrawable(R.drawable.arrow_up_expanded_productlist);
+      arrowCloseDetails = context.getResources().getDrawable(R.drawable.arrow_down_expanded_productlist);
+      arrowOpenDetails = context.getResources().getDrawable(R.drawable.arrow_up_expanded_productlist);
       this.productLibraryFragment = productLibraryFragment;
    }
 
