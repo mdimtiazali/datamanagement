@@ -152,8 +152,6 @@ public class ProductLibraryFragment extends RoboFragment implements ProductMixCa
    private IVIPServiceAIDL vipService;
    private IVIPListenerAIDL vipListener = new SimpleVIPListener() {
 
-      // TODO: deliverProductMix is missing to react on ProductMix updates when the fragment is visible ...
-
       @Override
       public void onError(String error) throws RemoteException {
          log.error("Remote error: " + error);
@@ -234,6 +232,19 @@ public class ProductLibraryFragment extends RoboFragment implements ProductMixCa
             @Override
             public void run() {
                populateVarieties(newVarietyList);
+            }
+         });
+      }
+
+      @Override
+      public void deliverProductMixList(final List<ProductMix> newProductMixList) throws RemoteException {
+         log.debug("deliverProductMixList");
+         getActivity().runOnUiThread(new Runnable() {
+            @Override
+            public void run() {
+               if (newProductMixList != null) {
+                  populateProductMixes(newProductMixList);
+               }
             }
          });
       }
@@ -696,7 +707,7 @@ public class ProductLibraryFragment extends RoboFragment implements ProductMixCa
 
    private synchronized void populateProductMixes(List<ProductMix> incomingProductMixList) {
       if (incomingProductMixList != null) {
-         this.productMixList = incomingProductMixList;
+         this.productMixList = new ArrayList<ProductMix>(incomingProductMixList);
          isProductMixListDelivered = true;
          checkMode();
          setProductMixPanelSubheading();
