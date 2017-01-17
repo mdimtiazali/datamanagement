@@ -138,6 +138,7 @@ public class DataManagementActivity extends TabActivity implements RoboContext, 
 
    @Override
    public void onCreate(Bundle savedInstanceState) {
+      logger.debug("onCreate called");
       final Application app = getApplication();
       //Phoenix Workaround (phoenix sometimes cannot read the manifest)
       RoboGuiceHelper.help(app, new String[] { "com.cnh.pf.android.data.management", "com.cnh.pf.jgroups" }, new RoboModule(app), new ChannelModule(app));
@@ -199,6 +200,7 @@ public class DataManagementActivity extends TabActivity implements RoboContext, 
 
    @Override
    public void onResume() {
+      logger.debug("onResume called");
       super.onResume();
       eventManager.fire(new OnResumeEvent(this));
       logger.debug("Sending INTERNAL_DATA broadcast");
@@ -208,6 +210,7 @@ public class DataManagementActivity extends TabActivity implements RoboContext, 
 
    @Override
    protected void onPause() {
+      logger.debug("onPause called");
       super.onPause();
       eventManager.fire(new OnPauseEvent(this));
       getApplicationContext().unbindService(this);
@@ -216,6 +219,7 @@ public class DataManagementActivity extends TabActivity implements RoboContext, 
 
    @Override
    public void onDestroy() {
+      logger.debug("onDestroy called");
       android.os.Process.killProcess(android.os.Process.myPid());
    }
 
@@ -239,7 +243,7 @@ public class DataManagementActivity extends TabActivity implements RoboContext, 
       if (vipService != null) {
          ProductLibraryFragment productLibraryFragment = productLibraryFragmentWeakReference.get();
          if (productLibraryFragment != null) {
-            productLibraryFragment.unregisterVIPService();
+            productLibraryFragment.setVipService(null);
          }
       }
    }

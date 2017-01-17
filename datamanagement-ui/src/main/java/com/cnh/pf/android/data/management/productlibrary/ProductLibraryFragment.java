@@ -81,6 +81,8 @@ import java.util.List;
 
 import roboguice.fragment.provided.RoboFragment;
 
+import javax.annotation.Nullable;
+
 /**
  * ProductLibraryFragment
  * Supplies tab interface for products (and eventually product mixes)
@@ -262,6 +264,7 @@ public class ProductLibraryFragment extends RoboFragment implements ProductMixCa
       public void handleMessage(Message msg) {
          switch (msg.what) {
          case WHAT_LOAD_PRODUCT_MIX_LIST:
+            log.debug("Loading Product Mix list...");
             new VIPAsyncTask<IVIPServiceAIDL, List<ProductMix>>(vipService, new GenericListener<List<ProductMix>>() {
                @Override
                public void handleEvent(List<ProductMix> productMixList) {
@@ -834,8 +837,15 @@ public class ProductLibraryFragment extends RoboFragment implements ProductMixCa
    @Override
    public void onResume() {
       log.debug("onResume called");
+
+      // super on resume must be called before registerVIPService because this checks isResumed()
       super.onResume();
-      if (vipService != null) {
+      registerVIPService();
+   }
+
+   private void registerVIPService() {
+      // isResumed() needs to be checked if this is called via setVIPService() - if the method is not resumed objects may be null.
+      if (vipService != null && isResumed()) {
          new Thread() {
             @Override
             public synchronized void start() {
@@ -857,6 +867,7 @@ public class ProductLibraryFragment extends RoboFragment implements ProductMixCa
       }
    }
 
+
    @Override
    public void onPause() {
       log.debug("onPause called");
@@ -867,7 +878,8 @@ public class ProductLibraryFragment extends RoboFragment implements ProductMixCa
    /**
     * unregister VIPService
     */
-   public void unregisterVIPService() {
+   private void unregisterVIPService() {
+      log.debug("unregister vip service {}", vipService);
       if (vipService != null) {
          try {
             vipService.unregister(identifier);
@@ -905,37 +917,32 @@ public class ProductLibraryFragment extends RoboFragment implements ProductMixCa
    }
 
    /**
-    * Set VIPService to listen to.
+    * Set VIPService to listen to. Can be null if you want to unregister the current referenced service.
     * @param vipService the vipService
     */
-   public void setVipService(IVIPServiceAIDL vipService) {
+   public void setVipService(@Nullable IVIPServiceAIDL vipService) {
+      log.debug("setVIPService called with {}", vipService);
+      // unregister the old one
+      unregisterVIPService();
       this.vipService = vipService;
+      registerVIPService();
       if (varietyAdapter != null){
          varietyAdapter.setVIPService(vipService);
       }
       if(addVarietyDialog != null){
          addVarietyDialog.setVIPService(vipService);
       }
+      if (productAdapter != null){
+         productAdapter.setVIPService(vipService);
+      }
+      if (productMixAdapter != null){
+         productMixAdapter.setVIPService(vipService);
+      }
    }
 
    @Override
    public void loadProductMix(ProductMix productMix) {
       vipCommunicationHandler.obtainMessage(WHAT_LOAD_PRODUCT_MIX_LIST).sendToTarget();
-   }
-
-   /**
-    * Inflates a view defined by a resource id but does not attach it to the root
-    * @param resourceId the resource id of the view to inflate
-    * @param root the new parent of the view
-    * @return the created view, possibly returns null
-    */
-   private View inflateView(int resourceId, ViewGroup root) {
-      if (getActivity() != null && getActivity().getLayoutInflater() != null) {
-         return getActivity().getLayoutInflater().inflate(resourceId, root, false);
-      }
-      else {
-         return null;
-      }
    }
 
    /**
