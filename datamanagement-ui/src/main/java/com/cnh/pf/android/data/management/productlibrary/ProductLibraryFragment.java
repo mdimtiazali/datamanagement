@@ -691,8 +691,8 @@ public class ProductLibraryFragment extends RoboFragment implements ProductMixCa
             // the new varietyList needs to be filtered with the old filter input
             varietyAdapter.getFilter().filter(varietiesSearch.getText());
          }
-         // Because android creates new views during onCreateView which is also called the user switches the tab and
-         // returns to this tab/fragment the next lines have to be executed whether we create a new adapter or not.
+         // Because android creates new views during onCreateView which is also called when the user switches the tab and
+         // returns to this tab/fragment. The next lines have to be executed whether we create a new adapter or not.
          varietiesListView.setAdapter(varietyAdapter);
          varietiesSearch.setFilterable(varietyAdapter);
          varietiesSearch.addTextChangedListener(new SearchInputTextWatcher(varietiesSearch));
@@ -711,13 +711,18 @@ public class ProductLibraryFragment extends RoboFragment implements ProductMixCa
          isProductMixListDelivered = true;
          checkMode();
          setProductMixPanelSubheading();
-         productMixAdapter = new ProductMixAdapter(getActivity().getApplicationContext(), incomingProductMixList, (TabActivity) getActivity(), vipService, volumeMeasurementSystem,
-               massMeasurementSystem, this);
-         productMixAdapter.setItems(incomingProductMixList);
+         if (productMixAdapter == null) {
+            productMixAdapter = new ProductMixAdapter(getActivity().getApplicationContext(), incomingProductMixList, (TabActivity) getActivity(), vipService, volumeMeasurementSystem,
+                  massMeasurementSystem, this);
+         }
+         else {
+            productMixAdapter.setItems(incomingProductMixList);
+         }
+         // Because android creates new views during onCreateView which is also called when the user switches the tab and
+         // returns to this tab/fragment. The next lines have to be executed whether we create a new adapter or not.
          productMixListView.setAdapter(productMixAdapter);
          productMixSearch.setFilterable(productMixAdapter);
          productMixSearch.addTextChangedListener(new SearchInputTextWatcher(productMixSearch));
-         productMixAdapter.notifyDataSetChanged();
          if (productMixComparator != null) {
             productMixAdapter.sort(productMixComparator, productMixSortAscending);
          }
@@ -736,20 +741,24 @@ public class ProductLibraryFragment extends RoboFragment implements ProductMixCa
          isProductListDelivered = true;
          checkMode();
          setProductPanelSubheading();
-         //TODO review this method and double check if refresh param is neccessary
          if (productListView != null && currentProduct != null && productListView.getSelectedItemId() != currentProduct.getId() && productListView.getSelectedId() > -1) {
             log.debug("Changing selection id. old: {}  new: {}", productListView.getSelectedItemId(), currentProduct.getId());
             currentProduct = productList.get((int) productListView.getSelectedId());
          }
-         productAdapter = new ProductAdapter(getActivity().getApplicationContext(), incomingProductList, (TabActivity) getActivity(), vipService, volumeMeasurementSystem,
-               massMeasurementSystem, this, productUnitsList, currentImplement);
-         productAdapter.setItems(productList);
+         if (productAdapter == null) {
+            productAdapter = new ProductAdapter(getActivity().getApplicationContext(), incomingProductList, (TabActivity) getActivity(), vipService, volumeMeasurementSystem,
+                    massMeasurementSystem, this, productUnitsList, currentImplement);
+         }
+         else {
+            productAdapter.setItems(productList);
+         }
          if (productListView != null) {
             productListView.setAdapter(productAdapter);
          }
+         // Because android creates new views during onCreateView which is also called when the user switches the tab and
+         // returns to this tab/fragment. The next lines have to be executed whether we create a new adapter or not.
          productSearch.setFilterable(productAdapter);
          productSearch.addTextChangedListener(new SearchInputTextWatcher(productSearch));
-         productAdapter.notifyDataSetChanged();
          if (currentProduct == null && productList.size() > 0) {
             currentProduct = productList.get(0);
          }
@@ -824,7 +833,7 @@ public class ProductLibraryFragment extends RoboFragment implements ProductMixCa
 
    @Override
    public void onResume() {
-      log.info("onResume called");
+      log.debug("onResume called");
       super.onResume();
       if (vipService != null) {
          new Thread() {
@@ -850,6 +859,7 @@ public class ProductLibraryFragment extends RoboFragment implements ProductMixCa
 
    @Override
    public void onPause() {
+      log.debug("onPause called");
       super.onPause();
       unregisterVIPService();
    }

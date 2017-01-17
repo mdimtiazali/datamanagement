@@ -21,6 +21,7 @@ import android.widget.ImageButton;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.TextView;
+
 import com.cnh.android.dialog.DialogViewInterface;
 import com.cnh.android.dialog.TextDialogView;
 import com.cnh.android.pf.widget.utilities.MathUtility;
@@ -30,7 +31,6 @@ import com.cnh.android.pf.widget.utilities.UnitUtility;
 import com.cnh.android.pf.widget.utilities.UnitsSettings;
 import com.cnh.android.pf.widget.utilities.commands.DeleteProductCommand;
 import com.cnh.android.pf.widget.utilities.commands.ProductCommandParams;
-import com.cnh.android.pf.widget.utilities.listeners.GenericListener;
 import com.cnh.android.pf.widget.utilities.tasks.VIPAsyncTask;
 import com.cnh.android.pf.widget.view.ProductDialog;
 import com.cnh.android.vip.aidl.IVIPServiceAIDL;
@@ -38,7 +38,6 @@ import com.cnh.android.widget.activity.TabActivity;
 import com.cnh.android.widget.control.ProgressiveDisclosureView;
 import com.cnh.pf.android.data.management.R;
 import com.cnh.pf.android.data.management.productlibrary.ProductLibraryFragment;
-import com.cnh.pf.android.data.management.productlibrary.utility.SearchableSortableExpandableListAdapter;
 import com.cnh.pf.android.data.management.productlibrary.utility.UiHelper;
 import com.cnh.pf.model.product.library.CNHPlanterFanData;
 import com.cnh.pf.model.product.library.MeasurementSystem;
@@ -47,6 +46,7 @@ import com.cnh.pf.model.product.library.ProductForm;
 import com.cnh.pf.model.product.library.ProductUnits;
 import com.cnh.pf.model.vip.vehimp.Implement;
 import com.cnh.pf.units.unit_constantsConstants;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -59,515 +59,516 @@ import java.util.List;
  */
 public final class ProductAdapter extends SearchableSortableExpandableListAdapter<Product> {
 
-    private static final Logger log = LoggerFactory.getLogger(ProductAdapter.class);
-    private final Context context;
-    private final TabActivity activity;
-    private IVIPServiceAIDL vipService;
-    private final Drawable arrowCloseDetails;
-    private final Drawable arrowOpenDetails;
-    private final String unitRpm;
-    private final String unitInH2O;
-    private List<ProductUnits> productUnits;
-    private Implement currentImplement;
+   private static final Logger log = LoggerFactory.getLogger(ProductAdapter.class);
+   private final Context context;
+   private final TabActivity activity;
+   private IVIPServiceAIDL vipService;
+   private final Drawable arrowCloseDetails;
+   private final Drawable arrowOpenDetails;
+   private final String unitRpm;
+   private final String unitInH2O;
+   private List<ProductUnits> productUnits;
+   private Implement currentImplement;
 
-    // the measurement systems could be loaded instead by the adapter itself via the vipservice
-    private MeasurementSystem volumeMeasurementSystem;
-    private MeasurementSystem massMeasurementSystem;
-    private final ProductLibraryFragment productLibraryFragment;
+   // the measurement systems could be loaded instead by the adapter itself via the vipservice
+   private MeasurementSystem volumeMeasurementSystem;
+   private MeasurementSystem massMeasurementSystem;
+   private final ProductLibraryFragment productLibraryFragment;
 
-    public ProductAdapter(final Context context, final List<Product> products, final TabActivity tabActivity, final IVIPServiceAIDL vipService,
-                          final MeasurementSystem volumeMeasurementSystem, final MeasurementSystem massMeasurementSystem, final ProductLibraryFragment productLibraryFragment,
-                          final List<ProductUnits> productUnits, final Implement currentImplement){
-        super();
-        setItems(products);
-        this.context = context;
-        this.activity = tabActivity;
-        this.vipService = vipService;
-        this.volumeMeasurementSystem = volumeMeasurementSystem;
-        this.massMeasurementSystem = massMeasurementSystem;
-        arrowCloseDetails = context.getResources().getDrawable(R.drawable.arrow_down_expanded_productlist);
-        arrowOpenDetails = context.getResources().getDrawable(R.drawable.arrow_up_expanded_productlist);
-        this.unitInH2O = context.getString(R.string.unit_in_h2o);
-        this.unitRpm = context.getString(R.string.unit_rpm);
-        this.productLibraryFragment = productLibraryFragment;
-        this.productUnits = productUnits;
-        this.currentImplement = currentImplement;
-    }
+   public ProductAdapter(final Context context, final List<Product> products, final TabActivity tabActivity, final IVIPServiceAIDL vipService,
+         final MeasurementSystem volumeMeasurementSystem, final MeasurementSystem massMeasurementSystem, final ProductLibraryFragment productLibraryFragment,
+         final List<ProductUnits> productUnits, final Implement currentImplement) {
+      super(products);
+      this.context = context;
+      this.activity = tabActivity;
+      this.vipService = vipService;
+      this.volumeMeasurementSystem = volumeMeasurementSystem;
+      this.massMeasurementSystem = massMeasurementSystem;
+      arrowCloseDetails = context.getResources().getDrawable(R.drawable.arrow_down_expanded_productlist);
+      arrowOpenDetails = context.getResources().getDrawable(R.drawable.arrow_up_expanded_productlist);
+      this.unitInH2O = context.getString(R.string.unit_in_h2o);
+      this.unitRpm = context.getString(R.string.unit_rpm);
+      this.productLibraryFragment = productLibraryFragment;
+      this.productUnits = productUnits;
+      this.currentImplement = currentImplement;
+   }
 
-    /**
-     * Setter for the vipService.
-     * @param vipService the vipService
-     */
-    public void setVIPService(final IVIPServiceAIDL vipService) {
-        this.vipService = vipService;
-    }
+   /**
+    * Setter for the vipService.
+    * @param vipService the vipService
+    */
+   public void setVIPService(final IVIPServiceAIDL vipService) {
+      this.vipService = vipService;
+   }
 
-    /**
-     * Setter for the list of all productUnits
-     * @param productUnits the productUnitsList
-     */
-    public void setProductUnits(List<ProductUnits> productUnits) {
-        this.productUnits = productUnits;
-    }
+   /**
+    * Setter for the list of all productUnits
+    * @param productUnits the productUnitsList
+    */
+   public void setProductUnits(List<ProductUnits> productUnits) {
+      this.productUnits = productUnits;
+   }
 
-    /**
-     * Setter for the currentImplement
-     * @param currentImplement the currentImplement
-     */
-    public void setCurrentImplement(Implement currentImplement) {
-        this.currentImplement = currentImplement;
-    }
+   /**
+    * Setter for the currentImplement
+    * @param currentImplement the currentImplement
+    */
+   public void setCurrentImplement(Implement currentImplement) {
+      this.currentImplement = currentImplement;
+   }
 
-    @Override
-    public Filter getFilter() {
-        Filter filter = super.getFilter();
-        if (filter == null) {
-            setFilter(new ProductAdapter.ProductFilter(this, activity, getItems()));
-        }
-        return super.getFilter();
-    }
+   @Override
+   public Filter getFilter() {
+      Filter filter = super.getFilter();
+      if (filter == null) {
+         setFilter(new ProductFilter());
+      }
+      return super.getFilter();
+   }
 
-    private void initGroupView(View view, Product productDetail, boolean expanded, ViewGroup root, View.OnClickListener listener) {
-        ProductGroupHolder viewHolder;
-        if (view == null) {
-            view = LayoutInflater.from(context).inflate(R.layout.product_item, root, false);
-        }
-        if (view.getTag() == null) {
-            viewHolder = new ProductGroupHolder(view);
-            view.setTag(viewHolder);
-        }
-        else {
-            viewHolder = (ProductGroupHolder) view.getTag();
-        }
-        viewHolder.product = productDetail;
-        viewHolder.nameText.setText(productDetail.getName());
-        if (productDetail.getForm() != null) {
-            viewHolder.formText.setText(ProductLibraryFragment.friendlyName(productDetail.getForm().name()));
-        }
-        else {
-            viewHolder.formText.setText(ProductLibraryFragment.friendlyName(ProductForm.LIQUID.name()));
-        }
-        viewHolder.rateText.setText(UnitUtility.formatRateUnits(productDetail, productDetail.getDefaultRate()));
-        viewHolder.groupIndicator.setImageDrawable(expanded ? arrowOpenDetails : arrowCloseDetails);
-        view.setOnClickListener(listener);
-    }
+   private void initGroupView(View view, Product productDetail, boolean expanded, ViewGroup root, View.OnClickListener listener) {
+      ProductGroupHolder viewHolder;
+      if (view == null) {
+         view = LayoutInflater.from(context).inflate(R.layout.product_item, root, false);
+      }
+      if (view.getTag() == null) {
+         viewHolder = new ProductGroupHolder(view);
+         view.setTag(viewHolder);
+      }
+      else {
+         viewHolder = (ProductGroupHolder) view.getTag();
+      }
+      viewHolder.product = productDetail;
+      viewHolder.nameText.setText(productDetail.getName());
+      if (productDetail.getForm() != null) {
+         viewHolder.formText.setText(ProductLibraryFragment.friendlyName(productDetail.getForm().name()));
+      }
+      else {
+         viewHolder.formText.setText(ProductLibraryFragment.friendlyName(ProductForm.LIQUID.name()));
+      }
+      viewHolder.rateText.setText(UnitUtility.formatRateUnits(productDetail, productDetail.getDefaultRate()));
+      viewHolder.groupIndicator.setImageDrawable(expanded ? arrowOpenDetails : arrowCloseDetails);
+      view.setOnClickListener(listener);
+   }
 
-    /**
-     * Retrieve the outer "collapsed" view of a product list item
-     * @param position
-     * @param expanded
-     * @param view
-     * @param viewGroup
-     * @return outer view of a product list item
-     */
-    public View getGroupView(final int position, boolean expanded, View view, final ViewGroup viewGroup) {
-        if (view == null) {
-            view = LayoutInflater.from(context).inflate(R.layout.product_item, viewGroup, false);
-            view.setTag(new ProductGroupHolder(view));
-        }
-        Product productDetail = getGroup(position);
+   /**
+    * Retrieve the outer "collapsed" view of a product list item
+    * @param position
+    * @param expanded
+    * @param view
+    * @param viewGroup
+    * @return outer view of a product list item
+    */
+   public View getGroupView(final int position, boolean expanded, View view, final ViewGroup viewGroup) {
+      if (view == null) {
+         view = LayoutInflater.from(context).inflate(R.layout.product_item, viewGroup, false);
+         view.setTag(new ProductGroupHolder(view));
+      }
+      Product productDetail = getGroup(position);
 
-        initGroupView(view, productDetail, expanded, viewGroup, new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                ExpandableListView listView = (ExpandableListView) viewGroup;
-                for (int i = 0; i < getGroupCount(); i++) {
-                    if (i != position) {
-                        listView.collapseGroup(i);
-                    }
-                }
-                if (listView.isGroupExpanded(position)) {
-                    listView.collapseGroup(position);
-                }
-                else {
-                    listView.expandGroup(position, true);
-                }
-                productLibraryFragment.getProductsPanel().resizeContent(false);
+      initGroupView(view, productDetail, expanded, viewGroup, new View.OnClickListener() {
+         @Override
+         public void onClick(View v) {
+            ExpandableListView listView = (ExpandableListView) viewGroup;
+            for (int i = 0; i < getGroupCount(); i++) {
+               if (i != position) {
+                  listView.collapseGroup(i);
+               }
             }
-        });
-        UiHelper.setAlternatingTableItemBackground(context, position, view);
-        return view;
-    }
-
-    private void initChildView(View view, final Product productDetail, ViewGroup root, View.OnClickListener copyButtonClickListener, View.OnClickListener editButtonClickListener,
-                               View.OnClickListener deleteButtonClickListener, View.OnClickListener alertButtonClickListener) {
-        final ProductChildHolder viewHolder;
-
-        if (view == null) {
-            view = LayoutInflater.from(context).inflate(R.layout.product_item_child_details, root, false);
-        }
-
-        if (view.getTag() == null) {
-            viewHolder = new ProductChildHolder(view);
-            viewHolder.productHasImplements = false;
-            if (productLibraryFragment.validateDeleteProduct(productDetail)) {
-                viewHolder.alertIcon.setVisibility(View.GONE);
+            if (listView.isGroupExpanded(position)) {
+               listView.collapseGroup(position);
             }
             else {
-                viewHolder.alertIcon.setVisibility(View.VISIBLE);
+               listView.expandGroup(position, true);
             }
-            view.setTag(viewHolder);
-        }
-        else {
-            viewHolder = (ProductChildHolder) view.getTag();
-        }
+            productLibraryFragment.getProductsPanel().resizeContent(false);
+         }
+      });
+      UiHelper.setAlternatingTableItemBackground(context, position, view);
+      return view;
+   }
 
-        viewHolder.product = productDetail;
+   private void initChildView(View view, final Product productDetail, ViewGroup root, View.OnClickListener copyButtonClickListener, View.OnClickListener editButtonClickListener,
+         View.OnClickListener deleteButtonClickListener, View.OnClickListener alertButtonClickListener) {
+      final ProductChildHolder viewHolder;
 
-        if (viewHolder.product != null) {
-            MeasurementSystem measurementSystem = ProductHelperMethods.getMeasurementSystemForProduct(viewHolder.product, volumeMeasurementSystem, massMeasurementSystem);
-            viewHolder.appRate1Text.setText(UnitUtility.formatRateUnits(productDetail, productDetail.getDefaultRate()));
-            viewHolder.appRate2Text.setText(UnitUtility.formatRateUnits(productDetail, productDetail.getRate2()));
-            viewHolder.deltaRateText.setText(UnitUtility.formatRateUnits(productDetail, productDetail.getDeltaRate()));
-            viewHolder.minRateText.setText(UnitUtility.formatRateUnits(productDetail, productDetail.getMinRate()));
-            viewHolder.maxRateText.setText(UnitUtility.formatRateUnits(productDetail, productDetail.getMaxRate()));
-            viewHolder.packageText.setText(UnitUtility.formatPackageUnits(productDetail, productDetail.getPackageSize(), measurementSystem));
-            viewHolder.densityText.setText(UnitUtility.formatDensityUnits(productDetail, productDetail.getDensity(), measurementSystem));
+      if (view == null) {
+         view = LayoutInflater.from(context).inflate(R.layout.product_item_child_details, root, false);
+      }
 
-            CNHPlanterFanData cnhPlanterFanData = productDetail.getCnhPlanterFanData();
+      if (view.getTag() == null) {
+         viewHolder = new ProductChildHolder(view);
+         viewHolder.productHasImplements = false;
+         if (productLibraryFragment.validateDeleteProduct(productDetail)) {
+            viewHolder.alertIcon.setVisibility(View.GONE);
+         }
+         else {
+            viewHolder.alertIcon.setVisibility(View.VISIBLE);
+         }
+         view.setTag(viewHolder);
+      }
+      else {
+         viewHolder = (ProductChildHolder) view.getTag();
+      }
 
-            if (productDetail.getForm() == ProductForm.SEED && cnhPlanterFanData != null) {
-                double vacuumUiRate = MathUtility.getConvertedFromBase(cnhPlanterFanData.getVacuumFanDefaultRate1(), unit_constantsConstants.in_H2O_PER_kPa);
-                double vacuumUiDelta = MathUtility.getConvertedFromBase(cnhPlanterFanData.getVacuumFanDeltaRate(), unit_constantsConstants.in_H2O_PER_kPa);
-                viewHolder.vacuumFanRateText.setText(UiUtility.getValueAsString(vacuumUiRate, 1) + " " + unitInH2O);
-                viewHolder.vacuumFanDeltaText.setText(UiUtility.getValueAsString(vacuumUiDelta, 1) + " " + unitInH2O);
-                viewHolder.bulkFillFanRateText.setText(UiUtility.getValueAsString(cnhPlanterFanData.getBulkFillFanDefaultRate1(), 0) + " " + unitRpm);
-                viewHolder.bulkFillFanDeltaText.setText(UiUtility.getValueAsString(cnhPlanterFanData.getBulkFillFanDeltaRate(), 0) + " " + unitRpm);
-                viewHolder.setFanUiVisibility(true);
-            }
-            else {
-                viewHolder.setFanUiVisibility(false);
-            }
+      viewHolder.product = productDetail;
 
-            LinearLayout.LayoutParams params = (LinearLayout.LayoutParams) viewHolder.imageRow.getLayoutParams();
-            if (!productLibraryFragment.validateDeleteProduct(productDetail)) {
-                viewHolder.alertIcon.setImageResource(R.drawable.ic_needs_checking);
-                viewHolder.alertIcon.setVisibility(View.VISIBLE);
-                params.topMargin = 11;
-                viewHolder.imageRow.setLayoutParams(params);
-            }
-            else {
-                viewHolder.alertIcon.setImageResource(R.drawable.ic_needs_checking);
-                viewHolder.alertIcon.setVisibility(View.GONE);
-                params.topMargin = 33;
-                viewHolder.imageRow.setLayoutParams(params);
-            }
-        }
-        viewHolder.alertIcon.setOnClickListener(alertButtonClickListener);
-        viewHolder.editButton.setOnClickListener(editButtonClickListener);
-        viewHolder.copyButton.setOnClickListener(copyButtonClickListener);
-        viewHolder.deleteButton.setOnClickListener(deleteButtonClickListener);
-    }
+      if (viewHolder.product != null) {
+         MeasurementSystem measurementSystem = ProductHelperMethods.getMeasurementSystemForProduct(viewHolder.product, volumeMeasurementSystem, massMeasurementSystem);
+         viewHolder.appRate1Text.setText(UnitUtility.formatRateUnits(productDetail, productDetail.getDefaultRate()));
+         viewHolder.appRate2Text.setText(UnitUtility.formatRateUnits(productDetail, productDetail.getRate2()));
+         viewHolder.deltaRateText.setText(UnitUtility.formatRateUnits(productDetail, productDetail.getDeltaRate()));
+         viewHolder.minRateText.setText(UnitUtility.formatRateUnits(productDetail, productDetail.getMinRate()));
+         viewHolder.maxRateText.setText(UnitUtility.formatRateUnits(productDetail, productDetail.getMaxRate()));
+         viewHolder.packageText.setText(UnitUtility.formatPackageUnits(productDetail, productDetail.getPackageSize(), measurementSystem));
+         viewHolder.densityText.setText(UnitUtility.formatDensityUnits(productDetail, productDetail.getDensity(), measurementSystem));
 
-    /**
-     * Retrieve the "expanded" view of a product list item
-     * @param group
-     * @param child
-     * @param expanded
-     * @param view
-     * @param viewGroup
-     * @return fully expanded product list item view
-     */
-    public View getChildView(final int group, int child, boolean expanded, View view, ViewGroup viewGroup) {
+         CNHPlanterFanData cnhPlanterFanData = productDetail.getCnhPlanterFanData();
 
-        if (view == null) {
-            view = LayoutInflater.from(context).inflate(R.layout.product_item_child_details, viewGroup, false);
-            view.setTag(new ProductChildHolder(view));
-        }
-        final ProductChildHolder productChildHolder = (ProductChildHolder) view.getTag();
-        final Product productDetail = getChild(group, child);
-        if (productLibraryFragment.validateDeleteProduct(productDetail)) {
+         if (productDetail.getForm() == ProductForm.SEED && cnhPlanterFanData != null) {
+            double vacuumUiRate = MathUtility.getConvertedFromBase(cnhPlanterFanData.getVacuumFanDefaultRate1(), unit_constantsConstants.in_H2O_PER_kPa);
+            double vacuumUiDelta = MathUtility.getConvertedFromBase(cnhPlanterFanData.getVacuumFanDeltaRate(), unit_constantsConstants.in_H2O_PER_kPa);
+            viewHolder.vacuumFanRateText.setText(UiUtility.getValueAsString(vacuumUiRate, 1) + " " + unitInH2O);
+            viewHolder.vacuumFanDeltaText.setText(UiUtility.getValueAsString(vacuumUiDelta, 1) + " " + unitInH2O);
+            viewHolder.bulkFillFanRateText.setText(UiUtility.getValueAsString(cnhPlanterFanData.getBulkFillFanDefaultRate1(), 0) + " " + unitRpm);
+            viewHolder.bulkFillFanDeltaText.setText(UiUtility.getValueAsString(cnhPlanterFanData.getBulkFillFanDeltaRate(), 0) + " " + unitRpm);
+            viewHolder.setFanUiVisibility(true);
+         }
+         else {
+            viewHolder.setFanUiVisibility(false);
+         }
+
+         LinearLayout.LayoutParams params = (LinearLayout.LayoutParams) viewHolder.imageRow.getLayoutParams();
+         if (!productLibraryFragment.validateDeleteProduct(productDetail)) {
+            viewHolder.alertIcon.setImageResource(R.drawable.ic_needs_checking);
+            viewHolder.alertIcon.setVisibility(View.VISIBLE);
+            params.topMargin = 11;
+            viewHolder.imageRow.setLayoutParams(params);
+         }
+         else {
+            viewHolder.alertIcon.setImageResource(R.drawable.ic_needs_checking);
+            viewHolder.alertIcon.setVisibility(View.GONE);
+            params.topMargin = 33;
+            viewHolder.imageRow.setLayoutParams(params);
+         }
+      }
+      viewHolder.alertIcon.setOnClickListener(alertButtonClickListener);
+      viewHolder.editButton.setOnClickListener(editButtonClickListener);
+      viewHolder.copyButton.setOnClickListener(copyButtonClickListener);
+      viewHolder.deleteButton.setOnClickListener(deleteButtonClickListener);
+   }
+
+   /**
+    * Retrieve the "expanded" view of a product list item
+    * @param group
+    * @param child
+    * @param expanded
+    * @param view
+    * @param viewGroup
+    * @return fully expanded product list item view
+    */
+   public View getChildView(final int group, int child, boolean expanded, View view, ViewGroup viewGroup) {
+
+      if (view == null) {
+         view = LayoutInflater.from(context).inflate(R.layout.product_item_child_details, viewGroup, false);
+         view.setTag(new ProductChildHolder(view));
+      }
+      final ProductChildHolder productChildHolder = (ProductChildHolder) view.getTag();
+      final Product productDetail = getChild(group, child);
+      if (productLibraryFragment.validateDeleteProduct(productDetail)) {
+         productChildHolder.alertIcon.setVisibility(View.GONE);
+      }
+      else {
+         productChildHolder.alertIcon.setVisibility(View.VISIBLE);
+      }
+      initChildView(view, productDetail, viewGroup, new OnCopyButtonClickListener(productChildHolder), new OnEditButtonClickListener(productDetail),
+            new OnDeleteButtonClickListener(productDetail, productChildHolder), new OnAlertButtonClickListener(productDetail));
+      return view;
+   }
+
+   //Perhaps consider rewriting findViewById references below with dependency injection
+   @Override
+   public void notifyDataSetChanged() {
+      //only update if fragment is attached [filter class is executing publishResults when activity is closed]
+      if (productLibraryFragment.isAdded()) {
+         super.notifyDataSetChanged();
+         ProgressiveDisclosureView productsPanel = productLibraryFragment.getProductsPanel();
+         if (productsPanel != null) {
+            productsPanel.invalidate();
+         }
+      }
+   }
+
+   private class OnCopyButtonClickListener implements View.OnClickListener {
+      private final ProductChildHolder productChildHolder;
+
+      public OnCopyButtonClickListener(ProductChildHolder productChildHolder) {
+         this.productChildHolder = productChildHolder;
+      }
+
+      @Override
+      public void onClick(View v) {
+         final ProductDialog copyDialog;
+         copyDialog = new ProductDialog(context, vipService, ProductDialog.DialogActionType.COPY, productChildHolder.product, ProductAdapter.this.productUnits,
+               // TODO: try to remove this callback stuff and replace it with updates after a deliver in ProductLibraryFragment
+               new ProductDialog.productListCallback() {
+                  @Override
+                  public void productList(Product product) {
+                  }
+               }, ProductAdapter.this.currentImplement, getCopyOfUnfilteredItemList());
+         copyDialog.setFirstButtonText(context.getResources().getString(R.string.product_dialog_save_button))
+               .setSecondButtonText(context.getResources().getString(R.string.product_dialog_cancel_button)).showThirdButton(false).showThirdButton(false)
+               .setTitle(context.getResources().getString(R.string.product_dialog_copy_title)).setBodyHeight(ProductLibraryFragment.DIALOG_HEIGHT);
+
+         activity.showModalPopup(copyDialog);
+
+         copyDialog.setDialogWidth(ProductLibraryFragment.DIALOG_WIDTH);
+         copyDialog.disableButtonFirst(true);
+      }
+   }
+
+   private class OnEditButtonClickListener implements View.OnClickListener {
+      private final Product productDetail;
+
+      public OnEditButtonClickListener(Product productDetail) {
+         this.productDetail = productDetail;
+      }
+
+      @Override
+      public void onClick(View v) {
+         log.debug("Edit button pressed for product - name: {}, id: {}", productDetail.getName(), productDetail.getId());
+         ProductDialog editDialog = new ProductDialog(context, vipService, ProductDialog.DialogActionType.EDIT, productDetail, ProductAdapter.this.productUnits,
+               new ProductDialog.productListCallback() {
+                  // TODO: try to remove this callback stuff and replace it with updates after a deliver in ProductLibraryFragment
+                  @Override
+                  public void productList(Product product) {
+                  }
+               }, ProductAdapter.this.currentImplement, getCopyOfUnfilteredItemList());
+         editDialog.setFirstButtonText(context.getResources().getString(R.string.product_dialog_save_button))
+               .setSecondButtonText(context.getResources().getString(R.string.product_dialog_cancel_button)).showThirdButton(false)
+               .setTitle(context.getResources().getString(R.string.product_dialog_edit_title)).setBodyHeight(ProductLibraryFragment.DIALOG_HEIGHT);
+
+         activity.showModalPopup(editDialog);
+
+         editDialog.setDialogWidth(ProductLibraryFragment.DIALOG_WIDTH);
+         editDialog.disableButtonFirst(true);
+      }
+   }
+
+   private class OnDeleteButtonClickListener implements View.OnClickListener {
+      private final Product productToDelete;
+      private final ProductChildHolder productChildHolder;
+
+      public OnDeleteButtonClickListener(Product productToDelete, ProductChildHolder productChildHolder) {
+         this.productToDelete = productToDelete;
+         this.productChildHolder = productChildHolder;
+      }
+
+      @Override
+      public void onClick(View v) {
+         if (productLibraryFragment.validateDeleteProduct(productToDelete)) {
             productChildHolder.alertIcon.setVisibility(View.GONE);
-        }
-        else {
+            final TextDialogView deleteDialog = new TextDialogView(context);
+            deleteDialog.setBodyText(context.getResources().getString(R.string.delete_product_dialog_body_text));
+            deleteDialog.setFirstButtonText(context.getResources().getString(R.string.delete_dialog_confirm_button_text));
+            deleteDialog.setSecondButtonText(context.getResources().getString(R.string.cancel));
+            deleteDialog.showThirdButton(false);
+            deleteDialog.setOnButtonClickListener(new DialogViewInterface.OnButtonClickListener() {
+               @Override
+               public void onButtonClick(DialogViewInterface dialogViewInterface, int buttonNumber) {
+                  if (buttonNumber == DialogViewInterface.BUTTON_FIRST) {
+                     deleteProduct();
+                  }
+                  deleteDialog.dismiss();
+               }
+            });
+            activity.showModalPopup(deleteDialog);
+         }
+         else {
             productChildHolder.alertIcon.setVisibility(View.VISIBLE);
-        }
-        initChildView(view, productDetail, viewGroup,
-                new OnCopyButtonClickListener(productChildHolder),
-                new OnEditButtonClickListener(productDetail),
-                new OnDeleteButtonClickListener(productDetail, productChildHolder),
-                new OnAlertButtonClickListener(productDetail)
-        );
-        return view;
-    }
+         }
+      }
 
-    //Perhaps consider rewriting findViewById references below with dependency injection
-    @Override
-    public void notifyDataSetChanged() {
-        //only update if fragment is attached [filter class is executing publishResults when activity is closed]
-        if (productLibraryFragment.isAdded()) {
-            super.notifyDataSetChanged();
-            ProgressiveDisclosureView productsPanel = productLibraryFragment.getProductsPanel();
-            if (productsPanel != null) {
-                productsPanel.invalidate();
+      private void deleteProduct() {
+         log.debug("Delete button pressed for product - name: {}, id: {}", productToDelete.getName(), productToDelete.getId());
+         // TODO: delete this when pcm really deletes objects
+         ProductAdapter.this.removeItem(productToDelete);
+         ProductCommandParams params = new ProductCommandParams();
+         params.product = productToDelete;
+         params.vipService = vipService;
+         new VIPAsyncTask<ProductCommandParams, Product>(params, null).execute(new DeleteProductCommand());
+      }
+   }
+
+   private class OnAlertButtonClickListener implements View.OnClickListener {
+      private final Product productDetail;
+
+      public OnAlertButtonClickListener(Product productDetail) {
+         this.productDetail = productDetail;
+      }
+
+      @Override
+      public void onClick(View v) {
+         log.debug("Alert button pressed for product - name: {}, id: {}", productDetail.getName(), productDetail.getId());
+         new AlertDialog.Builder(activity).setTitle(R.string.alert_title).setMessage(R.string.alert_in_use)
+               .setPositiveButton(R.string.alert_dismiss, new DialogInterface.OnClickListener() {
+                  @Override
+                  public void onClick(DialogInterface dialog, int which) {
+                     dialog.dismiss();
+                  }
+               }).show();
+      }
+   }
+
+   /**
+    * ProductGroupHolder
+    * Wraps the outer "collapsed" view of a product list item
+    */
+   private class ProductGroupHolder {
+      public ImageView groupIndicator;
+      public TextView nameText;
+      public TextView formText;
+      public TextView rateText;
+      public Product product;
+
+      /**
+       * Construct new product group holder
+       * @param view
+       */
+      public ProductGroupHolder(View view) {
+         this.nameText = ((TextView) view.findViewById(R.id.name_text));
+         this.formText = ((TextView) view.findViewById(R.id.form_text));
+         this.rateText = ((TextView) view.findViewById(R.id.rate_text));
+         this.groupIndicator = ((ImageView) view.findViewById(R.id.group_indicator));
+      }
+   }
+
+   /**
+    * ProductChildHolder
+    * Wraps the inner "expanded" view of a product list item
+    */
+   private class ProductChildHolder {
+      public TextView appRate1Text;
+      public TextView appRate2Text;
+      public TextView minRateText;
+      public TextView maxRateText;
+      public TextView deltaRateText;
+      public TextView packageText;
+      public TextView densityText;
+      public ImageView alertIcon;
+      public ImageButton editButton;
+      public ImageButton copyButton;
+      public ImageButton deleteButton;
+      public Product product;
+      public LinearLayout imageRow;
+      public boolean productHasImplements;
+      public List<View> fanRateContainers = null;
+      public TextView vacuumFanRateText = null;
+      public TextView vacuumFanDeltaText = null;
+      public TextView bulkFillFanRateText = null;
+      public TextView bulkFillFanDeltaText = null;
+
+      public ProductChildHolder(View view) {
+         this.alertIcon = ((ImageButton) view.findViewById(R.id.alert_icon));
+         this.appRate1Text = ((TextView) view.findViewById(R.id.app_rate1_text));
+         this.appRate2Text = ((TextView) view.findViewById(R.id.app_rate2_text));
+         this.minRateText = ((TextView) view.findViewById(R.id.min_rate_text));
+         this.maxRateText = ((TextView) view.findViewById(R.id.max_rate_text));
+         this.deltaRateText = ((TextView) view.findViewById(R.id.delta_rate_text));
+         this.packageText = ((TextView) view.findViewById(R.id.package_text));
+         this.densityText = ((TextView) view.findViewById(R.id.density_text));
+         this.copyButton = ((ImageButton) view.findViewById(R.id.copy_button));
+         this.editButton = ((ImageButton) view.findViewById(R.id.edit_button));
+         this.deleteButton = ((ImageButton) view.findViewById(R.id.delete_button));
+         this.imageRow = ((LinearLayout) view.findViewById(R.id.linear_layout_image_row));
+
+         this.fanRateContainers = new ArrayList<View>(4);
+         this.fanRateContainers.add(view.findViewById(R.id.vacuum_fan_rate_container));
+         this.fanRateContainers.add(view.findViewById(R.id.vacuum_fan_delta_container));
+         this.fanRateContainers.add(view.findViewById(R.id.bulk_fill_fan_rate_container));
+         this.fanRateContainers.add(view.findViewById(R.id.bulk_fill_fan_delta_container));
+
+         this.vacuumFanRateText = ((TextView) view.findViewById(R.id.vacuum_fan_rate_text));
+         this.vacuumFanDeltaText = ((TextView) view.findViewById(R.id.vacuum_fan_delta_text));
+         this.bulkFillFanRateText = ((TextView) view.findViewById(R.id.bulk_fill_fan_rate_text));
+         this.bulkFillFanDeltaText = ((TextView) view.findViewById(R.id.bulk_fill_fan_delta_text));
+      }
+
+      void setFanUiVisibility(boolean visible) {
+         for (View container : fanRateContainers) {
+            UiUtility.setVisible(container, visible);
+         }
+      }
+   }
+
+   /**
+    * Filters products, providing search functionality
+    * @author joorjitham
+    */
+   public class ProductFilter extends Filter implements UpdateableFilter {
+
+      private CharSequence lastUsedCharSequence;
+
+      @Override
+      public void updateFiltering(){
+         if (lastUsedCharSequence != null){
+            filter(lastUsedCharSequence);
+         }
+      }
+
+      @Override
+      protected FilterResults performFiltering(CharSequence charSequence) {
+         this.lastUsedCharSequence = charSequence;
+         final FilterResults results = new FilterResults();
+         final ArrayList<Product> copyOfOriginalList;
+         synchronized (listsLock) {
+            isFiltered = true;
+            if (originalList == null) {
+               originalList = new ArrayList<Product>(filteredList);
             }
-        }
-    }
-
-    private class OnCopyButtonClickListener implements View.OnClickListener {
-        private final ProductChildHolder productChildHolder;
-
-        public OnCopyButtonClickListener(ProductChildHolder productChildHolder) {
-            this.productChildHolder = productChildHolder;
-        }
-
-        @Override
-        public void onClick(View v) {
-            final ProductDialog copyDialog;
-
-            copyDialog = new ProductDialog(context, vipService, ProductDialog.DialogActionType.COPY, productChildHolder.product, ProductAdapter.this.productUnits,
-                    // TODO: try to remove this callback stuff and replace it with updates after a deliver in ProductLibraryFragment
-                    new ProductDialog.productListCallback() {
-                        @Override
-                        public void productList(Product product) {
-                        }
-                    }, ProductAdapter.this.currentImplement, new ArrayList<Product>(ProductAdapter.this.getItems()));
-            copyDialog.setFirstButtonText(context.getResources().getString(R.string.product_dialog_save_button))
-                    .setSecondButtonText(context.getResources().getString(R.string.product_dialog_cancel_button)).showThirdButton(false).showThirdButton(false)
-                    .setTitle(context.getResources().getString(R.string.product_dialog_copy_title)).setBodyHeight(ProductLibraryFragment.DIALOG_HEIGHT);
-
-            activity.showModalPopup(copyDialog);
-
-            copyDialog.setDialogWidth(ProductLibraryFragment.DIALOG_WIDTH);
-            copyDialog.disableButtonFirst(true);
-        }
-    }
-
-    private class OnEditButtonClickListener implements View.OnClickListener {
-        private final Product productDetail;
-
-        public OnEditButtonClickListener(Product productDetail) {
-            this.productDetail = productDetail;
-        }
-
-        @Override
-        public void onClick(View v) {
-            log.debug("Edit button pressed for product - name: {}, id: {}", productDetail.getName(), productDetail.getId());
-            ProductDialog editDialog = new ProductDialog(context, vipService, ProductDialog.DialogActionType.EDIT, productDetail, ProductAdapter.this.productUnits,
-                    new ProductDialog.productListCallback() {
-                        // TODO: try to remove this callback stuff and replace it with updates after a deliver in ProductLibraryFragment
-                        @Override
-                        public void productList(Product product) {
-                        }
-                    }, ProductAdapter.this.currentImplement, new ArrayList<Product>(ProductAdapter.this.getItems()));
-            editDialog.setFirstButtonText(context.getResources().getString(R.string.product_dialog_save_button))
-                    .setSecondButtonText(context.getResources().getString(R.string.product_dialog_cancel_button)).showThirdButton(false)
-                    .setTitle(context.getResources().getString(R.string.product_dialog_edit_title)).setBodyHeight(ProductLibraryFragment.DIALOG_HEIGHT);
-
-            activity.showModalPopup(editDialog);
-
-            editDialog.setDialogWidth(ProductLibraryFragment.DIALOG_WIDTH);
-            editDialog.disableButtonFirst(true);
-        }
-    }
-
-    private class OnDeleteButtonClickListener implements View.OnClickListener {
-        private final Product productToDelete;
-        private final ProductChildHolder productChildHolder;
-
-        public OnDeleteButtonClickListener(Product productToDelete, ProductChildHolder productChildHolder) {
-            this.productToDelete = productToDelete;
-            this.productChildHolder = productChildHolder;
-        }
-
-        @Override
-        public void onClick(View v) {
-            if (productLibraryFragment.validateDeleteProduct(productToDelete)) {
-                productChildHolder.alertIcon.setVisibility(View.GONE);
-                final TextDialogView deleteDialog = new TextDialogView(context);
-                deleteDialog.setBodyText(context.getResources().getString(R.string.delete_product_dialog_body_text));
-                deleteDialog.setFirstButtonText(context.getResources().getString(R.string.delete_dialog_confirm_button_text));
-                deleteDialog.setSecondButtonText(context.getResources().getString(R.string.cancel));
-                deleteDialog.showThirdButton(false);
-                deleteDialog.setOnButtonClickListener(new DialogViewInterface.OnButtonClickListener() {
-                    @Override
-                    public void onButtonClick(DialogViewInterface dialogViewInterface, int buttonNumber) {
-                        if (buttonNumber == DialogViewInterface.BUTTON_FIRST) {
-                            deleteProduct();
-                        }
-                        deleteDialog.dismiss();
-                    }
-                });
-                activity.showModalPopup(deleteDialog);
+            copyOfOriginalList = new ArrayList<Product>(originalList);
+         }
+         if (charSequence == null || charSequence.length() == 0) {
+            results.values = copyOfOriginalList;
+            results.count = copyOfOriginalList.size();
+         }
+         else {
+            final List<Product> newProductList = new ArrayList<Product>();
+            for (Product p : copyOfOriginalList) {
+               final ProductUnits rateProductUnits = ProductHelperMethods.retrieveProductRateUnits(p, ProductHelperMethods.queryMeasurementSystem(context, UnitsSettings.VOLUME));
+               double rateUnitFactor = 1.0;
+               if (rateProductUnits != null && rateProductUnits.isSetMultiplyFactorFromBaseUnits()) {
+                  rateUnitFactor = rateProductUnits.getMultiplyFactorFromBaseUnits();
+               }
+               if (p.getName().toUpperCase().contains(charSequence.toString().toUpperCase())
+                     || (p.getForm() != null && p.getForm().name().toUpperCase().contains(charSequence.toString().toUpperCase()))
+                     || (rateProductUnits != null && rateProductUnits.getName().toUpperCase().contains(charSequence.toString().toUpperCase()))
+                     || (String.valueOf(MathUtility.getConvertedFromBase(p.getDefaultRate(), rateUnitFactor))).contains(charSequence.toString())) {
+                  newProductList.add(p);
+               }
             }
-            else {
-                productChildHolder.alertIcon.setVisibility(View.VISIBLE);
+            results.values = newProductList;
+            results.count = newProductList.size();
+         }
+         return results;
+      }
+
+      @Override
+      protected void publishResults(CharSequence charSequence, FilterResults filterResults) {
+         synchronized (listsLock){
+            if (!isFiltered){
+               // ui thread changed something in parallel during perform filtering
+               return;
+            } else {
+               filteredList = (List<Product>) filterResults.values;
+               // Now we have to inform the adapter about the new list filtered
+               if (filterResults.count == 0)
+                  ProductAdapter.this.notifyDataSetInvalidated();
+               else {
+                  ProductAdapter.this.notifyDataSetChanged();
+               }
             }
-        }
-
-        private void deleteProduct() {
-            log.debug("Delete button pressed for product - name: {}, id: {}", productToDelete.getName(), productToDelete.getId());
-            // TODO: delete this when pcm really deletes objects
-            ProductAdapter.this.getItems().remove(productToDelete);
-            ProductCommandParams params = new ProductCommandParams();
-            params.product = productToDelete;
-            params.vipService = vipService;
-            new VIPAsyncTask<ProductCommandParams, Product>(params, null).execute(new DeleteProductCommand());
-        }
-    }
-
-    private class OnAlertButtonClickListener implements View.OnClickListener {
-        private final Product productDetail;
-
-        public OnAlertButtonClickListener(Product productDetail) {
-            this.productDetail = productDetail;
-        }
-
-        @Override
-        public void onClick(View v) {
-            log.debug("Alert button pressed for product - name: {}, id: {}", productDetail.getName(), productDetail.getId());
-            new AlertDialog.Builder(activity).setTitle(R.string.alert_title).setMessage(R.string.alert_in_use)
-                    .setPositiveButton(R.string.alert_dismiss, new DialogInterface.OnClickListener() {
-                        @Override
-                        public void onClick(DialogInterface dialog, int which) {
-                            dialog.dismiss();
-                        }
-                    }).show();
-        }
-    }
-
-    /**
-     * ProductGroupHolder
-     * Wraps the outer "collapsed" view of a product list item
-     */
-    private class ProductGroupHolder {
-        public ImageView groupIndicator;
-        public TextView nameText;
-        public TextView formText;
-        public TextView rateText;
-        public Product product;
-
-        /**
-         * Construct new product group holder
-         * @param view
-         */
-        public ProductGroupHolder(View view) {
-            this.nameText = ((TextView) view.findViewById(R.id.name_text));
-            this.formText = ((TextView) view.findViewById(R.id.form_text));
-            this.rateText = ((TextView) view.findViewById(R.id.rate_text));
-            this.groupIndicator = ((ImageView) view.findViewById(R.id.group_indicator));
-        }
-    }
-
-    /**
-     * ProductChildHolder
-     * Wraps the inner "expanded" view of a product list item
-     */
-    private class ProductChildHolder {
-        public TextView appRate1Text;
-        public TextView appRate2Text;
-        public TextView minRateText;
-        public TextView maxRateText;
-        public TextView deltaRateText;
-        public TextView packageText;
-        public TextView densityText;
-        public ImageView alertIcon;
-        public ImageButton editButton;
-        public ImageButton copyButton;
-        public ImageButton deleteButton;
-        public Product product;
-        public LinearLayout imageRow;
-        public boolean productHasImplements;
-        public List<View> fanRateContainers = null;
-        public TextView vacuumFanRateText = null;
-        public TextView vacuumFanDeltaText = null;
-        public TextView bulkFillFanRateText = null;
-        public TextView bulkFillFanDeltaText = null;
-
-        public ProductChildHolder(View view) {
-            this.alertIcon = ((ImageButton) view.findViewById(R.id.alert_icon));
-            this.appRate1Text = ((TextView) view.findViewById(R.id.app_rate1_text));
-            this.appRate2Text = ((TextView) view.findViewById(R.id.app_rate2_text));
-            this.minRateText = ((TextView) view.findViewById(R.id.min_rate_text));
-            this.maxRateText = ((TextView) view.findViewById(R.id.max_rate_text));
-            this.deltaRateText = ((TextView) view.findViewById(R.id.delta_rate_text));
-            this.packageText = ((TextView) view.findViewById(R.id.package_text));
-            this.densityText = ((TextView) view.findViewById(R.id.density_text));
-            this.copyButton = ((ImageButton) view.findViewById(R.id.copy_button));
-            this.editButton = ((ImageButton) view.findViewById(R.id.edit_button));
-            this.deleteButton = ((ImageButton) view.findViewById(R.id.delete_button));
-            this.imageRow = ((LinearLayout) view.findViewById(R.id.linear_layout_image_row));
-
-            this.fanRateContainers = new ArrayList<View>(4);
-            this.fanRateContainers.add(view.findViewById(R.id.vacuum_fan_rate_container));
-            this.fanRateContainers.add(view.findViewById(R.id.vacuum_fan_delta_container));
-            this.fanRateContainers.add(view.findViewById(R.id.bulk_fill_fan_rate_container));
-            this.fanRateContainers.add(view.findViewById(R.id.bulk_fill_fan_delta_container));
-
-            this.vacuumFanRateText = ((TextView) view.findViewById(R.id.vacuum_fan_rate_text));
-            this.vacuumFanDeltaText = ((TextView) view.findViewById(R.id.vacuum_fan_delta_text));
-            this.bulkFillFanRateText = ((TextView) view.findViewById(R.id.bulk_fill_fan_rate_text));
-            this.bulkFillFanDeltaText = ((TextView) view.findViewById(R.id.bulk_fill_fan_delta_text));
-        }
-
-        void setFanUiVisibility(boolean visible) {
-            for (View container : fanRateContainers) {
-                UiUtility.setVisible(container, visible);
-            }
-        }
-    }
-
-    /**
-     * Filters products, providing search functionality
-     * @author joorjitham
-     */
-    public class ProductFilter extends Filter {
-
-        private List<Product> fullProductList;
-        private Context context;
-        private ProductAdapter productAdapter;
-
-        public ProductFilter(ProductAdapter adapter, Context context, List<Product> fullList) {
-            super();
-            productAdapter = adapter;
-            this.context = context;
-            fullProductList = fullList;
-        }
-
-        @Override
-        protected FilterResults performFiltering(CharSequence charSequence) {
-            FilterResults results = new FilterResults();
-            if (charSequence == null || charSequence.length() == 0) {
-                results.values = fullProductList;
-                results.count = fullProductList.size();
-            }
-            else {
-                List<Product> productList = productAdapter.getItems();
-                // We perform filtering operation
-                List<Product> nProductList = new ArrayList<Product>();
-
-                for (Product p : productList) {
-
-                    final ProductUnits rateProductUnits = ProductHelperMethods.retrieveProductRateUnits(p, ProductHelperMethods.queryMeasurementSystem(context, UnitsSettings.VOLUME));
-                    double rateUnitFactor = 1.0;
-                    if (rateProductUnits != null && rateProductUnits.isSetMultiplyFactorFromBaseUnits()) {
-                        rateUnitFactor = rateProductUnits.getMultiplyFactorFromBaseUnits();
-                    }
-
-                    if (p.getName().toUpperCase().contains(charSequence.toString().toUpperCase())
-                            || (p.getForm() != null && p.getForm().name().toUpperCase().contains(charSequence.toString().toUpperCase()))
-                            || (rateProductUnits != null && rateProductUnits.getName().toUpperCase().contains(charSequence.toString().toUpperCase()))
-                            || (String.valueOf(MathUtility.getConvertedFromBase(p.getDefaultRate(), rateUnitFactor))).contains(charSequence.toString())) {
-                        nProductList.add(p);
-                    }
-                }
-
-                results.values = nProductList;
-                results.count = nProductList.size();
-            }
-            return results;
-        }
-
-        @Override
-        protected void publishResults(CharSequence charSequence, FilterResults filterResults) {
-            // Now we have to inform the adapter about the new list filtered
-            if (filterResults.count == 0)
-                productAdapter.notifyDataSetInvalidated();
-            else {
-                productAdapter.setItems((List<Product>) filterResults.values);
-                productAdapter.notifyDataSetChanged();
-            }
-        }
-    }
+         }
+      }
+   }
 }
-

@@ -40,7 +40,6 @@ import com.cnh.android.widget.activity.TabActivity;
 import com.cnh.android.widget.control.ProgressiveDisclosureView;
 import com.cnh.pf.android.data.management.R;
 import com.cnh.pf.android.data.management.productlibrary.ProductLibraryFragment;
-import com.cnh.pf.android.data.management.productlibrary.utility.SearchableSortableExpandableListAdapter;
 import com.cnh.pf.android.data.management.productlibrary.utility.UiHelper;
 import com.cnh.pf.android.data.management.productlibrary.views.ProductMixDialog;
 import com.cnh.pf.model.product.library.MeasurementSystem;
@@ -85,8 +84,7 @@ public final class ProductMixAdapter extends SearchableSortableExpandableListAda
     */
    public ProductMixAdapter(final Context context, final List<ProductMix> productMixes, final TabActivity tabActivity, final IVIPServiceAIDL vipService,
          final MeasurementSystem volumeMeasurementSystem, final MeasurementSystem massMeasurementSystem, final ProductLibraryFragment productLibraryFragment) {
-      super();
-      setItems(productMixes);
+      super(productMixes);
       this.context = context;
       this.activity = tabActivity;
       this.vipService = vipService;
@@ -105,14 +103,14 @@ public final class ProductMixAdapter extends SearchableSortableExpandableListAda
       this.vipService = vipService;
    }
 
-    @Override
-    public Filter getFilter() {
-        Filter filter = super.getFilter();
-        if (filter == null) {
-            setFilter(new ProductMixAdapter.ProductMixFilter(this, activity, getItems()));
-        }
-        return super.getFilter();
-    }
+   @Override
+   public Filter getFilter() {
+      Filter filter = super.getFilter();
+      if (filter == null) {
+         setFilter(new ProductMixFilter());
+      }
+      return super.getFilter();
+   }
 
    /**
     * Add all ProductMixRecipes to the OverviewTable
@@ -392,7 +390,7 @@ public final class ProductMixAdapter extends SearchableSortableExpandableListAda
       @Override
       public void onClick(View view) {
          ProductMixDialog editProductMixDialog = new ProductMixDialog(context, ProductMixDialog.ProductMixesDialogActionType.EDIT, vipService, productMixDetail,
-               productLibraryFragment, getItems());
+               productLibraryFragment, getCopyOfUnfilteredItemList());
          editProductMixDialog.setFirstButtonText(activity.getResources().getString(R.string.save))
                .setSecondButtonText(activity.getResources().getString(R.string.product_dialog_cancel_button)).showThirdButton(false).showThirdButton(false)
                .setTitle(activity.getResources().getString(R.string.product_mix_title_dialog_edit_product_mix)).setBodyHeight(ProductLibraryFragment.DIALOG_HEIGHT)
@@ -417,7 +415,7 @@ public final class ProductMixAdapter extends SearchableSortableExpandableListAda
       @Override
       public void onClick(View view) {
          ProductMixDialog copyProductMixDialog = new ProductMixDialog(context, ProductMixDialog.ProductMixesDialogActionType.COPY, vipService, productMixDetail,
-               productLibraryFragment, getItems());
+               productLibraryFragment, new ArrayList<ProductMix>(getCopyOfUnfilteredItemList()));
          copyProductMixDialog.setFirstButtonText(activity.getResources().getString(R.string.product_dialog_add_button))
                .setSecondButtonText(activity.getResources().getString(R.string.product_dialog_cancel_button)).showThirdButton(false).showThirdButton(false)
                .setTitle(activity.getResources().getString(R.string.product_mix_title_dialog_copy_product_mix)).setBodyHeight(ProductLibraryFragment.DIALOG_HEIGHT)
@@ -457,6 +455,8 @@ public final class ProductMixAdapter extends SearchableSortableExpandableListAda
                public void onButtonClick(DialogViewInterface dialogViewInterface, int buttonNumber) {
                   switch (buttonNumber) {
                   case DialogViewInterface.BUTTON_FIRST:
+                     // TODO: delete this when pcm really deletes objects
+                     ProductMixAdapter.this.removeItem(productMixDetail);
                      ProductMixCommandParams params = new ProductMixCommandParams();
                      params.productMix = productMixDetail;
                      params.vipService = vipService;
@@ -496,67 +496,76 @@ public final class ProductMixAdapter extends SearchableSortableExpandableListAda
       }
    }
 
-    /**
-     * Filters products, providing search functionality
-     * @author joorjitham
-     */
-    public class ProductMixFilter extends Filter {
+   /**
+    * Filters products, providing search functionality
+    * @author joorjitham
+    */
+   public class ProductMixFilter extends Filter implements UpdateableFilter {
 
-        private List<ProductMix> fullProductList;
-        private Context context;
-        private ProductMixAdapter productMixAdapter;
+      private CharSequence lastUsedCharSequence;
 
-        public ProductMixFilter(ProductMixAdapter adapter, Context cntext, List<ProductMix> fullList) {
-            super();
-            productMixAdapter = adapter;
-            context = cntext;
-            fullProductList = fullList;
-        }
+      @Override
+      public void updateFiltering(){
+         if (lastUsedCharSequence != null){
+            filter(lastUsedCharSequence);
+         }
+      }
 
-        @Override
-        protected FilterResults performFiltering(CharSequence charSequence) {
-            FilterResults results = new FilterResults();
-            if (charSequence == null || charSequence.length() == 0) {
-                results.values = fullProductList;
-                results.count = fullProductList.size();
+      @Override
+      protected FilterResults performFiltering(CharSequence charSequence) {
+         this.lastUsedCharSequence = charSequence;
+         final FilterResults results = new FilterResults();
+         final ArrayList<ProductMix> copyOfOriginalList;
+         synchronized (listsLock) {
+            isFiltered = true;
+            if (originalList == null) {
+               originalList = new ArrayList<ProductMix>(filteredList);
             }
-            else {
-                List<ProductMix> productMixList = productMixAdapter.getItems();
-                // We perform filtering operation
-                List<ProductMix> nProductList = new ArrayList<ProductMix>();
+            copyOfOriginalList = new ArrayList<ProductMix>(originalList);
+         }
+         if (charSequence == null || charSequence.length() == 0) {
+            results.values = copyOfOriginalList;
+            results.count = copyOfOriginalList.size();
+         }
+         else {
+            final List<ProductMix> newProductMixList = new ArrayList<ProductMix>();
+            for (ProductMix mix : copyOfOriginalList) {
+               Product p = mix.getProductMixParameters();
+               final ProductUnits rateProductUnits = ProductHelperMethods.retrieveProductRateUnits(p, ProductHelperMethods.queryMeasurementSystem(context, UnitsSettings.VOLUME));
+               double rateUnitFactor = 1.0;
+               if (rateProductUnits != null && rateProductUnits.isSetMultiplyFactorFromBaseUnits()) {
+                  rateUnitFactor = rateProductUnits.getMultiplyFactorFromBaseUnits();
+               }
 
-                for (ProductMix mix : productMixList) {
-                    Product p = mix.getProductMixParameters();
-                    final ProductUnits rateProductUnits = ProductHelperMethods.retrieveProductRateUnits(p, ProductHelperMethods.queryMeasurementSystem(context, UnitsSettings.VOLUME));
-                    double rateUnitFactor = 1.0;
-                    if (rateProductUnits != null && rateProductUnits.isSetMultiplyFactorFromBaseUnits()) {
-                        rateUnitFactor = rateProductUnits.getMultiplyFactorFromBaseUnits();
-                    }
-
-                    if (p.getName().toUpperCase().contains(charSequence.toString().toUpperCase())
-                            || (p.getForm() != null && p.getForm().name().toUpperCase().contains(charSequence.toString().toUpperCase()))
-                            || (rateProductUnits != null && rateProductUnits.getName().toUpperCase().contains(charSequence.toString().toUpperCase()))
-                            || (String.valueOf(MathUtility.getConvertedFromBase(p.getDefaultRate(), rateUnitFactor))).contains(charSequence.toString())) {
-                        nProductList.add(mix);
-                    }
-                }
-
-                results.values = nProductList;
-                results.count = nProductList.size();
-
+               if (p.getName().toUpperCase().contains(charSequence.toString().toUpperCase())
+                     || (p.getForm() != null && p.getForm().name().toUpperCase().contains(charSequence.toString().toUpperCase()))
+                     || (rateProductUnits != null && rateProductUnits.getName().toUpperCase().contains(charSequence.toString().toUpperCase()))
+                     || (String.valueOf(MathUtility.getConvertedFromBase(p.getDefaultRate(), rateUnitFactor))).contains(charSequence.toString())) {
+                  newProductMixList.add(mix);
+               }
             }
-            return results;
-        }
+            results.values = newProductMixList;
+            results.count = newProductMixList.size();
+         }
+         return results;
+      }
 
-        @Override
-        protected void publishResults(CharSequence charSequence, FilterResults filterResults) {
-            // Now we have to inform the adapter about the new list filtered
-            if (filterResults.count == 0)
-                productMixAdapter.notifyDataSetInvalidated();
-            else {
-                productMixAdapter.setItems((List<ProductMix>) filterResults.values);
-                productMixAdapter.notifyDataSetChanged();
+      @Override
+      protected void publishResults(CharSequence charSequence, FilterResults filterResults) {
+         synchronized (listsLock){
+            if (!isFiltered){
+               // ui thread changed something in parallel during perform filtering
+               return;
+            } else {
+               filteredList = (List<ProductMix>) filterResults.values;
+               // Now we have to inform the adapter about the new list filtered
+               if (filterResults.count == 0)
+                  ProductMixAdapter.this.notifyDataSetInvalidated();
+               else {
+                  ProductMixAdapter.this.notifyDataSetChanged();
+               }
             }
-        }
-    }
+         }
+      }
+   }
 }

@@ -62,6 +62,7 @@ public final class VarietyAdapter extends BaseAdapter implements Filterable {
    private final TabActivity activity;
    private IVIPServiceAIDL vipService;
    private AddOrEditVarietyDialog editVarietyDialog;
+   private boolean isFiltered = false;
 
    /**
     * @param context the context of the adapter
@@ -98,6 +99,7 @@ public final class VarietyAdapter extends BaseAdapter implements Filterable {
       synchronized (listsLock){
          filteredList = new ArrayList<Variety>(varieties);
          originalList = null;
+         updateFiltering();
       }
       notifyDataSetChanged();
    }
@@ -114,6 +116,7 @@ public final class VarietyAdapter extends BaseAdapter implements Filterable {
          if (originalList != null) {
             originalList.remove(variety);
          }
+         updateFiltering();
       }
       notifyDataSetChanged();
    }
@@ -215,6 +218,19 @@ public final class VarietyAdapter extends BaseAdapter implements Filterable {
       return filter;
    }
 
+   /**
+    * If the list was changed - it's possible that the filter has working at a temporary copy of the old list and he must
+    * not change the lists based on old data. So we set is filtered to false to force the filter to throw away the old
+    * data and re-trigger filtering.
+    */
+   private void updateFiltering() {
+      isFiltered = false;
+      Filter filter = getFilter();
+      if (filter instanceof UpdateableFilter){
+         ((UpdateableFilter)filter).updateFiltering();
+      }
+   }
+
 
    private class OnEditButtonClickListener implements View.OnClickListener {
 
@@ -290,50 +306,68 @@ public final class VarietyAdapter extends BaseAdapter implements Filterable {
     * A {@link Filter} using a charSequence to check if charSequence is part of varieties name or varieties
     * enum-values-ui-string.
     */
-   private class VarietyFilter extends Filter {
+   private class VarietyFilter extends Filter implements UpdateableFilter {
+
+      private CharSequence lastUsedCharSequence;
+
+      @Override
+      public void updateFiltering(){
+         if (lastUsedCharSequence != null){
+            filter(lastUsedCharSequence);
+         }
+      }
 
       @Override
       protected FilterResults performFiltering(CharSequence charSequence) {
          final FilterResults results = new FilterResults();
          final ArrayList<Variety> copyOfOriginalList;
          synchronized (listsLock) {
+            isFiltered = true;
             if (originalList == null) {
                originalList = new ArrayList<Variety>(filteredList);
             }
             copyOfOriginalList = new ArrayList<Variety>(originalList);
-            if (charSequence == null || charSequence.length() == 0) {
-               results.values = copyOfOriginalList;
-               results.count = copyOfOriginalList.size();
-            }
-            else {
-               final ArrayList<Variety> newVarietyList = new ArrayList<Variety>();
-               for (Variety variety : copyOfOriginalList) {
-                  if (variety != null) {
-                     final String searchString = charSequence.toString().toLowerCase();
-                     if (variety.getName().toLowerCase().contains(searchString)) {
+         }
+         if (charSequence == null || charSequence.length() == 0) {
+            results.values = copyOfOriginalList;
+            results.count = copyOfOriginalList.size();
+         }
+         else {
+            final ArrayList<Variety> newVarietyList = new ArrayList<Variety>();
+            for (Variety variety : copyOfOriginalList) {
+               if (variety != null) {
+                  final String searchString = charSequence.toString().toLowerCase();
+                  if (variety.getName().toLowerCase().contains(searchString)) {
+                     newVarietyList.add(variety);
+                  }
+                  else {
+                     if (getCropTypeText(variety).toLowerCase().contains(charSequence)) {
                         newVarietyList.add(variety);
-                     }
-                     else {
-                        if (getCropTypeText(variety).toLowerCase().contains(charSequence)) {
-                           newVarietyList.add(variety);
-                        }
                      }
                   }
                }
-               results.values = newVarietyList;
-               results.count = newVarietyList.size();
             }
-            filteredList = (List<Variety>) results.values;
+            results.values = newVarietyList;
+            results.count = newVarietyList.size();
          }
          return results;
       }
 
       @Override
       protected void publishResults(CharSequence constraint, FilterResults results) {
-         if (results.count > 0) {
-            notifyDataSetChanged();
-         } else {
-            notifyDataSetInvalidated();
+         synchronized (listsLock){
+            if (!isFiltered){
+               // ui thread changed something in parallel during perform filtering
+               return;
+            } else {
+               filteredList = (List<Variety>) results.values;
+               // Now we have to inform the adapter about the new list filtered
+               if (results.count == 0)
+                  VarietyAdapter.this.notifyDataSetInvalidated();
+               else {
+                  VarietyAdapter.this.notifyDataSetChanged();
+               }
+            }
          }
       }
    }

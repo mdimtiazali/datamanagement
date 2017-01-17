@@ -72,7 +72,8 @@ public class AddOrEditVarietyDialog extends DialogView {
    }
 
    /**
-    * Setter for the varietyList.
+    * Setter for the varietyList. Copies the list for later thread safety. If the list given needs synchronization
+    * the call to this method needs synchronization too.
     * @param varieties the varieties list
     */
    public void setVarietyList(List<Variety> varieties){
