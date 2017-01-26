@@ -144,11 +144,6 @@
           <groupId>com.jakewharton</groupId>
           <artifactId>butterknife</artifactId>
        </dependency>
-        <dependency>
-            <groupId>com.android.support</groupId>
-            <artifactId>multidex</artifactId>
-            <type>aar</type>
-        </dependency>
 
        <dependency>
           <groupId>junit</groupId>
@@ -198,7 +193,7 @@
                 <configuration>
                    <extractDuplicates>true</extractDuplicates>
                    <dex>
-                       <multiDex>true</multiDex>
+                       <multiDex>false</multiDex>
                        <mainDexList>${project.basedir}/MainDexList.txt</mainDexList>
                       <jvmArguments>
                          <jvmArgument>-Xmx2096M</jvmArgument>
@@ -207,7 +202,7 @@
                     <attachSources>true</attachSources>
                     <extractDuplicates>true</extractDuplicates>
                     <proguard>
-                        <skip>true</skip>
+                        <skip>false</skip>
                         <config>proguard.cfg</config>
                         <configs>
                             <config>${env.ANDROID_HOME}/tools/proguard/proguard-android.txt</config>
