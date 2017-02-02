@@ -131,6 +131,7 @@ public class TargetProcessViewAdapter extends DataManagementBaseAdapter {
       }
       int i = 0;
       PickListEditable rootTargetPickList = viewHolder.targetLists.get(targets.get(0).getType());
+      rootTargetPickList.clearList();
       for (ObjectGraph target : targets) {
          rootTargetPickList.addItem(new ExportFragment.ObjectPickListItem<ObjectGraph>(i++, target.getName(), target));
       }

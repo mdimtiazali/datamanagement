@@ -111,7 +111,7 @@ public class ProcessDialog extends DialogView {
             updateView();
          }
       });
-
+      viewCache.clear();
       updateView();
    }
 
