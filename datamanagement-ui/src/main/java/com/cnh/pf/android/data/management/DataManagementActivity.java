@@ -189,11 +189,5 @@ public class DataManagementActivity extends TabActivity implements RoboContext {
    protected void onPause() {
       super.onPause();
       eventManager.fire(new OnPauseEvent(this));
-      finish();
-   }
-
-   @Override
-   public void onDestroy() {
-      android.os.Process.killProcess(android.os.Process.myPid());
    }
 }
