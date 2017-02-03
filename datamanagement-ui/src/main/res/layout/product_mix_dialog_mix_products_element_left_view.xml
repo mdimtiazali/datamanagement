@@ -73,7 +73,7 @@
                 android:layout_marginTop="5dp"
                 style="@style/EditText"
                 android:hint="@string/product_mix_default_text_edittext"
-                android:imeOptions="actionDone"
+                android:imeOptions="actionDone|flagNoExtractUi"
                 android:singleLine="true" />
 
         <com.cnh.android.widget.control.PickList
