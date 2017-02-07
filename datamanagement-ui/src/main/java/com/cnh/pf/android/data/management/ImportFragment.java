@@ -9,10 +9,6 @@
 
 package com.cnh.pf.android.data.management;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Set;
-
 import android.os.Bundle;
 import android.os.RemoteException;
 import android.view.DragEvent;
@@ -23,7 +19,7 @@ import android.widget.ImageButton;
 import android.widget.LinearLayout;
 import android.widget.TextView;
 import android.widget.Toast;
-import com.cnh.android.dialog.DialogView;
+
 import com.cnh.android.dialog.DialogViewInterface;
 import com.cnh.android.widget.activity.TabActivity;
 import com.cnh.android.widget.control.ProgressBarView;
@@ -39,10 +35,17 @@ import com.cnh.pf.data.management.DataManagementSession;
 import com.cnh.pf.data.management.DataManagementSession.SessionOperation;
 import com.cnh.pf.data.management.aidl.MediumDevice;
 import com.cnh.pf.datamng.Process;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Set;
+
 import roboguice.event.EventThread;
 import roboguice.event.Observes;
+import roboguice.inject.InjectResource;
 import roboguice.inject.InjectView;
 
 /**
@@ -52,19 +55,40 @@ import roboguice.inject.InjectView;
 public class ImportFragment extends BaseDataFragment {
    private static final Logger logger = LoggerFactory.getLogger(ImportFragment.class);
 
-   @InjectView(R.id.import_source_btn) Button importSourceBtn;
-   @InjectView(R.id.import_drop_zone) LinearLayout importDropZone;
-   @InjectView(R.id.import_selected_btn) Button importSelectedBtn;
-   @InjectView(R.id.stop_button) ImageButton stopBtn;
-   @InjectView(R.id.progress_bar) ProgressBarView progressBar;
-   @InjectView(R.id.operation_name) TextView operationName;
-   @InjectView(R.id.percent_tv) TextView percentTv;
-   @InjectView(R.id.left_status) LinearLayout leftStatus;
+   @InjectView(R.id.import_source_btn)
+   Button importSourceBtn;
+   @InjectView(R.id.import_drop_zone)
+   LinearLayout importDropZone;
+   @InjectView(R.id.import_selected_btn)
+   Button importSelectedBtn;
+   @InjectView(R.id.stop_button)
+   ImageButton stopBtn;
+   @InjectView(R.id.progress_bar)
+   ProgressBarView progressBar;
+   @InjectView(R.id.operation_name)
+   TextView operationName;
+   @InjectView(R.id.percent_tv)
+   TextView percentTv;
+   @InjectView(R.id.left_status)
+   LinearLayout leftStatus;
    ProcessDialog processDialog;
    //store original data in case cancel is pressed.  so we can restore it.
    private List<ObjectGraph> originalData;
 
-   @Override public void inflateViews(LayoutInflater inflater, View leftPanel) {
+   @InjectResource(R.string.keep_both)
+   String keepBothStr;
+   @InjectResource(R.string.copy_and_replace)
+   String replaceStr;
+   @InjectResource(R.string.data_conflict)
+   String dataConflictStr;
+   @InjectResource(R.string.select_target)
+   String selectTargetStr;
+   @InjectResource(R.string.next)
+   String nextStr;
+
+
+   @Override
+   public void inflateViews(LayoutInflater inflater, View leftPanel) {
       inflater.inflate(R.layout.import_left_layout, (LinearLayout) leftPanel);
    }
 
@@ -84,13 +108,15 @@ public class ImportFragment extends BaseDataFragment {
          }
       });
       stopBtn.setOnClickListener(new View.OnClickListener() {
-         @Override public void onClick(View v) {
+         @Override
+         public void onClick(View v) {
             getDataManagementService().cancel(session);
          }
       });
       importDropZone.setOnDragListener(new View.OnDragListener() {
-         @Override public boolean onDrag(View v, DragEvent event) {
-            switch(event.getAction()) {
+         @Override
+         public boolean onDrag(View v, DragEvent event) {
+            switch (event.getAction()) {
             case DragEvent.ACTION_DRAG_STARTED:
                importDropZone.setBackgroundColor(getResources().getColor(R.color.drag_accept));
                return true;
@@ -115,8 +141,6 @@ public class ImportFragment extends BaseDataFragment {
       checkImportButton();
    }
 
-
-
    @Override
    public void enableButtons(boolean enable) {
       super.enableButtons(enable);
@@ -126,7 +150,7 @@ public class ImportFragment extends BaseDataFragment {
    @Override
    protected void onOtherSessionUpdate(DataManagementSession session) {
       logger.debug("Other session has been updated");
-      if(session.getSessionOperation().equals(SessionOperation.PERFORM_OPERATIONS)) {
+      if (session.getSessionOperation().equals(SessionOperation.PERFORM_OPERATIONS)) {
          logger.trace("Other operation completed. Enabling UI.");
          checkImportButton();
       }
@@ -134,15 +158,14 @@ public class ImportFragment extends BaseDataFragment {
 
    private void checkImportButton() {
       DataManagementSession s = getSession();
-      boolean isActiveOperation = s!=null
-            && (s.getSessionOperation().equals(SessionOperation.CALCULATE_CONFLICTS)
-            || s.getSessionOperation().equals(SessionOperation.CALCULATE_OPERATIONS)
-                  || (s.getSessionOperation().equals(SessionOperation.PERFORM_OPERATIONS) && s.getResult()==null));
+      boolean isActiveOperation = s != null
+            && (s.getSessionOperation().equals(SessionOperation.CALCULATE_CONFLICTS) || s.getSessionOperation().equals(SessionOperation.CALCULATE_OPERATIONS)
+                  || (s.getSessionOperation().equals(SessionOperation.PERFORM_OPERATIONS) && s.getResult() == null));
       boolean connected = getDataManagementService() != null;
-      isActiveOperation |=  connected && getDataManagementService().hasActiveSession();
+      isActiveOperation |= connected && getDataManagementService().hasActiveSession();
       boolean hasSelection = getTreeAdapter() != null && getTreeAdapter().hasSelection();
       importSourceBtn.setEnabled(connected && !isActiveOperation);
-      importSelectedBtn.setEnabled(connected && hasSelection && !isActiveOperation && s!=null);
+      importSelectedBtn.setEnabled(connected && hasSelection && !isActiveOperation && s != null);
    }
 
    /**Called when user selects Import source, from Import Source Dialog*/
@@ -159,14 +182,10 @@ public class ImportFragment extends BaseDataFragment {
       else {
          pathTv.setText(getString(R.string.display_named, event.getDevice().getName()));
       }
-      DataManagementSession session = new DataManagementSession(
-            null,
-            new Datasource.Source[] { Datasource.Source.INTERNAL, Datasource.Source.DISPLAY },
-            event.getDevices(),
-            null);
+      DataManagementSession session = new DataManagementSession(null, new Datasource.Source[] { Datasource.Source.INTERNAL, Datasource.Source.DISPLAY }, event.getDevices(), null);
       setSession(session);
       getDataManagementService().processOperation(getSession(), SessionOperation.DISCOVERY);
-      if(getTreeAdapter()!=null) getTreeAdapter().selectAll(treeViewList, false);  //clear out the selection
+      if (getTreeAdapter() != null) getTreeAdapter().selectAll(treeViewList, false); //clear out the selection
    }
 
    @Override
@@ -175,17 +194,18 @@ public class ImportFragment extends BaseDataFragment {
       setSession(null);
    }
 
-   @Override public void processOperations() {
+   @Override
+   public void processOperations() {
       if (getSession().getSessionOperation().equals(SessionOperation.CALCULATE_OPERATIONS) && !isCancelled()) {
          logger.debug("Calculate Targets");
-         if(getSession().getData() == null) {
+         if (getSession().getData() == null) {
             Toast.makeText(getActivity(), "No operations came back from server.  Check connectivity", Toast.LENGTH_SHORT).show();
             cancel();
             return;
          }
          boolean hasMultipleTargets = false;
          for (Operation operation : getSession().getData()) {
-            if (operation.getPotentialTargets() != null && operation.getPotentialTargets().size() > 1 && operation.getData().getParent()==null) {
+            if (operation.getPotentialTargets() != null && operation.getPotentialTargets().size() > 1 && operation.getData().getParent() == null) {
                hasMultipleTargets = true;
                break;
             }
@@ -193,10 +213,14 @@ public class ImportFragment extends BaseDataFragment {
          if (hasMultipleTargets) {
             TargetProcessViewAdapter adapter = new TargetProcessViewAdapter(getActivity(), getSession().getData());
             processDialog.setAdapter(adapter);
+            processDialog.setTitle(selectTargetStr);
+            processDialog.setFirstButtonText(nextStr);
+            processDialog.showFirstButton(true);
+            processDialog.showSecondButton(false);
             processDialog.clearLoading();
-            processDialog.setTitle(getResources().getString(R.string.select_target));
             adapter.setOnTargetsSelectedListener(new TargetProcessViewAdapter.OnTargetsSelectedListener() {
-               @Override public void onCompletion(List<Operation> operations) {
+               @Override
+               public void onCompletion(List<Operation> operations) {
                   logger.debug("onCompletion: {}", operations.toString());
                   getSession().setData(operations);
                   logger.debug("Going to Calculate Conflicts");
@@ -221,11 +245,15 @@ public class ImportFragment extends BaseDataFragment {
          if (hasConflicts) {
             DataConflictViewAdapter adapter = new DataConflictViewAdapter(getActivity(), getSession().getData());
             processDialog.setAdapter(adapter);
+            processDialog.setTitle(dataConflictStr);
             processDialog.showFirstButton(true);
+            processDialog.setFirstButtonText(keepBothStr);
             processDialog.showSecondButton(true);
+            processDialog.setSecondButtonText(replaceStr);
             processDialog.clearLoading();
             adapter.setOnTargetsSelectedListener(new DataManagementBaseAdapter.OnTargetsSelectedListener() {
-               @Override public void onCompletion(List<Operation> operations) {
+               @Override
+               public void onCompletion(List<Operation> operations) {
                   logger.debug("onCompletion {}", operations);
                   processDialog.hide();
                   showProgressPanel();
@@ -241,14 +269,14 @@ public class ImportFragment extends BaseDataFragment {
             setSession(getDataManagementService().processOperation(getSession(), SessionOperation.PERFORM_OPERATIONS));
          }
       }
-      else if(getSession().getSessionOperation().equals(SessionOperation.PERFORM_OPERATIONS)) {
+      else if (getSession().getSessionOperation().equals(SessionOperation.PERFORM_OPERATIONS)) {
          logger.trace("resetting new session.  Operation completed.");
          getTreeAdapter().selectAll(treeViewList, false);
          removeProgressPanel();
-         if(getSession().getResult().equals(Process.Result.SUCCESS)) {
+         if (getSession().getResult().equals(Process.Result.SUCCESS)) {
             Toast.makeText(getActivity(), "Import Completed", Toast.LENGTH_LONG).show();
          }
-         else if(getSession().getResult().equals(Process.Result.CANCEL)) {
+         else if (getSession().getResult().equals(Process.Result.CANCEL)) {
             Toast.makeText(getActivity(), "Import Cancelled", Toast.LENGTH_LONG).show();
          }
       }
@@ -267,7 +295,8 @@ public class ImportFragment extends BaseDataFragment {
       processDialog.setTitle(getResources().getString(R.string.checking_conflicts));
       processDialog.setProgress(0);
       processDialog.setOnDismissListener(new DialogViewInterface.OnDismissListener() {
-         @Override public void onDismiss(DialogViewInterface dialog) {
+         @Override
+         public void onDismiss(DialogViewInterface dialog) {
             cancel();
          }
       });
@@ -279,7 +308,7 @@ public class ImportFragment extends BaseDataFragment {
       setCancelled(true);
       getSession().setObjectData(originalData);
       getSession().setSessionOperation(SessionOperation.DISCOVERY);
-      if(getTreeAdapter()!=null) getTreeAdapter().selectAll(treeViewList, false);  //clear out the selection
+      if (getTreeAdapter() != null) getTreeAdapter().selectAll(treeViewList, false); //clear out the selection
       checkImportButton();
    }
 
@@ -299,7 +328,6 @@ public class ImportFragment extends BaseDataFragment {
       importDropZone.setVisibility(View.VISIBLE);
    }
 
-
    /** Check if session returned by service is an import operation*/
    @Override
    public boolean isCurrentOperation(DataManagementSession session) {
@@ -315,7 +343,7 @@ public class ImportFragment extends BaseDataFragment {
    @Override
    public void onProgressPublished(String operation, int progress, int max) {
       final Double percent = ((progress * 1.0) / max) * 100;
-      if(processDialog.isShown()) {
+      if (processDialog.isShown()) {
          processDialog.setProgress(percent.intValue());
       }
       else {

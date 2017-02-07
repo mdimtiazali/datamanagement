@@ -1,26 +1,26 @@
 <?xml version="1.0" encoding="utf-8"?>
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
-    xmlns:cnh="http://schemas.android.com/apk/res/com.cnh.pf.android.data.management"
-    android:layout_width="match_parent"
-    android:layout_height="match_parent"
-    android:orientation="vertical" >
+        xmlns:cnh="http://schemas.android.com/apk/res/com.cnh.pf.android.data.management"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:orientation="vertical">
 
     <pl.polidea.treeview.TreeViewList
-        android:id="@+id/path_tree_view"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:background="@drawable/text_border"
-        android:divider="@android:color/transparent"
-        android:dividerHeight="8dp"
-        cnh:collapsible="true"
-        cnh:draw_line="true"
-        cnh:indent_width="18dp"
-        cnh:row_background="@drawable/complex_selector_background"
-        cnh:indicator_background="@android:color/transparent"
-        cnh:indicator_gravity="center_vertical|right"
-        cnh:line_color="@color/tree_line"
-        cnh:line_width="2dp"
-        cnh:src_collapsed="@drawable/ic_action_expand"
-        cnh:src_expanded="@drawable/ic_action_collapse" />
+            android:id="@+id/path_tree_view"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:background="@drawable/text_border"
+            android:divider="@android:color/transparent"
+            android:dividerHeight="8dp"
+            cnh:collapsible="true"
+            cnh:draw_line="true"
+            cnh:indent_width="18dp"
+            cnh:row_background="@drawable/complex_selector_background"
+            cnh:indicator_background="@android:color/transparent"
+            cnh:indicator_gravity="center_vertical|right"
+            cnh:line_color="@color/tree_line"
+            cnh:line_width="2dp"
+            cnh:src_collapsed="@drawable/ic_action_expand"
+            cnh:src_expanded="@drawable/ic_action_collapse" />
 
 </LinearLayout>

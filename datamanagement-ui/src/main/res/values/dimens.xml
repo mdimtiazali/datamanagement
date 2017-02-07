@@ -1,0 +1,45 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  ~ Copyright (C) 2016 CNH Industrial NV. All rights reserved.
+  ~
+  ~ This software contains proprietary information of CNH Industrial NV. Neither
+  ~ receipt nor possession thereof confers any right to reproduce, use, or
+  ~ disclose in whole or in part any such information without written
+  ~ authorization from CNH Industrial NV.
+  -->
+<resources>
+
+    <dimen name="list_item_height">50dp</dimen>
+    <dimen name="list_item_large_text_size">22sp</dimen>
+    <dimen name="list_item_padding">4dp</dimen>
+
+    <dimen name="product_item_container_margin">20dp</dimen>
+    <dimen name="product_item_image_margin">20dp</dimen>
+    <dimen name="product_item_small_widget_margin">8dp</dimen>
+    <dimen name="product_item_small_text_size">18sp</dimen>
+
+    <dimen name="product_library_empty">0dp</dimen>
+    <dimen name="product_library_sort_header_left_padding">16.25dp</dimen>
+    <dimen name="product_library_sort_header_right_padding">26dp</dimen>
+    <dimen name="product_library_shrink_margin_small">-5dp</dimen>
+    <dimen name="product_library_grow_margin_medium">20dp</dimen>
+    <dimen name="product_library_add_button_left_margin">20dp</dimen>
+    <dimen name="product_library_search_field_right_margin">20dp</dimen>
+    <dimen name="product_library_search_and_button_margin_bottom">20dp</dimen>
+
+    <!-- product mix -->
+    <dimen name="product_mix_default_marging_top">15dp</dimen>
+    <dimen name="product_mix_button_width">100dp</dimen>
+    <dimen name="product_mix_button_add_width">80dp</dimen>
+    <dimen name="product_mix_button_margin_end">10dp</dimen>
+    <dimen name="product_mix_product_image_width_height">60dp</dimen>
+    <dimen name="product_mix_dialog_application_rate_name_text_size">25sp</dimen>
+    <dimen name="product_mix_dialog_application_rate_text_size">28sp</dimen>
+    <dimen name="product_mix_dialog_application_rate_title_text_size">25sp</dimen>
+    <dimen name="product_mix_dialog_product_background_height">250dp</dimen>
+    <dimen name="product_mix_overview_application_rate_text_size">23sp</dimen>
+    <dimen name="product_mix_application_rate_table_title_text_size">20sp</dimen>
+
+    <dimen name="search_text_size">23dp</dimen>
+    <dimen name="variety_delete_and_edit_button_side_padding">20dp</dimen>
+</resources>

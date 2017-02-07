@@ -9,8 +9,9 @@
 
 package com.cnh.pf.android.data.management.graph;
 
-import com.cnh.pf.model.TypedValue;
 import com.cnh.jgroups.ObjectGraph;
+import com.cnh.pf.model.TypedValue;
+
 import org.jgroups.Address;
 
 import java.util.Map;

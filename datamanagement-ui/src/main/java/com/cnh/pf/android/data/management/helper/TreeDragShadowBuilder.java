@@ -12,12 +12,14 @@ package com.cnh.pf.android.data.management.helper;
 import android.graphics.Canvas;
 import android.graphics.Point;
 import android.view.View;
+
 import com.cnh.jgroups.ObjectGraph;
 import com.cnh.pf.android.data.management.adapter.ObjectTreeViewAdapter;
-import pl.polidea.treeview.TreeViewList;
 
 import java.util.ArrayList;
 import java.util.List;
+
+import pl.polidea.treeview.TreeViewList;
 
 /**
  * Draws all selected nodes.
@@ -36,18 +38,19 @@ public class TreeDragShadowBuilder extends View.DragShadowBuilder {
 
    private List<View> getViews() {
       List<View> views = new ArrayList<View>();
-      for(int i=0; i<listView.getChildCount(); i++) {
+      for (int i = 0; i < listView.getChildCount(); i++) {
          View child = listView.getChildAt(i);
          ObjectGraph node = (ObjectGraph) child.getTag(); //tree associates ObjectGraph with each view
-         if(node==null) continue;
-         if(treeAdapter.getSelectionMap().containsKey(node)) {
+         if (node == null) continue;
+         if (treeAdapter.getSelectionMap().containsKey(node)) {
             views.add(child);
          }
       }
       return views;
    }
 
-   @Override public void onProvideShadowMetrics(Point shadowSize, Point shadowTouchPoint) {
+   @Override
+   public void onProvideShadowMetrics(Point shadowSize, Point shadowTouchPoint) {
       List<View> views = getViews();
 
       int vWidth = getView().getWidth();
@@ -55,13 +58,14 @@ public class TreeDragShadowBuilder extends View.DragShadowBuilder {
 
       int index = views.indexOf(getView());
 
-      shadowSize.set(vWidth, vHeight* views.size());
-      shadowTouchPoint.set(shadowSize.x / 2, index*vHeight + vHeight / 2);
+      shadowSize.set(vWidth, vHeight * views.size());
+      shadowTouchPoint.set(shadowSize.x / 2, index * vHeight + vHeight / 2);
    }
 
-   @Override public void onDrawShadow(Canvas canvas) {
+   @Override
+   public void onDrawShadow(Canvas canvas) {
       canvas.save();
-      for(View view : getViews()) {
+      for (View view : getViews()) {
          view.draw(canvas);
          canvas.translate(0f, view.getHeight());
       }

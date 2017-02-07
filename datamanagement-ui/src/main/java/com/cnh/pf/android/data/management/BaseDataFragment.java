@@ -9,9 +9,6 @@
 
 package com.cnh.pf.android.data.management;
 
-import java.util.ArrayList;
-import java.util.List;
-
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.IBinder;
@@ -25,6 +22,7 @@ import android.widget.AdapterView;
 import android.widget.Button;
 import android.widget.LinearLayout;
 import android.widget.TextView;
+
 import com.cnh.android.dialog.DialogView;
 import com.cnh.android.dialog.DialogViewInterface;
 import com.cnh.android.widget.activity.TabActivity;
@@ -36,7 +34,6 @@ import com.cnh.pf.android.data.management.adapter.SelectionTreeViewAdapter;
 import com.cnh.pf.android.data.management.connection.DataServiceConnection;
 import com.cnh.pf.android.data.management.connection.DataServiceConnectionImpl;
 import com.cnh.pf.android.data.management.connection.DataServiceConnectionImpl.ConnectionEvent;
-import com.cnh.pf.android.data.management.connection.DataServiceConnectionImpl.ErrorEvent;
 import com.cnh.pf.android.data.management.dialog.ErrorDialog;
 import com.cnh.pf.android.data.management.graph.GroupObjectGraph;
 import com.cnh.pf.android.data.management.helper.TreeDragShadowBuilder;
@@ -46,8 +43,13 @@ import com.cnh.pf.data.management.DataManagementSession.SessionOperation;
 import com.cnh.pf.data.management.aidl.IDataManagementListenerAIDL;
 import com.google.inject.Inject;
 import com.google.inject.name.Named;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import java.util.ArrayList;
+import java.util.List;
+
 import pl.polidea.treeview.InMemoryTreeStateManager;
 import pl.polidea.treeview.TreeBuilder;
 import pl.polidea.treeview.TreeStateManager;
@@ -69,16 +71,26 @@ public abstract class BaseDataFragment extends RoboFragment implements IDataMana
    public static final String NAME = "MEDIATOR";
    private final Logger logger = LoggerFactory.getLogger(getClass());
 
-   @Inject private DataServiceConnection dataServiceConnection;
-   @Inject protected LayoutInflater layoutInflater;
+   @Inject
+   private DataServiceConnection dataServiceConnection;
+   @Inject
+   protected LayoutInflater layoutInflater;
    /** Service shared global EventManager */
-   @Named(DefaultRoboModule.GLOBAL_EVENT_MANAGER_NAME) @Inject EventManager globalEventManager;
-   @InjectView(R.id.path_tv) TextView pathTv;
-   @InjectView(R.id.select_all_btn) Button selectAllBtn;
-   @InjectView(R.id.tree_view_list) TreeViewList treeViewList;
-   @InjectView(R.id.tree_progress) protected ProgressBarView treeProgress;
-   @InjectView(R.id.start_text) protected TextView startText;
-   @InjectResource(R.string.done) String doneStr;
+   @Named(DefaultRoboModule.GLOBAL_EVENT_MANAGER_NAME)
+   @Inject
+   EventManager globalEventManager;
+   @InjectView(R.id.path_tv)
+   TextView pathTv;
+   @InjectView(R.id.select_all_btn)
+   Button selectAllBtn;
+   @InjectView(R.id.tree_view_list)
+   TreeViewList treeViewList;
+   @InjectView(R.id.tree_progress)
+   protected ProgressBarView treeProgress;
+   @InjectView(R.id.start_text)
+   protected TextView startText;
+   @InjectResource(R.string.done)
+   String doneStr;
 
    private TreeStateManager<ObjectGraph> manager;
    private TreeBuilder<ObjectGraph> treeBuilder;
@@ -155,9 +167,10 @@ public abstract class BaseDataFragment extends RoboFragment implements IDataMana
       outState.putParcelable("session", session);
    }
 
-   @Override public void onCreate(Bundle savedInstanceState) {
+   @Override
+   public void onCreate(Bundle savedInstanceState) {
       super.onCreate(savedInstanceState);
-      if(savedInstanceState!=null) {
+      if (savedInstanceState != null) {
          session = savedInstanceState.getParcelable("session");
       }
    }
@@ -181,8 +194,9 @@ public abstract class BaseDataFragment extends RoboFragment implements IDataMana
       });
       treeViewList.setChoiceMode(AbsListView.CHOICE_MODE_NONE);
       treeViewList.setOnItemLongClickListener(new AdapterView.OnItemLongClickListener() {
-         @Override public boolean onItemLongClick(AdapterView<?> parent, View view, int position, long id) {
-            if(!treeAdapter.getSelectionMap().containsKey(view.getTag())) {
+         @Override
+         public boolean onItemLongClick(AdapterView<?> parent, View view, int position, long id) {
+            if (!treeAdapter.getSelectionMap().containsKey(view.getTag())) {
                treeAdapter.handleItemClick(parent, view, position, view.getTag()); //select it, and start the drag
             }
             view.startDrag(null, new TreeDragShadowBuilder(view, treeViewList, treeAdapter), treeAdapter.getSelected(), 0);
@@ -221,9 +235,10 @@ public abstract class BaseDataFragment extends RoboFragment implements IDataMana
 
    @Override
    public void onDataSessionUpdated(DataManagementSession session) throws RemoteException {
-      if(isCurrentOperation(session)) {
+      if (isCurrentOperation(session)) {
          onResumeSession(session);
-      } else {
+      }
+      else {
          onOtherSessionUpdate(session);
       }
    }
@@ -254,14 +269,10 @@ public abstract class BaseDataFragment extends RoboFragment implements IDataMana
                   @Override
                   public void onButtonClick(DialogViewInterface dialog, int which) {
                      if (which == DialogViewInterface.BUTTON_FIRST) {
-                        if(isCurrentOperation(event.getSession())) {
-//                           if(!event.getType().equals(ErrorEvent.DataError.NO_SOURCE_DATASOURCE)) {
-                              onResumeSession(null);
-//                           }
-//                           else {
-//                              treeProgress.setVisibility(View.GONE);
-//                           }
-                        } else {
+                        if (isCurrentOperation(event.getSession())) {
+                           onResumeSession(null);
+                        }
+                        else {
                            onOtherSessionUpdate(event.getSession());
                         }
                      }
@@ -328,7 +339,7 @@ public abstract class BaseDataFragment extends RoboFragment implements IDataMana
    }
 
    private List<Operation> processPartialImports(List<Operation> operations) {
-      if(operations == null) {
+      if (operations == null) {
          logger.warn("calculate operations returned No operations");
          return null;
       }
@@ -342,8 +353,7 @@ public abstract class BaseDataFragment extends RoboFragment implements IDataMana
       logger.debug("initateTree");
       //Discovery happened
       enableButtons(true);
-      List<ObjectGraph> data = session!=null && session.getObjectData()!=null ?
-            session.getObjectData() : new ArrayList<ObjectGraph>();
+      List<ObjectGraph> data = session != null && session.getObjectData() != null ? session.getObjectData() : new ArrayList<ObjectGraph>();
       manager = new InMemoryTreeStateManager<ObjectGraph>();
       treeBuilder = new TreeBuilder<ObjectGraph>(manager);
       for (ObjectGraph graph : data) {
@@ -400,9 +410,7 @@ public abstract class BaseDataFragment extends RoboFragment implements IDataMana
    }
 
    void updateSelectAllState() {
-      selectAllBtn.setEnabled(getSession()!=null
-            && getSession().getObjectData()!=null
-            && !getSession().getObjectData().isEmpty());
+      selectAllBtn.setEnabled(getSession() != null && getSession().getObjectData() != null && !getSession().getObjectData().isEmpty());
       boolean allSelected = getTreeAdapter().areAllSelected();
       selectAllBtn.setText(allSelected ? R.string.deselect_all : R.string.select_all);
       selectAllBtn.setActivated(allSelected);

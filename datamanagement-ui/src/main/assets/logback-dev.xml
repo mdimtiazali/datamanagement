@@ -9,8 +9,7 @@
 
 <configuration debug="true">
 
-    <appender name="LOGCAT"
-              class="ch.qos.logback.classic.android.LogcatAppender" >
+    <appender name="LOGCAT" class="ch.qos.logback.classic.android.LogcatAppender">
         <checkLoggable>false</checkLoggable>
         <encoder> <!-- Don't really need much of a pattern for logcat, alot is already done for you -->
             <pattern>%msg</pattern> <!-- %d{HH:mm:ss.SSS} [%thread] %-5level %logger{36} - %msg%n -->

@@ -9,23 +9,24 @@
  */
 package com.cnh.pf.android.data.management.adapter;
 
+import android.app.Activity;
 import android.content.res.ColorStateList;
 import android.content.res.XmlResourceParser;
 import android.graphics.drawable.Drawable;
-import android.widget.AdapterView;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import pl.polidea.treeview.AbstractTreeViewAdapter;
-import pl.polidea.treeview.TreeNodeInfo;
-import pl.polidea.treeview.TreeStateManager;
-
-import android.app.Activity;
 import android.view.View;
+import android.widget.AdapterView;
 import android.widget.TextView;
 
 import com.cnh.pf.android.data.management.R;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import java.io.File;
+
+import pl.polidea.treeview.AbstractTreeViewAdapter;
+import pl.polidea.treeview.TreeNodeInfo;
+import pl.polidea.treeview.TreeStateManager;
 
 /**
  * Adapter feeds dir to TreeView
@@ -41,7 +42,7 @@ public class PathTreeViewAdapter extends AbstractTreeViewAdapter<File> {
    }
 
    @Override
-   public void handleItemClick(final AdapterView< ? > parent, final View view, final int position, final Object id) {
+   public void handleItemClick(final AdapterView<?> parent, final View view, final int position, final Object id) {
       super.handleItemClick(parent, view, position, id);
       if (listener != null) {
          listener.onPathSelected((File) id);
@@ -52,13 +53,7 @@ public class PathTreeViewAdapter extends AbstractTreeViewAdapter<File> {
    @Override
    public View getNewChildView(TreeNodeInfo treeNodeInfo) {
       final TextView nameView = (TextView) getActivity().getLayoutInflater().inflate(R.layout.tree_list_item_simple, null);
-      XmlResourceParser xrp = getActivity().getResources().getXml(R.drawable.tree_text_color);
-      try {
-         ColorStateList csl = ColorStateList.createFromXml(getActivity().getResources(), xrp);
-         nameView.setTextColor(csl);
-      } catch (Exception e) {
-         logger.error("error loading text color resource", e);
-      }
+      nameView.setTextColor(getActivity().getResources().getColorStateList(R.color.tree_text_color));
       return updateView(nameView, treeNodeInfo);
    }
 

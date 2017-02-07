@@ -13,19 +13,33 @@ import android.app.Activity;
 import android.app.Application;
 import android.app.Fragment;
 import android.app.FragmentTransaction;
+import android.content.ComponentName;
 import android.content.Context;
 import android.content.Intent;
+import android.content.ServiceConnection;
 import android.os.Bundle;
+import android.os.IBinder;
 import android.util.AttributeSet;
 import android.view.View;
+
+import com.cnh.android.vip.aidl.IVIPServiceAIDL;
+import com.cnh.android.vip.constants.VIPConstants;
 import com.cnh.android.widget.activity.TabActivity;
 import com.cnh.android.widget.control.TabActivityListeners;
 import com.cnh.android.widget.control.TabActivityTab;
+import com.cnh.pf.android.data.management.productlibrary.ProductLibraryFragment;
 import com.cnh.pf.data.management.service.ServiceConstants;
 import com.cnh.pf.jgroups.ChannelModule;
 import com.google.inject.Key;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import java.lang.ref.WeakReference;
+import java.lang.reflect.Constructor;
+import java.util.HashMap;
+import java.util.Map;
+
 import roboguice.RoboGuice;
 import roboguice.RoboGuiceHelper;
 import roboguice.activity.event.OnPauseEvent;
@@ -33,19 +47,17 @@ import roboguice.activity.event.OnResumeEvent;
 import roboguice.event.EventManager;
 import roboguice.util.RoboContext;
 
-import java.lang.reflect.Constructor;
-import java.util.HashMap;
-import java.util.Map;
-
 /**
  * Data Management Tab Activity
  * Contains test UI, will later include Data Management, Data Sync, Import & Export
  */
-public class DataManagementActivity extends TabActivity implements RoboContext {
+public class DataManagementActivity extends TabActivity implements RoboContext, ServiceConnection {
    private static final Logger logger = LoggerFactory.getLogger(DataManagementActivity.class);
 
-   protected HashMap<Key<?>,Object> scopedObjects = new HashMap<Key<?>, Object>();
+   protected HashMap<Key<?>, Object> scopedObjects = new HashMap<Key<?>, Object>();
    protected EventManager eventManager;
+   private IVIPServiceAIDL vipService;
+   private WeakReference<ProductLibraryFragment> productLibraryFragmentWeakReference;
 
    private class DataManagementTabListener implements TabActivityListeners.TabListener {
       private final Activity a;
@@ -54,6 +66,15 @@ public class DataManagementActivity extends TabActivity implements RoboContext {
       public DataManagementTabListener(Fragment fragment, Activity a) {
          this.fragment = fragment;
          this.a = a;
+      }
+
+      /**
+       * Returns the current ProductLibraryFragment for testing/injection
+       *
+       * @return
+       */
+      public ProductLibraryFragment getProductLibraryFragment() {
+         return productLibraryFragmentWeakReference != null ? productLibraryFragmentWeakReference.get() : null;
       }
 
       @Override
@@ -117,10 +138,10 @@ public class DataManagementActivity extends TabActivity implements RoboContext {
 
    @Override
    public void onCreate(Bundle savedInstanceState) {
+      logger.debug("onCreate called");
       final Application app = getApplication();
       //Phoenix Workaround (phoenix sometimes cannot read the manifest)
-      RoboGuiceHelper.help(app, new String[] { "com.cnh.pf.android.data.management", "com.cnh.pf.jgroups" },
-         new RoboModule(app), new ChannelModule(app));
+      RoboGuiceHelper.help(app, new String[] { "com.cnh.pf.android.data.management", "com.cnh.pf.jgroups" }, new RoboModule(app), new ChannelModule(app));
       super.onCreate(savedInstanceState);
 
       eventManager = RoboGuice.getInjector(this).getInstance(EventManager.class);
@@ -128,11 +149,12 @@ public class DataManagementActivity extends TabActivity implements RoboContext {
             new DataManagementTabListener(new ImportFragment(), this));
       addTab(importTab);
       TabActivityTab exportTab = new TabActivityTab(R.string.tab_export, R.drawable.tab_export, getResources().getString(R.string.tab_export),
-              new DataManagementTabListener(new ExportFragment(), this));
+            new DataManagementTabListener(new ExportFragment(), this));
       addTab(exportTab);
-//      TabActivityTab importExportTestTab = new TabActivityTab(R.string.tab_import_test, R.drawable.tab_import, "import_export_test_tab",
-//            new DataManagementTabListener(new TestImportFragment(), this));
-//      addTab(importExportTestTab);
+      productLibraryFragmentWeakReference = new WeakReference<ProductLibraryFragment>(new ProductLibraryFragment());
+      TabActivityTab productLibraryTab = new TabActivityTab(R.string.tab_product_library, R.drawable.ic_product_library_tab, "product_library_tab",
+            new DataManagementTabListener(productLibraryFragmentWeakReference.get(), this));
+      addTab(productLibraryTab);
       setTabActivityTitle(getString(R.string.app_name));
       selectTabAtPosition(0);
    }
@@ -151,16 +173,14 @@ public class DataManagementActivity extends TabActivity implements RoboContext {
 
    @Override
    public View onCreateView(String name, Context context, AttributeSet attrs) {
-      if (shouldInjectOnCreateView(name))
-         return injectOnCreateView(name, context, attrs);
+      if (shouldInjectOnCreateView(name)) return injectOnCreateView(name, context, attrs);
 
       return super.onCreateView(name, context, attrs);
    }
 
    @Override
    public View onCreateView(View parent, String name, Context context, AttributeSet attrs) {
-      if (shouldInjectOnCreateView(name))
-         return injectOnCreateView(name, context, attrs);
+      if (shouldInjectOnCreateView(name)) return injectOnCreateView(name, context, attrs);
 
       return super.onCreateView(parent, name, context, attrs);
    }
@@ -172,22 +192,52 @@ public class DataManagementActivity extends TabActivity implements RoboContext {
          RoboGuice.getInjector(context).injectMembers(view);
          RoboGuice.getInjector(context).injectViewMembers(view);
          return view;
-      } catch (Exception e) {
+      }
+      catch (Exception e) {
          throw new RuntimeException(e);
       }
    }
 
    @Override
    public void onResume() {
+      logger.debug("onResume called");
       super.onResume();
       eventManager.fire(new OnResumeEvent(this));
       logger.debug("Sending INTERNAL_DATA broadcast");
       sendBroadcast(new Intent(ServiceConstants.ACTION_INTERNAL_DATA).addFlags(Intent.FLAG_INCLUDE_STOPPED_PACKAGES));
+      getApplicationContext().bindService(new Intent(VIPConstants.VIP_SERVICE_NAME), this, Context.BIND_AUTO_CREATE);
    }
 
    @Override
    protected void onPause() {
+      logger.debug("onPause called");
       super.onPause();
       eventManager.fire(new OnPauseEvent(this));
+      getApplicationContext().unbindService(this);
+   }
+
+   @Override
+   public void onServiceConnected(ComponentName name, IBinder service) {
+      logger.debug("onSeviceConnected called - componentClassName: " + name.getClassName() + " service: " + service.toString());
+      this.vipService = IVIPServiceAIDL.Stub.asInterface(service);
+      if (vipService != null) {
+         logger.debug("onSeviceConnected called - vipService != null");
+         ProductLibraryFragment productLibraryFragment = productLibraryFragmentWeakReference.get();
+         if (productLibraryFragment != null) {
+            logger.debug("onSeviceConnected called - productLibraryFragment != null");
+            productLibraryFragment.setVipService(this.vipService);
+         }
+      }
+   }
+
+   @Override
+   public void onServiceDisconnected(ComponentName name) {
+      logger.debug("onSeviceDisconnected called - componentClassName: " + name.getClassName());
+      if (vipService != null) {
+         ProductLibraryFragment productLibraryFragment = productLibraryFragmentWeakReference.get();
+         if (productLibraryFragment != null) {
+            productLibraryFragment.setVipService(null);
+         }
+      }
    }
 }

@@ -1,4 +1,12 @@
 <?xml version="1.0" encoding="utf-8"?>
+<!--
+  ~ Copyright (C) 2016 CNH Industrial NV. All rights reserved.
+  ~
+  ~ This software contains proprietary information of CNH Industrial NV. Neither
+  ~ receipt nor possession thereof confers any right to reproduce, use, or
+  ~ disclose in whole or in part any such information without written
+  ~ authorization from CNH Industrial NV.
+  -->
 <resources>
     <dimen name="row_height">48dp</dimen>
 
@@ -25,5 +33,10 @@
     <style name="TextAppearance.Data.File.Column" parent="@style/TextAppearance.Roboto.Bold">
         <item name="android:textSize">14dp</item>
         <item name="android:textColor">@color/e_gray_text_medium</item>
+    </style>
+
+    <style name="TextAppearance.ItemList" parent="TextAppearance.Roboto.Bold">
+        <item name="android:textColor">@color/list_item_text_color</item>
+        <item name="android:textSize">@dimen/list_item_large_text_size</item>
     </style>
 </resources>

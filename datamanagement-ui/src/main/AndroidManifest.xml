@@ -2,6 +2,8 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android" android:versionCode="9078009" android:versionName="9.78.0-rc9-SNAPSHOT" package="com.cnh.pf.android.data.management">
    <uses-sdk android:minSdkVersion="18" android:targetSdkVersion="18"/>
 
+   <uses-permission android:name="com.cnh.android.permission.ACCESS_SETTINGS"/>
+   <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE"/>
    <uses-permission android:name="android.permission.INTERNET"/>
    <uses-permission android:name="android.permission.CHANGE_WIFI_MULTICAST_STATE"/>
    <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE"/>
@@ -10,7 +12,7 @@
    <application android:allowBackup="true" android:largeHeap="true" android:icon="@drawable/ic_launcher" android:label="@string/app_name" android:name=".App" android:theme="@style/AppTheme">
       <meta-data android:name="roboguice.modules" android:value="com.cnh.pf.android.data.management.RoboModule, com.cnh.pf.jgroups.ChannelModule"/>
       <meta-data android:name="roboguice.annotations.packages" android:value="com.cnh.pf.android.data.management,com.cnh.pf.jgroups"/>
-      <activity android:label="@string/app_name" android:name=".DataManagementActivity">
+      <activity android:label="@string/app_name" android:name=".DataManagementActivity" android:windowSoftInputMode="adjustPan">
          <intent-filter>
             <action android:name="android.intent.action.MAIN"/>
 

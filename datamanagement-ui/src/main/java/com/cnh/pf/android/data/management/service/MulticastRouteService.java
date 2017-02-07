@@ -9,23 +9,23 @@
 
 package com.cnh.pf.android.data.management.service;
 
-import javax.inject.Inject;
-import java.io.IOException;
-
 import android.app.Application;
 import android.content.Intent;
-import android.content.SharedPreferences;
 import android.os.IBinder;
-import com.google.inject.name.Named;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import roboguice.RoboGuiceHelper;
-import roboguice.service.RoboService;
 
 import com.cnh.android.util.prefs.GlobalPreferences;
 import com.cnh.pf.android.data.management.RoboModule;
-import com.cnh.pf.data.management.service.ServiceConstants;
 import com.cnh.pf.jgroups.ChannelModule;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import java.io.IOException;
+
+import javax.inject.Inject;
+
+import roboguice.RoboGuiceHelper;
+import roboguice.service.RoboService;
 
 /**
  * Starts network routes in standalone mode.
@@ -42,14 +42,13 @@ public class MulticastRouteService extends RoboService {
    public void onCreate() {
       final Application app = getApplication();
       //Phoenix Workaround (phoenix sometimes cannot read the manifest)
-      RoboGuiceHelper.help(app, new String[] { "com.cnh.pf.android.data.management", "com.cnh.pf.jgroups" },
-            new RoboModule(app), new ChannelModule(app));
+      RoboGuiceHelper.help(app, new String[] { "com.cnh.pf.android.data.management", "com.cnh.pf.jgroups" }, new RoboModule(app), new ChannelModule(app));
       super.onCreate();
    }
 
    @Override
    public int onStartCommand(Intent intent, int flags, int startId) {
-      if(intent == null) return START_STICKY;
+      if (intent == null) return START_STICKY;
       if (!prefs.hasPCM()) {
          try {
             Runtime.getRuntime().exec("su busybox ifconfig lo multicast".split(" "));

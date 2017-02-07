@@ -13,13 +13,15 @@ import android.content.Context;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.widget.TextView;
-import butterknife.Bind;
-import butterknife.ButterKnife;
+
 import com.cnh.android.dialog.DialogView;
 import com.cnh.pf.android.data.management.R;
 import com.cnh.pf.android.data.management.connection.DataServiceConnectionImpl;
 import com.google.common.base.Strings;
 import com.google.inject.Inject;
+
+import butterknife.Bind;
+import butterknife.ButterKnife;
 import roboguice.RoboGuice;
 
 /**
@@ -28,8 +30,10 @@ import roboguice.RoboGuice;
  */
 public class ErrorDialog extends DialogView {
 
-   @Inject LayoutInflater layoutInflater;
-   @Bind(R.id.error_string) TextView errorString;
+   @Inject
+   LayoutInflater layoutInflater;
+   @Bind(R.id.error_string)
+   TextView errorString;
 
    public ErrorDialog(Context context, DataServiceConnectionImpl.ErrorEvent event) {
       super(context);
