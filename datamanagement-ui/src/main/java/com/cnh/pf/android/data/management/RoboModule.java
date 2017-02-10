@@ -9,23 +9,25 @@
 
 package com.cnh.pf.android.data.management;
 
-import javax.inject.Inject;
-import javax.inject.Named;
-import javax.inject.Singleton;
-
 import android.app.Application;
+
+import com.cnh.jgroups.Mediator;
+import com.cnh.pf.android.data.management.helper.DatasourceHelper;
 import com.google.inject.AbstractModule;
 import com.google.inject.Provider;
 import com.google.inject.Provides;
+
 import org.jgroups.Global;
 import org.jgroups.JChannel;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import javax.inject.Inject;
+import javax.inject.Named;
+import javax.inject.Singleton;
+
 import roboguice.config.DefaultRoboModule;
 import roboguice.event.EventManager;
-
-import com.cnh.jgroups.Mediator;
-import com.cnh.pf.android.data.management.helper.DatasourceHelper;
 
 /**
  * Roboguice module definition
@@ -62,7 +64,8 @@ public class RoboModule extends AbstractModule {
       @Named(DefaultRoboModule.GLOBAL_EVENT_MANAGER_NAME)
       private EventManager eventManager;
 
-      @Override public DatasourceHelper get() {
+      @Override
+      public DatasourceHelper get() {
          return new DatasourceHelper(mediator, eventManager);
       }
    }
