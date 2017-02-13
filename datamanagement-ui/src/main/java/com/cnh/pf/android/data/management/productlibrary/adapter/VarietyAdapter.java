@@ -87,7 +87,9 @@ public final class VarietyAdapter extends BaseAdapter implements Filterable {
     */
    public void setVIPService(final IVIPServiceAIDL vipService){
       this.vipService = vipService;
-      editVarietyDialog.setVIPService(vipService);
+      if (editVarietyDialog != null) {
+         editVarietyDialog.setVIPService(vipService);
+      }
    }
 
    /**
