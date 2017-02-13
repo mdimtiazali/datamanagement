@@ -1,27 +1,26 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0
+        xsi:schemaLocation="http://maven.apache.org/POM/4.0.0
                               http://maven.apache.org/maven-v4_0_0.xsd">
-	<modelVersion>4.0.0</modelVersion>
+    <modelVersion>4.0.0</modelVersion>
 
-	<parent>
-		<groupId>com.cnh.pf</groupId>
-		<artifactId>parent</artifactId>
-		<version>12.0.0-fwk4-SNAPSHOT</version>
-		<relativePath>../</relativePath>
-	</parent>
+    <parent>
+        <groupId>com.cnh.pf</groupId>
+        <artifactId>parent</artifactId>
+        <version>12.0.0-fwk4-SNAPSHOT</version>
+    </parent>
 
-	<artifactId>datamanagement-parent</artifactId>
+    <artifactId>datamanagement-parent</artifactId>
 
-	<packaging>pom</packaging>
+    <packaging>pom</packaging>
 
-	<name>Data Management Android Parent</name>
+    <name>Data Management Android Parent</name>
 
-	<modules>
-		<module>datamanagement-ui</module>
-	</modules>
-	
-	<scm>
+    <modules>
+        <module>datamanagement-ui</module>
+    </modules>
+
+    <scm>
         <url>https://eagle.repositoryhosting.com/git/eagle/datamanagement</url>
         <connection>scm:git:ssh://git@eagle.repositoryhosting.com/eagle/datamanagement</connection>
         <developerConnection>scm:git:ssh://git@eagle.repositoryhosting.com/eagle/datamanagement</developerConnection>

@@ -12,6 +12,7 @@ package com.cnh.pf.android.data.management.service;
 import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -24,12 +25,8 @@ public class MountStatusReceiver extends BroadcastReceiver {
 
    @Override
    public void onReceive(Context context, Intent intent) {
-      log.info("Received broadcast: {}", intent.getAction() );
-      context.startService(new Intent(context, DataManagementService.class)
-            .setAction(intent.getAction())
-            .setData(intent.getData())
-            .putExtras(intent));
+      log.info("Received broadcast: {}", intent.getAction());
+      context.startService(new Intent(context, DataManagementService.class).setAction(intent.getAction()).setData(intent.getData()).putExtras(intent));
    }
-
 
 }

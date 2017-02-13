@@ -8,17 +8,16 @@
   ~ authorization from CNH Industrial NV.
   -->
 
-<LinearLayout
-   xmlns:android="http://schemas.android.com/apk/res/android"
-   android:orientation="vertical"
-   android:layout_width="match_parent"
-   android:layout_height="match_parent">
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+        android:orientation="vertical"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent">
 
-   <TextView
-      android:id="@+id/empty_discovery_text"
-      android:layout_width="wrap_content"
-      android:layout_height="wrap_content"
-      android:layout_gravity="center"
-      style="@style/TextAppearance.Import.Entity"
-      android:text="@string/empty_discovery"/>
+    <TextView
+            android:id="@+id/empty_discovery_text"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center"
+            style="@style/TextAppearance.Import.Entity"
+            android:text="@string/empty_discovery" />
 </LinearLayout>

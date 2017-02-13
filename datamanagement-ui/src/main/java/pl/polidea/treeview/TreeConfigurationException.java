@@ -6,10 +6,10 @@ package pl.polidea.treeview;
  */
 public class TreeConfigurationException extends RuntimeException {
 
-    private static final long serialVersionUID = 1L;
+   private static final long serialVersionUID = 1L;
 
-    public TreeConfigurationException(final String detailMessage) {
-        super(detailMessage);
-    }
+   public TreeConfigurationException(final String detailMessage) {
+      super(detailMessage);
+   }
 
 }
