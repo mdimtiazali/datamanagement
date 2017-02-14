@@ -224,7 +224,7 @@ public abstract class BaseDataFragment extends RoboFragment implements IDataMana
       globalEventManager.registerObserver(DataServiceConnectionImpl.ViewChangeEvent.class, viewChangeListener);
       if (dataServiceConnection.isConnected()) {
          getDataManagementService().register(NAME, BaseDataFragment.this);
-         onResumeSession(session);
+         onResumeSession(null);
       }
    }
 
