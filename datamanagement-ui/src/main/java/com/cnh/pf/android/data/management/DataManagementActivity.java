@@ -22,6 +22,8 @@ import android.os.IBinder;
 import android.util.AttributeSet;
 import android.view.View;
 
+import com.cnh.android.util.prefs.GlobalPreferences;
+import com.cnh.android.util.prefs.GlobalPreferencesNotAvailableException;
 import com.cnh.android.vip.aidl.IVIPServiceAIDL;
 import com.cnh.android.vip.constants.VIPConstants;
 import com.cnh.android.widget.activity.TabActivity;
@@ -151,12 +153,33 @@ public class DataManagementActivity extends TabActivity implements RoboContext, 
       TabActivityTab exportTab = new TabActivityTab(R.string.tab_export, R.drawable.tab_export, getResources().getString(R.string.tab_export),
             new DataManagementTabListener(new ExportFragment(), this));
       addTab(exportTab);
-      productLibraryFragmentWeakReference = new WeakReference<ProductLibraryFragment>(new ProductLibraryFragment());
-      TabActivityTab productLibraryTab = new TabActivityTab(R.string.tab_product_library, R.drawable.ic_product_library_tab, "product_library_tab",
-            new DataManagementTabListener(productLibraryFragmentWeakReference.get(), this));
-      addTab(productLibraryTab);
+      if(hasPCM()) {
+         productLibraryFragmentWeakReference = new WeakReference<ProductLibraryFragment>(new ProductLibraryFragment());
+         TabActivityTab productLibraryTab = new TabActivityTab(R.string.tab_product_library, R.drawable.ic_product_library_tab, "product_library_tab",
+               new DataManagementTabListener(productLibraryFragmentWeakReference.get(), this));
+         addTab(productLibraryTab);
+      }
       setTabActivityTitle(getString(R.string.app_name));
       selectTabAtPosition(0);
+   }
+
+   /**
+    * Check if the configuration includes a pcm
+    * @return true if the configuration includes a pcm
+    */
+   private boolean hasPCM(){
+      //pref_key_pcm_standalone
+      boolean hasPCM = false;
+      try {
+         GlobalPreferences globalPreferences = new GlobalPreferences(this);
+         hasPCM = globalPreferences.hasPCM();
+      } catch (GlobalPreferencesNotAvailableException e){
+         if (logger.isWarnEnabled()) {
+            logger.warn("global preferences not available - guess that is has pcm? :" + hasPCM, e);
+         }
+      }
+      logger.debug("hasPCM?: {}", hasPCM);
+      return hasPCM;
    }
 
    @Override
@@ -222,10 +245,12 @@ public class DataManagementActivity extends TabActivity implements RoboContext, 
       this.vipService = IVIPServiceAIDL.Stub.asInterface(service);
       if (vipService != null) {
          logger.debug("onSeviceConnected called - vipService != null");
-         ProductLibraryFragment productLibraryFragment = productLibraryFragmentWeakReference.get();
-         if (productLibraryFragment != null) {
-            logger.debug("onSeviceConnected called - productLibraryFragment != null");
-            productLibraryFragment.setVipService(this.vipService);
+         if(productLibraryFragmentWeakReference != null) {
+            ProductLibraryFragment productLibraryFragment = productLibraryFragmentWeakReference.get();
+            if (productLibraryFragment != null) {
+               logger.debug("onSeviceConnected called - productLibraryFragment != null");
+               productLibraryFragment.setVipService(this.vipService);
+            }
          }
       }
    }
@@ -234,9 +259,11 @@ public class DataManagementActivity extends TabActivity implements RoboContext, 
    public void onServiceDisconnected(ComponentName name) {
       logger.debug("onSeviceDisconnected called - componentClassName: " + name.getClassName());
       if (vipService != null) {
-         ProductLibraryFragment productLibraryFragment = productLibraryFragmentWeakReference.get();
-         if (productLibraryFragment != null) {
-            productLibraryFragment.setVipService(null);
+         if (productLibraryFragmentWeakReference != null) {
+            ProductLibraryFragment productLibraryFragment = productLibraryFragmentWeakReference.get();
+            if (productLibraryFragment != null) {
+               productLibraryFragment.setVipService(null);
+            }
          }
       }
    }
