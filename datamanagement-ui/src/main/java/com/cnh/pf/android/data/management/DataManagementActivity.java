@@ -147,15 +147,15 @@ public class DataManagementActivity extends TabActivity implements RoboContext, 
       super.onCreate(savedInstanceState);
 
       eventManager = RoboGuice.getInjector(this).getInstance(EventManager.class);
-      TabActivityTab importTab = new TabActivityTab(R.string.tab_import, R.drawable.tab_import, getResources().getString(R.string.tab_import),
+      TabActivityTab importTab = new TabActivityTab(R.string.tab_import, R.drawable.tab_import_selector, getResources().getString(R.string.tab_import),
             new DataManagementTabListener(new ImportFragment(), this));
       addTab(importTab);
-      TabActivityTab exportTab = new TabActivityTab(R.string.tab_export, R.drawable.tab_export, getResources().getString(R.string.tab_export),
+      TabActivityTab exportTab = new TabActivityTab(R.string.tab_export, R.drawable.tab_export_selector, getResources().getString(R.string.tab_export),
             new DataManagementTabListener(new ExportFragment(), this));
       addTab(exportTab);
       if(hasPCM()) {
          productLibraryFragmentWeakReference = new WeakReference<ProductLibraryFragment>(new ProductLibraryFragment());
-         TabActivityTab productLibraryTab = new TabActivityTab(R.string.tab_product_library, R.drawable.ic_product_library_tab, "product_library_tab",
+         TabActivityTab productLibraryTab = new TabActivityTab(R.string.tab_product_library, R.drawable.tab_product_library_selector, "product_library_tab",
                new DataManagementTabListener(productLibraryFragmentWeakReference.get(), this));
          addTab(productLibraryTab);
       }
