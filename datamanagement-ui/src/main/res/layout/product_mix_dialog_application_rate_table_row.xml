@@ -1,0 +1,52 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  ~ Copyright (C) 2017 CNH Industrial NV. All rights reserved.
+  ~
+  ~  This software contains proprietary information of CNH Industrial NV. Neither
+  ~  receipt nor possession thereof confers any right to reproduce, use, or
+  ~  disclose in whole or in part any such information without written
+  ~ authorization from CNH Industrial NV.
+  -->
+<TableRow xmlns:android="http://schemas.android.com/apk/res/android"
+          android:gravity="center">
+    <LinearLayout
+            android:id="@+id/product_name_layout"
+            android:gravity="start|center"
+            android:orientation="horizontal">
+        <ImageView
+                android:id="@+id/product_name_image_view"
+                android:layout_width="@dimen/product_mix_product_image_width_height"
+                android:layout_height="@dimen/product_mix_product_image_width_height"
+                android:maxWidth="@dimen/product_mix_product_image_width_height"
+                android:maxHeight="@dimen/product_mix_product_image_width_height"
+                android:minWidth="@dimen/product_mix_product_image_width_height"
+                android:minHeight="@dimen/product_mix_product_image_width_height"/>
+        <TextView
+                android:gravity="center_vertical"
+                android:id="@+id/product_name_text_view"
+                android:layout_height="match_parent"
+                android:layout_width="match_parent"
+                android:textSize="@dimen/product_mix_dialog_application_rate_name_text_size"
+                android:textColor="@color/defaultTextColor"
+                android:textStyle="bold"
+                android:paddingLeft="10dp"/>
+    </LinearLayout>
+    <TextView
+            android:id="@+id/application_rate1_text_view"
+            android:textSize="@dimen/product_mix_dialog_application_rate_name_text_size"
+            android:textColor="@color/defaultTextColor"
+            android:textStyle="bold"
+            android:gravity="start|center"
+            android:ellipsize="middle"
+            android:layout_height="match_parent"
+            android:layout_width="wrap_content"/>
+    <TextView
+            android:id="@+id/application_rate2_text_view"
+            android:textSize="@dimen/product_mix_dialog_application_rate_name_text_size"
+            android:textColor="@color/defaultTextColor"
+            android:textStyle="bold"
+            android:gravity="start|center"
+            android:ellipsize="middle"
+            android:layout_height="match_parent"
+            android:layout_width="wrap_content"/>
+</TableRow>
