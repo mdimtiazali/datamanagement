@@ -10,28 +10,22 @@
 package com.cnh.pf.android.data.management.productlibrary.views;
 
 import android.content.Context;
-import android.graphics.Typeface;
 import android.os.Handler;
 import android.os.Looper;
 import android.os.RemoteException;
 import android.text.Editable;
-import android.text.TextUtils.TruncateAt;
 import android.text.TextWatcher;
-import android.view.Gravity;
-import android.view.KeyEvent;
 import android.view.View;
 import android.view.inputmethod.EditorInfo;
 import android.view.inputmethod.InputMethodManager;
 import android.widget.AdapterView;
 import android.widget.Button;
 import android.widget.EditText;
-import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.RadioGroup;
 import android.widget.TableLayout;
 import android.widget.TableRow;
 import android.widget.TextView;
-import android.widget.TextView.OnEditorActionListener;
 
 import com.cnh.android.dialog.DialogView;
 import com.cnh.android.dialog.DialogViewInterface;
@@ -430,7 +424,6 @@ public class ProductMixDialog extends DialogView {
          carrierProductHolder.currentRecipe = productCarrier;
          ArrayList<Product> filteredProduct = filterProductList(productList, productMixForm);
          addDataToProductElement(productCarrier, carrierProductHolder, filteredProduct);
-         carrierProductHolder.currentRecipe = productCarrier;
       }
 
       //Add Product Mix element Data to UI
@@ -1692,7 +1685,7 @@ public class ProductMixDialog extends DialogView {
 
          //Add Carrier to table
          if (carrierProductHolder != null && carrierProductHolder.currentRecipe != null) {
-            TableRow tableRow = createTableRow(carrierProductHolder.currentRecipe.getProduct());
+            TableRow tableRow = ApplicationRateTableFactory.createTableRowForProductMixDialog(carrierProductHolder.currentRecipe.getProduct(), getContext(), productMixTable, measurementSystemProductOther);
             productMixTable.addView(tableRow, viewCounter++);
          }
 
@@ -1702,7 +1695,7 @@ public class ProductMixDialog extends DialogView {
                if (productElement.currentRecipe != null) {
                   if (productElement.currentRecipe.getProduct() != null) {
                      Product product = productElement.currentRecipe.getProduct();
-                     TableRow tableRow = createTableRow(product);
+                     TableRow tableRow = ApplicationRateTableFactory.createTableRowForProductMixDialog(product, getContext(), productMixTable, measurementSystemProductOther);
                      if (tableRow != null) {
                         productMixTable.addView(tableRow, viewCounter++);
                      }
@@ -1721,80 +1714,6 @@ public class ProductMixDialog extends DialogView {
             applicationProductTableLayoutOverView.setVisibility(GONE);
          }
       }
-   }
-
-   /**
-    * create Tablerow with product data
-    * @param product current product to extract the data into the several cells
-    * @return created TableRow
-    */
-   private TableRow createTableRow(Product product) {
-      TableRow tableRow = null;
-      if (product != null) {
-         tableRow = new TableRow(getContext());
-         ProductUnits unit = ProductHelperMethods.retrieveProductRateUnits(product, measurementSystemProductOther);
-         int tableRowBackground = R.drawable.product_mix_dialog_application_rates_table_background_cell;
-         if (productMixTable.getChildCount() - 1 % 2 == 1) {
-            tableRowBackground = R.drawable.product_mix_dialog_application_rates_table_background_cell_gray;
-         }
-         tableRow.setGravity(Gravity.CENTER);
-
-         LinearLayout productNameLayout = new LinearLayout(getContext());
-         productNameLayout.setBackgroundResource(tableRowBackground);
-         productNameLayout.setOrientation(LinearLayout.HORIZONTAL);
-         productNameLayout.setGravity(Gravity.START | Gravity.CENTER);
-
-         ImageView productTypeImage = new ImageView(getContext());
-         productTypeImage.setMaxWidth(getResources().getDimensionPixelOffset(R.dimen.product_mix_product_image_width_height));
-         productTypeImage.setMinimumWidth(getResources().getDimensionPixelOffset(R.dimen.product_mix_product_image_width_height));
-         productTypeImage.setMaxHeight(getResources().getDimensionPixelOffset(R.dimen.product_mix_product_image_width_height));
-         productTypeImage.setMinimumHeight(getResources().getDimensionPixelOffset(R.dimen.product_mix_product_image_width_height));
-         productTypeImage.setBackgroundResource(getProductTypeImageId(product.getForm()));
-         productNameLayout.addView(productTypeImage, getResources().getDimensionPixelOffset(R.dimen.product_mix_product_image_width_height),
-               getResources().getDimensionPixelOffset(R.dimen.product_mix_product_image_width_height));
-
-         TextView productNameTextView = new TextView(getContext());
-         productNameTextView.setText(product.getName());
-         productNameTextView.setTextSize(getResources().getDimensionPixelSize(R.dimen.product_mix_dialog_application_rate_name_text_size));
-         productNameTextView.setTextColor(getResources().getColor(R.color.defaultTextColor));
-         productNameTextView.setPadding(10, 0, 0, 0);
-         productNameTextView.setTypeface(null, Typeface.BOLD);
-         productNameLayout.addView(productNameTextView);
-
-         tableRow.addView(productNameLayout);
-
-         TextView applicationRate1TextView = new TextView(getContext());
-         applicationRate1TextView.setTextSize(getResources().getDimensionPixelSize(R.dimen.product_mix_dialog_application_rate_text_size));
-         applicationRate1TextView.setTextColor(getResources().getColor(R.color.defaultTextColor));
-         applicationRate1TextView.setTypeface(null, Typeface.BOLD);
-         applicationRate1TextView.setGravity(Gravity.START | Gravity.CENTER);
-         applicationRate1TextView.setEllipsize(TruncateAt.MIDDLE);
-         applicationRate1TextView.setBackgroundResource(tableRowBackground);
-         if (unit != null) {
-            applicationRate1TextView.setText(String.format("   %.2f %s", product.getDefaultRate() * unit.getMultiplyFactorFromBaseUnits(), unit.getName()));
-         }
-         else {
-            applicationRate1TextView.setText(String.format("   %.2f", product.getDefaultRate()));
-         }
-         tableRow.addView(applicationRate1TextView, LayoutParams.MATCH_PARENT, LayoutParams.MATCH_PARENT);
-
-         TextView applicationRate2TextView = new TextView(getContext());
-         applicationRate2TextView.setTextSize(getResources().getDimensionPixelSize(R.dimen.product_mix_dialog_application_rate_text_size));
-         applicationRate2TextView.setTypeface(null, Typeface.BOLD);
-         applicationRate2TextView.setGravity(Gravity.START | Gravity.CENTER);
-         applicationRate2TextView.setEllipsize(TruncateAt.MIDDLE);
-         applicationRate2TextView.setTextColor(getResources().getColor(R.color.defaultTextColor));
-         applicationRate2TextView.setBackgroundResource(tableRowBackground);
-         if (unit != null) {
-            applicationRate2TextView.setText(String.format("   %.2f %s", product.getRate2() * unit.getMultiplyFactorFromBaseUnits(), unit.getName()));
-         }
-         else {
-            applicationRate2TextView.setText(String.format("   %.2f", product.getRate2()));
-         }
-
-         tableRow.addView(applicationRate2TextView, LayoutParams.MATCH_PARENT, LayoutParams.MATCH_PARENT);
-      }
-      return tableRow;
    }
 
    /**
@@ -1894,11 +1813,13 @@ public class ProductMixDialog extends DialogView {
       if (productMixUnitHolder != null && productMixUnitHolder.currentChoice != null) {
          double applicationRate = applicationRate1Stepper.getValue() / productMixUnitHolder.currentChoice.getMultiplyFactorFromBaseUnits();
          if (carrierProductHolder.currentRecipe != null) {
+            // FIXME pfhmi-dev-defects-3372: don't save temporary data needed for application rate table in objects which are saved later
             carrierProductHolder.currentRecipe.getProduct().setDefaultRate(getNewRate(applicationRate, carrierProductHolder, totalAmount));
 
             for (ProductMixElementHolder productElement : productMixElementHolderList) {
                if (productElement != null && productElement.currentRecipe != null) {
                   double newRate = getNewRate(applicationRate, productElement, totalAmount);
+                  // FIXME pfhmi-dev-defects-3372: don't save temporary data needed for application rate table in objects which are saved later
                   productElement.currentRecipe.getProduct().setDefaultRate(newRate);
                }
             }
@@ -1915,10 +1836,12 @@ public class ProductMixDialog extends DialogView {
       if (productMixUnitHolder != null && productMixUnitHolder.currentChoice != null) {
          double applicationRate = applicationRate2Stepper.getValue() / productMixUnitHolder.currentChoice.getMultiplyFactorFromBaseUnits();
          if (carrierProductHolder.currentRecipe != null) {
+            // FIXME pfhmi-dev-defects-3372: don't save temporary data needed for application rate table in objects which are saved later
             carrierProductHolder.currentRecipe.getProduct().setRate2(getNewRate(applicationRate, carrierProductHolder, totalAmount));
          }
          for (ProductMixElementHolder productElement : productMixElementHolderList) {
             if (productElement.currentRecipe != null) {
+               // FIXME pfhmi-dev-defects-3372: don't save temporary data needed for application rate table in objects which are saved later
                productElement.currentRecipe.getProduct().setRate2(getNewRate(applicationRate, productElement, totalAmount));
             }
          }
@@ -1927,33 +1850,6 @@ public class ProductMixDialog extends DialogView {
       else {
          log.info("no current Choice");
       }
-   }
-
-   /**
-    * Helper Method to get the right Asset of the Producttype
-    * @param productType the selected producttype
-    * @return return the assset of the producttype if will found, otherwise use default the Seed Asset
-    */
-   private static int getProductTypeImageId(ProductForm productType) {
-      if (productType != null) {
-         switch (productType) {
-         case ANHYDROUS:
-            return R.drawable.ic_anhydrous;
-         case BULK_SEED:
-            return R.drawable.ic_bulk_seed;
-         case GRANULAR:
-            return R.drawable.ic_granular;
-         case LIQUID:
-            return R.drawable.ic_liquid;
-         case SEED:
-            return R.drawable.ic_seed;
-         default:
-            log.warn("ProductType not found: " + productType.name());
-            return R.drawable.ic_seed;
-         }
-      }
-      log.warn("ProductType is null");
-      return R.drawable.ic_seed;
    }
 
    /**

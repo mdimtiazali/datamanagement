@@ -41,6 +41,7 @@ import com.cnh.android.widget.control.ProgressiveDisclosureView;
 import com.cnh.pf.android.data.management.R;
 import com.cnh.pf.android.data.management.productlibrary.ProductLibraryFragment;
 import com.cnh.pf.android.data.management.productlibrary.utility.UiHelper;
+import com.cnh.pf.android.data.management.productlibrary.views.ApplicationRateTableFactory;
 import com.cnh.pf.android.data.management.productlibrary.views.ProductMixDialog;
 import com.cnh.pf.model.product.library.MeasurementSystem;
 import com.cnh.pf.model.product.library.Product;
@@ -128,15 +129,17 @@ public final class ProductMixAdapter extends SearchableSortableExpandableListAda
          double defaultRate = productMix.getProductMixParameters().getDefaultRate();
          double rate2 = productMix.getProductMixParameters().getRate2();
          double totalAmount = productMix.getMixTotalAmount();
+         // FIXME pfhmi-dev-defects-3372: don't save temporary data needed for application rate table in objects which are saved later (in the product mix dialog)
          carrierProduct.setDefaultRate(calculateApplicationRate(productMix.getProductCarrier().getAmount(), defaultRate, totalAmount));
          carrierProduct.setRate2(calculateApplicationRate(productMix.getProductCarrier().getAmount(), rate2, totalAmount));
-         tableLayout.addView(createTableRow(carrierProduct), viewCounter++);
+         tableLayout.addView(ApplicationRateTableFactory.createTableRowForProductMixAdapter(carrierProduct, context, volumeMeasurementSystem, massMeasurementSystem), viewCounter++);
 
          for (ProductMixRecipe recipeElement : productMix.getRecipe()) {
             Product product = recipeElement.getProduct();
+            // FIXME pfhmi-dev-defects-3372: don't save temporary data needed for application rate table in objects which maybe saved later (in the product mix dialog)
             product.setDefaultRate(calculateApplicationRate(recipeElement.getAmount(), defaultRate, totalAmount));
             product.setRate2(calculateApplicationRate(recipeElement.getAmount(), rate2, totalAmount));
-            tableLayout.addView(createTableRow(product), viewCounter++);
+            tableLayout.addView(ApplicationRateTableFactory.createTableRowForProductMixAdapter(product, context, volumeMeasurementSystem, massMeasurementSystem), viewCounter++);
          }
       }
    }
@@ -151,54 +154,6 @@ public final class ProductMixAdapter extends SearchableSortableExpandableListAda
    private double calculateApplicationRate(double amount, double productMixRate, double totalAmount) {
       double result = amount / totalAmount;
       return productMixRate * result;
-   }
-
-   /**
-    * create Tablerow with product data
-    * @param product current product to extract the data into the several cells
-    * @return created TableRow
-    */
-   private TableRow createTableRow(Product product) {
-      TableRow tableRow = new TableRow(context);
-      if (product != null) {
-         ProductUnits unit = ProductHelperMethods.retrieveProductRateUnits(product,
-               ProductHelperMethods.getMeasurementSystemForProduct(product, volumeMeasurementSystem, massMeasurementSystem));
-         tableRow.setGravity(Gravity.CENTER);
-         TextView productNameTextView = new TextView(context);
-         productNameTextView.setText(" " + product.getName());
-         productNameTextView.setTextSize(activity.getResources().getDimensionPixelSize(R.dimen.product_mix_overview_application_rate_text_size));
-         productNameTextView.setTextColor(activity.getResources().getColor(R.color.defaultTextColor));
-         productNameTextView.setTypeface(null, Typeface.BOLD);
-         productNameTextView.setBackgroundResource(R.drawable.product_mix_dialog_application_rates_table_background_cell);
-         tableRow.addView(productNameTextView, ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT);
-
-         TextView applicationRate1TextView = new TextView(context);
-         applicationRate1TextView.setTextSize(activity.getResources().getDimensionPixelSize(R.dimen.product_mix_overview_application_rate_text_size));
-         applicationRate1TextView.setTextColor(activity.getResources().getColor(R.color.defaultTextColor));
-         applicationRate1TextView.setTypeface(null, Typeface.BOLD);
-         applicationRate1TextView.setBackgroundResource(R.drawable.product_mix_dialog_application_rates_table_background_cell);
-         if (unit != null) {
-            applicationRate1TextView.setText(String.format(" %.2f %s", product.getDefaultRate() * unit.getMultiplyFactorFromBaseUnits(), unit.getName()));
-         }
-         else {
-            applicationRate1TextView.setText(String.format(" %.2f %s", product.getDefaultRate(), ""));
-         }
-         tableRow.addView(applicationRate1TextView, FrameLayout.LayoutParams.MATCH_PARENT, FrameLayout.LayoutParams.MATCH_PARENT);
-
-         TextView applicationRate2TextView = new TextView(context);
-         applicationRate2TextView.setTextSize(activity.getResources().getDimensionPixelSize(R.dimen.product_mix_overview_application_rate_text_size));
-         applicationRate2TextView.setTextColor(activity.getResources().getColor(R.color.defaultTextColor));
-         applicationRate2TextView.setTypeface(null, Typeface.BOLD);
-         applicationRate2TextView.setBackgroundResource(R.drawable.product_mix_dialog_application_rates_table_background_cell);
-         if (unit != null) {
-            applicationRate2TextView.setText(String.format(" %.2f %s", product.getRate2() * unit.getMultiplyFactorFromBaseUnits(), unit.getName()));
-         }
-         else {
-            applicationRate2TextView.setText(String.format(" %.2f %s", product.getRate2(), ""));
-         }
-         tableRow.addView(applicationRate2TextView, FrameLayout.LayoutParams.MATCH_PARENT, FrameLayout.LayoutParams.MATCH_PARENT);
-      }
-      return tableRow;
    }
 
    private void initGroupView(View view, ProductMix productDetail, boolean expanded, ViewGroup root, View.OnClickListener listener) {
