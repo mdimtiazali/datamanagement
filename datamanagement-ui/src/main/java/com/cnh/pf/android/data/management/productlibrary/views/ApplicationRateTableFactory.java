@@ -10,8 +10,6 @@ package com.cnh.pf.android.data.management.productlibrary.views;
 
 import android.content.Context;
 import android.view.LayoutInflater;
-import android.widget.ImageView;
-import android.widget.LinearLayout;
 import android.widget.TableLayout;
 import android.widget.TableRow;
 import android.widget.TextView;
@@ -52,14 +50,10 @@ public class ApplicationRateTableFactory {
             tableRowBackground = R.drawable.product_mix_dialog_application_rates_table_background_cell_gray;
          }
 
-         LinearLayout productNameLayout = (LinearLayout) tableRow.findViewById(R.id.product_name_layout);
-         productNameLayout.setBackgroundResource(tableRowBackground);
-
-         ImageView productTypeImage = (ImageView) tableRow.findViewById(R.id.product_name_image_view);
-         productTypeImage.setBackgroundResource(getProductTypeImageId(product.getForm()));
-
          TextView productNameTextView = (TextView) tableRow.findViewById(R.id.product_name_text_view);
          productNameTextView.setText(product.getName());
+         productNameTextView.setCompoundDrawablesWithIntrinsicBounds(getProductFormImageId(product.getForm()), 0, 0, 0);
+         productNameTextView.setBackgroundResource(tableRowBackground);
 
          TextView applicationRate1TextView = (TextView) tableRow.findViewById(R.id.application_rate1_text_view);
          applicationRate1TextView.setBackgroundResource(tableRowBackground);
@@ -83,6 +77,8 @@ public class ApplicationRateTableFactory {
    }
 
    /**
+    * TODO: fix javadoc
+    *
     * Create TableRow with product data
     * @param product current product to extract the data into the several cells
     * @return created TableRow
@@ -119,13 +115,13 @@ public class ApplicationRateTableFactory {
    }
 
    /**
-    * Helper Method to get the right Asset of the Producttype
-    * @param productType the selected producttype
-    * @return return the assset of the producttype if will found, otherwise use default the Seed Asset
+    * Helper Method to get the right icon for a {@link ProductForm}
+    * @param productForm the selected productForm
+    * @return return the icon of the productForm or the Seed-Icon if the productForm is not implemented
     */
-   public static int getProductTypeImageId(ProductForm productType) {
-      if (productType != null) {
-         switch (productType) {
+   public static int getProductFormImageId(ProductForm productForm) {
+      if (productForm != null) {
+         switch (productForm) {
             case ANHYDROUS:
                return R.drawable.ic_anhydrous;
             case BULK_SEED:
@@ -137,11 +133,11 @@ public class ApplicationRateTableFactory {
             case SEED:
                return R.drawable.ic_seed;
             default:
-               log.warn("ProductType not found: " + productType.name());
+               log.warn("ProductFrom not found: " + productForm.name());
                return R.drawable.ic_seed;
          }
       }
-      log.warn("ProductType is null");
+      log.warn("ProductFrom is null");
       return R.drawable.ic_seed;
    }
 }

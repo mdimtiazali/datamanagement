@@ -9,28 +9,15 @@
   -->
 <TableRow xmlns:android="http://schemas.android.com/apk/res/android"
           android:gravity="center">
-    <LinearLayout
-            android:id="@+id/product_name_layout"
-            android:gravity="start|center"
-            android:orientation="horizontal">
-        <ImageView
-                android:id="@+id/product_name_image_view"
-                android:layout_width="@dimen/product_mix_product_image_width_height"
-                android:layout_height="@dimen/product_mix_product_image_width_height"
-                android:maxWidth="@dimen/product_mix_product_image_width_height"
-                android:maxHeight="@dimen/product_mix_product_image_width_height"
-                android:minWidth="@dimen/product_mix_product_image_width_height"
-                android:minHeight="@dimen/product_mix_product_image_width_height"/>
-        <TextView
-                android:gravity="center_vertical"
-                android:id="@+id/product_name_text_view"
-                android:layout_height="match_parent"
-                android:layout_width="match_parent"
-                android:textSize="@dimen/product_mix_dialog_application_rate_name_text_size"
-                android:textColor="@color/defaultTextColor"
-                android:textStyle="bold"
-                android:paddingLeft="10dp"/>
-    </LinearLayout>
+    <TextView
+            android:gravity="center_vertical"
+            android:id="@+id/product_name_text_view"
+            android:layout_height="match_parent"
+            android:layout_width="match_parent"
+            android:textSize="@dimen/product_mix_dialog_application_rate_name_text_size"
+            android:textColor="@color/defaultTextColor"
+            android:textStyle="bold"
+            android:drawablePadding="10dp"/>
     <TextView
             android:id="@+id/application_rate1_text_view"
             android:textSize="@dimen/product_mix_dialog_application_rate_name_text_size"
