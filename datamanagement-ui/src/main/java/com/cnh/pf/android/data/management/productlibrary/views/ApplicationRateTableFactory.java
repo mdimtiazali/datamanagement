@@ -49,20 +49,30 @@ public class ApplicationRateTableFactory {
          tableRow = (TableRow) layoutInflater.inflate(R.layout.product_mix_dialog_application_rate_table_row, null);
 
          ProductUnits unit = ProductHelperMethods.retrieveProductRateUnits(product, measurementSystemProductOther);
-         int tableRowBackground = R.drawable.product_mix_dialog_application_rates_table_background_cell;
-         if (productMixTable.getChildCount() - 1 % 2 == 1) {
-            tableRowBackground = R.drawable.product_mix_dialog_application_rates_table_background_cell_gray;
-         }
 
+         int tableRowBackgroundId = getAlternatingTableRowBackgroundId(productMixTable);
          TextView productNameTextView = (TextView) tableRow.findViewById(R.id.product_name_text_view);
          productNameTextView.setText(product.getName());
          productNameTextView.setCompoundDrawablesWithIntrinsicBounds(getProductFormImageId(product.getForm()), 0, 0, 0);
-         productNameTextView.setBackgroundResource(tableRowBackground);
+         productNameTextView.setBackgroundResource(tableRowBackgroundId);
 
-         configureApplicationRateTextView(tableRow, unit, tableRowBackground, R.id.application_rate1_text_view, product.getDefaultRate());
-         configureApplicationRateTextView(tableRow, unit, tableRowBackground, R.id.application_rate2_text_view, product.getRate2());
+         configureApplicationRateTextView(tableRow, unit, tableRowBackgroundId, R.id.application_rate1_text_view, product.getDefaultRate());
+         configureApplicationRateTextView(tableRow, unit, tableRowBackgroundId, R.id.application_rate2_text_view, product.getRate2());
       }
       return tableRow;
+   }
+
+   /**
+    * Return the backgroundId for the table tow. Alternates between two colors
+    * @param productMixTable the table where want to add the row to.
+    * @return the backgroundId
+    */
+   private static int getAlternatingTableRowBackgroundId(TableLayout productMixTable){
+      int tableRowBackground = R.drawable.product_mix_dialog_application_rates_table_background_cell;
+      if ((productMixTable.getChildCount() - 1) % 2 == 1) {
+         tableRowBackground = R.drawable.product_mix_dialog_application_rates_table_background_cell_gray;
+      }
+      return tableRowBackground;
    }
 
    /**
@@ -93,7 +103,7 @@ public class ApplicationRateTableFactory {
     * @param product current product to extract the data into the several cells
     * @return created TableRow
     */
-   public static TableRow createTableRowForProductMixAdapter(Product product, Context context, MeasurementSystem volumeMeasurementSystem, MeasurementSystem massMeasurementSystem) {
+   public static TableRow createTableRowForProductMixAdapter(Product product, Context context, TableLayout productMixTable, MeasurementSystem volumeMeasurementSystem, MeasurementSystem massMeasurementSystem) {
       TableRow tableRow = null;
       if (product != null) {
          LayoutInflater layoutInflater = LayoutInflater.from(context);
@@ -102,11 +112,13 @@ public class ApplicationRateTableFactory {
          ProductUnits unit = ProductHelperMethods.retrieveProductRateUnits(product,
                ProductHelperMethods.getMeasurementSystemForProduct(product, volumeMeasurementSystem, massMeasurementSystem));
 
+         int tableRowBackgroundId = getAlternatingTableRowBackgroundId(productMixTable);
          TextView productNameTextView = (TextView) tableRow.findViewById(R.id.product_name_text_view);
          productNameTextView.setText(" " + product.getName());
+         productNameTextView.setBackgroundResource(tableRowBackgroundId);
 
-         configureApplicationRateTextView(tableRow, unit, null, R.id.application_rate1_text_view, product.getDefaultRate());
-         configureApplicationRateTextView(tableRow, unit, null, R.id.application_rate2_text_view, product.getRate2());
+         configureApplicationRateTextView(tableRow, unit, tableRowBackgroundId, R.id.application_rate1_text_view, product.getDefaultRate());
+         configureApplicationRateTextView(tableRow, unit, tableRowBackgroundId, R.id.application_rate2_text_view, product.getRate2());
       }
       return tableRow;
    }

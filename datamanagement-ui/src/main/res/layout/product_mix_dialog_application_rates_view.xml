@@ -18,7 +18,8 @@
             android:id="@+id/product_mix_categorybuttons_application_rate_view"
             android:layout_height="wrap_content"
             android:layout_width="match_parent"
-            cnh:title="@string/product_mix_title_application_rates">
+            cnh:title="@string/product_mix_title_application_rates"
+            cnh:setAutoResizable="true">
 
         <LinearLayout
                 android:layout_width="match_parent"

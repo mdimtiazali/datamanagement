@@ -11,19 +11,15 @@ package com.cnh.pf.android.data.management.productlibrary.adapter;
 import android.app.AlertDialog;
 import android.content.Context;
 import android.content.DialogInterface;
-import android.graphics.Typeface;
 import android.graphics.drawable.Drawable;
-import android.view.Gravity;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ExpandableListView;
 import android.widget.Filter;
-import android.widget.FrameLayout;
 import android.widget.ImageButton;
 import android.widget.ImageView;
 import android.widget.TableLayout;
-import android.widget.TableRow;
 import android.widget.TextView;
 
 import com.cnh.android.dialog.DialogViewInterface;
@@ -132,14 +128,16 @@ public final class ProductMixAdapter extends SearchableSortableExpandableListAda
          // FIXME pfhmi-dev-defects-3372: don't save temporary data needed for application rate table in objects which are saved later (in the product mix dialog)
          carrierProduct.setDefaultRate(calculateApplicationRate(productMix.getProductCarrier().getAmount(), defaultRate, totalAmount));
          carrierProduct.setRate2(calculateApplicationRate(productMix.getProductCarrier().getAmount(), rate2, totalAmount));
-         tableLayout.addView(ApplicationRateTableFactory.createTableRowForProductMixAdapter(carrierProduct, context, volumeMeasurementSystem, massMeasurementSystem), viewCounter++);
+         tableLayout.addView(ApplicationRateTableFactory.createTableRowForProductMixAdapter(carrierProduct, context, tableLayout, volumeMeasurementSystem, massMeasurementSystem),
+               viewCounter++);
 
          for (ProductMixRecipe recipeElement : productMix.getRecipe()) {
             Product product = recipeElement.getProduct();
             // FIXME pfhmi-dev-defects-3372: don't save temporary data needed for application rate table in objects which maybe saved later (in the product mix dialog)
             product.setDefaultRate(calculateApplicationRate(recipeElement.getAmount(), defaultRate, totalAmount));
             product.setRate2(calculateApplicationRate(recipeElement.getAmount(), rate2, totalAmount));
-            tableLayout.addView(ApplicationRateTableFactory.createTableRowForProductMixAdapter(product, context, volumeMeasurementSystem, massMeasurementSystem), viewCounter++);
+            tableLayout.addView(ApplicationRateTableFactory.createTableRowForProductMixAdapter(product, context, tableLayout, volumeMeasurementSystem, massMeasurementSystem),
+                  viewCounter++);
          }
       }
    }
