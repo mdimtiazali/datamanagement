@@ -75,65 +75,53 @@
                     android:textColor="@android:color/black"/>
 
         </LinearLayout>
-
-
         <LinearLayout
                 android:orientation="horizontal"
                 android:id="@+id/product_mix_table"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_marginStart="10dp">
-
             <TableLayout
                     android:id="@+id/product_mix_recipe_list"
-                    android:layout_width="550dp"
+                    android:layout_width="600dp"
                     android:layout_height="wrap_content"
                     android:stretchColumns="0, 1, 2"
                     android:background="@drawable/rounded_table_border"
                     android:layout_marginBottom="10dp"
                     android:padding="1dp">
-
                 <TableRow
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:layout_gravity="center"
                         android:gravity="center">
-
                     <TextView
-                            android:layout_height="match_parent"
-                            android:layout_width="match_parent"
                             android:text="@string/product_section_header"
                             android:padding="10dp"
                             android:ellipsize="middle"
                             style="@style/UDWTitleTextStyle"
                             android:gravity="start"
-                            android:background="@drawable/table_title_background" />
-
+                            android:background="@drawable/table_title_background"
+                            android:maxWidth="@dimen/product_library_application_rate_table_product_name_max_width"
+                    />
                     <TextView
-                            android:layout_height="match_parent"
-                            android:layout_width="match_parent"
                             android:text="@string/product_mix_title_application_rate_1_short"
                             style="@style/UDWTitleTextStyle"
                             android:ellipsize="middle"
                             android:gravity="center"
                             android:padding="10dp"
-                            android:background="@drawable/table_title_background" />
-
+                            android:background="@drawable/table_title_background"
+                    />
                     <TextView
-                            android:layout_height="match_parent"
-                            android:layout_width="match_parent"
                             android:text="@string/product_mix_title_application_rate_2_short"
                             style="@style/UDWTitleTextStyle"
                             android:ellipsize="middle"
                             android:gravity="center"
                             android:padding="10dp"
-                            android:background="@drawable/table_title_background" />
-
+                            android:background="@drawable/table_title_background"
+                    />
                 </TableRow>
             </TableLayout>
-
         </LinearLayout>
-
     </LinearLayout>
 
     <ImageView
@@ -147,7 +135,6 @@
             android:layout_width="150dp"
             android:layout_height="wrap_content"
             android:id="@+id/right_container"
-            android:layout_marginStart="@dimen/product_item_small_widget_margin"
             android:gravity="center"
             android:layout_gravity="center">
 

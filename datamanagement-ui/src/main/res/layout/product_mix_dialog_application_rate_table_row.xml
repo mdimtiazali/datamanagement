@@ -12,28 +12,35 @@
     <TextView
             android:gravity="center_vertical"
             android:id="@+id/product_name_text_view"
-            android:layout_height="match_parent"
-            android:layout_width="match_parent"
             android:textSize="@dimen/product_mix_dialog_application_rate_name_text_size"
             android:textColor="@color/defaultTextColor"
             android:textStyle="bold"
-            android:drawablePadding="10dp"/>
+            android:drawablePadding="5dp"
+            android:singleLine="true"
+            android:ellipsize="end"
+            android:maxWidth="180dp"
+            android:paddingRight="@dimen/minimum_padding"
+    />
     <TextView
             android:id="@+id/application_rate1_text_view"
             android:textSize="@dimen/product_mix_dialog_application_rate_name_text_size"
             android:textColor="@color/defaultTextColor"
             android:textStyle="bold"
-            android:gravity="start|center"
+            android:gravity="center"
             android:ellipsize="middle"
             android:layout_height="match_parent"
-            android:layout_width="wrap_content"/>
+            android:paddingLeft="@dimen/minimum_padding"
+            android:paddingRight="@dimen/minimum_padding"
+    />
     <TextView
             android:id="@+id/application_rate2_text_view"
             android:textSize="@dimen/product_mix_dialog_application_rate_name_text_size"
             android:textColor="@color/defaultTextColor"
             android:textStyle="bold"
-            android:gravity="start|center"
+            android:gravity="center"
             android:ellipsize="middle"
             android:layout_height="match_parent"
-            android:layout_width="wrap_content"/>
+            android:paddingLeft="@dimen/minimum_padding"
+            android:paddingRight="@dimen/minimum_padding"
+    />
 </TableRow>

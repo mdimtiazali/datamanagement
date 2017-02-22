@@ -79,10 +79,10 @@ public class ApplicationRateTableFactory {
          applicationRateTextView.setBackgroundResource(tableRowBackgroundId);
       }
       if (unit != null) {
-         applicationRateTextView.setText(String.format("   %.2f %s", rate * unit.getMultiplyFactorFromBaseUnits(), unit.getName()));
+         applicationRateTextView.setText(String.format("%.2f %s", rate * unit.getMultiplyFactorFromBaseUnits(), unit.getName()));
       }
       else {
-         applicationRateTextView.setText(String.format("   %.2f", rate));
+         applicationRateTextView.setText(String.format("%.2f", rate));
       }
    }
 

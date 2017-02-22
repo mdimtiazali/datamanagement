@@ -23,7 +23,9 @@
             style="@style/TextAppearance.ItemList"
             android:text="@string/product_mix_title_product"
             android:layout_marginStart="13.25dp"
-            android:layout_marginEnd="40.5dp" />
+            android:layout_marginEnd="40.5dp"
+            android:singleLine="true"
+            android:ellipsize="end"/>
 
     <TextView
             android:id="@+id/product_mix_form_text"

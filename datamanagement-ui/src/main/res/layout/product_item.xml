@@ -21,7 +21,9 @@
             android:layout_centerVertical="true"
             style="@style/TextAppearance.ItemList"
             android:layout_marginLeft="13.25dp"
-            android:layout_marginRight="40.5dp" />
+            android:layout_marginRight="40.5dp"
+            android:singleLine="true"
+            android:ellipsize="end"/>
 
     <TextView
             android:id="@+id/form_text"

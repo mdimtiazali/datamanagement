@@ -186,29 +186,34 @@
                                     android:layout_margin="0.5dp"
                                     android:textSize="@dimen/product_mix_application_rate_table_title_text_size"
                                     android:textColor="@color/defaultTextColor"
-                                    android:background="@drawable/text_view_rounded_top_left" />
+                                    android:background="@drawable/text_view_rounded_top_left"
+                                    android:maxWidth="180dp"/>
 
                             <TextView
                                     android:ellipsize="middle"
                                     android:text="@string/product_mix_title_application_rate_1"
                                     style="@style/UDWTitleTextStyle"
-                                    android:gravity="start"
+                                    android:gravity="center"
                                     android:layout_margin="0.5dp"
                                     android:padding="10dp"
                                     android:textSize="@dimen/product_mix_application_rate_table_title_text_size"
                                     android:textColor="@color/defaultTextColor"
-                                    android:background="@color/product_mix_dialog_table_dark_cell_color" />
+                                    android:background="@color/product_mix_dialog_table_dark_cell_color"
+                                    android:paddingRight="@dimen/minimum_padding"
+                                    android:paddingLeft="@dimen/minimum_padding"/>
 
                             <TextView
                                     android:ellipsize="middle"
                                     android:text="@string/product_mix_title_application_rate_2"
                                     style="@style/UDWTitleTextStyle"
-                                    android:gravity="start"
+                                    android:gravity="center"
                                     android:padding="10dp"
                                     android:layout_margin="0.5dp"
                                     android:textSize="@dimen/product_mix_application_rate_table_title_text_size"
                                     android:textColor="@color/defaultTextColor"
-                                    android:background="@drawable/text_view_rounded_top_right" />
+                                    android:background="@drawable/text_view_rounded_top_right"
+                                    android:paddingRight="@dimen/minimum_padding"
+                                    android:paddingLeft="@dimen/minimum_padding"/>
                         </TableRow>
                     </TableLayout>
                 </LinearLayout>
