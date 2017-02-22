@@ -36,28 +36,24 @@ public class ApplicationRateTableFactory {
    private static final Logger log = LoggerFactory.getLogger(ApplicationRateTableFactory.class);
 
    /**
-    * TODO: fix javadoc/replace product parameter
-    *
-    * create TableRow with product data
-    * @param product current product to extract the data into the several cells
+    * Creates TableRow with product data
+    * @param applicationRateTableData container for all data which should be shown
     * @return created TableRow
     */
-   public static TableRow createTableRowForProductMixDialog(Product product, Context context, TableLayout productMixTable, MeasurementSystem measurementSystemProductOther) {
+   public static TableRow createTableRowForProductMixDialog(ApplicationRateTableData applicationRateTableData, Context context, TableLayout productMixTable) {
       TableRow tableRow = null;
-      if (product != null) {
+      if (applicationRateTableData != null) {
          LayoutInflater layoutInflater = LayoutInflater.from(context);
          tableRow = (TableRow) layoutInflater.inflate(R.layout.product_mix_dialog_application_rate_table_row, null);
 
-         ProductUnits unit = ProductHelperMethods.retrieveProductRateUnits(product, measurementSystemProductOther);
-
          int tableRowBackgroundId = getAlternatingTableRowBackgroundId(productMixTable);
          TextView productNameTextView = (TextView) tableRow.findViewById(R.id.product_name_text_view);
-         productNameTextView.setText(product.getName());
-         productNameTextView.setCompoundDrawablesWithIntrinsicBounds(getProductFormImageId(product.getForm()), 0, 0, 0);
+         productNameTextView.setText(applicationRateTableData.productName);
+         productNameTextView.setCompoundDrawablesWithIntrinsicBounds(getProductFormImageId(applicationRateTableData.productForm), 0, 0, 0);
          productNameTextView.setBackgroundResource(tableRowBackgroundId);
 
-         configureApplicationRateTextView(tableRow, unit, tableRowBackgroundId, R.id.application_rate1_text_view, product.getDefaultRate());
-         configureApplicationRateTextView(tableRow, unit, tableRowBackgroundId, R.id.application_rate2_text_view, product.getRate2());
+         configureApplicationRateTextView(tableRow, applicationRateTableData.unit, tableRowBackgroundId, R.id.application_rate1_text_view, applicationRateTableData.defaultRate);
+         configureApplicationRateTextView(tableRow, applicationRateTableData.unit, tableRowBackgroundId, R.id.application_rate2_text_view, applicationRateTableData.rate2);
       }
       return tableRow;
    }
@@ -148,5 +144,16 @@ public class ApplicationRateTableFactory {
       }
       log.warn("ProductFrom is null");
       return R.drawable.ic_seed;
+   }
+
+   /**
+    * Container object for factory methods and to hold regarding temporary values
+    */
+   public final static class ApplicationRateTableData {
+      public ProductForm productForm;
+      public String productName;
+      public ProductUnits unit;
+      public double defaultRate;
+      public double rate2;
    }
 }

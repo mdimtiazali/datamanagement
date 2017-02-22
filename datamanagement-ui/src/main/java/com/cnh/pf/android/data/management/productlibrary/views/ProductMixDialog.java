@@ -77,7 +77,11 @@ import org.slf4j.LoggerFactory;
 
 import java.math.BigDecimal;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
+
+import javax.annotation.Nonnull;
 
 /**
  * DialogView to create ProductMixes
@@ -139,6 +143,7 @@ public class ProductMixDialog extends DialogView {
    private PickList productMixFormPickList;
    private DisabledOverlay overlay;
    private boolean isAddNewProductOpen = false;
+   private Map<Product, ApplicationRateTableFactory.ApplicationRateTableData> applicationRateTableDataMap = new HashMap<Product, ApplicationRateTableFactory.ApplicationRateTableData>();
 
    private CategoryButtonsEventListener eventListener = new CategoryButtonsEventListener() {
       @Override
@@ -251,7 +256,8 @@ public class ProductMixDialog extends DialogView {
       this(context, ProductMixesDialogActionType.ADD, vipService, null, callback, productMixes);
    }
 
-   public ProductMixDialog(Context context, ProductMixesDialogActionType actionType, IVIPServiceAIDL vipService, ProductMix productMix, ProductMixCallBack callBack, List<ProductMix> productMixes) {
+   public ProductMixDialog(Context context, ProductMixesDialogActionType actionType, IVIPServiceAIDL vipService, ProductMix productMix, ProductMixCallBack callBack,
+         List<ProductMix> productMixes) {
       super(context);
       measurementSystemProductDensity = UnitsSettings.queryMeasurementSystem(context, UnitsSettings.DENSITY);
       measurementSystemProductMass = UnitsSettings.queryMeasurementSystem(context, UnitsSettings.MASS);
@@ -385,11 +391,13 @@ public class ProductMixDialog extends DialogView {
             public void onItemSelected(AdapterView<?> adapterView, View view, int position, long id, boolean fromUser) {
                productMixForm = ProductForm.values()[position];
                initializeApplicationRatesSegmentedToggleButtonGroup(productMixForm);
-               if (productList == null){
+               if (productList == null) {
                   log.warn("ProductList is null");
-               } else if (productList.isEmpty()){
+               }
+               else if (productList.isEmpty()) {
                   log.warn("ProductList is empty");
-               } else if (carrierProductHolder.productPickList != null){
+               }
+               else if (carrierProductHolder.productPickList != null) {
                   PickListAdapter productListAdapter = new PickListAdapter(carrierProductHolder.productPickList, getContext());
                   fillPickListAdapterWithProducts(productListAdapter, filterProductList(productList, productMixForm));
                   carrierProductHolder.productPickList.setAdapter(productListAdapter);
@@ -460,8 +468,7 @@ public class ProductMixDialog extends DialogView {
             }
             updateApplicationRateStepSize();
             calculateTotalAmountForProductMix();
-            calculateNewApplicationRate1PerProduct();
-            calculateNewApplicationRate2PerProduct();
+            calculateNewApplicationRatePerProduct(true, true);
             updateApplicationRateTable();
          }
       }
@@ -654,6 +661,7 @@ public class ProductMixDialog extends DialogView {
                      addRemoveButtonToFirstProduct();
                      productElement.removeButton.setVisibility(VISIBLE);
                   }
+                  calculateNewApplicationRatePerProduct(true, true);
                   updateApplicationRateTable();
                   if (mixProductCategoryButton.isExpanded()) {
                      mixProductCategoryButton.resizeContent(false);
@@ -668,7 +676,6 @@ public class ProductMixDialog extends DialogView {
                public void onNothingSelected(AdapterView<?> adapterView) {
                }
             });
-
             setUnitToSegmentedToggleButtonGroup(productElement.productUnit, productMixForm, measurementSystemProductOther, ProductDisplayItem.AMOUNT);
          }
       }
@@ -679,16 +686,16 @@ public class ProductMixDialog extends DialogView {
     * @param title the new title to check
     * @return true if the title is valid false otherwise
     */
-   private boolean isNewProductTitleValid(Editable title){
-      if (title == null || title.toString() == null){
+   private boolean isNewProductTitleValid(Editable title) {
+      if (title == null || title.toString() == null) {
          return false;
       }
       String titleString = title.toString().trim();
-      if (titleString.isEmpty()){
+      if (titleString.isEmpty()) {
          return false;
       }
-      for (Product product: productList){
-         if (product.getName().equals(titleString)){
+      for (Product product : productList) {
+         if (product.getName().equals(titleString)) {
             return false;
          }
       }
@@ -775,10 +782,12 @@ public class ProductMixDialog extends DialogView {
             });
             newProductEditText.addTextChangedListener(new TextWatcher() {
                @Override
-               public void beforeTextChanged(CharSequence s, int start, int count, int after) {}
+               public void beforeTextChanged(CharSequence s, int start, int count, int after) {
+               }
 
                @Override
-               public void onTextChanged(CharSequence s, int start, int before, int count) {}
+               public void onTextChanged(CharSequence s, int start, int before, int count) {
+               }
 
                @Override
                public void afterTextChanged(Editable newTitle) {
@@ -795,7 +804,8 @@ public class ProductMixDialog extends DialogView {
                   newProduct.setForm(ProductForm.findByValue(newProductFormPickList.getSelectedItemPosition()));
 
                   if (measurementSystemProductOther != null && productUnitsList != null && !productUnitsList.isEmpty()) {
-                     ProductUnits filteredProductUnits = getFilteredProductUnits(newProduct.getForm(), measurementSystemProductOther, ProductDisplayItem.RATES, productUnitsList).get(0);
+                     ProductUnits filteredProductUnits = getFilteredProductUnits(newProduct.getForm(), measurementSystemProductOther, ProductDisplayItem.RATES, productUnitsList)
+                           .get(0);
                      ProductHelperMethods.bindProductRateUnits(newProduct, filteredProductUnits, measurementSystemProductOther);
                   }
 
@@ -946,9 +956,8 @@ public class ProductMixDialog extends DialogView {
          else {
             productCarrier = carrierProductHolder.currentRecipe;
          }
-         ProductMixRecipeHelper.setAmountAndUnitsToProductMixRecipe(productCarrier,
-               ((UnitsToggleHolder) carrierProductHolder.productUnit.getTag()).currentChoice, carrierProductHolder.productAmount.getValue(),
-               measurementSystemProductVolume, measurementSystemProductMass);
+         ProductMixRecipeHelper.setAmountAndUnitsToProductMixRecipe(productCarrier, ((UnitsToggleHolder) carrierProductHolder.productUnit.getTag()).currentChoice,
+               carrierProductHolder.productAmount.getValue(), measurementSystemProductVolume, measurementSystemProductMass);
          tempProductMix.setMixType(MixType.FORMULA);
          tempProductMix.setProductCarrier(productCarrier);
          tempProductMix.setRecipe(createProductRecipeList());
@@ -1063,8 +1072,8 @@ public class ProductMixDialog extends DialogView {
                recipe = new ProductMixRecipe();
                recipe.setProduct(productElementHolder.currentRecipe.getProduct());
             }
-            ProductMixRecipeHelper.setAmountAndUnitsToProductMixRecipe(recipe,((UnitsToggleHolder) productElementHolder.productUnit.getTag()).currentChoice, productElementHolder.productAmount.getValue(),
-                  measurementSystemProductVolume, measurementSystemProductMass);
+            ProductMixRecipeHelper.setAmountAndUnitsToProductMixRecipe(recipe, ((UnitsToggleHolder) productElementHolder.productUnit.getTag()).currentChoice,
+                  productElementHolder.productAmount.getValue(), measurementSystemProductVolume, measurementSystemProductMass);
             if (!productMixRecipeList.contains(recipe)) {
                productMixRecipeList.add(recipe);
             }
@@ -1153,6 +1162,7 @@ public class ProductMixDialog extends DialogView {
             if (unit != null && unit.currentChoice != null) {
                setUnitToStepper(carrierProductHolder.productAmount, unit.currentChoice.getName());
             }
+            calculateNewApplicationRatePerProduct(true, true);
             updateApplicationRateTable();
          }
          else {
@@ -1170,7 +1180,7 @@ public class ProductMixDialog extends DialogView {
       private boolean isTitleValid = false;
       private boolean isFormSet = false;
 
-      private OnProductPickListItemActionListener(LinearLayout productElement){
+      private OnProductPickListItemActionListener(LinearLayout productElement) {
          this.productElement = productElement;
       }
 
@@ -1263,10 +1273,12 @@ public class ProductMixDialog extends DialogView {
          }*/
          newProductEditText.addTextChangedListener(new TextWatcher() {
             @Override
-            public void beforeTextChanged(CharSequence s, int start, int count, int after) {}
+            public void beforeTextChanged(CharSequence s, int start, int count, int after) {
+            }
 
             @Override
-            public void onTextChanged(CharSequence s, int start, int before, int count) {}
+            public void onTextChanged(CharSequence s, int start, int before, int count) {
+            }
 
             @Override
             public void afterTextChanged(Editable newTitle) {
@@ -1281,7 +1293,9 @@ public class ProductMixDialog extends DialogView {
                newProduct.setName(newProductEditText.getText().toString());
                newProduct.setForm(ProductForm.findByValue(newProductFormPickList.getSelectedItemPosition()));
                productMixFormPickList.setSelectionByPosition(newProductFormPickList.getSelectedItemPosition());
-               ProductHelperMethods.bindProductRateUnits(newProduct, getFilteredProductUnits(newProduct.getForm(), measurementSystemProductOther, ProductDisplayItem.RATES, productUnitsList).get(0), measurementSystemProductOther);
+               ProductHelperMethods.bindProductRateUnits(newProduct,
+                     getFilteredProductUnits(newProduct.getForm(), measurementSystemProductOther, ProductDisplayItem.RATES, productUnitsList).get(0),
+                     measurementSystemProductOther);
                ProductCommandParams params = new ProductCommandParams();
                params.vipService = vipService;
                params.product = newProduct;
@@ -1348,7 +1362,8 @@ public class ProductMixDialog extends DialogView {
             public void onAdjustableBarChanged(AbstractStepperView abstractStepperView, double v, boolean fromUser) {
                updateAddButtonState();
                validateApplicationRate1();
-               calculateNewApplicationRate1PerProduct();
+               calculateNewApplicationRatePerProduct(true, false);
+               updateApplicationRateTable();
             }
          });
       }
@@ -1357,7 +1372,8 @@ public class ProductMixDialog extends DialogView {
             @Override
             public void onAdjustableBarChanged(AbstractStepperView abstractStepperView, double v, boolean fromUser) {
                validateApplicationRate2();
-               calculateNewApplicationRate2PerProduct();
+               calculateNewApplicationRatePerProduct(false, true);
+               updateApplicationRateTable();
             }
          });
       }
@@ -1426,8 +1442,8 @@ public class ProductMixDialog extends DialogView {
                      updateApplicationRatesView(holder.currentChoice.getName());
                   }
                   applicationRatesUnitsPickList.setTag(holder);
-                  calculateNewApplicationRate1PerProduct();
-                  calculateNewApplicationRate2PerProduct();
+                  calculateNewApplicationRatePerProduct(true, true);
+                  updateApplicationRateTable();
                }
             }
 
@@ -1612,6 +1628,7 @@ public class ProductMixDialog extends DialogView {
             recipeDeleteList.add(productElement.currentRecipe);
             mixProductsLayout.removeView(productElement.elementView);
             updateProductViewList();
+            applicationRateTableDataMap.remove(productElement.currentRecipe.getProduct());
             updateApplicationRateTable();
             this.mixProductCategoryButton.resizeContent(false);
             if (productMixElementHolderList.size() < 2) {
@@ -1685,17 +1702,17 @@ public class ProductMixDialog extends DialogView {
 
          //Add Carrier to table
          if (carrierProductHolder != null && carrierProductHolder.currentRecipe != null) {
-            TableRow tableRow = ApplicationRateTableFactory.createTableRowForProductMixDialog(carrierProductHolder.currentRecipe.getProduct(), getContext(), productMixTable, measurementSystemProductOther);
+            TableRow tableRow = ApplicationRateTableFactory.createTableRowForProductMixDialog(applicationRateTableDataMap.get(carrierProductHolder.currentRecipe.getProduct()),
+                  getContext(), productMixTable);
             productMixTable.addView(tableRow, viewCounter++);
          }
 
          if (!productMixElementHolderList.isEmpty()) {
-
             for (ProductMixElementHolder productElement : productMixElementHolderList) {
                if (productElement.currentRecipe != null) {
                   if (productElement.currentRecipe.getProduct() != null) {
                      Product product = productElement.currentRecipe.getProduct();
-                     TableRow tableRow = ApplicationRateTableFactory.createTableRowForProductMixDialog(product, getContext(), productMixTable, measurementSystemProductOther);
+                     TableRow tableRow = ApplicationRateTableFactory.createTableRowForProductMixDialog(applicationRateTableDataMap.get(product), getContext(), productMixTable);
                      if (tableRow != null) {
                         productMixTable.addView(tableRow, viewCounter++);
                      }
@@ -1753,8 +1770,8 @@ public class ProductMixDialog extends DialogView {
          }
       }
       this.totalAmount = totalAmount;
-      calculateNewApplicationRate1PerProduct();
-      calculateNewApplicationRate2PerProduct();
+      calculateNewApplicationRatePerProduct(true, true);
+      updateApplicationRateTable();
    }
 
    /**
@@ -1762,19 +1779,19 @@ public class ProductMixDialog extends DialogView {
     */
    private void updateAddButtonState() {
       String productMixName = productMixNameInputField.getText().toString().trim();
-      if (productMixName.isEmpty()){
+      if (productMixName.isEmpty()) {
          this.setFirstButtonEnabled(false);
          productMixNameInputField.setErrorIndicator(Widget.ErrorIndicator.NONE);
          return;
       }
       else {
-         for (ProductMix productMix: productMixes){
-            if (this.actionType.equals(ProductMixesDialogActionType.EDIT)){
-               if (productMix.getId() == this.productMix.getId()){
+         for (ProductMix productMix : productMixes) {
+            if (this.actionType.equals(ProductMixesDialogActionType.EDIT)) {
+               if (productMix.getId() == this.productMix.getId()) {
                   continue;
                }
             }
-            if (productMixName.equals(productMix.getProductMixParameters().getName())){
+            if (productMixName.equals(productMix.getProductMixParameters().getName())) {
                this.setFirstButtonEnabled(false);
                productMixNameInputField.setErrorIndicator(Widget.ErrorIndicator.NEEDS_CHECKING);
                return;
@@ -1782,9 +1799,8 @@ public class ProductMixDialog extends DialogView {
          }
          productMixNameInputField.setErrorIndicator(Widget.ErrorIndicator.NONE);
       }
-      if (this.applicationRate1Stepper != null && this.applicationRate1Stepper.getValue() > 0 && isCarrierSet
-              && isOneProductMixSet && isProductMixFormSet && this.carrierProductHolder != null
-              && this.carrierProductHolder.productAmount.getValue() > 0) {
+      if (this.applicationRate1Stepper != null && this.applicationRate1Stepper.getValue() > 0 && isCarrierSet && isOneProductMixSet && isProductMixFormSet
+            && this.carrierProductHolder != null && this.carrierProductHolder.productAmount.getValue() > 0) {
          this.setFirstButtonEnabled(true);
       }
       else {
@@ -1808,22 +1824,39 @@ public class ProductMixDialog extends DialogView {
       return 0;
    }
 
-   private void calculateNewApplicationRate1PerProduct() {
+   /**
+    * Calculates the application rates per product and updated the application rate table. The method is not made for setting booth parameters to false.
+    * @param updateRate1 set true if rate1 values need to be updated
+    * @param updateRate2 set true if rate2 values need to be updated
+    */
+   private void calculateNewApplicationRatePerProduct(boolean updateRate1, boolean updateRate2) {
       UnitsToggleHolder productMixUnitHolder = (UnitsToggleHolder) applicationRatesUnitsPickList.getTag();
       if (productMixUnitHolder != null && productMixUnitHolder.currentChoice != null) {
-         double applicationRate = applicationRate1Stepper.getValue() / productMixUnitHolder.currentChoice.getMultiplyFactorFromBaseUnits();
          if (carrierProductHolder.currentRecipe != null) {
-            // FIXME pfhmi-dev-defects-3372: don't save temporary data needed for application rate table in objects which are saved later
-            carrierProductHolder.currentRecipe.getProduct().setDefaultRate(getNewRate(applicationRate, carrierProductHolder, totalAmount));
-
+            double applicationRate1 = Double.NaN;
+            double applicationRate2 = Double.NaN;
+            Product carrierProduct = carrierProductHolder.currentRecipe.getProduct();
+            ApplicationRateTableFactory.ApplicationRateTableData carrierApplicationRateTableData = getCreateAndPutApplicationRateTableData(carrierProduct);
+            if (updateRate1) {
+               applicationRate1 = applicationRate1Stepper.getValue() / productMixUnitHolder.currentChoice.getMultiplyFactorFromBaseUnits();
+               carrierApplicationRateTableData.defaultRate = getNewRate(applicationRate1, carrierProductHolder, totalAmount);
+            }
+            if (updateRate2) {
+               applicationRate2 = applicationRate2Stepper.getValue() / productMixUnitHolder.currentChoice.getMultiplyFactorFromBaseUnits();
+               carrierApplicationRateTableData.rate2 = getNewRate(applicationRate2, carrierProductHolder, totalAmount);
+            }
             for (ProductMixElementHolder productElement : productMixElementHolderList) {
                if (productElement != null && productElement.currentRecipe != null) {
-                  double newRate = getNewRate(applicationRate, productElement, totalAmount);
-                  // FIXME pfhmi-dev-defects-3372: don't save temporary data needed for application rate table in objects which are saved later
-                  productElement.currentRecipe.getProduct().setDefaultRate(newRate);
+                  Product product = productElement.currentRecipe.getProduct();
+                  ApplicationRateTableFactory.ApplicationRateTableData productApplicationRateTableData = getCreateAndPutApplicationRateTableData(product);
+                  if (updateRate1) {
+                     productApplicationRateTableData.defaultRate = getNewRate(applicationRate1, productElement, totalAmount);
+                  }
+                  if (updateRate2) {
+                     productApplicationRateTableData.rate2 = getNewRate(applicationRate2, productElement, totalAmount);
+                  }
                }
             }
-            updateApplicationRateTable();
          }
       }
       else {
@@ -1831,25 +1864,25 @@ public class ProductMixDialog extends DialogView {
       }
    }
 
-   private void calculateNewApplicationRate2PerProduct() {
-      UnitsToggleHolder productMixUnitHolder = (UnitsToggleHolder) applicationRatesUnitsPickList.getTag();
-      if (productMixUnitHolder != null && productMixUnitHolder.currentChoice != null) {
-         double applicationRate = applicationRate2Stepper.getValue() / productMixUnitHolder.currentChoice.getMultiplyFactorFromBaseUnits();
-         if (carrierProductHolder.currentRecipe != null) {
-            // FIXME pfhmi-dev-defects-3372: don't save temporary data needed for application rate table in objects which are saved later
-            carrierProductHolder.currentRecipe.getProduct().setRate2(getNewRate(applicationRate, carrierProductHolder, totalAmount));
-         }
-         for (ProductMixElementHolder productElement : productMixElementHolderList) {
-            if (productElement.currentRecipe != null) {
-               // FIXME pfhmi-dev-defects-3372: don't save temporary data needed for application rate table in objects which are saved later
-               productElement.currentRecipe.getProduct().setRate2(getNewRate(applicationRate, productElement, totalAmount));
-            }
-         }
-         updateApplicationRateTable();
+   /**
+    * Gets the ApplicationRateTableData for the product or creates and adds it. Updates the name in ApplicationRateTableData.
+    * @param product
+    * @return the new or found ApplicationRateTableData
+    */
+   @Nonnull
+   private ApplicationRateTableFactory.ApplicationRateTableData getCreateAndPutApplicationRateTableData(@Nonnull Product product) {
+      ApplicationRateTableFactory.ApplicationRateTableData applicationRateTableData;
+      if (applicationRateTableDataMap.containsKey(product)) {
+         applicationRateTableData = applicationRateTableDataMap.get(product);
       }
       else {
-         log.info("no current Choice");
+         applicationRateTableData = new ApplicationRateTableFactory.ApplicationRateTableData();
+         applicationRateTableDataMap.put(product, applicationRateTableData);
       }
+      applicationRateTableData.productName = product.getName();
+      applicationRateTableData.unit = ProductHelperMethods.retrieveProductRateUnits(product, measurementSystemProductOther).deepCopy();
+      applicationRateTableData.productForm = product.getForm();
+      return applicationRateTableData;
    }
 
    /**
@@ -1904,9 +1937,9 @@ public class ProductMixDialog extends DialogView {
       }
    }
 
-   private void enableAddNewProductButtons(boolean enable){
+   private void enableAddNewProductButtons(boolean enable) {
       isAddNewProductOpen = !enable;
-      for (ProductMixElementHolder productMixElementHolder: productMixElementHolderList){
+      for (ProductMixElementHolder productMixElementHolder : productMixElementHolderList) {
          productMixElementHolder.productPickList.setAllowNewItemsCreation(enable);
       }
       if (carrierProductHolder != null) {
