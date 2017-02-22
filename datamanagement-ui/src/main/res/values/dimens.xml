@@ -9,6 +9,8 @@
   -->
 <resources>
 
+    <dimen name="minimum_padding">2dp</dimen>
+
     <dimen name="list_item_height">50dp</dimen>
     <dimen name="list_item_large_text_size">22sp</dimen>
     <dimen name="list_item_padding">4dp</dimen>
@@ -18,6 +20,7 @@
     <dimen name="product_item_small_widget_margin">8dp</dimen>
     <dimen name="product_item_small_text_size">18sp</dimen>
 
+    <dimen name="product_library_application_rate_table_product_name_max_width">100dp</dimen>
     <dimen name="product_library_empty">0dp</dimen>
     <dimen name="product_library_sort_header_left_padding">16.25dp</dimen>
     <dimen name="product_library_sort_header_right_padding">26dp</dimen>

@@ -22,7 +22,9 @@
             android:layout_weight="1"
             android:layout_height="wrap_content"
             style="@style/TextAppearance.ItemList"
-            android:paddingLeft="@dimen/product_library_sort_header_left_padding"/>
+            android:paddingLeft="@dimen/product_library_sort_header_left_padding"
+            android:singleLine="true"
+            android:ellipsize="end"/>
 
     <LinearLayout
             android:orientation="horizontal"

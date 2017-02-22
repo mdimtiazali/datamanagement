@@ -1,0 +1,46 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  ~ Copyright (C) 2017 CNH Industrial NV. All rights reserved.
+  ~
+  ~ This software contains proprietary information of CNH Industrial NV. Neither
+  ~ receipt nor possession thereof confers any right to reproduce, use, or
+  ~ disclose in whole or in part any such information without written
+  ~ authorization from CNH Industrial NV.
+  -->
+<TableRow xmlns:android="http://schemas.android.com/apk/res/android"
+          android:gravity="center">
+    <TextView
+            android:gravity="center_vertical"
+            android:id="@+id/product_name_text_view"
+            android:textSize="@dimen/product_mix_dialog_application_rate_name_text_size"
+            android:textColor="@color/defaultTextColor"
+            android:textStyle="bold"
+            android:drawablePadding="2dp"
+            android:singleLine="true"
+            android:ellipsize="end"
+            android:maxWidth="180dp"
+            android:paddingRight="@dimen/minimum_padding"
+    />
+    <TextView
+            android:id="@+id/application_rate1_text_view"
+            android:textSize="@dimen/product_mix_dialog_application_rate_name_text_size"
+            android:textColor="@color/defaultTextColor"
+            android:textStyle="bold"
+            android:gravity="center"
+            android:ellipsize="middle"
+            android:layout_height="match_parent"
+            android:paddingLeft="@dimen/minimum_padding"
+            android:paddingRight="@dimen/minimum_padding"
+    />
+    <TextView
+            android:id="@+id/application_rate2_text_view"
+            android:textSize="@dimen/product_mix_dialog_application_rate_name_text_size"
+            android:textColor="@color/defaultTextColor"
+            android:textStyle="bold"
+            android:gravity="center"
+            android:ellipsize="middle"
+            android:layout_height="match_parent"
+            android:paddingLeft="@dimen/minimum_padding"
+            android:paddingRight="@dimen/minimum_padding"
+    />
+</TableRow>

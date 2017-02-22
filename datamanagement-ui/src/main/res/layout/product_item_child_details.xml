@@ -1,5 +1,4 @@
 <?xml version="1.0" encoding="utf-8"?>
-
 <!--
   ~ Copyright (C) 2014 CNH Industrial NV. All rights reserved.
   ~
@@ -397,7 +396,6 @@
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:src="@drawable/edit_list_item_states"
-                        android:layout_marginEnd="@dimen/product_item_image_margin"
                         android:background="@null" />
 
                 <ImageButton
