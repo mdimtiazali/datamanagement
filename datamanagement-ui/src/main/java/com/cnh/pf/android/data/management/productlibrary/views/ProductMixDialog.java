@@ -1788,6 +1788,12 @@ public class ProductMixDialog extends DialogView {
     * If all required data will set, the "add" button will enable
     */
    private void updateAddButtonState() {
+      log.debug("update addButtonState called");
+
+      // productMixNameInputField sometimes has focus here ... and when setErrorIndication is called afterwards the complete view scrolls so that you can see the EditText of the
+      // InputField at the top of your view. I (Heiko) don't know any reason why setErrorIndication should cause a scroll action.
+      productMixNameInputField.clearFocus();
+
       String productMixName = productMixNameInputField.getText().toString().trim();
       if (productMixName.isEmpty()) {
          this.setFirstButtonEnabled(false);
