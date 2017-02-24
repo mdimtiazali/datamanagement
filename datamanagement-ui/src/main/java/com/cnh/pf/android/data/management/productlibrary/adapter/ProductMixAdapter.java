@@ -20,6 +20,7 @@ import android.widget.Filter;
 import android.widget.ImageButton;
 import android.widget.ImageView;
 import android.widget.TableLayout;
+import android.widget.TableRow;
 import android.widget.TextView;
 
 import com.cnh.android.dialog.DialogViewInterface;
@@ -111,8 +112,8 @@ public final class ProductMixAdapter extends SearchableSortableExpandableListAda
 
    /**
     * Add all ProductMixRecipes to the OverviewTable
-    * @param tableLayout
-    * @param productMix
+    * @param tableLayout the tableLayout of the ApplicationRatesTable
+    * @param productMix the data for the table
     */
    private void addProductsToTableLayout(TableLayout tableLayout, ProductMix productMix) {
       if (tableLayout != null && productMix != null) {
@@ -121,25 +122,49 @@ public final class ProductMixAdapter extends SearchableSortableExpandableListAda
             tableLayout.removeViewAt(1);
          }
          int viewCounter = 1;
-         Product carrierProduct = productMix.getProductCarrier().getProduct();
-         double defaultRate = productMix.getProductMixParameters().getDefaultRate();
-         double rate2 = productMix.getProductMixParameters().getRate2();
-         double totalAmount = productMix.getMixTotalAmount();
-         // FIXME pfhmi-dev-defects-3372: don't save temporary data needed for application rate table in objects which are saved later (in the product mix dialog)
-         carrierProduct.setDefaultRate(calculateApplicationRate(productMix.getProductCarrier().getAmount(), defaultRate, totalAmount));
-         carrierProduct.setRate2(calculateApplicationRate(productMix.getProductCarrier().getAmount(), rate2, totalAmount));
-         tableLayout.addView(ApplicationRateTableFactory.createTableRowForProductMixAdapter(carrierProduct, context, tableLayout, volumeMeasurementSystem, massMeasurementSystem),
-               viewCounter++);
+         ProductMixRecipe carrierRecipe = productMix.getProductCarrier();
+         Product carrierProduct = carrierRecipe.getProduct();
+         double productMixDefaultRate = productMix.getProductMixParameters().getDefaultRate();
+         double productMixRate2 = productMix.getProductMixParameters().getRate2();
+         double productMixTotalAmount = productMix.getMixTotalAmount();
+         ApplicationRateTableFactory.ApplicationRateTableData carrierProductApplicationRateTableData = createApplicationRateTableData(carrierRecipe, carrierProduct, productMixDefaultRate,
+               productMixRate2, productMixTotalAmount);
+         TableRow carrierTableRow = ApplicationRateTableFactory.createTableRowForProductMixAdapter(carrierProductApplicationRateTableData, context, tableLayout);
+         if (carrierTableRow != null) {
+            tableLayout.addView(carrierTableRow, viewCounter++);
+         }
 
          for (ProductMixRecipe recipeElement : productMix.getRecipe()) {
             Product product = recipeElement.getProduct();
-            // FIXME pfhmi-dev-defects-3372: don't save temporary data needed for application rate table in objects which maybe saved later (in the product mix dialog)
-            product.setDefaultRate(calculateApplicationRate(recipeElement.getAmount(), defaultRate, totalAmount));
-            product.setRate2(calculateApplicationRate(recipeElement.getAmount(), rate2, totalAmount));
-            tableLayout.addView(ApplicationRateTableFactory.createTableRowForProductMixAdapter(product, context, tableLayout, volumeMeasurementSystem, massMeasurementSystem),
-                  viewCounter++);
+            ApplicationRateTableFactory.ApplicationRateTableData productApplicationRateTableData = createApplicationRateTableData(recipeElement, product, productMixDefaultRate, productMixRate2,
+                  productMixTotalAmount);
+            TableRow productTableRow = ApplicationRateTableFactory.createTableRowForProductMixAdapter(productApplicationRateTableData, context, tableLayout);
+            if (productTableRow != null) {
+               tableLayout.addView(productTableRow, viewCounter++);
+            }
          }
       }
+   }
+
+   /**
+    * Creates an {@link com.cnh.pf.android.data.management.productlibrary.views.ApplicationRateTableFactory.ApplicationRateTableData} for a ApplicationRateTableRow
+    * @param recipe the recipe of the {@link ProductMix}
+    * @param product the {@link Product} we create the row for
+    * @param productMixDefaultRate the default rate of the product mix (not of the product)
+    * @param productMixRate2 the rate2 of the product mix (not of the product)
+    * @param productMixTotalAmount the total amount of the product mix (not of the product)
+    * @return the ApplicationRateTableData needed to create the table row for the product
+    */
+   private ApplicationRateTableFactory.ApplicationRateTableData createApplicationRateTableData(ProductMixRecipe recipe, Product product, double productMixDefaultRate,
+         double productMixRate2, double productMixTotalAmount) {
+      ApplicationRateTableFactory.ApplicationRateTableData carrierProductApplicationRateTableData = new ApplicationRateTableFactory.ApplicationRateTableData();
+      carrierProductApplicationRateTableData.productName = product.getName();
+      carrierProductApplicationRateTableData.defaultRate = calculateApplicationRate(recipe.getAmount(), productMixDefaultRate, productMixTotalAmount);
+      carrierProductApplicationRateTableData.rate2 = calculateApplicationRate(recipe.getAmount(), productMixRate2, productMixTotalAmount);
+      ProductUnits carrierUnit = ProductHelperMethods.retrieveProductRateUnits(product,
+            ProductHelperMethods.getMeasurementSystemForProduct(product, volumeMeasurementSystem, massMeasurementSystem));
+      carrierProductApplicationRateTableData.unit = carrierUnit.deepCopy();
+      return carrierProductApplicationRateTableData;
    }
 
    /**
