@@ -411,12 +411,13 @@ public class ProductLibraryFragment extends RoboFragment implements ProductMixCa
             addProductDialog.setFirstButtonText(getResources().getString(R.string.product_dialog_save_button))
                   .setSecondButtonText(getResources().getString(R.string.product_dialog_cancel_button)).showThirdButton(false)
                   .setTitle(getResources().getString(R.string.product_dialog_add_tile)).setBodyHeight(DIALOG_HEIGHT);
-            final TabActivity useModal = (DataManagementActivity) getActivity();
-            useModal.showModalPopup(addProductDialog);
 
             addProductDialog.setContentPaddings(LEFT_RIGHT_MARGIN, TOP_BOTTOM_MARGIN, LEFT_RIGHT_MARGIN, TOP_BOTTOM_MARGIN);
             addProductDialog.disableButtonFirst(true);
             addProductDialog.setDialogWidth(DIALOG_WIDTH);
+
+            final TabActivity useModal = (DataManagementActivity) getActivity();
+            useModal.showModalPopup(addProductDialog);
          }
       });
       Button btnAddProductMix = (Button) productMixesPanel.findViewById(R.id.add_mix_button);
@@ -428,12 +429,13 @@ public class ProductLibraryFragment extends RoboFragment implements ProductMixCa
                   .setSecondButtonText(getResources().getString(R.string.product_dialog_cancel_button)).showThirdButton(false)
                   .setTitle(getResources().getString(R.string.product_mix_title_dialog_add_product_mix)).setBodyHeight(DIALOG_HEIGHT).setBodyView(R.layout.product_mix_dialog);
 
-            final TabActivity useModal = (DataManagementActivity) getActivity();
-            useModal.showModalPopup(addProductMixDialog);
-
             addProductMixDialog.setContentPaddings(LEFT_RIGHT_MARGIN, TOP_BOTTOM_MARGIN, LEFT_RIGHT_MARGIN, TOP_BOTTOM_MARGIN);
             addProductMixDialog.disableButtonFirst(true);
             addProductMixDialog.setDialogWidth(DIALOG_WIDTH);
+            addProductMixDialog.setId(R.id.add_product_mix_dialog);
+
+            final TabActivity useModal = (DataManagementActivity) getActivity();
+            useModal.showModalPopup(addProductMixDialog);
          }
       });
       Button btnAddVariety = (Button) varietiesPanel.findViewById(R.id.variety_button_add);
@@ -451,6 +453,7 @@ public class ProductLibraryFragment extends RoboFragment implements ProductMixCa
                addVarietyDialog.setVarietyList(varietyList);
             }
             addVarietyDialog.setVIPService(vipService);
+
             final TabActivity useModal = (DataManagementActivity) getActivity();
             useModal.showModalPopup(addVarietyDialog);
          }
