@@ -15,6 +15,7 @@ import android.os.Looper;
 import android.os.RemoteException;
 import android.text.Editable;
 import android.text.TextWatcher;
+import android.view.KeyEvent;
 import android.view.View;
 import android.view.inputmethod.EditorInfo;
 import android.view.inputmethod.InputMethodManager;
@@ -367,6 +368,24 @@ public class ProductMixDialog extends DialogView {
             @Override
             public void afterTextChanged(Editable editable) {
                updateAddButtonState();
+            }
+         });
+         productMixNameInputField.setOnEditorActionListener(new TextView.OnEditorActionListener() {
+            @Override
+            public boolean onEditorAction(TextView textView, int i, KeyEvent keyEvent) {
+               if(i == EditorInfo.IME_ACTION_DONE){
+                  // This action is delayed because the way the keyboard close is looking bad if clearFocus is called directly
+                  // The delay is the reason why this post is needed. The lister is called already at the UIThread
+                  post(new Runnable() {
+                     @Override
+                     public void run() {
+                        // productMixNameInputField sometimes has focus here ... and when setErrorIndication is called afterwards the complete view scrolls so that you can see the EditText of the
+                        // InputField at the top of your view. I (Heiko) don't know any reason why setErrorIndication should cause a scroll action.
+                        productMixNameInputField.clearFocus();
+                     }
+                  });
+               }
+               return false;
             }
          });
       }
@@ -1790,9 +1809,7 @@ public class ProductMixDialog extends DialogView {
    private void updateAddButtonState() {
       log.debug("update addButtonState called");
 
-      // productMixNameInputField sometimes has focus here ... and when setErrorIndication is called afterwards the complete view scrolls so that you can see the EditText of the
-      // InputField at the top of your view. I (Heiko) don't know any reason why setErrorIndication should cause a scroll action.
-      productMixNameInputField.clearFocus();
+
 
       String productMixName = productMixNameInputField.getText().toString().trim();
       if (productMixName.isEmpty()) {
