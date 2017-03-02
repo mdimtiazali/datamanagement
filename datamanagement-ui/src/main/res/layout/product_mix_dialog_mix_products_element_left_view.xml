@@ -11,9 +11,10 @@
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
         xmlns:cnh="http://schemas.android.com/apk/res-auto"
         android:orientation="vertical"
-        android:layout_width="match_parent"
+        android:layout_width="0dp"
         android:layout_height="@dimen/product_mix_dialog_product_background_height"
-        android:layout_marginStart="5dp">
+        android:layout_marginStart="5dp"
+        android:layout_weight="1">
 
     <LinearLayout
             android:id="@+id/product_mix_product_left_select_product"

@@ -12,9 +12,11 @@
         xmlns:cnh="http://schemas.android.com/apk/res-auto"
         android:orientation="vertical"
         android:layout_width="match_parent"
-        android:layout_height="match_parent">
+        android:layout_height="match_parent"
+        android:id="@+id/product_mix_dialog_frame_layout">
 
     <ScrollView
+            android:id="@+id/product_mix_dialog_scroll_view"
             android:layout_width="match_parent"
             android:layout_height="fill_parent">
 
@@ -28,10 +30,11 @@
 
 
             <LinearLayout
+                    android:id="@+id/product_mix_dialog_layout_for_name_and_form"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:orientation="horizontal"
-                    android:layout_marginBottom="20dp">
+                    android:layout_marginBottom="10dp">
 
                 <com.cnh.android.widget.control.InputField
                         android:id="@+id/product_mix_name_input_field"
@@ -55,22 +58,10 @@
                         cnh:defaultPickListTextId="@string/product_mix_title_picklist_default_select"
                         cnh:headerText="@string/product_mix_title_product_mix_form"/>
             </LinearLayout>
-
-            <LinearLayout
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:layout_marginTop="-10dp"
-                    android:orientation="vertical">
-
-                <include layout="@layout/product_mix_dialog_mix_products_view" />
-
-                <include layout="@layout/product_mix_dialog_application_rates_view" />
-
-                <include layout="@layout/product_mix_dialog_advanced_view" />
-            </LinearLayout>
+            <include layout="@layout/product_mix_dialog_mix_products_view"/>
+            <include layout="@layout/product_mix_dialog_application_rates_view" />
+            <include layout="@layout/product_mix_dialog_advanced_view" />
         </LinearLayout>
-
-
     </ScrollView>
 
     <com.cnh.android.pf.widget.view.DisabledOverlay

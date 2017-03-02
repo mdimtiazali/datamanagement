@@ -8,218 +8,197 @@
   ~ authorization from CNH Industrial NV.
   -->
 
-<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<com.cnh.android.widget.control.CategoryButtons
+        xmlns:android="http://schemas.android.com/apk/res/android"
         xmlns:cnh="http://schemas.android.com/apk/res-auto"
-        android:orientation="vertical"
+        android:id="@+id/product_mix_categorybuttons_application_rate_view"
+        android:layout_height="wrap_content"
         android:layout_width="match_parent"
-        android:layout_height="match_parent">
+        cnh:title="@string/product_mix_title_application_rates"
+        cnh:setAutoResizable="true">
 
-    <com.cnh.android.widget.control.CategoryButtons
-            android:id="@+id/product_mix_categorybuttons_application_rate_view"
-            android:layout_height="wrap_content"
+    <LinearLayout
             android:layout_width="match_parent"
-            cnh:title="@string/product_mix_title_application_rates"
-            cnh:setAutoResizable="true">
+            android:layout_height="wrap_content"
+            android:orientation="vertical">
 
-        <LinearLayout
+        <RelativeLayout
                 android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:orientation="vertical">
-
-            <RelativeLayout
-                    android:layout_width="match_parent"
-                    android:layout_height="match_parent">
-
-
-                <LinearLayout
-                        android:layout_width="match_parent"
-                        android:layout_height="wrap_content"
-                        android:orientation="horizontal"
-                        android:layout_below="@+id/product_mix_application_application_rate_unit_layout"
-                        android:paddingStart="10dp"
-                        android:paddingEnd="10dp"
-                        android:paddingBottom="10dp"
-                        android:paddingTop="35dp"
-                        android:layout_marginTop="-25dp"
-                        android:background="@drawable/box_bg_blue"
-                        android:baselineAligned="false">
-
-                    <LinearLayout
-                            android:layout_width="0dp"
-                            android:layout_height="wrap_content"
-                            android:layout_weight="1"
-                            android:layout_marginEnd="10dp"
-                            android:orientation="vertical">
-
-
-                        <com.cnh.android.widget.control.StepperView
-                                android:id="@+id/product_mix_application_rates_stepperview_rate_1"
-                                style="@style/Stepper.PlusMinus"
-                                android:layout_width="match_parent"
-                                android:layout_height="wrap_content"
-                                cnh:decimalPrecision="2"
-                                cnh:maximumValue="@integer/application_rate_max"
-                                cnh:minimumValue="@integer/application_rate_min"
-                                cnh:stepSize=".1"
-                                cnh:unit="@string/unit_gal_per_acre"
-                                cnh:headerText="@string/product_mix_title_application_rate_1" />
-
-
-                        <com.cnh.android.widget.control.StepperView
-                                android:id="@+id/product_mix_application_rates_stepperview_rate_min"
-                                style="@style/Stepper.PlusMinus"
-                                android:layout_width="match_parent"
-                                android:layout_height="wrap_content"
-                                cnh:decimalPrecision="2"
-                                cnh:maximumValue="@integer/application_rate_max"
-                                cnh:minimumValue="@integer/application_rate_min"
-                                cnh:stepSize=".1"
-                                cnh:unit="@string/unit_gal_per_acre"
-                                cnh:headerText="@string/product_mix_title_min_application_rate" />
-
-                        <com.cnh.android.widget.control.StepperView
-                                android:id="@+id/product_mix_application_rates_stepperview_rate_delta"
-                                style="@style/Stepper.PlusMinus"
-                                android:layout_width="match_parent"
-                                android:layout_height="wrap_content"
-                                cnh:decimalPrecision="2"
-                                cnh:maximumValue="@integer/application_rate_max"
-                                cnh:minimumValue="@integer/application_rate_min"
-                                cnh:stepSize=".1"
-                                cnh:unit="@string/unit_gal_per_acre"
-                                cnh:headerText="@string/product_mix_title_delta_application_rate" />
-                    </LinearLayout>
-
-                    <LinearLayout
-                            android:layout_width="0dp"
-                            android:layout_height="wrap_content"
-                            android:layout_weight="1"
-                            android:layout_marginStart="10dp"
-                            android:orientation="vertical">
-
-                        <com.cnh.android.widget.control.StepperView
-                                android:id="@+id/product_mix_application_rates_stepperview_rate_2"
-                                style="@style/Stepper.PlusMinus"
-                                android:layout_width="match_parent"
-                                android:layout_height="wrap_content"
-                                cnh:decimalPrecision="2"
-                                cnh:maximumValue="@integer/application_rate_max"
-                                cnh:minimumValue="@integer/application_rate_min"
-                                cnh:stepSize=".1"
-                                cnh:unit="@string/unit_gal_per_acre"
-                                cnh:headerText="@string/product_mix_title_application_rate_2" />
-
-                        <com.cnh.android.widget.control.StepperView
-                                android:id="@+id/product_mix_application_rates_stepperview_rate_max"
-                                style="@style/Stepper.PlusMinus"
-                                android:layout_width="match_parent"
-                                android:layout_height="wrap_content"
-                                cnh:decimalPrecision="2"
-                                cnh:maximumValue="@integer/application_rate_max"
-                                cnh:minimumValue="@integer/application_rate_min"
-                                cnh:stepSize=".1"
-                                cnh:unit="@string/unit_gal_per_acre"
-                                cnh:headerText="@string/product_mix_title_max_application_rate" />
-                    </LinearLayout>
-                </LinearLayout>
-
-                <LinearLayout
-                        android:id="@+id/product_mix_application_application_rate_unit_layout"
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:layout_alignParentStart="true"
-                        android:layout_marginStart="10dp"
-                        android:orientation="vertical">
-
-                    <com.cnh.android.pf.widget.controls.SegmentedToggleButtonGroupPickList
-                            android:id="@+id/product_mix_application_rates_segmentedtogglebuttongroup_units"
-                            style="@style/SegmentedToggleButtonSmall"
-                            android:layout_width="wrap_content"
-                            android:layout_height="wrap_content"
-                            android:orientation="horizontal"
-                            cnh:buttonUseSmallResources="false"
-                            cnh:listUseSmallResources="false"
-                            cnh:headerText="@string/product_mix_title_picklist_default_select"
-                            cnh:togglePicklistHeaderText="@string/product_text_units" />
-                </LinearLayout>
-            </RelativeLayout>
+                android:layout_height="match_parent">
 
             <LinearLayout
-                    android:id="@+id/product_mix_tablelayout_application_rates_per_product"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:layout_marginTop="20dp"
-                    android:orientation="vertical"
-                    android:visibility="gone">
-
-                <TextView
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:layout_marginStart="10dp"
-                        android:layout_marginBottom="10dp"
-                        style="@style/UDWTitleTextStyle"
-                        android:textColor="@color/e_blue_text"
-                        android:textSize="@dimen/product_mix_dialog_application_rate_title_text_size"
-                        android:text="@string/product_mix_title_application_rates_per_product" />
+                    android:orientation="horizontal"
+                    android:layout_below="@+id/product_mix_application_rates_segmentedtogglebuttongroup_units"
+                    android:paddingStart="10dp"
+                    android:paddingEnd="10dp"
+                    android:paddingBottom="10dp"
+                    android:paddingTop="35dp"
+                    android:layout_marginTop="-25dp"
+                    android:background="@drawable/box_bg_blue"
+                    android:baselineAligned="false">
 
                 <LinearLayout
-                        android:layout_width="wrap_content"
+                        android:layout_width="0dp"
                         android:layout_height="wrap_content"
+                        android:layout_weight="1"
+                        android:layout_marginEnd="10dp"
                         android:orientation="vertical">
 
-                    <TableLayout
-                            android:id="@+id/product_mix_dialog_application_rates_table"
+                    <com.cnh.android.widget.control.StepperView
+                            android:id="@+id/product_mix_application_rates_stepperview_rate_1"
+                            style="@style/Stepper.PlusMinus"
                             android:layout_width="match_parent"
                             android:layout_height="wrap_content"
-                            android:stretchColumns="0, 1, 2"
-                            android:background="@drawable/rounded_table_border">
+                            cnh:decimalPrecision="2"
+                            cnh:maximumValue="@integer/application_rate_max"
+                            cnh:minimumValue="@integer/application_rate_min"
+                            cnh:stepSize=".1"
+                            cnh:unit="@string/unit_gal_per_acre"
+                            cnh:headerText="@string/product_mix_title_application_rate_1"/>
 
-                        <TableRow
-                                android:layout_width="match_parent"
-                                android:layout_height="match_parent">
+                    <com.cnh.android.widget.control.StepperView
+                            android:id="@+id/product_mix_application_rates_stepperview_rate_min"
+                            style="@style/Stepper.PlusMinus"
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            cnh:decimalPrecision="2"
+                            cnh:maximumValue="@integer/application_rate_max"
+                            cnh:minimumValue="@integer/application_rate_min"
+                            cnh:stepSize=".1"
+                            cnh:unit="@string/unit_gal_per_acre"
+                            cnh:headerText="@string/product_mix_title_min_application_rate"/>
 
-                            <TextView
-                                    android:text="@string/product_section_header"
-                                    android:padding="10dp"
-                                    android:ellipsize="middle"
-                                    style="@style/UDWTitleTextStyle"
-                                    android:gravity="start"
-                                    android:layout_margin="0.5dp"
-                                    android:textSize="@dimen/product_mix_application_rate_table_title_text_size"
-                                    android:textColor="@color/defaultTextColor"
-                                    android:background="@drawable/text_view_rounded_top_left"
-                                    android:maxWidth="180dp"/>
+                    <com.cnh.android.widget.control.StepperView
+                            android:id="@+id/product_mix_application_rates_stepperview_rate_delta"
+                            style="@style/Stepper.PlusMinus"
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            cnh:decimalPrecision="2"
+                            cnh:maximumValue="@integer/application_rate_max"
+                            cnh:minimumValue="@integer/application_rate_min"
+                            cnh:stepSize=".1"
+                            cnh:unit="@string/unit_gal_per_acre"
+                            cnh:headerText="@string/product_mix_title_delta_application_rate"/>
+                </LinearLayout>
 
-                            <TextView
-                                    android:ellipsize="middle"
-                                    android:text="@string/product_mix_title_application_rate_1"
-                                    style="@style/UDWTitleTextStyle"
-                                    android:gravity="center"
-                                    android:layout_margin="0.5dp"
-                                    android:padding="10dp"
-                                    android:textSize="@dimen/product_mix_application_rate_table_title_text_size"
-                                    android:textColor="@color/defaultTextColor"
-                                    android:background="@color/product_mix_dialog_table_dark_cell_color"
-                                    android:paddingRight="@dimen/minimum_padding"
-                                    android:paddingLeft="@dimen/minimum_padding"/>
+                <LinearLayout
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_weight="1"
+                        android:layout_marginStart="10dp"
+                        android:orientation="vertical">
 
-                            <TextView
-                                    android:ellipsize="middle"
-                                    android:text="@string/product_mix_title_application_rate_2"
-                                    style="@style/UDWTitleTextStyle"
-                                    android:gravity="center"
-                                    android:padding="10dp"
-                                    android:layout_margin="0.5dp"
-                                    android:textSize="@dimen/product_mix_application_rate_table_title_text_size"
-                                    android:textColor="@color/defaultTextColor"
-                                    android:background="@drawable/text_view_rounded_top_right"
-                                    android:paddingRight="@dimen/minimum_padding"
-                                    android:paddingLeft="@dimen/minimum_padding"/>
-                        </TableRow>
-                    </TableLayout>
+                    <com.cnh.android.widget.control.StepperView
+                            android:id="@+id/product_mix_application_rates_stepperview_rate_2"
+                            style="@style/Stepper.PlusMinus"
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            cnh:decimalPrecision="2"
+                            cnh:maximumValue="@integer/application_rate_max"
+                            cnh:minimumValue="@integer/application_rate_min"
+                            cnh:stepSize=".1"
+                            cnh:unit="@string/unit_gal_per_acre"
+                            cnh:headerText="@string/product_mix_title_application_rate_2"/>
+
+                    <com.cnh.android.widget.control.StepperView
+                            android:id="@+id/product_mix_application_rates_stepperview_rate_max"
+                            style="@style/Stepper.PlusMinus"
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            cnh:decimalPrecision="2"
+                            cnh:maximumValue="@integer/application_rate_max"
+                            cnh:minimumValue="@integer/application_rate_min"
+                            cnh:stepSize=".1"
+                            cnh:unit="@string/unit_gal_per_acre"
+                            cnh:headerText="@string/product_mix_title_max_application_rate"/>
                 </LinearLayout>
             </LinearLayout>
-        </LinearLayout>
-    </com.cnh.android.widget.control.CategoryButtons>
 
-</LinearLayout>
+            <com.cnh.android.pf.widget.controls.SegmentedToggleButtonGroupPickList
+                    android:id="@+id/product_mix_application_rates_segmentedtogglebuttongroup_units"
+                    style="@style/SegmentedToggleButtonSmall"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_alignParentStart="true"
+                    android:layout_marginStart="10dp"
+                    android:orientation="horizontal"
+                    cnh:buttonUseSmallResources="false"
+                    cnh:listUseSmallResources="false"
+                    cnh:headerText="@string/product_mix_title_picklist_default_select"
+                    cnh:togglePicklistHeaderText="@string/product_text_units"/>
+        </RelativeLayout>
+
+        <LinearLayout
+                android:id="@+id/product_mix_tablelayout_application_rates_per_product"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="20dp"
+                android:orientation="vertical"
+                android:visibility="gone">
+
+            <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginStart="10dp"
+                    android:layout_marginBottom="10dp"
+                    style="@style/UDWTitleTextStyle"
+                    android:textColor="@color/e_blue_text"
+                    android:textSize="@dimen/product_mix_dialog_application_rate_title_text_size"
+                    android:text="@string/product_mix_title_application_rates_per_product"/>
+
+
+            <TableLayout
+                    android:id="@+id/product_mix_dialog_application_rates_table"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:stretchColumns="0, 1, 2"
+                    android:background="@drawable/rounded_table_border">
+
+                <TableRow
+                        android:layout_width="match_parent"
+                        android:layout_height="match_parent">
+
+                    <TextView
+                            android:text="@string/product_section_header"
+                            android:padding="10dp"
+                            android:ellipsize="middle"
+                            style="@style/UDWTitleTextStyle"
+                            android:gravity="start"
+                            android:layout_margin="0.5dp"
+                            android:textSize="@dimen/product_mix_application_rate_table_title_text_size"
+                            android:textColor="@color/defaultTextColor"
+                            android:background="@drawable/text_view_rounded_top_left"
+                            android:maxWidth="180dp"/>
+
+                    <TextView
+                            android:ellipsize="middle"
+                            android:text="@string/product_mix_title_application_rate_1"
+                            style="@style/UDWTitleTextStyle"
+                            android:gravity="center"
+                            android:layout_margin="0.5dp"
+                            android:padding="10dp"
+                            android:textSize="@dimen/product_mix_application_rate_table_title_text_size"
+                            android:textColor="@color/defaultTextColor"
+                            android:background="@color/product_mix_dialog_table_dark_cell_color"
+                            android:paddingRight="@dimen/minimum_padding"
+                            android:paddingLeft="@dimen/minimum_padding"/>
+
+                    <TextView
+                            android:ellipsize="middle"
+                            android:text="@string/product_mix_title_application_rate_2"
+                            style="@style/UDWTitleTextStyle"
+                            android:gravity="center"
+                            android:padding="10dp"
+                            android:layout_margin="0.5dp"
+                            android:textSize="@dimen/product_mix_application_rate_table_title_text_size"
+                            android:textColor="@color/defaultTextColor"
+                            android:background="@drawable/text_view_rounded_top_right"
+                            android:paddingRight="@dimen/minimum_padding"
+                            android:paddingLeft="@dimen/minimum_padding"/>
+                </TableRow>
+            </TableLayout>
+        </LinearLayout>
+    </LinearLayout>
+</com.cnh.android.widget.control.CategoryButtons>

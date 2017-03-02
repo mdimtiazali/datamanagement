@@ -380,6 +380,7 @@ public final class ProductMixAdapter extends SearchableSortableExpandableListAda
                ProductLibraryFragment.TOP_BOTTOM_MARGIN);
          editProductMixDialog.disableButtonFirst(true);
          editProductMixDialog.setDialogWidth(ProductLibraryFragment.DIALOG_WIDTH);
+         editProductMixDialog.setId(R.id.edit_product_mix_dialog);
       }
    }
 
@@ -405,6 +406,7 @@ public final class ProductMixAdapter extends SearchableSortableExpandableListAda
                ProductLibraryFragment.TOP_BOTTOM_MARGIN);
          copyProductMixDialog.disableButtonFirst(true);
          copyProductMixDialog.setDialogWidth(ProductLibraryFragment.DIALOG_WIDTH);
+         copyProductMixDialog.setId(R.id.copy_product_mix_dialog);
       }
    }
 
