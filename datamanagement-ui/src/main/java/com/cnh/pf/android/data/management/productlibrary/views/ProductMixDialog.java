@@ -15,7 +15,6 @@ import android.os.Looper;
 import android.os.RemoteException;
 import android.text.Editable;
 import android.text.TextWatcher;
-import android.view.KeyEvent;
 import android.view.View;
 import android.view.inputmethod.EditorInfo;
 import android.view.inputmethod.InputMethodManager;
@@ -41,6 +40,7 @@ import com.cnh.android.pf.widget.utilities.commands.ProductCommandParams;
 import com.cnh.android.pf.widget.utilities.commands.ProductMixCommandParams;
 import com.cnh.android.pf.widget.utilities.commands.SaveProductCommand;
 import com.cnh.android.pf.widget.utilities.commands.SaveProductMixCommand;
+import com.cnh.android.pf.widget.utilities.listeners.ClearFocusOnDoneOnEditorActionListener;
 import com.cnh.android.pf.widget.utilities.listeners.ExtendedOnAdjustableBarChangedListener;
 import com.cnh.android.pf.widget.utilities.listeners.GenericListener;
 import com.cnh.android.pf.widget.utilities.tasks.VIPAsyncTask;
@@ -145,6 +145,7 @@ public class ProductMixDialog extends DialogView {
    private DisabledOverlay overlay;
    private boolean isAddNewProductOpen = false;
    private Map<Product, ApplicationRateTableFactory.ApplicationRateTableData> applicationRateTableDataMap = new HashMap<Product, ApplicationRateTableFactory.ApplicationRateTableData>();
+   private ClearFocusOnDoneOnEditorActionListener clearFocusOnDoneOnEditorActionListener;
 
    private CategoryButtonsEventListener eventListener = new CategoryButtonsEventListener() {
       @Override
@@ -325,6 +326,9 @@ public class ProductMixDialog extends DialogView {
       if (log.isTraceEnabled()) {
          initializeViewsStart = System.currentTimeMillis();
       }
+      if (clearFocusOnDoneOnEditorActionListener != null) {
+         clearFocusOnDoneOnEditorActionListener = new ClearFocusOnDoneOnEditorActionListener();
+      }
       initializeMainView();
       initializeMixProductsView();
       initializeApplicationRatesView();
@@ -395,24 +399,7 @@ public class ProductMixDialog extends DialogView {
                updateAddButtonState();
             }
          });
-         productMixNameInputField.setOnEditorActionListener(new TextView.OnEditorActionListener() {
-            @Override
-            public boolean onEditorAction(TextView textView, int i, KeyEvent keyEvent) {
-               if(i == EditorInfo.IME_ACTION_DONE){
-                  // This action is delayed because the way the keyboard close is looking bad if clearFocus is called directly
-                  // The delay is the reason why this post is needed. The lister is called already at the UIThread
-                  post(new Runnable() {
-                     @Override
-                     public void run() {
-                        // productMixNameInputField sometimes has focus here ... and when setErrorIndication is called afterwards the complete view scrolls so that you can see the EditText of the
-                        // InputField at the top of your view. I (Heiko) don't know any reason why setErrorIndication should cause a scroll action.
-                        productMixNameInputField.clearFocus();
-                     }
-                  });
-               }
-               return false;
-            }
-         });
+         productMixNameInputField.setOnEditorActionListener(clearFocusOnDoneOnEditorActionListener);
       }
       initializeProductFormPickList();
    }
@@ -1570,6 +1557,7 @@ public class ProductMixDialog extends DialogView {
          if (holder != null && holder.currentChoice != null) {
             setPackageSizeUnitToUnitText(holder.currentChoice.getName());
          }
+         packageSizeValueUnitText.setOnEditorActionListener(clearFocusOnDoneOnEditorActionListener);
       }
    }
 
@@ -1605,6 +1593,7 @@ public class ProductMixDialog extends DialogView {
          densityUnitPickList.setVisibility(VISIBLE);
          if (densityValueUnitText != null) {
             densityValueUnitText.setVisibility(VISIBLE);
+            densityValueUnitText.setOnEditorActionListener(clearFocusOnDoneOnEditorActionListener);
          }
          densityValueTitleText.setVisibility(VISIBLE);
          densityUnitPickList.setToggleListSelectionListener(new SegmentedTogglePickListListener() {
