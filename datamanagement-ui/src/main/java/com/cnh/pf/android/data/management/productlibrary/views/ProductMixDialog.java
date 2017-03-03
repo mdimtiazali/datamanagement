@@ -434,7 +434,6 @@ public class ProductMixDialog extends DialogView {
                   carrierProductHolder.productPickList.setAdapter(productListAdapter);
                }
                isProductMixFormSet = true;
-               updateAddButtonState();
                initializePackageSizeUnits();
                initializeDensityUnits();
                resetCarrierProduct();
