@@ -36,13 +36,13 @@ public class TreeEntityHelper {
       TYPE_ICONS.put(DataTypes.PRODUCT_MIX, R.drawable.ic_datatree_obstacles);
       TYPE_ICONS.put(DataTypes.BOUNDARY, R.drawable.ic_datatree_boundaries);
       TYPE_ICONS.put(DataTypes.LANDMARK, R.drawable.ic_datatree_obstacles);
-      TYPE_ICONS.put(DataTypes.GUIDANCE_GROUP, R.drawable.ic_datatree_swath);
+      TYPE_ICONS.put(DataTypes.GUIDANCE_GROUP, R.drawable.ic_data_tree_swath);
       TYPE_ICONS.put(DataTypes.GUIDANCE_PATTERN, R.drawable.ic_datatree_swath);
-      TYPE_ICONS.put(DataTypes.GUIDANCE_CONFIGURATION, R.drawable.ic_datatree_swath);
-      TYPE_ICONS.put(DataTypes.COVERAGE, R.drawable.ic_datatree_boundaries);
+      TYPE_ICONS.put(DataTypes.GUIDANCE_CONFIGURATION, R.drawable.ic_data_tree_guidance);
+      TYPE_ICONS.put(DataTypes.COVERAGE, R.drawable.ic_data_tree_coverage_area);
       TYPE_ICONS.put(DataTypes.NOTE, R.drawable.ic_datatree_background_layers);
-      TYPE_ICONS.put(DataTypes.FILE, R.drawable.ic_datatree_background_layers);
-      TYPE_ICONS.put(DataTypes.VEHICLE, R.drawable.ic_datatree_copy);
+      TYPE_ICONS.put(DataTypes.FILE, R.drawable.ic_data_tree_harvesting);
+      TYPE_ICONS.put(DataTypes.VEHICLE, R.drawable.ic_data_tree_tractor_case);
       TYPE_ICONS.put(DataTypes.VEHICLE_IMPLEMENT, R.drawable.ic_datatree_implements);
       TYPE_ICONS.put(DataTypes.VEHICLE_IMPLEMENT_CONFIG, R.drawable.ic_datatree_background_layers);
       TYPE_ICONS.put(DataTypes.IMPLEMENT, R.drawable.ic_datatree_implements);
