@@ -326,7 +326,7 @@ public class ProductMixDialog extends DialogView {
       if (log.isTraceEnabled()) {
          initializeViewsStart = System.currentTimeMillis();
       }
-      if (clearFocusOnDoneOnEditorActionListener != null) {
+      if (clearFocusOnDoneOnEditorActionListener == null) {
          clearFocusOnDoneOnEditorActionListener = new ClearFocusOnDoneOnEditorActionListener();
       }
       initializeMainView();
