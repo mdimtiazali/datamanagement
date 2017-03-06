@@ -1678,10 +1678,15 @@ public class ProductMixDialog extends DialogView {
             if (!productMixElementHolderList.remove(productElement)) {
                log.warn("Could not Remove " + productElement);
             }
-            recipeDeleteList.add(productElement.currentRecipe);
+            ProductMixRecipe recipe = productElement.currentRecipe;
+            if (recipe != null) {
+               recipeDeleteList.add(recipe);
+            }
             mixProductsLayout.removeView(productElement.elementView);
             updateProductViewList();
-            applicationRateTableDataMap.remove(productElement.currentRecipe.getProduct());
+            if (recipe != null) {
+               applicationRateTableDataMap.remove(recipe.getProduct());
+            }
             updateApplicationRateTable();
             this.mixProductCategoryButton.resizeContent(false);
             if (productMixElementHolderList.size() < 2) {
@@ -1834,9 +1839,6 @@ public class ProductMixDialog extends DialogView {
     */
    private void updateAddButtonState() {
       log.debug("update addButtonState called");
-
-
-
       String productMixName = productMixNameInputField.getText().toString().trim();
       if (productMixName.isEmpty()) {
          this.setFirstButtonEnabled(false);
