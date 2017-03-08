@@ -24,6 +24,7 @@ import android.widget.TextView;
 
 import com.cnh.android.dialog.DialogViewInterface;
 import com.cnh.android.dialog.TextDialogView;
+import com.cnh.android.pf.widget.view.productdialogs.DialogActionType;
 import com.cnh.android.pf.widget.utilities.MathUtility;
 import com.cnh.android.pf.widget.utilities.ProductHelperMethods;
 import com.cnh.android.pf.widget.utilities.UiUtility;
@@ -309,7 +310,7 @@ public final class ProductAdapter extends SearchableSortableExpandableListAdapte
       @Override
       public void onClick(View v) {
          final ProductDialog copyDialog;
-         copyDialog = new ProductDialog(context, vipService, ProductDialog.DialogActionType.COPY, productChildHolder.product, ProductAdapter.this.productUnits,
+         copyDialog = new ProductDialog(context, vipService, DialogActionType.COPY, productChildHolder.product, ProductAdapter.this.productUnits,
                // TODO: try to remove this callback stuff and replace it with updates after a deliver in ProductLibraryFragment
                new ProductDialog.productListCallback() {
                   @Override
@@ -337,7 +338,7 @@ public final class ProductAdapter extends SearchableSortableExpandableListAdapte
       @Override
       public void onClick(View v) {
          log.debug("Edit button pressed for product - name: {}, id: {}", productDetail.getName(), productDetail.getId());
-         ProductDialog editDialog = new ProductDialog(context, vipService, ProductDialog.DialogActionType.EDIT, productDetail, ProductAdapter.this.productUnits,
+         ProductDialog editDialog = new ProductDialog(context, vipService, DialogActionType.EDIT, productDetail, ProductAdapter.this.productUnits,
                new ProductDialog.productListCallback() {
                   // TODO: try to remove this callback stuff and replace it with updates after a deliver in ProductLibraryFragment
                   @Override
