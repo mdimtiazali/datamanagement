@@ -413,7 +413,6 @@ public class ProductLibraryFragment extends RoboFragment implements ProductMixCa
                   .setTitle(getResources().getString(R.string.product_dialog_add_tile)).setBodyHeight(DIALOG_HEIGHT);
 
             addProductDialog.setContentPaddings(LEFT_RIGHT_MARGIN, TOP_BOTTOM_MARGIN, LEFT_RIGHT_MARGIN, TOP_BOTTOM_MARGIN);
-            addProductDialog.disableButtonFirst(true);
             addProductDialog.setDialogWidth(DIALOG_WIDTH);
 
             final TabActivity useModal = (DataManagementActivity) getActivity();

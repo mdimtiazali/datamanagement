@@ -320,11 +320,8 @@ public final class ProductAdapter extends SearchableSortableExpandableListAdapte
          copyDialog.setFirstButtonText(context.getResources().getString(R.string.product_dialog_save_button))
                .setSecondButtonText(context.getResources().getString(R.string.product_dialog_cancel_button)).showThirdButton(false).showThirdButton(false)
                .setTitle(context.getResources().getString(R.string.product_dialog_copy_title)).setBodyHeight(ProductLibraryFragment.DIALOG_HEIGHT);
-
-         activity.showModalPopup(copyDialog);
-
          copyDialog.setDialogWidth(ProductLibraryFragment.DIALOG_WIDTH);
-         copyDialog.disableButtonFirst(true);
+         activity.showModalPopup(copyDialog);
       }
    }
 
@@ -348,11 +345,8 @@ public final class ProductAdapter extends SearchableSortableExpandableListAdapte
          editDialog.setFirstButtonText(context.getResources().getString(R.string.product_dialog_save_button))
                .setSecondButtonText(context.getResources().getString(R.string.product_dialog_cancel_button)).showThirdButton(false)
                .setTitle(context.getResources().getString(R.string.product_dialog_edit_title)).setBodyHeight(ProductLibraryFragment.DIALOG_HEIGHT);
-
-         activity.showModalPopup(editDialog);
-
          editDialog.setDialogWidth(ProductLibraryFragment.DIALOG_WIDTH);
-         editDialog.disableButtonFirst(true);
+         activity.showModalPopup(editDialog);
       }
    }
 
