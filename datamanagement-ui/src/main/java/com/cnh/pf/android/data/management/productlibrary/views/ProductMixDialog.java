@@ -31,6 +31,7 @@ import com.cnh.android.dialog.DialogView;
 import com.cnh.android.dialog.DialogViewInterface;
 import com.cnh.android.pf.widget.controls.SegmentedToggleButtonGroupPickList;
 import com.cnh.android.pf.widget.controls.SegmentedToggleButtonGroupPickList.SegmentedTogglePickListListener;
+import com.cnh.android.pf.widget.view.productdialogs.DialogHandlerListener;
 import com.cnh.android.pf.widget.utilities.ProductHelperMethods;
 import com.cnh.android.pf.widget.utilities.ProductMixHelper;
 import com.cnh.android.pf.widget.utilities.ProductMixRecipeHelper;
@@ -90,7 +91,7 @@ import javax.annotation.Nonnull;
  * @author helming
  * @since 29.10.2015
  */
-public class ProductMixDialog extends DialogView {
+public class ProductMixDialog extends DialogView implements DialogHandlerListener {
 
    private static final String TAG = ProductMixDialog.class.getSimpleName();
    private static final Logger log = LoggerFactory.getLogger(ProductMixDialog.class);
@@ -396,7 +397,7 @@ public class ProductMixDialog extends DialogView {
 
             @Override
             public void afterTextChanged(Editable editable) {
-               updateAddButtonState();
+               updateSaveButtonState();
             }
          });
          productMixNameInputField.setOnEditorActionListener(clearFocusOnDoneOnEditorActionListener);
@@ -534,7 +535,7 @@ public class ProductMixDialog extends DialogView {
          if (productMix != null && productMix.getProductMixParameters() != null) {
             productMixNameInputField.setText(String.format("%s - %s", productMix.getProductMixParameters().getName(), getContext().getString(R.string.copy)));
          }
-         updateAddButtonState();
+         updateSaveButtonState();
       }
       if (log.isTraceEnabled()) {
          log.trace("loadProductMixToDialog duration {}", System.currentTimeMillis() - start);
@@ -1007,7 +1008,9 @@ public class ProductMixDialog extends DialogView {
          tempProductMix.setMixType(MixType.FORMULA);
          tempProductMix.setProductCarrier(productCarrier);
          tempProductMix.setRecipe(createProductRecipeList());
-         productMixParameters.setName(productMixNameInputField.getText().toString());
+         // this is a bit nasty here - because the productMix object to save is created in this method, there is no place to save the trimmed string in the TextWatcher...
+         // if the product object would be created earlier we could save the trimmed string there.
+         productMixParameters.setName(productMixNameInputField.getText().toString().trim());
          tempProductMix.setProductMixParameters(productMixParameters);
          tempProductMix.setMixTotalAmount(totalAmount);
 
@@ -1155,7 +1158,7 @@ public class ProductMixDialog extends DialogView {
             @Override
             public void onAdjustableBarChanged(AbstractStepperView abstractStepperView, double v, boolean fromUser) {
                if (fromUser) {
-                  updateAddButtonState();
+                  updateSaveButtonState();
                   calculateTotalAmountForProductMix();
                }
             }
@@ -1203,7 +1206,7 @@ public class ProductMixDialog extends DialogView {
             });
 
             isCarrierSet = true;
-            updateAddButtonState();
+            updateSaveButtonState();
             UnitsToggleHolder unit = (UnitsToggleHolder) carrierProductHolder.productUnit.getTag();
             if (unit != null && unit.currentChoice != null) {
                setUnitToStepper(carrierProductHolder.productAmountStepper, unit.currentChoice.getName());
@@ -1406,7 +1409,7 @@ public class ProductMixDialog extends DialogView {
          applicationRate1Stepper.setOnAdjustableBarChangedListener(new ExtendedOnAdjustableBarChangedListener() {
             @Override
             public void onAdjustableBarChanged(AbstractStepperView abstractStepperView, double v, boolean fromUser) {
-               updateAddButtonState();
+               updateSaveButtonState();
                validateApplicationRate1();
                calculateNewApplicationRatePerProduct(true, false);
                updateApplicationRateTable();
@@ -1569,7 +1572,7 @@ public class ProductMixDialog extends DialogView {
          carrierProductHolder.productAmountStepper.setEnabled(false);
          carrierProductHolder.productAmountStepper.setValue(0);
          isCarrierSet = false;
-         updateAddButtonState();
+         updateSaveButtonState();
       }
    }
 
@@ -1708,7 +1711,7 @@ public class ProductMixDialog extends DialogView {
                isOneProductMixSet = true;
             }
          }
-         updateAddButtonState();
+         updateSaveButtonState();
       }
    }
 
@@ -1741,7 +1744,6 @@ public class ProductMixDialog extends DialogView {
          }
       }
       return filteredProductList;
-
    }
 
    /**
@@ -1780,7 +1782,7 @@ public class ProductMixDialog extends DialogView {
             }
             if (productMixTable.getChildCount() > 2) {
                isOneProductMixSet = true;
-               updateAddButtonState();
+               updateSaveButtonState();
             }
          }
          if (productMixTable.getChildCount() > 1) {
@@ -1836,8 +1838,9 @@ public class ProductMixDialog extends DialogView {
    /**
     * If all required data will set, the "add" button will enable
     */
-   private void updateAddButtonState() {
-      log.debug("update addButtonState called");
+   @Override
+   public void updateSaveButtonState() {
+      log.debug("update updateSaveButtonState called");
       String productMixName = productMixNameInputField.getText().toString().trim();
       if (productMixName.isEmpty()) {
          this.setFirstButtonEnabled(false);
