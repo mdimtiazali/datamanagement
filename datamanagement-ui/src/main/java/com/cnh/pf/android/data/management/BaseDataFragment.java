@@ -51,6 +51,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import pl.polidea.treeview.InMemoryTreeStateManager;
+import pl.polidea.treeview.NodeAlreadyInTreeException;
 import pl.polidea.treeview.TreeBuilder;
 import pl.polidea.treeview.TreeStateManager;
 import pl.polidea.treeview.TreeViewList;
@@ -224,7 +225,12 @@ public abstract class BaseDataFragment extends RoboFragment implements IDataMana
       globalEventManager.registerObserver(DataServiceConnectionImpl.ViewChangeEvent.class, viewChangeListener);
       if (dataServiceConnection.isConnected()) {
          getDataManagementService().register(NAME, BaseDataFragment.this);
-         onResumeSession(null);
+         if (session != null && !session.getSessionOperation().equals(SessionOperation.DISCOVERY)) {
+            onResumeSession(session);
+         }
+         else {
+            onResumeSession(null);
+         }
       }
    }
 
@@ -384,28 +390,32 @@ public abstract class BaseDataFragment extends RoboFragment implements IDataMana
    }
 
    private void addToTree(ObjectGraph parent, ObjectGraph object) {
-      //Check if entity can be grouped
-      if (TreeEntityHelper.groupables.containsKey(object.getType()) || object.getParent() == null) {
-         GroupObjectGraph group = null;
-         for (ObjectGraph child : manager.getChildren(parent)) { //find the group node
-            if (child instanceof GroupObjectGraph && child.getType().equals(object.getType())) {
-               group = (GroupObjectGraph) child;
-               break;
+      try {
+         //Check if entity can be grouped
+         if (TreeEntityHelper.groupables.containsKey(object.getType()) || object.getParent() == null) {
+            GroupObjectGraph group = null;
+            for (ObjectGraph child : manager.getChildren(parent)) { //find the group node
+               if (child instanceof GroupObjectGraph && child.getType().equals(object.getType())) {
+                  group = (GroupObjectGraph) child;
+                  break;
+               }
             }
+            if (group == null) { //if group node doesn't exist we gotta make it
+               String name = TreeEntityHelper.getGroupName(getActivity(), object.getType());
+               group = new GroupObjectGraph(null, object.getType(), name, null, parent);
+               treeBuilder.addRelation(parent, group);
+            }
+            treeBuilder.addRelation(group, object);
          }
-         if (group == null) { //if group node doesn't exist we gotta make it
-            String name = TreeEntityHelper.getGroupName(getActivity(), object.getType());
-            group = new GroupObjectGraph(null, object.getType(), name, null, parent);
-            treeBuilder.addRelation(parent, group);
+         //Else just add to parent
+         else {
+            treeBuilder.addRelation(parent, object);
          }
-         treeBuilder.addRelation(group, object);
-      }
-      //Else just add to parent
-      else {
-         treeBuilder.addRelation(parent, object);
-      }
-      for (ObjectGraph child : object.getChildren()) {
-         addToTree(object, child);
+         for (ObjectGraph child : object.getChildren()) {
+            addToTree(object, child);
+         }
+      } catch(NodeAlreadyInTreeException e) {
+         logger.warn("Caught NodeAlreadyInTree exception", e);
       }
    }
 
