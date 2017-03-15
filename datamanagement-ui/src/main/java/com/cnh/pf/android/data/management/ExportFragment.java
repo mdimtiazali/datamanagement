@@ -141,8 +141,12 @@ public class ExportFragment extends BaseDataFragment {
          }
       });
       startText.setVisibility(View.GONE);
+   }
+
+   @Override public void onResume() {
       populateExportToPickList();
       populateFormatPickList();
+      super.onResume();
    }
 
    private void populateFormatPickList() {
