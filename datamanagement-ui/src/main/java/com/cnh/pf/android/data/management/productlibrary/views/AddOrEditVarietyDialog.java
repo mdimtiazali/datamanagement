@@ -9,6 +9,8 @@
 package com.cnh.pf.android.data.management.productlibrary.views;
 
 import android.content.Context;
+import android.os.AsyncTask;
+import android.os.RemoteException;
 import android.text.Editable;
 import android.text.TextWatcher;
 import android.view.View;
@@ -31,6 +33,7 @@ import com.cnh.pf.android.data.management.R;
 import com.cnh.pf.android.data.management.productlibrary.adapter.VarietyAdapter;
 import com.cnh.pf.android.data.management.productlibrary.utility.sorts.CropTypeComparator;
 import com.cnh.pf.model.product.configuration.Variety;
+import com.cnh.pf.model.product.configuration.VarietyColor;
 import com.cnh.pf.model.product.library.CropType;
 
 import org.slf4j.Logger;
@@ -58,6 +61,7 @@ public class AddOrEditVarietyDialog extends DialogView {
    private PickList pickList;
    private IVIPServiceAIDL vipService;
    private List<PickListItem> cropTypePickListItems;
+   private List<VarietyColor> colors;
 
    public AddOrEditVarietyDialog(Context context) {
       super(context);
@@ -84,7 +88,24 @@ public class AddOrEditVarietyDialog extends DialogView {
     * Setter for the vipService.
     * @param vipService the vipService
     */
-   public void setVIPService(IVIPServiceAIDL vipService){
+   public void setVIPService(final IVIPServiceAIDL vipService){
+      if (vipService != null){
+         if (colors == null || colors.isEmpty()) {
+            new AsyncTask<Void, Void, Void>() {
+
+               @Override
+               protected Void doInBackground(Void... voids) {
+                  try {
+                     colors = vipService.getVarietyColorList();
+                     logger.debug("got colors from vipService {}", colors);
+                  } catch (RemoteException e) {
+                     logger.error("error when trying to get varietyColorList", e);
+                  }
+                  return null;
+               }
+            }.execute();
+         }
+      }
       this.vipService = vipService;
    }
 
@@ -114,7 +135,17 @@ public class AddOrEditVarietyDialog extends DialogView {
       mButtonFirst.setOnClickListener(new OnClickListener() {
          @Override
          public void onClick(View view) {
-            saveVariety(modifiedVariety, vipService);
+            // TODO: setting the color is done only to show that communication works - the dummy value needs to be replaced later
+            // during https://polarion.cnhind.com/polarion/#/project/pfhmi-development2/workitem?id=pfhmi-development2-4639
+            // added try/catch because this dummy value handling can cause a crash - I remove it later during the named ticket.
+            try {
+               if (modifiedVariety.getVarietyColor() == null) {
+                  modifiedVariety.setVarietyColor(colors.get(10));
+                  saveVariety(modifiedVariety, vipService);
+               }
+            } catch (Exception e){
+               logger.error("unfinished implementation with dummy values - here is something left to do", e);
+            }
             dismiss();
          }
       });
