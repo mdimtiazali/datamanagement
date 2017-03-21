@@ -9,6 +9,8 @@
 package com.cnh.pf.android.data.management.productlibrary.adapter;
 
 import android.content.Context;
+import android.graphics.Color;
+import android.graphics.drawable.GradientDrawable;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -16,6 +18,7 @@ import android.widget.BaseAdapter;
 import android.widget.Filter;
 import android.widget.Filterable;
 import android.widget.ImageButton;
+import android.widget.ImageView;
 import android.widget.TextView;
 
 import com.cnh.android.dialog.DialogViewInterface;
@@ -173,7 +176,26 @@ public final class VarietyAdapter extends BaseAdapter implements Filterable {
          deleteButton.setClickable(true);
          deleteButton.setOnClickListener(onDeleteButtonClickListener);
       }
+
+      configureVarietyColorImage(convertView, variety);
       return convertView;
+   }
+
+   private static void configureVarietyColorImage(View convertView, Variety variety) {
+      String varietyColorAsHexString = variety.getVarietyColor().getColor();
+      int varietyColorAsInt = Color.RED; // fallback color for error cases
+      if (varietyColorAsHexString != null) {
+         try {
+            varietyColorAsInt = Color.parseColor(varietyColorAsHexString);
+         }
+         catch (Exception e) {
+            logger.error("got invalid color code from pcm {}", varietyColorAsHexString, e);
+         }
+      }
+      final ImageView imageView = (ImageView) convertView.findViewById(R.id.variety_color_image_view);
+      GradientDrawable drawable = (GradientDrawable) convertView.getResources().getDrawable(R.drawable.varieties_shape);
+      drawable.setColor(varietyColorAsInt);
+      imageView.setBackground(drawable);
    }
 
    private String getCropTypeText(Variety variety) {

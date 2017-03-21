@@ -392,7 +392,7 @@ public class ProductLibraryFragment extends RoboFragment implements ProductMixCa
       varietiesPanel.setAutoResizable(true);
       varietiesSearch = (SearchInput) varietiesPanel.findViewById(R.id.variety_search);
       varietiesSearch.setTextSize(getResources().getDimension(R.dimen.search_text_size));
-      varietiesListEmptyView = (RelativeLayout) varietiesPanel.findViewById(R.id.no_avaiblable_varieties);
+      varietiesListEmptyView = (RelativeLayout) varietiesPanel.findViewById(R.id.no_available_varieties);
       varietiesListView = (ListView) varietiesPanel.findViewById(R.id.varieties_list);
 
       Button btnAddProduct = (Button) productsPanel.findViewById(R.id.add_product_button);
