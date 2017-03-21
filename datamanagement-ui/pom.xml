@@ -14,7 +14,7 @@
    <parent>
       <groupId>com.cnh.pf</groupId>
       <artifactId>parent</artifactId>
-      <version>13.0.0-SNAPSHOT</version>
+      <version>13.0.0-procard-SNAPSHOT</version>
       <relativePath>../../</relativePath>
    </parent>
 
