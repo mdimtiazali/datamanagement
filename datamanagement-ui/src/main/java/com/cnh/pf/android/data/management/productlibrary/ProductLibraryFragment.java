@@ -443,18 +443,15 @@ public class ProductLibraryFragment extends RoboFragment implements ProductMixCa
          public void onClick(View view) {
             addVarietyDialog = new AddOrEditVarietyDialog(getActivity().getApplicationContext());
             addVarietyDialog.setFirstButtonText(getResources().getString(R.string.variety_dialog_save_button_text))
-                  .setSecondButtonText(getResources().getString(R.string.variety_dialog_cancel_button_text))
-                  .showThirdButton(false).setTitle(getResources().getString(R.string.variety_add_dialog_title_text))
-                  .setBodyHeight(DIALOG_HEIGHT).setBodyView(R.layout.variety_add_or_edit_dialog).setDialogWidth(DIALOG_WIDTH);
+                  .setSecondButtonText(getResources().getString(R.string.variety_dialog_cancel_button_text)).setTitle(getResources().getString(R.string.variety_add_dialog_title_text));
 
             addVarietyDialog.setActionType(AddOrEditVarietyDialog.VarietyDialogActionType.ADD);
             if (varietyList != null){
                addVarietyDialog.setVarietyList(varietyList);
             }
-            addVarietyDialog.setVIPService(vipService);
-
             final TabActivity useModal = (DataManagementActivity) getActivity();
             useModal.showModalPopup(addVarietyDialog);
+            addVarietyDialog.setVIPService(vipService);
          }
       });
       return productLibraryLayout;

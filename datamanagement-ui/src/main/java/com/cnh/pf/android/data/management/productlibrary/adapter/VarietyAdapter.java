@@ -9,7 +9,6 @@
 package com.cnh.pf.android.data.management.productlibrary.adapter;
 
 import android.content.Context;
-import android.graphics.Color;
 import android.graphics.drawable.GradientDrawable;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -28,10 +27,10 @@ import com.cnh.android.pf.widget.utilities.commands.DeleteVarietyCommand;
 import com.cnh.android.pf.widget.utilities.commands.VarietyCommandParams;
 import com.cnh.android.pf.widget.utilities.listeners.GenericListener;
 import com.cnh.android.pf.widget.utilities.tasks.VIPAsyncTask;
+import com.cnh.android.pf.widget.utilities.VarietyHelper;
 import com.cnh.android.vip.aidl.IVIPServiceAIDL;
 import com.cnh.android.widget.activity.TabActivity;
 import com.cnh.pf.android.data.management.R;
-import com.cnh.pf.android.data.management.productlibrary.ProductLibraryFragment;
 import com.cnh.pf.android.data.management.productlibrary.utility.UiHelper;
 import com.cnh.pf.android.data.management.productlibrary.views.AddOrEditVarietyDialog;
 import com.cnh.pf.model.product.configuration.Variety;
@@ -182,20 +181,9 @@ public final class VarietyAdapter extends BaseAdapter implements Filterable {
    }
 
    private static void configureVarietyColorImage(View convertView, Variety variety) {
-      String varietyColorAsHexString = variety.getVarietyColor().getColor();
-      int varietyColorAsInt = Color.RED; // fallback color for error cases
-      if (varietyColorAsHexString != null) {
-         try {
-            varietyColorAsInt = Color.parseColor(varietyColorAsHexString);
-         }
-         catch (Exception e) {
-            logger.error("got invalid color code from pcm {}", varietyColorAsHexString, e);
-         }
-      }
       final ImageView imageView = (ImageView) convertView.findViewById(R.id.variety_color_image_view);
-      GradientDrawable drawable = (GradientDrawable) convertView.getResources().getDrawable(R.drawable.varieties_shape);
-      drawable.setColor(varietyColorAsInt);
-      imageView.setBackground(drawable);
+      GradientDrawable drawable = (GradientDrawable) imageView.getDrawable();
+      drawable.setColor(VarietyHelper.retrieveToIntConvertedColor(variety));
    }
 
    private String getCropTypeText(Variety variety) {
@@ -267,16 +255,14 @@ public final class VarietyAdapter extends BaseAdapter implements Filterable {
          synchronized (listsLock) {
             editVarietyDialog.setVarietyList(originalList != null ? originalList : filteredList);
          }
-         editVarietyDialog.setVIPService(vipService);
          editVarietyDialog.setFirstButtonText(activity.getResources().getString(R.string.variety_dialog_save_button_text))
                .setSecondButtonText(activity.getResources().getString(R.string.variety_dialog_cancel_button_text))
-               .showThirdButton(false).setTitle(activity.getResources().getString(R.string.variety_edit_dialog_title))
-               .setBodyHeight(ProductLibraryFragment.DIALOG_HEIGHT).setBodyView(R.layout.variety_add_or_edit_dialog)
-               .setDialogWidth(ProductLibraryFragment.DIALOG_WIDTH);
+               .showThirdButton(false).setTitle(activity.getResources().getString(R.string.variety_edit_dialog_title));
 
          editVarietyDialog.setActionType(AddOrEditVarietyDialog.VarietyDialogActionType.EDIT);
          final TabActivity useModal = activity;
          useModal.showModalPopup(editVarietyDialog);
+         editVarietyDialog.setVIPService(vipService);
       }
    }
 

@@ -49,7 +49,7 @@
                 android:layout_alignParentLeft="true"
                 android:layout_width="30dp"
                 android:layout_height="30dp"
-                android:background="@drawable/varieties_shape"
+                android:src="@drawable/varieties_shape"
                 android:layout_centerVertical="true"/>
         <ImageButton
                 android:layout_alignParentRight="true"
