@@ -9,5 +9,6 @@
   -->
 <shape xmlns:android="http://schemas.android.com/apk/res/android" android:shape="rectangle">
     <solid android:color="@color/color_red"/>
+    <stroke android:width="2dp" android:color="@color/StandardBlackColor"/>
     <corners android:radius="5dp"/>
 </shape>

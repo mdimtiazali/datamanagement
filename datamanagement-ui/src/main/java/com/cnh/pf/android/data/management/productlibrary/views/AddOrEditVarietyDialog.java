@@ -21,16 +21,16 @@ import android.view.ViewGroup;
 import android.widget.AdapterView;
 import android.widget.BaseAdapter;
 import android.widget.GridView;
-
 import android.widget.ImageView;
+
 import com.cnh.android.dialog.DialogView;
 import com.cnh.android.pf.widget.controls.PickListItemWithTag;
 import com.cnh.android.pf.widget.utilities.EnumValueToUiStringUtility;
+import com.cnh.android.pf.widget.utilities.VarietyHelper;
 import com.cnh.android.pf.widget.utilities.commands.SaveVarietyCommand;
 import com.cnh.android.pf.widget.utilities.commands.VarietyCommandParams;
 import com.cnh.android.pf.widget.utilities.listeners.GenericListener;
 import com.cnh.android.pf.widget.utilities.tasks.VIPAsyncTask;
-import com.cnh.android.pf.widget.utilities.VarietyHelper;
 import com.cnh.android.pf.widget.view.DisabledOverlay;
 import com.cnh.android.vip.aidl.IVIPServiceAIDL;
 import com.cnh.android.widget.Widget;
@@ -75,6 +75,7 @@ public class AddOrEditVarietyDialog extends DialogView {
    private List<VarietyColor> colors;
    private GridView colorGrid;
    private DisabledOverlay disabledOverlay;
+   private ColorGridAdapter colorGridAdapter;
 
    public AddOrEditVarietyDialog(Context context) {
       super(context);
@@ -170,7 +171,7 @@ public class AddOrEditVarietyDialog extends DialogView {
       fillColorGrid();
    }
 
-   private void initOverlay(){
+   private void initOverlay() {
       disabledOverlay = (DisabledOverlay) findViewById(R.id.variety_dialog_disabled_overlay);
       disabledOverlay.setMode(DisabledOverlay.MODE.DISCONNECTED);
    }
@@ -180,17 +181,7 @@ public class AddOrEditVarietyDialog extends DialogView {
       mButtonFirst.setOnClickListener(new OnClickListener() {
          @Override
          public void onClick(View view) {
-            // TODO: setting the color is done only to show that communication works - the dummy value needs to be replaced later
-            // during https://polarion.cnhind.com/polarion/#/project/pfhmi-development2/workitem?id=pfhmi-development2-4639
-            // added try/catch because this dummy value handling can cause a crash - I remove it later during the named ticket.
-            try {
-               if (modifiedVariety.getVarietyColor() == null) {
-                  modifiedVariety.setVarietyColor(colors.get(10));
-                  saveVariety(modifiedVariety, vipService);
-               }
-            } catch (Exception e){
-               logger.error("unfinished implementation with dummy values - here is something left to do", e);
-            }
+            saveVariety(modifiedVariety, vipService);
             dismiss();
          }
       });
@@ -264,8 +255,25 @@ public class AddOrEditVarietyDialog extends DialogView {
    private void fillColorGrid() {
       logger.debug("fill color grid: {} with colors: {}", colorGrid, colors);
       if (colorGrid != null && colors != null && colorGrid.getAdapter() == null) {
-         ColorGridAdapter colorGridAdapter = new ColorGridAdapter();
+         colorGridAdapter = new ColorGridAdapter();
          colorGrid.setAdapter(colorGridAdapter);
+         colorGrid.setOnItemClickListener(new OnColorClickListener());
+         if (modifiedVariety != null){
+            switch (actionType){
+               case EDIT:
+                  VarietyColor currentColor = modifiedVariety.getVarietyColor();
+                  colorGridAdapter.setSelectedPosition(colorGridAdapter.getPositionOfColor(currentColor));
+                  break;
+               case ADD:
+                  // TODO: guess next unused color
+                  // add color to modified variety
+                  // set selection
+                  break;
+               default:
+                  logger.error("unimplemented state of variety dialog: {}", actionType);
+                  break;
+            }
+         }
          disabledOverlay.setMode(DisabledOverlay.MODE.HIDDEN);
       }
    }
@@ -298,7 +306,7 @@ public class AddOrEditVarietyDialog extends DialogView {
          setFirstButtonEnabled(false);
          return;
       }
-      if (vipService == null){
+      if (vipService == null) {
          setFirstButtonEnabled(false);
          return;
       }
@@ -316,7 +324,8 @@ public class AddOrEditVarietyDialog extends DialogView {
             }
          }
          inputField.setErrorIndicator(Widget.ErrorIndicator.NONE);
-         if (currentVariety.getName().equals(newName) && modifiedVariety.getCropType().equals(currentVariety.getCropType())) {
+         if (currentVariety.getName().equals(newName) && modifiedVariety.getCropType().equals(currentVariety.getCropType())
+               && currentVariety.getVarietyColor().getId() == modifiedVariety.getVarietyColor().getId()) {
             setFirstButtonEnabled(false);
             return;
          }
@@ -332,7 +341,7 @@ public class AddOrEditVarietyDialog extends DialogView {
             }
          }
          inputField.setErrorIndicator(Widget.ErrorIndicator.NONE);
-         if (modifiedVariety.getCropType() == null) {
+         if (modifiedVariety.getCropType() == null || modifiedVariety.getVarietyColor() == null) {
             setFirstButtonEnabled(false);
             return;
          }
@@ -340,12 +349,13 @@ public class AddOrEditVarietyDialog extends DialogView {
       default:
          setFirstButtonEnabled(false);
          inputField.setErrorIndicator(Widget.ErrorIndicator.INVALID);
+         logger.error("unimplemented state of variety dialog: {}", actionType);
          return;
       }
       setFirstButtonEnabled(true);
    }
 
-   private class OnItemSelectedListener implements PickList.OnItemSelectedListener {
+   private final class OnItemSelectedListener implements PickList.OnItemSelectedListener {
 
       @Override
       public void onItemSelected(AdapterView<?> parent, View view, int position, long id, boolean fromUser) {
@@ -364,7 +374,19 @@ public class AddOrEditVarietyDialog extends DialogView {
       }
    }
 
-   private class ColorGridAdapter extends BaseAdapter {
+   private final class ColorGridAdapter extends BaseAdapter {
+
+      private int selectedPosition = -1;
+
+      private void setSelectedPosition(int position){
+         this.selectedPosition = position;
+         logger.debug("this.selectedPosition: {}", selectedPosition);
+         notifyDataSetChanged();
+      }
+
+      public int getPositionOfColor(VarietyColor varietyColor) {
+         return colors.indexOf(varietyColor);
+      }
 
       @Override
       public int getCount() {
@@ -372,25 +394,46 @@ public class AddOrEditVarietyDialog extends DialogView {
       }
 
       @Override
-      public Object getItem(int i) {
-         return colors.get(i);
+      public Object getItem(int position) {
+         return colors.get(position);
       }
 
       @Override
-      public long getItemId(int i) {
-         return i;
+      public long getItemId(int position) {
+         return position;
       }
 
       @Override
       public View getView(int position, View convertView, ViewGroup parent) {
-         logger.debug("getView - position; {}, convertView: {}, parent; {}", position, convertView, parent);
+         logger.debug("getView - position; {}, convertView: {}, parent: {}", position, convertView, parent);
          if (convertView == null) {
             convertView = LayoutInflater.from(getContext()).inflate(R.layout.variety_color_picker_image_view, null);
          }
-         final ImageView imageView = (ImageView) convertView;
-         GradientDrawable drawable = (GradientDrawable) imageView.getDrawable();
-         drawable.setColor(VarietyHelper.retrieveToIntConvertedColor(colors.get(position)));
+         ImageView imageView = (ImageView) convertView;
+         if (position == selectedPosition){
+            imageView.setImageResource(R.drawable.varieties_shape_with_border);
+         }
+         else {
+            imageView.setImageResource(R.drawable.varieties_shape);
+         }
+         VarietyColor varietyColor = colors.get(position);
+         GradientDrawable gradientDrawable = (GradientDrawable) imageView.getDrawable();
+         gradientDrawable.setColor(VarietyHelper.retrieveToIntConvertedColor(varietyColor));
+         convertView.setTag(varietyColor);
+         logger.debug("position: {}, color: {}", position, varietyColor);
          return convertView;
+      }
+   }
+
+   private final class OnColorClickListener implements AdapterView.OnItemClickListener {
+
+      @Override
+      public void onItemClick(AdapterView<?> adapterView, View view, int position, long l) {
+         Object tag = view.getTag();
+         logger.debug("onColorClicked - view tag: {}", tag);
+         colorGridAdapter.setSelectedPosition(position);
+         modifiedVariety.setVarietyColor((VarietyColor) tag);
+         updateSaveButtonState();
       }
    }
 }
