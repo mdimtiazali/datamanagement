@@ -129,6 +129,8 @@ public class DataManagementService extends RoboService implements SharedPreferen
    private BitmapDrawable statusDrawable;
    private static Status dataStatus;
 
+   private boolean isScanningUsb;
+
    @Override
    public int onStartCommand(Intent intent, int flags, int startId) {
       logger.debug("onStartCommand {}", intent);
@@ -247,6 +249,7 @@ public class DataManagementService extends RoboService implements SharedPreferen
     */
    protected void scan(File mount) {
       logger.info("Checking for data");
+      isScanningUsb = true;
       dataStatus = new Status(getResources().getString(R.string.usb_data_available), statusDrawable, getApplication().getPackageName());
       sendStatus(dataStatus, getResources().getString(R.string.usb_scanning));
       //Check if USB has any interesting data
@@ -282,6 +285,7 @@ public class DataManagementService extends RoboService implements SharedPreferen
                }, usbDelay);
             }
             stopUsbServices();
+            isScanningUsb = false;
          }
       }, usbDelay * 2);
    }
@@ -333,7 +337,7 @@ public class DataManagementService extends RoboService implements SharedPreferen
     * @return true executing, false otherwise;
     */
    public boolean hasActiveSession() {
-      return getActiveSession() != null;
+      return !isScanningUsb && getActiveSession() != null;
    }
 
    public DataManagementSession getActiveSession() {
@@ -446,17 +450,18 @@ public class DataManagementService extends RoboService implements SharedPreferen
                }
             }
          });
-         if (hasActiveSession() && performCalled) {
-            sendStatus(getActiveSession(), String.format("%s %d/%d", operation, progress, max));
-
-            if (SEND_NOTIFICATION) {
-               notifyManager.notify(0,
-                     new NotificationCompat.Builder(DataManagementService.this).setContentTitle("Data Operation").setContentText(operation)
-                           .setSmallIcon(android.R.drawable.ic_dialog_info).setProgress(max, progress, false)
-                           .setContentIntent(PendingIntent.getActivity(DataManagementService.this, 0, new Intent(DataManagementService.this, DataManagementActivity.class), 0))
-                           .addAction(R.drawable.button_stop, "Stop", PendingIntent.getService(DataManagementService.this, 0, new Intent(ACTION_CANCEL), 0)).build());
-            }
-         }
+         //dont update status
+//         if (hasActiveSession() && performCalled) {
+//            sendStatus(getActiveSession(), String.format("%s %d/%d", operation, progress, max));
+//
+//            if (SEND_NOTIFICATION) {
+//               notifyManager.notify(0,
+//                     new NotificationCompat.Builder(DataManagementService.this).setContentTitle("Data Operation").setContentText(operation)
+//                           .setSmallIcon(android.R.drawable.ic_dialog_info).setProgress(max, progress, false)
+//                           .setContentIntent(PendingIntent.getActivity(DataManagementService.this, 0, new Intent(DataManagementService.this, DataManagementActivity.class), 0))
+//                           .addAction(R.drawable.button_stop, "Stop", PendingIntent.getService(DataManagementService.this, 0, new Intent(ACTION_CANCEL), 0)).build());
+//            }
+//         }
       }
 
       @Override
