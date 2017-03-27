@@ -264,6 +264,10 @@ public abstract class SelectionTreeViewAdapter<T> extends AbstractTreeViewAdapte
    }
 
    public boolean hasSelection() {
-      return !getSelectionMap().isEmpty();
+      for(Map.Entry<T, SelectionType> entry : getSelectionMap().entrySet()) {
+         if(isSupportedEntitiy(entry.getKey()))
+            return true;
+      }
+      return false;
    }
 }
