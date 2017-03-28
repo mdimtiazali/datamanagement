@@ -66,6 +66,9 @@ public final class VarietyAdapter extends BaseAdapter implements Filterable {
    private AddOrEditVarietyDialog editVarietyDialog;
    private boolean isFiltered = false;
 
+   private Comparator lastUsedComparator;
+   private boolean lastUsedAsc;
+
    /**
     * @param context the context of the adapter
     * @param varieties the list of varieties which should be shown.
@@ -205,6 +208,8 @@ public final class VarietyAdapter extends BaseAdapter implements Filterable {
     */
    public void sort(Comparator<Variety> comparator, boolean asc) {
       synchronized (listsLock) {
+         lastUsedComparator = comparator;
+         lastUsedAsc = asc;
          if (originalList != null) {
             Collections.sort(originalList, comparator);
             if (!asc) {
@@ -378,6 +383,7 @@ public final class VarietyAdapter extends BaseAdapter implements Filterable {
                   VarietyAdapter.this.notifyDataSetChanged();
                }
             }
+            sort(lastUsedComparator, lastUsedAsc);
          }
       }
    }
