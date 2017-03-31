@@ -355,12 +355,12 @@ public class ProductMixDialog extends DialogView implements DialogHandlerListene
       }
       densityValueTitleText = (TextView) this.findViewById(R.id.product_mix_advanced_titletext_density);
       densityUnitPickList = (SegmentedToggleButtonGroupPickList) this.findViewById(R.id.product_mix_segmentedtogglebuttongroup_advanced_density_units);
-      applicationRate1Stepper = (StepperView) this.findViewById(R.id.product_mix_application_rates_stepperview_rate_1);
-      applicationRate2Stepper = (StepperView) this.findViewById(R.id.product_mix_application_rates_stepperview_rate_2);
-      applicationRateDeltaStepper = (StepperView) this.findViewById(R.id.product_mix_application_rates_stepperview_rate_delta);
-      applicationRateMaxStepper = (StepperView) this.findViewById(R.id.product_mix_application_rates_stepperview_rate_max);
-      applicationRateMinStepper = (StepperView) this.findViewById(R.id.product_mix_application_rates_stepperview_rate_min);
-      applicationRatesUnitsPickList = (SegmentedToggleButtonGroupPickList) this.findViewById(R.id.product_mix_application_rates_segmentedtogglebuttongroup_units);
+      applicationRate1Stepper = (StepperView) this.findViewById(R.id.application_rate_stepper_rate_one);
+      applicationRate2Stepper = (StepperView) this.findViewById(R.id.application_rate_stepper_rate_two);
+      applicationRateDeltaStepper = (StepperView) this.findViewById(R.id.application_rate_stepper_delta_rate);
+      applicationRateMaxStepper = (StepperView) this.findViewById(R.id.application_rate_stepper_max_rate);
+      applicationRateMinStepper = (StepperView) this.findViewById(R.id.application_rate_stepper_min_rate);
+      applicationRatesUnitsPickList = (SegmentedToggleButtonGroupPickList) this.findViewById(R.id.application_rate_units_toggle_button_group);
       productMixTable = (TableLayout) this.findViewById(R.id.product_mix_dialog_application_rates_table);
       productMixNameInputField = (InputField) this.findViewById(R.id.product_mix_name_input_field);
       productMixNameInputField.setImeOptions(EditorInfo.IME_FLAG_NO_EXTRACT_UI | EditorInfo.IME_ACTION_DONE);
@@ -617,13 +617,13 @@ public class ProductMixDialog extends DialogView implements DialogHandlerListene
 
    /**
     * // FIXME: using enum names for ui is a bug - see
-    * https://polarion.cnhind.com/polarion/#/project/pfhmidevdefects/workitem?id=pfhmi-dev-defects-3034
+    * https://polarion.cnhind.com/polarion/#/project/pfhmidevdefects/workitem?id=pfhmi-dev-defects-3051
     *
     * Makes ENUM_NAMES into friendlier Enum Names
     *
     * @param input ENUM string
     * @return converted string
-    * @deprecated never use see https://polarion.cnhind.com/polarion/#/project/pfhmidevdefects/workitem?id=pfhmi-dev-defects-3034
+    * @deprecated never use see https://polarion.cnhind.com/polarion/#/project/pfhmidevdefects/workitem?id=pfhmi-dev-defects-3051
     */
    private String friendlyName(String input) {
       String spaced = input.replace("_", " ").trim();

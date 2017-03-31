@@ -30,7 +30,7 @@
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:orientation="horizontal"
-                    android:layout_below="@+id/product_mix_application_rates_segmentedtogglebuttongroup_units"
+                    android:layout_below="@id/application_rate_units_toggle_button_group"
                     android:paddingStart="10dp"
                     android:paddingEnd="10dp"
                     android:paddingBottom="10dp"
@@ -47,7 +47,7 @@
                         android:orientation="vertical">
 
                     <com.cnh.android.widget.control.StepperView
-                            android:id="@+id/product_mix_application_rates_stepperview_rate_1"
+                            android:id="@id/application_rate_stepper_rate_one"
                             style="@style/Stepper.PlusMinus"
                             android:layout_width="match_parent"
                             android:layout_height="wrap_content"
@@ -59,7 +59,7 @@
                             cnh:headerText="@string/product_mix_title_application_rate_1"/>
 
                     <com.cnh.android.widget.control.StepperView
-                            android:id="@+id/product_mix_application_rates_stepperview_rate_min"
+                            android:id="@id/application_rate_stepper_min_rate"
                             style="@style/Stepper.PlusMinus"
                             android:layout_width="match_parent"
                             android:layout_height="wrap_content"
@@ -71,7 +71,7 @@
                             cnh:headerText="@string/product_mix_title_min_application_rate"/>
 
                     <com.cnh.android.widget.control.StepperView
-                            android:id="@+id/product_mix_application_rates_stepperview_rate_delta"
+                            android:id="@id/application_rate_stepper_delta_rate"
                             style="@style/Stepper.PlusMinus"
                             android:layout_width="match_parent"
                             android:layout_height="wrap_content"
@@ -91,7 +91,7 @@
                         android:orientation="vertical">
 
                     <com.cnh.android.widget.control.StepperView
-                            android:id="@+id/product_mix_application_rates_stepperview_rate_2"
+                            android:id="@id/application_rate_stepper_rate_two"
                             style="@style/Stepper.PlusMinus"
                             android:layout_width="match_parent"
                             android:layout_height="wrap_content"
@@ -103,7 +103,7 @@
                             cnh:headerText="@string/product_mix_title_application_rate_2"/>
 
                     <com.cnh.android.widget.control.StepperView
-                            android:id="@+id/product_mix_application_rates_stepperview_rate_max"
+                            android:id="@id/application_rate_stepper_max_rate"
                             style="@style/Stepper.PlusMinus"
                             android:layout_width="match_parent"
                             android:layout_height="wrap_content"
@@ -117,7 +117,7 @@
             </LinearLayout>
 
             <com.cnh.android.pf.widget.controls.SegmentedToggleButtonGroupPickList
-                    android:id="@+id/product_mix_application_rates_segmentedtogglebuttongroup_units"
+                    android:id="@id/application_rate_units_toggle_button_group"
                     style="@style/SegmentedToggleButtonSmall"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
