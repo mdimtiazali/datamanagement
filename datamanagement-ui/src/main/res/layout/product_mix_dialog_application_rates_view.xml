@@ -47,6 +47,7 @@
                         android:orientation="vertical">
 
                     <com.cnh.android.widget.control.StepperView
+                            android:layout_marginTop="@dimen/product_dialog_input_margin_top"
                             android:id="@id/application_rate_stepper_rate_one"
                             style="@style/Stepper.PlusMinus"
                             android:layout_width="match_parent"
@@ -59,6 +60,7 @@
                             cnh:headerText="@string/product_mix_title_application_rate_1"/>
 
                     <com.cnh.android.widget.control.StepperView
+                            android:layout_marginTop="@dimen/product_library_grow_margin_medium"
                             android:id="@id/application_rate_stepper_min_rate"
                             style="@style/Stepper.PlusMinus"
                             android:layout_width="match_parent"
@@ -71,6 +73,7 @@
                             cnh:headerText="@string/product_mix_title_min_application_rate"/>
 
                     <com.cnh.android.widget.control.StepperView
+                            android:layout_marginTop="@dimen/product_library_grow_margin_medium"
                             android:id="@id/application_rate_stepper_delta_rate"
                             style="@style/Stepper.PlusMinus"
                             android:layout_width="match_parent"
@@ -91,6 +94,7 @@
                         android:orientation="vertical">
 
                     <com.cnh.android.widget.control.StepperView
+                            android:layout_marginTop="@dimen/product_dialog_input_margin_top"
                             android:id="@id/application_rate_stepper_rate_two"
                             style="@style/Stepper.PlusMinus"
                             android:layout_width="match_parent"
@@ -103,6 +107,7 @@
                             cnh:headerText="@string/product_mix_title_application_rate_2"/>
 
                     <com.cnh.android.widget.control.StepperView
+                            android:layout_marginTop="@dimen/product_library_grow_margin_medium"
                             android:id="@id/application_rate_stepper_max_rate"
                             style="@style/Stepper.PlusMinus"
                             android:layout_width="match_parent"
