@@ -118,7 +118,7 @@ public class ProductMixDialog extends DialogView implements DialogHandlerListene
    private boolean isOneProductMixSet = false;
    private boolean isInitialized = false;
    private ProductMixCallBack callback;
-   private ArrayList<Product> productList = null;
+   private List<Product> productList = null;
    private List<ProductUnits> productUnitsList = null;
    private LinearLayout mixProductsLayout;
    private CategoryButtons mixProductCategoryButton;
@@ -413,7 +413,7 @@ public class ProductMixDialog extends DialogView implements DialogHandlerListene
                }
                else if (carrierProductHolder.productPickList != null) {
                   PickListAdapter productListAdapter = new PickListAdapter(carrierProductHolder.productPickList, getContext());
-                  fillPickListAdapterWithProducts(productListAdapter, filterProductList(productList, productMixForm));
+                  fillPickListAdapterWithProducts(productListAdapter, ProductHelperMethods.filterProductList(productList, productMixForm));
                   carrierProductHolder.productPickList.setAdapter(productListAdapter);
                }
                isProductMixFormSet = true;
@@ -448,7 +448,7 @@ public class ProductMixDialog extends DialogView implements DialogHandlerListene
          ProductMixRecipe productCarrier = productMix.getProductCarrier();
 
          carrierProductHolder.currentRecipe = productCarrier;
-         ArrayList<Product> filteredProduct = filterProductList(productList, productMixForm);
+         List<Product> filteredProduct = ProductHelperMethods.filterProductList(productList, productMixForm);
          addDataToProductElement(productCarrier, carrierProductHolder, filteredProduct);
       }
 
@@ -514,7 +514,7 @@ public class ProductMixDialog extends DialogView implements DialogHandlerListene
       }
    }
 
-   private void addDataToProductElement(ProductMixRecipe recipeElement, ProductMixElementHolder element, ArrayList<Product> products) {
+   private void addDataToProductElement(ProductMixRecipe recipeElement, ProductMixElementHolder element, List<Product> products) {
       if (recipeElement != null) {
          Product product = recipeElement.getProduct();
          if (product != null) {
@@ -1516,30 +1516,12 @@ public class ProductMixDialog extends DialogView implements DialogHandlerListene
     * @param picklistAdapter Adapter for the PickList
     * @param productList list with Product which will add to the PickListAdapter
     */
-   private void fillPickListAdapterWithProducts(PickListAdapter picklistAdapter, ArrayList<Product> productList) {
+   private void fillPickListAdapterWithProducts(PickListAdapter picklistAdapter, List<Product> productList) {
       if (picklistAdapter != null && productList != null && !productList.isEmpty()) {
          for (int i = 0; i < productList.size(); i++) {
             picklistAdapter.add(new PickListItem(i, productList.get(i).getName()));
          }
       }
-   }
-
-   /**
-    * filter product list by Form and return the filtered list
-    * @param productList ArrayList with all products
-    * @param form Productform which has to be filtered
-    * @return a list with all product of the searched productform
-    */
-   private ArrayList<Product> filterProductList(ArrayList<Product> productList, ProductForm form) {
-      ArrayList<Product> filteredProductList = new ArrayList<Product>();
-      if (productList != null && form != null) {
-         for (Product product : productList) {
-            if (product != null && product.getForm() == form) {
-               filteredProductList.add(product);
-            }
-         }
-      }
-      return filteredProductList;
    }
 
    /**
