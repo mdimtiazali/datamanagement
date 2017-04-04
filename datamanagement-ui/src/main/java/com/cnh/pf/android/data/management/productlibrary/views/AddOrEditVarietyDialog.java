@@ -276,7 +276,7 @@ public class AddOrEditVarietyDialog extends DialogView {
                   updateSaveButtonState();
                   break;
                case ADD:
-                  VarietyColor nextColor = VarietyHelper.retrieveNextUnusedVarietyColor(new ArrayList<Variety>(varieties), new LinkedList<VarietyColor>(colors));
+                  VarietyColor nextColor = com.cnh.pf.util.VarietyHelper.retrieveNextUnusedVarietyColor(new ArrayList<Variety>(varieties), new LinkedList<VarietyColor>(colors));
                   modifiedVariety.setVarietyColor(nextColor);
                   colorGridAdapter.setSelectedPosition(colorGridAdapter.getPositionOfColor(nextColor));
                   updateSaveButtonState();
@@ -381,7 +381,7 @@ public class AddOrEditVarietyDialog extends DialogView {
                modifiedVariety.setCropType(cropType);
                if (!colorChangedByUser) {
                   VarietyColor varietyColor = modifiedVariety.getVarietyColor();
-                  VarietyColor newVarietyColor = VarietyHelper.retrieveNextUnusedVarietyColor(new ArrayList<Variety>(varieties), new LinkedList<VarietyColor>(colors), cropType);
+                  VarietyColor newVarietyColor = com.cnh.pf.util.VarietyHelper.retrieveNextUnusedVarietyColor(new ArrayList<Variety>(varieties), new LinkedList<VarietyColor>(colors), cropType);
                   // update only if necessary
                   if (!newVarietyColor.equals(varietyColor)) {
                      modifiedVariety.setVarietyColor(newVarietyColor);
