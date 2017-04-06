@@ -163,6 +163,7 @@
     <string name="product_text_bulk_fill_fan_delta_label">Bulk Step:</string>
     <string name="product_text_bulk_fill_fan_rate_label">Bulk Rate:</string>
     <string name="product_text_density_label">Density:</string>
+    <string name="product_text_density_units_label">Density Units:</string>
     <string name="product_text_package_label">Package Size:</string>
     <string name="product_text_rate_delta_label">Delta Rate:</string>
     <string name="product_text_rate_min_label">Min App Rate:</string>
