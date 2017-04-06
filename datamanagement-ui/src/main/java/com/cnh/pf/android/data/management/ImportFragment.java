@@ -365,6 +365,12 @@ public class ImportFragment extends BaseDataFragment {
          processDialog.init();
          processDialog.setTitle(getResources().getString(R.string.checking_targets));
          processDialog.setProgress(0);
+         processDialog.setOnDismissListener(new DialogViewInterface.OnDismissListener() {
+            @Override
+            public void onDismiss(DialogViewInterface dialog) {
+               cancel();
+            }
+         });
          processDialog.show();
          setCancelled(false);
          originalData = getSession().getObjectData();
