@@ -39,8 +39,8 @@
                     <artifactId>android-parcelable</artifactId>
                 </exclusion>
                 <exclusion>
-                    <groupId>pfmodel</groupId>
-                    <artifactId>com.cnh.pf</artifactId>
+                    <groupId>com.cnh.pf</groupId>
+                    <artifactId>pfmodel</artifactId>
                 </exclusion>
             </exclusions>
         </dependency>
@@ -73,6 +73,10 @@
                 <exclusion>
                     <groupId>com.google.guava</groupId>
                     <artifactId>guava</artifactId>
+                </exclusion>
+                <exclusion>
+                    <groupId>javax.inject</groupId>
+                    <artifactId>javax.inject</artifactId>
                 </exclusion>
             </exclusions>
         </dependency>
@@ -123,8 +127,8 @@
                     <artifactId>commons-lang3</artifactId>
                 </exclusion>
                 <exclusion>
-                    <groupId>pfmodel</groupId>
-                    <artifactId>com.cnh.pf</artifactId>
+                    <groupId>com.cnh.pf</groupId>
+                    <artifactId>pfmodel</artifactId>
                 </exclusion>
             </exclusions>
         </dependency>
