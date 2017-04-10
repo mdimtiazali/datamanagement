@@ -83,7 +83,7 @@
        <dependency>
           <groupId>com.cnh.pf</groupId>
           <artifactId>corelib</artifactId>
-          <version>7.13.1</version>
+          <version>${corelib.version}</version>
           <type>aar</type>
            <exclusions>
                <exclusion>
