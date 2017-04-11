@@ -10,6 +10,7 @@
 package com.cnh.pf.android.data.management.productlibrary.views;
 
 import android.content.Context;
+import android.os.AsyncTask;
 import android.os.Handler;
 import android.os.Looper;
 import android.os.RemoteException;
@@ -180,25 +181,29 @@ public class ProductMixDialog extends DialogView implements DialogHandlerListene
 
    private IVIPListenerAIDL vipListener = new SimpleVIPListener() {
       @Override
-      public void deliverProductList(List<Product> products) throws RemoteException {
-         log.info("deliverProductList: " + products.size());
-         ArrayList<Product> tempProductList = new ArrayList<Product>();
-         productList = new ArrayList<Product>();
-         for (Product product : products) {
-            if (product != null && product.getProductMixId() == 0) {
-               tempProductList.add(product);
+      public void deliverProductList(final List<Product> products) throws RemoteException {
+         new AsyncTask<Void, Void, List<Product>>() {
+
+            @Override
+            protected List<Product> doInBackground(Void... params) {
+               if (products != null) {
+                  List<Product> tempProductList = new ArrayList<Product>();
+                  log.info("deliverProductList: {}", products.size());
+                  for (Product product : products) {
+                     if (product != null && product.getProductMixId() == 0) {
+                        tempProductList.add(product);
+                     }
+                  }
+                  return tempProductList;
+               }
+               return null;
             }
-         }
-         productList = tempProductList;
-         if (!isInitialized) {
-            initializeViews();
-            isInitialized = true;
-         }
-         if (productUnitsList != null && productList != null) {
-            log.info("loadProductMixToDialog by deliverProductList");
-            ProductMixDialog.this.post(new Runnable() {
-               @Override
-               public void run() {
+
+            @Override
+            protected void onPostExecute(List<Product> products) {
+               productList = products;
+               if (productUnitsList != null && productList != null) {
+                  log.info("loadProductMixToDialog by deliverProductList");
                   if (!isInitialized) {
                      initializeViews();
                      isInitialized = true;
@@ -210,20 +215,24 @@ public class ProductMixDialog extends DialogView implements DialogHandlerListene
                      loadProductMixToDialog();
                   }
                }
-            });
-         }
+            }
+         }.execute();
       }
 
       @Override
-      public void deliverProductUnitsList(List<ProductUnits> productUnits) throws RemoteException {
-         log.info("deliverProductUnitsList");
-         if (productUnits != null && !productUnits.isEmpty()) {
-            productUnitsList = productUnits;
-            if (productList != null) {
-               log.info("loadProductMixToDialog by deliverProductUnitsList");
-               new Handler(Looper.getMainLooper()).post(new Runnable() {
-                  @Override
-                  public void run() {
+      public void deliverProductUnitsList(final List<ProductUnits> productUnits) throws RemoteException {
+         new AsyncTask<Void, Void, List<ProductUnits>>() {
+            @Override
+            protected List<ProductUnits> doInBackground(Void... voids) {
+               return productUnits;
+            }
+
+            @Override
+            protected void onPostExecute(List<ProductUnits> productUnits) {
+               if (productUnits != null && !productUnits.isEmpty()) {
+                  productUnitsList = productUnits;
+                  if (productList != null) {
+                     log.info("loadProductMixToDialog by deliverProductUnitsList");
                      if (!isInitialized) {
                         initializeViews();
                         isInitialized = true;
@@ -232,9 +241,9 @@ public class ProductMixDialog extends DialogView implements DialogHandlerListene
                         loadProductMixToDialog();
                      }
                   }
-               });
+               }
             }
-         }
+         }.execute();
       }
    };
 
