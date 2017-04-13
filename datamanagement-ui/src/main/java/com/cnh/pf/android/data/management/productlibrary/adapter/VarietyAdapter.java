@@ -9,6 +9,7 @@
 package com.cnh.pf.android.data.management.productlibrary.adapter;
 
 import android.content.Context;
+import android.graphics.drawable.GradientDrawable;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -16,6 +17,7 @@ import android.widget.BaseAdapter;
 import android.widget.Filter;
 import android.widget.Filterable;
 import android.widget.ImageButton;
+import android.widget.ImageView;
 import android.widget.TextView;
 
 import com.cnh.android.dialog.DialogViewInterface;
@@ -25,10 +27,10 @@ import com.cnh.android.pf.widget.utilities.commands.DeleteVarietyCommand;
 import com.cnh.android.pf.widget.utilities.commands.VarietyCommandParams;
 import com.cnh.android.pf.widget.utilities.listeners.GenericListener;
 import com.cnh.android.pf.widget.utilities.tasks.VIPAsyncTask;
+import com.cnh.android.pf.widget.utilities.VarietyHelper;
 import com.cnh.android.vip.aidl.IVIPServiceAIDL;
 import com.cnh.android.widget.activity.TabActivity;
 import com.cnh.pf.android.data.management.R;
-import com.cnh.pf.android.data.management.productlibrary.ProductLibraryFragment;
 import com.cnh.pf.android.data.management.productlibrary.utility.UiHelper;
 import com.cnh.pf.android.data.management.productlibrary.views.AddOrEditVarietyDialog;
 import com.cnh.pf.model.product.configuration.Variety;
@@ -63,6 +65,9 @@ public final class VarietyAdapter extends BaseAdapter implements Filterable {
    private IVIPServiceAIDL vipService;
    private AddOrEditVarietyDialog editVarietyDialog;
    private boolean isFiltered = false;
+
+   private Comparator lastUsedComparator;
+   private boolean lastUsedAsc;
 
    /**
     * @param context the context of the adapter
@@ -173,7 +178,15 @@ public final class VarietyAdapter extends BaseAdapter implements Filterable {
          deleteButton.setClickable(true);
          deleteButton.setOnClickListener(onDeleteButtonClickListener);
       }
+
+      configureVarietyColorImage(convertView, variety);
       return convertView;
+   }
+
+   private static void configureVarietyColorImage(View convertView, Variety variety) {
+      final ImageView imageView = (ImageView) convertView.findViewById(R.id.variety_color_image_view);
+      GradientDrawable drawable = (GradientDrawable) imageView.getDrawable();
+      drawable.setColor(VarietyHelper.retrieveToIntConvertedColor(variety));
    }
 
    private String getCropTypeText(Variety variety) {
@@ -195,6 +208,8 @@ public final class VarietyAdapter extends BaseAdapter implements Filterable {
     */
    public void sort(Comparator<Variety> comparator, boolean asc) {
       synchronized (listsLock) {
+         lastUsedComparator = comparator;
+         lastUsedAsc = asc;
          if (originalList != null) {
             Collections.sort(originalList, comparator);
             if (!asc) {
@@ -245,16 +260,14 @@ public final class VarietyAdapter extends BaseAdapter implements Filterable {
          synchronized (listsLock) {
             editVarietyDialog.setVarietyList(originalList != null ? originalList : filteredList);
          }
-         editVarietyDialog.setVIPService(vipService);
          editVarietyDialog.setFirstButtonText(activity.getResources().getString(R.string.variety_dialog_save_button_text))
                .setSecondButtonText(activity.getResources().getString(R.string.variety_dialog_cancel_button_text))
-               .showThirdButton(false).setTitle(activity.getResources().getString(R.string.variety_edit_dialog_title))
-               .setBodyHeight(ProductLibraryFragment.DIALOG_HEIGHT).setBodyView(R.layout.variety_add_or_edit_dialog)
-               .setDialogWidth(ProductLibraryFragment.DIALOG_WIDTH);
+               .showThirdButton(false).setTitle(activity.getResources().getString(R.string.variety_edit_dialog_title));
 
          editVarietyDialog.setActionType(AddOrEditVarietyDialog.VarietyDialogActionType.EDIT);
          final TabActivity useModal = activity;
          useModal.showModalPopup(editVarietyDialog);
+         editVarietyDialog.setVIPService(vipService);
       }
    }
 
@@ -370,6 +383,7 @@ public final class VarietyAdapter extends BaseAdapter implements Filterable {
                   VarietyAdapter.this.notifyDataSetChanged();
                }
             }
+            sort(lastUsedComparator, lastUsedAsc);
          }
       }
    }

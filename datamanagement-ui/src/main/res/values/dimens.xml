@@ -45,4 +45,8 @@
 
     <dimen name="search_text_size">23dp</dimen>
     <dimen name="variety_delete_and_edit_button_side_padding">20dp</dimen>
+
+    <dimen name="variety_dialog_content_padding_top">10dp</dimen>
+    <dimen name="variety_dialog_content_padding_bottom">2dp</dimen>
+    <dimen name="variety_dialog_content_padding_left_and_right">42dp</dimen>
 </resources>

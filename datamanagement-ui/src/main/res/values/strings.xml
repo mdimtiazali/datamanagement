@@ -215,6 +215,7 @@
     <string name="variety_edit_dialog_title">Edit Variety</string>
     <string name="variety_instruction_add">Add a variety using the \"Add Variety\" button above.</string>
     <string name="variety_list_header_crop_type_text">CROP TYPE</string>
+    <string name="variety_list_header_color">COLOR</string>
     <string name="variety_list_header_name_text">NAME</string>
     <string name="variety_not_available">You have no varieties added.</string>
     <string name="variety_search_hint">Variety, crop type</string>
