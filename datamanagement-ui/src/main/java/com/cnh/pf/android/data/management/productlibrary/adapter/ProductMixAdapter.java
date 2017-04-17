@@ -32,6 +32,7 @@ import com.cnh.android.pf.widget.utilities.UnitsSettings;
 import com.cnh.android.pf.widget.utilities.commands.DeleteProductMixCommand;
 import com.cnh.android.pf.widget.utilities.commands.ProductMixCommandParams;
 import com.cnh.android.pf.widget.utilities.tasks.VIPAsyncTask;
+import com.cnh.android.pf.widget.view.productdialogs.DialogActionType;
 import com.cnh.android.vip.aidl.IVIPServiceAIDL;
 import com.cnh.android.widget.activity.TabActivity;
 import com.cnh.android.widget.control.ProgressiveDisclosureView;
@@ -367,7 +368,7 @@ public final class ProductMixAdapter extends SearchableSortableExpandableListAda
 
       @Override
       public void onClick(View view) {
-         ProductMixDialog editProductMixDialog = new ProductMixDialog(context, ProductMixDialog.ProductMixesDialogActionType.EDIT, vipService, productMixDetail,
+         ProductMixDialog editProductMixDialog = new ProductMixDialog(context, DialogActionType.EDIT, vipService, productMixDetail,
                productLibraryFragment, getCopyOfUnfilteredItemList());
          editProductMixDialog.setFirstButtonText(activity.getResources().getString(R.string.save))
                .setSecondButtonText(activity.getResources().getString(R.string.product_dialog_cancel_button)).showThirdButton(false).showThirdButton(false)
@@ -393,7 +394,7 @@ public final class ProductMixAdapter extends SearchableSortableExpandableListAda
 
       @Override
       public void onClick(View view) {
-         ProductMixDialog copyProductMixDialog = new ProductMixDialog(context, ProductMixDialog.ProductMixesDialogActionType.COPY, vipService, productMixDetail,
+         ProductMixDialog copyProductMixDialog = new ProductMixDialog(context, DialogActionType.COPY, vipService, productMixDetail,
                productLibraryFragment, new ArrayList<ProductMix>(getCopyOfUnfilteredItemList()));
          copyProductMixDialog.setFirstButtonText(activity.getResources().getString(R.string.product_dialog_add_button))
                .setSecondButtonText(activity.getResources().getString(R.string.product_dialog_cancel_button)).showThirdButton(false).showThirdButton(false)

@@ -239,6 +239,13 @@ public final class ProductAdapter extends SearchableSortableExpandableListAdapte
             viewHolder.setFanUiVisibility(false);
          }
 
+         if (productDetail.getForm() == ProductForm.SEED || productDetail.getForm() == ProductForm.PLANT) {
+            viewHolder.unitDensityText.setText(UnitUtility.formatUnitDensityUnits(productDetail, productDetail.getUnitDensity(), measurementSystem));
+            viewHolder.unitDensityContainer.setVisibility(View.VISIBLE);
+         } else {
+            viewHolder.unitDensityContainer.setVisibility(View.INVISIBLE);
+         }
+
          LinearLayout.LayoutParams params = (LinearLayout.LayoutParams) viewHolder.imageRow.getLayoutParams();
          if (!productLibraryFragment.validateDeleteProduct(productDetail)) {
             viewHolder.alertIcon.setImageResource(R.drawable.ic_needs_checking);
@@ -303,7 +310,7 @@ public final class ProductAdapter extends SearchableSortableExpandableListAdapte
    private class OnCopyButtonClickListener implements View.OnClickListener {
       private final ProductChildHolder productChildHolder;
 
-      public OnCopyButtonClickListener(ProductChildHolder productChildHolder) {
+      OnCopyButtonClickListener(ProductChildHolder productChildHolder) {
          this.productChildHolder = productChildHolder;
       }
 
@@ -328,7 +335,7 @@ public final class ProductAdapter extends SearchableSortableExpandableListAdapte
    private class OnEditButtonClickListener implements View.OnClickListener {
       private final Product productDetail;
 
-      public OnEditButtonClickListener(Product productDetail) {
+      OnEditButtonClickListener(Product productDetail) {
          this.productDetail = productDetail;
       }
 
@@ -354,7 +361,7 @@ public final class ProductAdapter extends SearchableSortableExpandableListAdapte
       private final Product productToDelete;
       private final ProductChildHolder productChildHolder;
 
-      public OnDeleteButtonClickListener(Product productToDelete, ProductChildHolder productChildHolder) {
+      OnDeleteButtonClickListener(Product productToDelete, ProductChildHolder productChildHolder) {
          this.productToDelete = productToDelete;
          this.productChildHolder = productChildHolder;
       }
@@ -398,7 +405,7 @@ public final class ProductAdapter extends SearchableSortableExpandableListAdapte
    private class OnAlertButtonClickListener implements View.OnClickListener {
       private final Product productDetail;
 
-      public OnAlertButtonClickListener(Product productDetail) {
+      OnAlertButtonClickListener(Product productDetail) {
          this.productDetail = productDetail;
       }
 
@@ -420,17 +427,17 @@ public final class ProductAdapter extends SearchableSortableExpandableListAdapte
     * Wraps the outer "collapsed" view of a product list item
     */
    private class ProductGroupHolder {
-      public ImageView groupIndicator;
-      public TextView nameText;
-      public TextView formText;
-      public TextView rateText;
-      public Product product;
+      ImageView groupIndicator;
+      TextView nameText;
+      TextView formText;
+      TextView rateText;
+      Product product;
 
       /**
        * Construct new product group holder
        * @param view
        */
-      public ProductGroupHolder(View view) {
+      ProductGroupHolder(View view) {
          this.nameText = ((TextView) view.findViewById(R.id.name_text));
          this.formText = ((TextView) view.findViewById(R.id.form_text));
          this.rateText = ((TextView) view.findViewById(R.id.rate_text));
@@ -443,39 +450,42 @@ public final class ProductAdapter extends SearchableSortableExpandableListAdapte
     * Wraps the inner "expanded" view of a product list item
     */
    private class ProductChildHolder {
-      public TextView appRate1Text;
-      public TextView appRate2Text;
-      public TextView minRateText;
-      public TextView maxRateText;
-      public TextView deltaRateText;
-      public TextView packageText;
-      public TextView densityText;
-      public ImageView alertIcon;
-      public ImageButton editButton;
-      public ImageButton copyButton;
-      public ImageButton deleteButton;
-      public Product product;
-      public LinearLayout imageRow;
-      public boolean productHasImplements;
-      public List<View> fanRateContainers = null;
-      public TextView vacuumFanRateText = null;
-      public TextView vacuumFanDeltaText = null;
-      public TextView bulkFillFanRateText = null;
-      public TextView bulkFillFanDeltaText = null;
+      TextView appRate1Text;
+      TextView appRate2Text;
+      TextView minRateText;
+      TextView maxRateText;
+      TextView deltaRateText;
+      TextView packageText;
+      TextView densityText;
+      TextView unitDensityText;
+      ImageView alertIcon;
+      ImageButton editButton;
+      ImageButton copyButton;
+      ImageButton deleteButton;
+      Product product;
+      LinearLayout imageRow;
+      boolean productHasImplements;
+      List<View> fanRateContainers = null;
+      TextView vacuumFanRateText = null;
+      TextView vacuumFanDeltaText = null;
+      TextView bulkFillFanRateText = null;
+      TextView bulkFillFanDeltaText = null;
+      View unitDensityContainer;
 
-      public ProductChildHolder(View view) {
-         this.alertIcon = ((ImageButton) view.findViewById(R.id.alert_icon));
-         this.appRate1Text = ((TextView) view.findViewById(R.id.app_rate1_text));
-         this.appRate2Text = ((TextView) view.findViewById(R.id.app_rate2_text));
-         this.minRateText = ((TextView) view.findViewById(R.id.min_rate_text));
-         this.maxRateText = ((TextView) view.findViewById(R.id.max_rate_text));
-         this.deltaRateText = ((TextView) view.findViewById(R.id.delta_rate_text));
-         this.packageText = ((TextView) view.findViewById(R.id.package_text));
-         this.densityText = ((TextView) view.findViewById(R.id.density_text));
-         this.copyButton = ((ImageButton) view.findViewById(R.id.copy_button));
-         this.editButton = ((ImageButton) view.findViewById(R.id.edit_button));
-         this.deleteButton = ((ImageButton) view.findViewById(R.id.delete_button));
-         this.imageRow = ((LinearLayout) view.findViewById(R.id.linear_layout_image_row));
+      ProductChildHolder(View view) {
+         this.alertIcon = (ImageButton) view.findViewById(R.id.alert_icon);
+         this.appRate1Text = (TextView) view.findViewById(R.id.app_rate1_text);
+         this.appRate2Text = (TextView) view.findViewById(R.id.app_rate2_text);
+         this.minRateText = (TextView) view.findViewById(R.id.min_rate_text);
+         this.maxRateText = (TextView) view.findViewById(R.id.max_rate_text);
+         this.deltaRateText = (TextView) view.findViewById(R.id.delta_rate_text);
+         this.packageText = (TextView) view.findViewById(R.id.package_text);
+         this.densityText = (TextView) view.findViewById(R.id.density_text);
+         this.unitDensityText = (TextView) view.findViewById(R.id.unit_density_text);
+         this.copyButton = (ImageButton) view.findViewById(R.id.copy_button);
+         this.editButton = (ImageButton) view.findViewById(R.id.edit_button);
+         this.deleteButton = (ImageButton) view.findViewById(R.id.delete_button);
+         this.imageRow = (LinearLayout) view.findViewById(R.id.linear_layout_image_row);
 
          this.fanRateContainers = new ArrayList<View>(4);
          this.fanRateContainers.add(view.findViewById(R.id.vacuum_fan_rate_container));
@@ -487,6 +497,8 @@ public final class ProductAdapter extends SearchableSortableExpandableListAdapte
          this.vacuumFanDeltaText = ((TextView) view.findViewById(R.id.vacuum_fan_delta_text));
          this.bulkFillFanRateText = ((TextView) view.findViewById(R.id.bulk_fill_fan_rate_text));
          this.bulkFillFanDeltaText = ((TextView) view.findViewById(R.id.bulk_fill_fan_delta_text));
+
+         this.unitDensityContainer = view.findViewById(R.id.unit_density_container);
       }
 
       void setFanUiVisibility(boolean visible) {
@@ -500,7 +512,7 @@ public final class ProductAdapter extends SearchableSortableExpandableListAdapte
     * Filters products, providing search functionality
     * @author joorjitham
     */
-   public class ProductFilter extends Filter implements UpdateableFilter {
+   private class ProductFilter extends Filter implements UpdateableFilter {
 
       private CharSequence lastUsedCharSequence;
 

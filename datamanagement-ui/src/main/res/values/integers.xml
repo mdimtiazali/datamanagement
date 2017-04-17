@@ -10,4 +10,8 @@
 <resources>
     <integer name="application_rate_max">10000</integer>
     <integer name="application_rate_min">0</integer>
+
+    <integer name="variety_list_item_name_weight">7</integer>
+    <integer name="variety_list_item_crop_type_weight">6</integer>
+    <integer name="variety_list_item_color_weight">5</integer>
 </resources>

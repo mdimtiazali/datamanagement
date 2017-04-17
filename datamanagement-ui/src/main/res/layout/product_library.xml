@@ -376,7 +376,7 @@
                             android:button="@null"
                             android:text="@string/variety_list_header_name_text"
                             android:textAllCaps="true"
-                            android:layout_weight="1.0" />
+                            android:layout_weight="@integer/variety_list_item_name_weight" />
 
                     <com.cnh.pf.android.data.management.productlibrary.views.ListHeaderSortView
                             android:textSize="@dimen/product_item_small_text_size"
@@ -391,7 +391,23 @@
                             android:button="@null"
                             android:text="@string/variety_list_header_crop_type_text"
                             android:textAllCaps="true"
-                            android:layout_weight="1.0" />
+                            android:layout_weight="@integer/variety_list_item_crop_type_weight" />
+
+                    <TextView
+                            android:textSize="@dimen/product_item_small_text_size"
+                            android:textStyle="bold"
+                            android:textColor="@color/e_sort_header_text"
+                            android:gravity="start|center_vertical"
+                            android:id="@+id/varieties_list_header_color"
+                            android:background="@drawable/fault_chk_btn_bkg"
+                            android:paddingLeft="@dimen/product_library_sort_header_left_padding"
+                            android:layout_width="@dimen/product_library_empty"
+                            android:layout_height="match_parent"
+                            android:button="@null"
+                            android:text="@string/variety_list_header_color"
+                            android:textAllCaps="true"
+                            android:layout_weight="@integer/variety_list_item_color_weight"
+                            android:clickable="false"/>
                 </LinearLayout>
 
                 <com.cnh.pf.android.data.management.productlibrary.views.MaximizedListView
@@ -403,7 +419,7 @@
                         android:headerDividersEnabled="true"/>
 
                 <RelativeLayout
-                        android:id="@+id/no_avaiblable_varieties"
+                        android:id="@+id/no_available_varieties"
                         android:layout_width="match_parent"
                         android:layout_height="match_parent"
                         android:visibility="gone">
