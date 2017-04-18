@@ -17,7 +17,7 @@
         cnh:title="@string/product_mix_title_advanced"
         cnh:setAutoResizable="true">
     <com.cnh.android.widget.control.PickList
-            android:id="@+id/product_mix_advanced_picklist_usage"
+            android:id="@id/product_usage_pick_list"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             cnh:defaultPickListTextId="@string/product_mix_title_picklist_default_select"
