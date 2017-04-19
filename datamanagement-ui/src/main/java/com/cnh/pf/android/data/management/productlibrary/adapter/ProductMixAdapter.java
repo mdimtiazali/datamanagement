@@ -25,6 +25,7 @@ import android.widget.TextView;
 
 import com.cnh.android.dialog.DialogViewInterface;
 import com.cnh.android.dialog.TextDialogView;
+import com.cnh.android.pf.widget.utilities.EnumValueToUiStringUtility;
 import com.cnh.android.pf.widget.utilities.MathUtility;
 import com.cnh.android.pf.widget.utilities.ProductHelperMethods;
 import com.cnh.android.pf.widget.utilities.UnitUtility;
@@ -198,10 +199,10 @@ public final class ProductMixAdapter extends SearchableSortableExpandableListAda
       if (parameters != null) {
          viewHolder.nameText.setText(parameters.getName());
          if (parameters.getForm() != null) {
-            viewHolder.formText.setText(ProductLibraryFragment.friendlyName(parameters.getForm().name()));
+            viewHolder.formText.setText(EnumValueToUiStringUtility.getUiStringForProductForm(parameters.getForm(), context));
          }
          else {
-            viewHolder.formText.setText(ProductLibraryFragment.friendlyName(ProductForm.LIQUID.name()));
+            viewHolder.formText.setText(EnumValueToUiStringUtility.getUiStringForProductForm(ProductForm.LIQUID, context));
          }
          viewHolder.rateText.setText(UnitUtility.formatRateUnits(parameters, parameters.getDefaultRate()));
       }
@@ -517,10 +518,10 @@ public final class ProductMixAdapter extends SearchableSortableExpandableListAda
                if (rateProductUnits != null && rateProductUnits.isSetMultiplyFactorFromBaseUnits()) {
                   rateUnitFactor = rateProductUnits.getMultiplyFactorFromBaseUnits();
                }
-
-               if (p.getName().toUpperCase().contains(charSequence.toString().toUpperCase())
-                     || (p.getForm() != null && p.getForm().name().toUpperCase().contains(charSequence.toString().toUpperCase()))
-                     || (rateProductUnits != null && rateProductUnits.getName().toUpperCase().contains(charSequence.toString().toUpperCase()))
+               String upperCaseCharSequence = charSequence.toString().toUpperCase();
+               if (p.getName().toUpperCase().contains(upperCaseCharSequence)
+                     || (p.getForm() != null && EnumValueToUiStringUtility.getUiStringForProductForm(p.getForm(), context).toUpperCase().contains(upperCaseCharSequence))
+                     || (rateProductUnits != null && rateProductUnits.getName().toUpperCase().contains(upperCaseCharSequence))
                      || (String.valueOf(MathUtility.getConvertedFromBase(p.getDefaultRate(), rateUnitFactor))).contains(charSequence.toString())) {
                   newProductMixList.add(mix);
                }

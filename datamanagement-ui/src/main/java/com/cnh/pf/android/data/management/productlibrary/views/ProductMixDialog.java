@@ -30,6 +30,7 @@ import com.cnh.android.dialog.DialogView;
 import com.cnh.android.dialog.DialogViewInterface;
 import com.cnh.android.pf.widget.controls.SegmentedToggleButtonGroupPickList;
 import com.cnh.android.pf.widget.controls.SegmentedToggleButtonGroupPickList.SegmentedTogglePickListListener;
+import com.cnh.android.pf.widget.utilities.EnumValueToUiStringUtility;
 import com.cnh.android.pf.widget.utilities.ProductHelperMethods;
 import com.cnh.android.pf.widget.utilities.ProductMixHelper;
 import com.cnh.android.pf.widget.utilities.ProductMixRecipeHelper;
@@ -75,9 +76,7 @@ import com.cnh.pf.model.product.library.ProductForm;
 import com.cnh.pf.model.product.library.ProductMix;
 import com.cnh.pf.model.product.library.ProductMixRecipe;
 import com.cnh.pf.model.product.library.ProductUnits;
-import com.cnh.pf.model.product.library.ProductUsage;
 
-import org.apache.commons.lang3.text.WordUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -397,7 +396,7 @@ public class ProductMixDialog extends DialogView implements DialogHandlerListene
          PickListAdapter carrierPickListAdapter = new PickListAdapter(productMixFormPickList, getContext());
          for (ProductForm form : ProductForm.values()) {
             if (form != ProductForm.ANY) {
-               carrierPickListAdapter.add(new PickListItem(form.getValue(), friendlyName(form.name())));
+               carrierPickListAdapter.add(new PickListItem(form.getValue(), EnumValueToUiStringUtility.getUiStringForProductForm(form, getContext())));
             }
          }
          productMixFormPickList.setAdapter(carrierPickListAdapter);
@@ -419,16 +418,17 @@ public class ProductMixDialog extends DialogView implements DialogHandlerListene
                }
                isProductMixFormSet = true;
 
-               if (productMix != null){
+               if (productMix != null) {
                   Product productMixParameters = productMix.getProductMixParameters();
-                  if (productMixParameters != null){
+                  if (productMixParameters != null) {
                      productMixParameters.setForm(productMixForm);
                      dialogUsageAndCropTypeHandler.setValuesToUi(productMixParameters);
                   }
                   else {
                      dialogUsageAndCropTypeHandler.setValuesToUi(productMixForm);
                   }
-               } else {
+               }
+               else {
                   dialogUsageAndCropTypeHandler.setValuesToUi(productMixForm);
                }
                dialogPackageSizeHandler.setUnitsOptions(productMix.getProductMixParameters(), productMixForm, measurementSystemProductOther, productUnitsList);
@@ -455,7 +455,7 @@ public class ProductMixDialog extends DialogView implements DialogHandlerListene
       {
          productMixNameInputField.setText(productMixParameters.getName());
          productMixForm = productMixParameters.getForm();
-         productMixFormPickList.setSelectionByPosition(ProductForm.valueOf(productMixForm.name()).ordinal());
+         productMixFormPickList.setSelectionById(productMixForm.getValue());
       }
       //Add Carrier Data to UI
       {
@@ -584,21 +584,6 @@ public class ProductMixDialog extends DialogView implements DialogHandlerListene
       catch (Exception e) {
          log.error("productElement could not created", e);
       }
-   }
-
-   /**
-    * // FIXME: using enum names for ui is a bug - see
-    * https://polarion.cnhind.com/polarion/#/project/pfhmidevdefects/workitem?id=pfhmi-dev-defects-3051
-    *
-    * Makes ENUM_NAMES into friendlier Enum Names
-    *
-    * @param input ENUM string
-    * @return converted string
-    * @deprecated never use see https://polarion.cnhind.com/polarion/#/project/pfhmidevdefects/workitem?id=pfhmi-dev-defects-3051
-    */
-   private String friendlyName(String input) {
-      String spaced = input.replace("_", " ").trim();
-      return WordUtils.capitalize(spaced.toLowerCase());
    }
 
    /**
@@ -786,7 +771,7 @@ public class ProductMixDialog extends DialogView implements DialogHandlerListene
             PickListAdapter productFormAdapter = new PickListAdapter(newProductFormPickList, getContext());
             for (ProductForm form : ProductForm.values()) {
                if (form != ProductForm.ANY) {
-                  productFormAdapter.add(new PickListItem(form.getValue(), friendlyName(form.name())));
+                  productFormAdapter.add(new PickListItem(form.getValue(), EnumValueToUiStringUtility.getUiStringForProductForm(form, getContext())));
                }
             }
             newProductFormPickList.setAdapter(productFormAdapter);
@@ -1162,7 +1147,7 @@ public class ProductMixDialog extends DialogView implements DialogHandlerListene
 
          for (ProductForm form : ProductForm.values()) {
             if (form != ProductForm.ANY) {
-               productFormAdapter.add(new PickListItem(form.getValue(), friendlyName(form.name())));
+               productFormAdapter.add(new PickListItem(form.getValue(), EnumValueToUiStringUtility.getUiStringForProductForm(form, getContext())));
             }
          }
          newProductFormPickList.setOnItemSelectedListener(new PickListEditable.OnItemSelectedListener() {
@@ -1507,7 +1492,7 @@ public class ProductMixDialog extends DialogView implements DialogHandlerListene
          }
          productMixNameInputField.setErrorIndicator(Widget.ErrorIndicator.NONE);
       }
-      if (!dialogUsageAndCropTypeHandler.isValidItemSelected()){
+      if (!dialogUsageAndCropTypeHandler.isValidItemSelected()) {
          this.setFirstButtonEnabled(false);
          return;
       }

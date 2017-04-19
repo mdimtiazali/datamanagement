@@ -24,7 +24,7 @@ import android.widget.TextView;
 
 import com.cnh.android.dialog.DialogViewInterface;
 import com.cnh.android.dialog.TextDialogView;
-import com.cnh.android.pf.widget.view.productdialogs.DialogActionType;
+import com.cnh.android.pf.widget.utilities.EnumValueToUiStringUtility;
 import com.cnh.android.pf.widget.utilities.MathUtility;
 import com.cnh.android.pf.widget.utilities.ProductHelperMethods;
 import com.cnh.android.pf.widget.utilities.UiUtility;
@@ -34,6 +34,7 @@ import com.cnh.android.pf.widget.utilities.commands.DeleteProductCommand;
 import com.cnh.android.pf.widget.utilities.commands.ProductCommandParams;
 import com.cnh.android.pf.widget.utilities.tasks.VIPAsyncTask;
 import com.cnh.android.pf.widget.view.ProductDialog;
+import com.cnh.android.pf.widget.view.productdialogs.DialogActionType;
 import com.cnh.android.vip.aidl.IVIPServiceAIDL;
 import com.cnh.android.widget.activity.TabActivity;
 import com.cnh.android.widget.control.ProgressiveDisclosureView;
@@ -142,10 +143,10 @@ public final class ProductAdapter extends SearchableSortableExpandableListAdapte
       viewHolder.product = productDetail;
       viewHolder.nameText.setText(productDetail.getName());
       if (productDetail.getForm() != null) {
-         viewHolder.formText.setText(ProductLibraryFragment.friendlyName(productDetail.getForm().name()));
+         viewHolder.formText.setText(EnumValueToUiStringUtility.getUiStringForProductForm(productDetail.getForm(), context));
       }
       else {
-         viewHolder.formText.setText(ProductLibraryFragment.friendlyName(ProductForm.LIQUID.name()));
+         viewHolder.formText.setText(EnumValueToUiStringUtility.getUiStringForProductForm(productDetail.getForm(), context));
       }
       viewHolder.rateText.setText(UnitUtility.formatRateUnits(productDetail, productDetail.getDefaultRate()));
       viewHolder.groupIndicator.setImageDrawable(expanded ? arrowOpenDetails : arrowCloseDetails);
@@ -242,7 +243,8 @@ public final class ProductAdapter extends SearchableSortableExpandableListAdapte
          if (productDetail.getForm() == ProductForm.SEED || productDetail.getForm() == ProductForm.PLANT) {
             viewHolder.unitDensityText.setText(UnitUtility.formatUnitDensityUnits(productDetail, productDetail.getUnitDensity(), measurementSystem));
             viewHolder.unitDensityContainer.setVisibility(View.VISIBLE);
-         } else {
+         }
+         else {
             viewHolder.unitDensityContainer.setVisibility(View.INVISIBLE);
          }
 
@@ -517,8 +519,8 @@ public final class ProductAdapter extends SearchableSortableExpandableListAdapte
       private CharSequence lastUsedCharSequence;
 
       @Override
-      public void updateFiltering(){
-         if (lastUsedCharSequence != null){
+      public void updateFiltering() {
+         if (lastUsedCharSequence != null) {
             filter(lastUsedCharSequence);
          }
       }
@@ -547,9 +549,10 @@ public final class ProductAdapter extends SearchableSortableExpandableListAdapte
                if (rateProductUnits != null && rateProductUnits.isSetMultiplyFactorFromBaseUnits()) {
                   rateUnitFactor = rateProductUnits.getMultiplyFactorFromBaseUnits();
                }
-               if (p.getName().toUpperCase().contains(charSequence.toString().toUpperCase())
-                     || (p.getForm() != null && p.getForm().name().toUpperCase().contains(charSequence.toString().toUpperCase()))
-                     || (rateProductUnits != null && rateProductUnits.getName().toUpperCase().contains(charSequence.toString().toUpperCase()))
+               String upperCaseCharSequence = charSequence.toString().toUpperCase();
+               if (p.getName().toUpperCase().contains(upperCaseCharSequence)
+                     || (p.getForm() != null && EnumValueToUiStringUtility.getUiStringForProductForm(p.getForm(), context).toUpperCase().contains(upperCaseCharSequence))
+                     || (rateProductUnits != null && rateProductUnits.getName().toUpperCase().contains(upperCaseCharSequence))
                      || (String.valueOf(MathUtility.getConvertedFromBase(p.getDefaultRate(), rateUnitFactor))).contains(charSequence.toString())) {
                   newProductList.add(p);
                }
@@ -562,11 +565,12 @@ public final class ProductAdapter extends SearchableSortableExpandableListAdapte
 
       @Override
       protected void publishResults(CharSequence charSequence, FilterResults filterResults) {
-         synchronized (listsLock){
-            if (!isFiltered){
+         synchronized (listsLock) {
+            if (!isFiltered) {
                // ui thread changed something in parallel during perform filtering
                return;
-            } else {
+            }
+            else {
                filteredList = (List<Product>) filterResults.values;
                // Now we have to inform the adapter about the new list filtered
                if (filterResults.count == 0)
