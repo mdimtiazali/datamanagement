@@ -21,12 +21,12 @@ import android.widget.AbsListView;
 import android.widget.AdapterView;
 import android.widget.Button;
 import android.widget.LinearLayout;
+import android.widget.ProgressBar;
 import android.widget.TextView;
 
 import com.cnh.android.dialog.DialogView;
 import com.cnh.android.dialog.DialogViewInterface;
 import com.cnh.android.widget.activity.TabActivity;
-import com.cnh.android.widget.control.ProgressBarView;
 import com.cnh.jgroups.ObjectGraph;
 import com.cnh.jgroups.Operation;
 import com.cnh.pf.android.data.management.adapter.ObjectTreeViewAdapter;
@@ -87,7 +87,7 @@ public abstract class BaseDataFragment extends RoboFragment implements IDataMana
    @InjectView(R.id.tree_view_list)
    TreeViewList treeViewList;
    @InjectView(R.id.tree_progress)
-   protected ProgressBarView treeProgress;
+   protected ProgressBar treeProgress;
    @InjectView(R.id.start_text)
    protected TextView startText;
    @InjectResource(R.string.done)
