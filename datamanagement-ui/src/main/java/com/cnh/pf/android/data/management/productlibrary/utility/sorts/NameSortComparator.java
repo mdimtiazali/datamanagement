@@ -9,6 +9,7 @@
 
 package com.cnh.pf.android.data.management.productlibrary.utility.sorts;
 
+import android.content.Context;
 import com.cnh.pf.model.product.library.Product;
 
 /**
@@ -16,6 +17,13 @@ import com.cnh.pf.model.product.library.Product;
  * Compares products by name
  */
 public class NameSortComparator extends AbstractProductComparator {
+
+   private final Context context;
+
+   public NameSortComparator(Context context){
+      this.context = context;
+   }
+
    /**
     * Compare two products by name
     * @param f1 first product
@@ -24,10 +32,10 @@ public class NameSortComparator extends AbstractProductComparator {
     */
    public int compare(Product f1, Product f2) {
       if (isNameEqual(f1, f2)) {
-         if (isFormEqual(f1, f2)) {
+         if (isFormEqual(f1, f2, context)) {
             return compareDefaultRate(f1, f2);
          }
-         return compareForm(f1, f2);
+         return compareForm(f1, f2, context);
       }
       return compareName(f1, f2);
    }

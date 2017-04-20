@@ -347,20 +347,6 @@ public class ProductLibraryFragment extends RoboFragment implements ProductMixCa
    }
 
    /**
-    * // FIXME: using enum names for ui is a bug - see
-    *  https://polarion.cnhind.com/polarion/#/project/pfhmidevdefects/workitem?id=pfhmi-dev-defects-3034
-    *
-    * Makes ENUM_NAMES into friendlier Enum Names
-    * @param input
-    * @return converted string
-    * @deprecated never use see https://polarion.cnhind.com/polarion/#/project/pfhmidevdefects/workitem?id=pfhmi-dev-defects-3034
-    */
-   public static String friendlyName(String input) {
-      String spaced = input.replace("_", " ");
-      return toTitleCase(spaced);
-   }
-
-   /**
     * Inflate and return the default product library view
     * @param inflater
     * @param container
@@ -529,16 +515,16 @@ public class ProductLibraryFragment extends RoboFragment implements ProductMixCa
 
                switch (v.getId()) {
                case R.id.product_mix_header_product_name_sort:
-                  productMixComparator = new ProductMixNameSortComparator();
+                  productMixComparator = new ProductMixNameSortComparator(getActivity());
                   break;
                case R.id.product_mix_header_product_form_sort:
-                  productMixComparator = new ProductMixFormSortComparator();
+                  productMixComparator = new ProductMixFormSortComparator(getActivity());
                   break;
                case R.id.product_mix_header_product_default_rate_sort:
-                  productMixComparator = new ProductMixDefaultRateSortComparator();
+                  productMixComparator = new ProductMixDefaultRateSortComparator(getActivity());
                   break;
                default:
-                  productMixComparator = new ProductMixNameSortComparator();
+                  productMixComparator = new ProductMixNameSortComparator(getActivity());
                   break;
                }
                productMixSortAscending = (button.getState() == ListHeaderSortView.STATE_SORT_ASC);
@@ -553,7 +539,7 @@ public class ProductLibraryFragment extends RoboFragment implements ProductMixCa
       }
 
       //Setup initial sort
-      productMixComparator = new ProductMixNameSortComparator();
+      productMixComparator = new ProductMixNameSortComparator(getActivity());
       productMixSortAscending = true;
       if (productMixAdapter != null) {
          productMixAdapter.sort(productMixComparator, productMixSortAscending);
@@ -579,16 +565,16 @@ public class ProductLibraryFragment extends RoboFragment implements ProductMixCa
 
             switch (v.getId()) {
             case R.id.header_name:
-               productComparator = new NameSortComparator();
+               productComparator = new NameSortComparator(getActivity());
                break;
             case R.id.header_form:
-               productComparator = new FormSortComparator();
+               productComparator = new FormSortComparator(getActivity());
                break;
             case R.id.header_default_rate:
-               productComparator = new DefaultRateSortComparator();
+               productComparator = new DefaultRateSortComparator(getActivity());
                break;
             default:
-               productComparator = new NameSortComparator();
+               productComparator = new NameSortComparator(getActivity());
                break;
             }
             productSortAscending = (button.getState() == ListHeaderSortView.STATE_SORT_ASC);
@@ -602,7 +588,7 @@ public class ProductLibraryFragment extends RoboFragment implements ProductMixCa
       }
 
       //Setup initial sort
-      productComparator = new NameSortComparator();
+      productComparator = new NameSortComparator(getActivity());
       productSortAscending = true;
       if (productAdapter != null) {
          productAdapter.sort(productComparator, productSortAscending);
