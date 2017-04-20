@@ -232,6 +232,7 @@ public abstract class BaseDataFragment extends RoboFragment implements IDataMana
             onResumeSession(null);
          }
       }
+      ((DataManagementActivity) getActivity()).hideSubheader();
    }
 
    @Override
