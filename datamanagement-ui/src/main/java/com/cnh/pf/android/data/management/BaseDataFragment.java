@@ -26,6 +26,7 @@ import android.widget.TextView;
 
 import com.cnh.android.dialog.DialogView;
 import com.cnh.android.dialog.DialogViewInterface;
+import com.cnh.android.pf.widget.view.DisabledOverlay;
 import com.cnh.android.widget.activity.TabActivity;
 import com.cnh.jgroups.ObjectGraph;
 import com.cnh.jgroups.Operation;
@@ -93,11 +94,14 @@ public abstract class BaseDataFragment extends RoboFragment implements IDataMana
    @InjectResource(R.string.done)
    String doneStr;
 
+   protected DisabledOverlay disabled = null;
+
    private TreeStateManager<ObjectGraph> manager;
    private TreeBuilder<ObjectGraph> treeBuilder;
    protected ObjectTreeViewAdapter treeAdapter;
    protected Handler handler = new Handler(Looper.getMainLooper());
    protected boolean cancelled;
+   protected boolean hasLocalSource = false;
 
    /** Current session */
    protected volatile DataManagementSession session = null;
@@ -114,6 +118,7 @@ public abstract class BaseDataFragment extends RoboFragment implements IDataMana
     */
    public void onNewSession() {
       setSession(null);
+      hasLocalSource = getDataManagementService().hasLocalSources();
    }
 
    /**
@@ -153,6 +158,21 @@ public abstract class BaseDataFragment extends RoboFragment implements IDataMana
    protected abstract void onOtherSessionUpdate(DataManagementSession session);
 
    protected void onViewChange(org.jgroups.View oldView, org.jgroups.View newView) {
+      logger.debug("onViewChange", newView);
+      // new local sources appear
+      if (!hasLocalSource && getDataManagementService().hasLocalSources()) {
+         hasLocalSource = true;
+         disabled.setVisibility(View.GONE);
+         onResumeSession(null);
+         return;
+      }
+      // all local sources gone
+      if (hasLocalSource && !getDataManagementService().hasLocalSources()) {
+         hasLocalSource = false;
+         disabled.setMode(DisabledOverlay.MODE.DISCONNECTED);
+         onResumeSession(null);
+         return;
+      }
    }
 
    /**
@@ -181,12 +201,14 @@ public abstract class BaseDataFragment extends RoboFragment implements IDataMana
       View layout = inflater.inflate(R.layout.import_layout, container, false);
       LinearLayout leftPanel = (LinearLayout) layout.findViewById(R.id.left_panel_wrapper);
       inflateViews(inflater, leftPanel);
+      disabled = (DisabledOverlay)layout.findViewById(R.id.disabled_overlay);
       return layout;
    }
 
    @Override
    public void onViewCreated(View view, Bundle savedInstanceState) {
       super.onViewCreated(view, savedInstanceState);
+      disabled.setMode(DisabledOverlay.MODE.LOADING);
       selectAllBtn.setOnClickListener(new View.OnClickListener() {
          @Override
          public void onClick(View v) {

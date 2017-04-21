@@ -371,6 +371,15 @@ public class DataManagementService extends RoboService implements SharedPreferen
             && Arrays.binarySearch(session.getDestinationTypes(), Datasource.Source.INTERNAL) > -1;
    }
 
+   /**
+    * Return whether DISPLAY or INTERNAL data source is available
+    * @return true if available, false otherwise;
+    */
+   public boolean hasLocalSources() {
+      return dsHelper.getLocalDatasources(new Datasource.Source[] {Datasource.Source.DISPLAY, Datasource.Source.INTERNAL}).size() > 0;
+   }
+
+
    private void performOperations(final DataManagementSession session) {
       try {
          session.setResult(null);
