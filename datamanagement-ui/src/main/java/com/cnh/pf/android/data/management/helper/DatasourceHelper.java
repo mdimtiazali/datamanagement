@@ -63,7 +63,7 @@ public class DatasourceHelper implements MediumImpl {
    }
 
    public void setSourceMap(View view) throws Exception {
-      View oldView = currentView;
+      final View oldView = currentView;
       currentView = view;
       final Address[][] diff = View.diff(oldView, view);
       logger.trace("View change.  Left: {}, Joined: {}", Arrays.toString(diff[1]), Arrays.toString(diff[0]));
@@ -71,9 +71,9 @@ public class DatasourceHelper implements MediumImpl {
          @Override
          public void run() {
             updateViewMaps(diff);
+            eventManager.fire(new DataServiceConnectionImpl.ViewChangeEvent(oldView, currentView));
          }
       }.start();
-      eventManager.fire(new DataServiceConnectionImpl.ViewChangeEvent(oldView, view));
    }
 
    //read pending diff and update the map
@@ -116,6 +116,7 @@ public class DatasourceHelper implements MediumImpl {
       catch (Throwable e) {
          logger.error("", e);
       }
+      logger.debug("updateViewMaps done");
    }
 
    /**

@@ -21,6 +21,7 @@ import android.widget.LinearLayout;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import com.cnh.android.pf.widget.view.DisabledOverlay;
 import com.cnh.android.widget.control.PickListAdapter;
 import com.cnh.android.widget.control.PickListEditable;
 import com.cnh.android.widget.control.PickListItem;
@@ -207,11 +208,22 @@ public class ExportFragment extends BaseDataFragment {
 
    @Override
    public void onNewSession() {
+      super.onNewSession();
+
       DataManagementSession oldSession = getSession();
       leftStatusPanel.setVisibility(View.GONE);
       exportDropZone.setVisibility(View.VISIBLE);
-      treeProgress.setVisibility(View.VISIBLE);
       treeViewList.setVisibility(View.GONE);
+
+      if (hasLocalSource) {
+         disabled.setVisibility(View.GONE);
+         treeProgress.setVisibility(View.VISIBLE);
+      } else {
+         disabled.setVisibility(View.VISIBLE);
+         disabled.setMode(DisabledOverlay.MODE.DISCONNECTED);
+         return;
+      }
+
       DataManagementSession session = new DataManagementSession(new Datasource.Source[] { Datasource.Source.INTERNAL, Datasource.Source.DISPLAY }, null, null, null);
       if (oldSession != null) {
          session.setFormat(oldSession.getFormat());
