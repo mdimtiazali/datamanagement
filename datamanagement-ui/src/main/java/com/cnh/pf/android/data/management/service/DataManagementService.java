@@ -15,6 +15,7 @@ import android.app.NotificationManager;
 import android.app.PendingIntent;
 import android.content.Intent;
 import android.content.SharedPreferences;
+import android.database.ContentObserver;
 import android.graphics.drawable.BitmapDrawable;
 import android.net.Uri;
 import android.os.AsyncTask;
@@ -39,6 +40,8 @@ import com.cnh.pf.android.data.management.parser.FormatManager;
 import com.cnh.pf.data.management.DataManagementSession;
 import com.cnh.pf.data.management.aidl.IDataManagementListenerAIDL;
 import com.cnh.pf.data.management.aidl.MediumDevice;
+import com.cnh.pf.data.management.service.DatasourceContentClient;
+import com.cnh.pf.data.management.service.DatasourceContract;
 import com.cnh.pf.data.management.service.ServiceConstants;
 import com.cnh.pf.datamng.Process;
 import com.cnh.pf.datamng.Process.Result;
@@ -264,30 +267,27 @@ public class DataManagementService extends RoboService implements SharedPreferen
          paths[i] = folders[i].getAbsolutePath();
       }
       //Launch USB datasource broadcast for every root folder on USB
-      startUsbServices(paths, false, null);
-      //wait for datasources, then see if any cared about the data.
-      handler.postDelayed(new Runnable() {
+      scanUsbServices(paths, false, null, new Runnable() {
          @Override
          public void run() {
-            logger.info("Checking datasources on USB");
-            Address[] addr = dsHelper.getAddressForSourceType(Datasource.Source.USB);
-            if (addr != null && addr.length > 0) {
-               logger.info("Found USB data! {} datasources to be exact.", addr.length);
-               sendStatus(dataStatus, getResources().getString(R.string.usb_data_available));
-            }
-            else {
-               sendStatus(dataStatus, getResources().getString(R.string.usb_no_data_available));
-               handler.postDelayed(new Runnable() {
+            logger.info("Found USB data!");
+            sendStatus(dataStatus, getResources().getString(R.string.usb_data_available));
+            isScanningUsb = false;
+         }
+      }, new Runnable() {
+         @Override
+         public void run() {
+            logger.info("No USB Data found");
+            sendStatus(dataStatus, getResources().getString(R.string.usb_no_data_available));
+            handler.postDelayed(new Runnable() {
                   @Override
                   public void run() {
                      removeStatus(dataStatus);
                   }
                }, usbDelay);
-            }
-            stopUsbServices();
             isScanningUsb = false;
          }
-      }, usbDelay * 2);
+      });
    }
 
    protected void removeUsbStatus() {
@@ -304,14 +304,18 @@ public class DataManagementService extends RoboService implements SharedPreferen
       if (sessionOperation.equals(DataManagementSession.SessionOperation.DISCOVERY)) {
          if (isUsbImport(session)) {
             logger.debug("Starting USB Datasource");
-            startUsbServices(new String[] { session.getSource().getPath().getPath() }, false, session.getFormat());
-            handler.postDelayed(new Runnable() {
+            startUsbServices(new String[] { session.getSource().getPath().getPath() }, false, session.getFormat(), new Runnable() {
                @Override
                public void run() {
                   logger.debug("Running discovery");
                   new DiscoveryTask().executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR, session);
                }
-            }, usbDelay);
+            }, new Runnable() {
+               @Override public void run() {
+                  globalEventManager.fire(new ErrorEvent(session, ErrorEvent.DataError.NO_SOURCE_DATASOURCE));
+                  session.setResult(Process.Result.NO_DATASOURCE);
+               }
+            });
          }
          else {
             new DiscoveryTask().executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR, session);
@@ -380,10 +384,8 @@ public class DataManagementService extends RoboService implements SharedPreferen
          sendStatus(session, statusStarting);
          if (isUsbExport(session)) {
             File destinationFolder = new File(session.getTarget().getPath(), formatManager.getFormat(session.getFormat()).path);
-            startUsbServices(new String[] { destinationFolder.getPath() }, true, session.getFormat());
-            handler.postDelayed(new Runnable() {
-               @Override
-               public void run() {
+            startUsbServices(new String[] { destinationFolder.getPath() }, true, session.getFormat(), new Runnable() {
+               @Override public void run() {
                   if (!hasActiveSession()) {
                      logger.debug("Operation cancelled before calling performOperations");
                      return; //if cancel was pressed before datasource started
@@ -391,7 +393,12 @@ public class DataManagementService extends RoboService implements SharedPreferen
                   performCalled = true;
                   new PerformOperationsTask().executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR, session);
                }
-            }, usbDelay);
+            }, new Runnable() {
+               @Override public void run() {
+                  globalEventManager.fire(new ErrorEvent(session, ErrorEvent.DataError.NO_TARGET_DATASOURCE));
+                  session.setResult(Process.Result.NO_DATASOURCE);
+               }
+            });
          }
          else {
             performCalled = true;
@@ -403,16 +410,50 @@ public class DataManagementService extends RoboService implements SharedPreferen
       }
    }
 
-   private void startUsbServices(String[] path, boolean create, String format) {
+   private void scanUsbServices(String[] path, boolean create, String format, final Runnable onSuccess, final Runnable onFailure) {
+      startUsbServices(path, create, format, ServiceConstants.ACTION_SCAN, onSuccess, onFailure);
+   }
+
+   private void startUsbServices(String[] path, boolean create, String format, final Runnable onSuccess, final Runnable onFailure) {
+      startUsbServices(path, create, format, ServiceConstants.USB_ACTION_INTENT, onSuccess, onFailure);
+   }
+
+   private void startUsbServices(String[] path, boolean create, String format, String intent, final Runnable onSuccess, final Runnable onFailure) {
       logger.debug("Starting USB datasource");
-      Intent i = new Intent(ServiceConstants.USB_ACTION_INTENT);
-      i.putExtra(ServiceConstants.USB_PATH, path);
-      i.putExtra(ServiceConstants.CREATE_PATH, create);
-      if (format != null) {
-         i.putExtra(ServiceConstants.FORMAT, format);
+      if(path.length > 0) {
+         final DatasourceContentClient dClient = new DatasourceContentClient(this);
+         dClient.addFolderRequest(path);
+         getContentResolver().registerContentObserver(DatasourceContract.Folder.CONTENT_URI, true, new ContentObserver(handler) {
+
+            @Override public void onChange(boolean selfChange) {
+               onChange(selfChange, null);
+            }
+
+            @Override public void onChange(boolean selfChange, Uri uri) {
+               //check if heard back from all datasources
+               if (dClient.isRequestProcessed()) {
+                  logger.info("Got responses from all datasources, continuing. selfchange {}", selfChange);
+                  getContentResolver().unregisterContentObserver(this);
+                  handler.postDelayed(dClient.hasValid() ? onSuccess : onFailure, 2000);
+                  getContentResolver().delete(DatasourceContract.Folder.CONTENT_URI, "", null);
+               }
+               else {
+                  logger.info("Got response from a datasource {}", uri);
+               }
+            }
+         });
+         Intent i = new Intent(intent);
+         i.putExtra(ServiceConstants.USB_PATH, path);
+         i.putExtra(ServiceConstants.CREATE_PATH, create);
+         if (format != null) {
+            i.putExtra(ServiceConstants.FORMAT, format);
+         }
+         i.setFlags(Intent.FLAG_INCLUDE_STOPPED_PACKAGES);
+         getApplicationContext().sendBroadcast(i);
       }
-      i.setFlags(Intent.FLAG_INCLUDE_STOPPED_PACKAGES);
-      getApplicationContext().sendBroadcast(i);
+      else { //if paths is empty
+         handler.postDelayed(onFailure, 1000);
+      }
    }
 
    public void stopUsbServices() {
@@ -669,6 +710,7 @@ public class DataManagementService extends RoboService implements SharedPreferen
 
       @Override
       protected void onPostExecute(DataManagementSession session) {
+         logger.debug("PerformTask calling completeOperation");
          completeOperation(session);
          super.onPostExecute(session);
       }
@@ -738,9 +780,11 @@ public class DataManagementService extends RoboService implements SharedPreferen
             Address[] addresses = getAddresses(session.getTargets());
             //if process already running tell it to cancel.
             if (addresses.length > 0 && performCalled) {
+               logger.debug("Telling process to cancel");
                mediator.cancel(addresses);
             }
             else {
+               logger.debug("Perform not called yet setting result manually to cancel");
                session.setResult(Process.Result.CANCEL);
             }
          }
@@ -755,7 +799,8 @@ public class DataManagementService extends RoboService implements SharedPreferen
       protected void onPostExecute(DataManagementSession session) {
          //only call super and fire event if we caught the datasource before it started working.
          //otherwise the performOperations call itself will return the canceled status.
-         if (Process.Result.CANCEL.equals(session.getResult())) {
+         if (Process.Result.CANCEL.equals(session.getResult()) && !performCalled) {
+            logger.debug("CancelTask calling completeOperation");
             completeOperation(session);
             super.onPostExecute(session);
          }

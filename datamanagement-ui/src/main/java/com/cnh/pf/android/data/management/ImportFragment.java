@@ -191,7 +191,7 @@ public class ImportFragment extends BaseDataFragment {
    @Override
    public void onNewSession() {
       removeProgressPanel();
-      setSession(null);
+      super.onNewSession();
    }
 
    @Override
