@@ -62,12 +62,12 @@
                 style="@style/TextAppearance.Import.Entity"
                 android:text="@string/select_source_first" />
 
-        <com.cnh.android.widget.control.ProgressBarView
+        <ProgressBar
                 android:id="@+id/tree_progress"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_gravity="center|center_vertical"
-                style="@style/ProgressBarBig.Indeterminate"
+                style="@style/IndeterminateProgressLargeBlue"
                 android:visibility="gone" />
 
         <pl.polidea.treeview.TreeViewList
