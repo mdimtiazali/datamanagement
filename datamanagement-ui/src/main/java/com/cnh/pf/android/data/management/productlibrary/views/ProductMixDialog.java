@@ -34,7 +34,6 @@ import com.cnh.android.pf.widget.utilities.EnumValueToUiStringUtility;
 import com.cnh.android.pf.widget.utilities.ProductHelperMethods;
 import com.cnh.android.pf.widget.utilities.ProductMixHelper;
 import com.cnh.android.pf.widget.utilities.ProductMixRecipeHelper;
-import com.cnh.android.pf.widget.utilities.UnitsSettings;
 import com.cnh.android.pf.widget.utilities.UnitsToggleHolder;
 import com.cnh.android.pf.widget.utilities.commands.ProductCommandParams;
 import com.cnh.android.pf.widget.utilities.commands.ProductMixCommandParams;
@@ -108,10 +107,6 @@ public class ProductMixDialog extends DialogView implements DialogHandlerListene
    private ProductMix productMix;
    private List<ProductMix> productMixes;
    private DialogActionType actionType;
-   private MeasurementSystem measurementSystemProductDensity = MeasurementSystem.IMPERIAL;
-   private MeasurementSystem measurementSystemProductMass = MeasurementSystem.IMPERIAL;
-   private MeasurementSystem measurementSystemProductVolume = MeasurementSystem.IMPERIAL;
-   private MeasurementSystem measurementSystemProductOther = MeasurementSystem.IMPERIAL;
    private boolean isProductMixFormSet = false;
    private boolean isCarrierSet = false;
    private boolean isOneProductMixSet = false;
@@ -261,10 +256,6 @@ public class ProductMixDialog extends DialogView implements DialogHandlerListene
    public ProductMixDialog(Context context, DialogActionType actionType, IVIPServiceAIDL vipService, ProductMix productMix, ProductMixCallBack callBack,
          List<ProductMix> productMixes) {
       super(context);
-      measurementSystemProductDensity = UnitsSettings.queryMeasurementSystem(context, UnitsSettings.DENSITY);
-      measurementSystemProductMass = UnitsSettings.queryMeasurementSystem(context, UnitsSettings.MASS);
-      measurementSystemProductVolume = UnitsSettings.queryMeasurementSystem(context, UnitsSettings.VOLUME);
-      measurementSystemProductOther = UnitsSettings.queryMeasurementSystem(context, UnitsSettings.OTHER);
       this.actionType = actionType;
       this.productMix = productMix;
       this.vipService = vipService;
@@ -431,7 +422,7 @@ public class ProductMixDialog extends DialogView implements DialogHandlerListene
                else {
                   dialogUsageAndCropTypeHandler.setValuesToUi(productMixForm);
                }
-               dialogPackageSizeHandler.setUnitsOptions(productMix.getProductMixParameters(), productMixForm, measurementSystemProductOther, productUnitsList);
+               dialogPackageSizeHandler.setUnitsOptions(productMix.getProductMixParameters(), productMixForm, productUnitsList);
                initializeDensityUnits();
                resetCarrierProduct();
             }
@@ -480,13 +471,13 @@ public class ProductMixDialog extends DialogView implements DialogHandlerListene
 
       //Add Application Rate Data to UI
       {
-         productDialogsApplicationRateHandler.setUnitsOptions(productMixParameters, productMixForm, measurementSystemProductOther, productUnitsList);
+         productDialogsApplicationRateHandler.setUnitsOptions(productMixParameters, productMixForm, productUnitsList);
          ProductUnits rateUnit = productDialogsApplicationRateHandler.getSelectedRateUnits();
          if (rateUnit != null) {
             String rateUnitName = rateUnit.getName();
             if (rateUnitName != null) {
                productDialogsApplicationRateHandler.setStepperParameters(rateUnitName);
-               productDialogsApplicationRateHandler.setValuesToUi(productMixParameters, rateUnitName);
+               productDialogsApplicationRateHandler.setValuesToUi(productMixParameters);
             }
             calculateTotalAmountForProductMix();
             calculateNewApplicationRatePerProduct(new Float(productDialogsApplicationRateHandler.getStepperRate1Value()),
@@ -518,13 +509,14 @@ public class ProductMixDialog extends DialogView implements DialogHandlerListene
          Product product = recipeElement.getProduct();
          if (product != null) {
             log.info("beforeSetUnitToSegmentedToggleButtonGroup");
-            setUnitToSegmentedToggleButtonGroup(element.productUnit, product.getForm(), measurementSystemProductOther, ProductDisplayItem.AMOUNT);
+            setUnitToSegmentedToggleButtonGroup(element.productUnit, product.getForm(),
+                  ProductHelperMethods.queryAmountMeasurementSystemForProductForm(product.getForm(), getContext()), ProductDisplayItem.AMOUNT);
             UnitsToggleHolder unitHolder = (UnitsToggleHolder) element.productUnit.getTag();
             if (unitHolder == null) {
                log.warn("unitHolder is null ");
                unitHolder = new UnitsToggleHolder();
             }
-            unitHolder.currentChoice = ProductMixRecipeHelper.retrieveAmountUnitsFromProductMixRecipe(recipeElement, measurementSystemProductVolume, measurementSystemProductMass);
+            unitHolder.currentChoice = ProductMixRecipeHelper.retrieveAmountUnitsFromProductMixRecipe(recipeElement, getContext());
             element.currentRecipe = recipeElement;
             PickListAdapter productListAdapter = new PickListAdapter(element.productPickList, getContext());
             fillPickListAdapterWithProducts(productListAdapter, products);
@@ -625,7 +617,8 @@ public class ProductMixDialog extends DialogView implements DialogHandlerListene
                         productElement.productPickList.setTag(product);
                         recipeDeleteList.remove(productElement.currentRecipe);
 
-                        setUnitToSegmentedToggleButtonGroup(productElement.productUnit, product.getForm(), measurementSystemProductOther, ProductDisplayItem.AMOUNT);
+                        setUnitToSegmentedToggleButtonGroup(productElement.productUnit, product.getForm(),
+                              ProductHelperMethods.queryAmountMeasurementSystemForProductForm(product.getForm(), getContext()), ProductDisplayItem.AMOUNT);
                         productElement.productUnit.setToggleListSelectionListener(new SegmentedTogglePickListListener() {
                            @Override
                            public void onToggleButtonCheckedChanged(RadioGroup radioGroup, int position) {
@@ -683,7 +676,9 @@ public class ProductMixDialog extends DialogView implements DialogHandlerListene
                public void onNothingSelected(AdapterView<?> adapterView) {
                }
             });
-            setUnitToSegmentedToggleButtonGroup(productElement.productUnit, productMixForm, measurementSystemProductOther, ProductDisplayItem.AMOUNT);
+            // this is a guess - as long as there is no form for the product selected it is not possible to choose the correct measurement system
+            setUnitToSegmentedToggleButtonGroup(productElement.productUnit, productMixForm,
+                  ProductHelperMethods.queryAmountMeasurementSystemForProductForm(productMixForm, getContext()), ProductDisplayItem.AMOUNT);
          }
       }
    }
@@ -810,10 +805,11 @@ public class ProductMixDialog extends DialogView implements DialogHandlerListene
                   newProduct.setName(newProductEditText.getText().toString());
                   newProduct.setForm(ProductForm.findByValue(newProductFormPickList.getSelectedItemPosition()));
 
-                  if (measurementSystemProductOther != null && productUnitsList != null && !productUnitsList.isEmpty()) {
-                     ProductUnits filteredProductUnits = ProductHelperMethods
-                           .filterUnitList(newProduct.getForm(), ProductDisplayItem.RATES, measurementSystemProductOther, productUnitsList).get(0);
-                     ProductHelperMethods.bindProductRateUnits(newProduct, filteredProductUnits, measurementSystemProductOther);
+                  if (productUnitsList != null && !productUnitsList.isEmpty()) {
+                     MeasurementSystem measurementSystemForRates = ProductHelperMethods.queryApplicationRateMeasurementSystemForProductForm(newProduct.getForm(), getContext());
+                     ProductHelperMethods.bindProductRateUnits(newProduct,
+                           ProductHelperMethods.filterUnitList(newProduct.getForm(), ProductDisplayItem.RATES, measurementSystemForRates, productUnitsList).get(0),
+                           measurementSystemForRates);
                   }
 
                   ProductCommandParams params = new ProductCommandParams();
@@ -898,22 +894,15 @@ public class ProductMixDialog extends DialogView implements DialogHandlerListene
          dialogUsageAndCropTypeHandler.setValuesToProduct(productMixParameters);
          dialogPackageSizeHandler.setValuesToProduct(productMixParameters);
          dialogDensityHandler.setValuesToProduct(productMixParameters);
-         ProductUnits applicationUnit = null;
-         if (productDialogsApplicationRateHandler.getSelectedRateUnits() != null) {
-            applicationUnit = productDialogsApplicationRateHandler.getSelectedRateUnits();
-         }
+         productDialogsApplicationRateHandler.setValuesToProduct(productMixParameters);
+
          ProductUnits carrierUnit = null;
          if (carrierProductHolder.productPickList.getTag() != null) {
             UnitsToggleHolder holder = (UnitsToggleHolder) carrierProductHolder.productUnit.getTag();
             carrierUnit = holder.currentChoice;
          }
-//       TODO: check measurement systems handling
-//       ProductHelperMethods.bindProductDensityUnits(productMixParameters, densityUnit, measurementSystemProductDensity);
-//       ProductHelperMethods.bindProductPackageSizeUnits(productMixParameters, packageSizeUnit, measurementSystemProductOther);
-         ProductHelperMethods.bindProductRateUnits(productMixParameters, applicationUnit, measurementSystemProductOther);
-         ProductMixHelper.bindMixTotalUnits(tempProductMix, carrierUnit, measurementSystemProductOther);
 
-         productDialogsApplicationRateHandler.setValuesToProduct(productMixParameters);
+         ProductMixHelper.bindMixTotalUnits(tempProductMix, carrierUnit, ProductHelperMethods.queryAmountMeasurementSystemForProductForm(productMixForm, getContext()));
 
          ProductMixRecipe productCarrier;
          if (actionType != DialogActionType.EDIT) {
@@ -924,7 +913,7 @@ public class ProductMixDialog extends DialogView implements DialogHandlerListene
             productCarrier = carrierProductHolder.currentRecipe;
          }
          ProductMixRecipeHelper.setAmountAndUnitsToProductMixRecipe(productCarrier, ((UnitsToggleHolder) carrierProductHolder.productUnit.getTag()).currentChoice,
-               carrierProductHolder.productAmountStepper.getValue(), measurementSystemProductVolume, measurementSystemProductMass);
+               carrierProductHolder.productAmountStepper.getValue(), getContext());
          tempProductMix.setMixType(MixType.FORMULA);
          tempProductMix.setProductCarrier(productCarrier);
          tempProductMix.setRecipe(createProductRecipeList());
@@ -977,7 +966,7 @@ public class ProductMixDialog extends DialogView implements DialogHandlerListene
                recipe.setProduct(productElementHolder.currentRecipe.getProduct());
             }
             ProductMixRecipeHelper.setAmountAndUnitsToProductMixRecipe(recipe, ((UnitsToggleHolder) productElementHolder.productUnit.getTag()).currentChoice,
-                  productElementHolder.productAmountStepper.getValue(), measurementSystemProductVolume, measurementSystemProductMass);
+                  productElementHolder.productAmountStepper.getValue(), getContext());
             if (!productMixRecipeList.contains(recipe)) {
                productMixRecipeList.add(recipe);
             }
@@ -1000,7 +989,8 @@ public class ProductMixDialog extends DialogView implements DialogHandlerListene
          carrierProductHolder.productPickList.setOnItemSelectedListener(new OnProductPickListItemSelectedListener());
       }
       if (actionType == DialogActionType.ADD) {
-         setUnitToSegmentedToggleButtonGroup(carrierProductHolder.productUnit, productMixForm, measurementSystemProductOther, ProductDisplayItem.AMOUNT);
+         setUnitToSegmentedToggleButtonGroup(carrierProductHolder.productUnit, productMixForm,
+               ProductHelperMethods.queryAmountMeasurementSystemForProductForm(productMixForm, getContext()), ProductDisplayItem.AMOUNT);
          carrierProductHolder.productUnit.setEnabled(false);
       }
       mixProductsLayout.addView(productElement);
@@ -1027,7 +1017,8 @@ public class ProductMixDialog extends DialogView implements DialogHandlerListene
             recipe.setProduct(product);
             carrierProductHolder.currentRecipe = recipe;
             if (product != null) {
-               setUnitToSegmentedToggleButtonGroup(carrierProductHolder.productUnit, product.getForm(), measurementSystemProductOther, ProductDisplayItem.AMOUNT);
+               setUnitToSegmentedToggleButtonGroup(carrierProductHolder.productUnit, product.getForm(),
+                     ProductHelperMethods.queryAmountMeasurementSystemForProductForm(productMixForm, getContext()), ProductDisplayItem.AMOUNT);
             }
             carrierProductHolder.productUnit.setToggleListSelectionListener(new SegmentedTogglePickListListener() {
                @Override
@@ -1198,9 +1189,10 @@ public class ProductMixDialog extends DialogView implements DialogHandlerListene
                newProduct.setName(newProductEditText.getText().toString());
                newProduct.setForm(ProductForm.findByValue(newProductFormPickList.getSelectedItemPosition()));
                productMixFormPickList.setSelectionByPosition(newProductFormPickList.getSelectedItemPosition());
+               MeasurementSystem measurementSystemForRates = ProductHelperMethods.queryApplicationRateMeasurementSystemForProductForm(newProduct.getForm(), getContext());
                ProductHelperMethods.bindProductRateUnits(newProduct,
-                     ProductHelperMethods.filterUnitList(newProduct.getForm(), ProductDisplayItem.RATES, measurementSystemProductOther, productUnitsList).get(0),
-                     measurementSystemProductOther);
+                     ProductHelperMethods.filterUnitList(newProduct.getForm(), ProductDisplayItem.RATES, measurementSystemForRates, productUnitsList).get(0),
+                     measurementSystemForRates);
                ProductCommandParams params = new ProductCommandParams();
                params.vipService = vipService;
                params.product = newProduct;
@@ -1268,7 +1260,7 @@ public class ProductMixDialog extends DialogView implements DialogHandlerListene
     * @param productForm the selected product from
     */
    private void initializeApplicationRatesSegmentedToggleButtonGroup(ProductForm productForm) {
-      productDialogsApplicationRateHandler.setUnitsOptions(productMix.getProductMixParameters(), productForm, measurementSystemProductOther, productUnitsList);
+      productDialogsApplicationRateHandler.setUnitsOptions(productMix.getProductMixParameters(), productForm, productUnitsList);
       productDialogsApplicationRateHandler.setStepperParameters(productDialogsApplicationRateHandler.getSelectedRateUnits().getName());
    }
 
@@ -1276,7 +1268,7 @@ public class ProductMixDialog extends DialogView implements DialogHandlerListene
     * Initialize the Advanced View
     */
    private void initializeAdvancedView() {
-      dialogPackageSizeHandler.setUnitsOptions(productMix.getProductMixParameters(), productMixForm, measurementSystemProductOther, productUnitsList);
+      dialogPackageSizeHandler.setUnitsOptions(productMix.getProductMixParameters(), productMixForm, productUnitsList);
       initializeDensityUnits();
    }
 
@@ -1304,8 +1296,8 @@ public class ProductMixDialog extends DialogView implements DialogHandlerListene
       }
       else {
          dialogDensityHandler.setUnitDensityVisibility(View.VISIBLE);
-         dialogDensityHandler.setUnitDensityUnitsOptions(productMix.getProductMixParameters(), productMixForm, measurementSystemProductOther, productUnitsList);
-         dialogDensityHandler.setProductDensityUnitsOptions(productMix.getProductMixParameters(), productMixForm, measurementSystemProductOther, productUnitsList);
+         dialogDensityHandler.setUnitDensityUnitsOptions(productMix.getProductMixParameters(), productMixForm, productUnitsList);
+         dialogDensityHandler.setProductDensityUnitsOptions(productMix.getProductMixParameters(), productMixForm, productUnitsList);
       }
    }
 
@@ -1592,8 +1584,10 @@ public class ProductMixDialog extends DialogView implements DialogHandlerListene
          applicationRateTableDataMap.put(product, applicationRateTableData);
       }
       applicationRateTableData.productName = product.getName();
-      applicationRateTableData.unit = ProductHelperMethods.retrieveProductRateUnits(product, measurementSystemProductOther).deepCopy();
       applicationRateTableData.productForm = product.getForm();
+      // defined in System Units Spec 5.2. that mass or volume should be used for application rates
+      applicationRateTableData.unit = ProductHelperMethods
+            .retrieveProductRateUnits(product, ProductHelperMethods.queryApplicationRateMeasurementSystemForProductForm(product.getForm(), getContext())).deepCopy();
       return applicationRateTableData;
    }
 
