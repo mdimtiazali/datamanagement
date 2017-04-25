@@ -29,6 +29,7 @@ import com.cnh.android.widget.control.ProgressBarView;
 import com.cnh.jgroups.Datasource;
 import com.cnh.jgroups.ObjectGraph;
 import com.cnh.pf.android.data.management.parser.FormatManager;
+import com.cnh.pf.android.data.management.service.DataManagementService;
 import com.cnh.pf.data.management.DataManagementSession;
 import com.cnh.pf.data.management.DataManagementSession.SessionOperation;
 import com.cnh.pf.data.management.aidl.MediumDevice;
@@ -181,13 +182,6 @@ public class ExportFragment extends BaseDataFragment {
 
    private void populateExportToPickList() {
       exportMediumPicklist.setAdapter(new PickListAdapter(exportMediumPicklist, getActivity().getApplicationContext()));
-      List<MediumDevice> devices = getDataManagementService().getMediums();
-      if (!isEmpty(devices)) {
-         int deviceId = 0;
-         for (MediumDevice device : devices) {
-            exportMediumPicklist.addItem(new ObjectPickListItem<MediumDevice>(deviceId++, device.getType().toString(), device));
-         }
-      }
       exportMediumPicklist.setOnItemSelectedListener(new PickListEditable.OnItemSelectedListener() {
          @Override
          public void onItemSelected(AdapterView<?> parent, View view, int position, long id, boolean b) {
@@ -204,8 +198,22 @@ public class ExportFragment extends BaseDataFragment {
             checkExportButton();
          }
       });
+      addMediumExportToPickList();
    }
 
+   private void addMediumExportToPickList(){
+      DataManagementService service = getDataManagementService();
+      if (service == null) return;
+
+      exportMediumPicklist.getAdapter().clear();
+      List<MediumDevice> devices = service.getMediums();
+      if (!isEmpty(devices)) {
+         int deviceId = 0;
+         for (MediumDevice device : devices) {
+            exportMediumPicklist.addItem(new ObjectPickListItem<MediumDevice>(deviceId++, device.getType().toString(), device));
+         }
+      }
+   }
    @Override
    public void onNewSession() {
       super.onNewSession();
@@ -383,7 +391,14 @@ public class ExportFragment extends BaseDataFragment {
    @Override
    public void onMediumsUpdated(List<MediumDevice> mediums) throws RemoteException {
       logger.info("onMediumsUpdated {}", mediums);
-      populateExportToPickList();
+      //switch from callback thread to UI thread
+      getActivity().runOnUiThread(new Runnable() {
+         @Override
+         public void run() {
+            //refresh the export to list
+            addMediumExportToPickList();
+         }
+      });
    }
 
    public static class ObjectPickListItem<T> extends PickListItem {
