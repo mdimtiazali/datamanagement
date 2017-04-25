@@ -183,7 +183,7 @@ public class DataManagementActivity extends TabActivity implements RoboContext, 
 
       @Override
       public void deliverVehicleCurrent(VehicleCurrent vehicleCurrent) throws RemoteException {
-         if (hasPCM() && vehicleCurrent != null && !vehicleIsCombine(vehicleCurrent.getVehicle())) {
+         if (hasPCM() && (vehicleCurrent == null || !vehicleIsCombine(vehicleCurrent.getVehicle()))) {
             //add tab, if not present
             runOnUiThread(new Runnable() {
                @Override
