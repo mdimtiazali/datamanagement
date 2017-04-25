@@ -188,11 +188,13 @@ public class DataManagementActivity extends TabActivity implements RoboContext, 
             runOnUiThread(new Runnable() {
                @Override
                public void run() {
-                  productLibraryFragmentWeakReference = new WeakReference<ProductLibraryFragment>(new ProductLibraryFragment());
                   if (productLibraryTab == null) {
+                     ProductLibraryFragment productLibraryFragment = new ProductLibraryFragment();
+                     productLibraryFragmentWeakReference = new WeakReference<ProductLibraryFragment>(productLibraryFragment);
                      productLibraryTab = new TabActivityTab(R.string.tab_product_library, R.drawable.tab_product_library_selector, "product_library_tab",
                            new DataManagementTabListener(productLibraryFragmentWeakReference.get(), DataManagementActivity.this));
                      addTab(productLibraryTab);
+                     productLibraryFragment.setVipService(vipService);
                   }
                   logger.debug("Showing productLibraryTab");
                   showTab(productLibraryTab);
@@ -357,15 +359,15 @@ public class DataManagementActivity extends TabActivity implements RoboContext, 
 
    @Override
    public void onServiceConnected(ComponentName name, IBinder service) {
-      logger.debug("onSeviceConnected called - componentClassName: " + name.getClassName() + " service: " + service.toString());
+      logger.debug("onServiceConnected called - componentClassName: " + name.getClassName() + " service: " + service.toString());
       this.vipService = IVIPServiceAIDL.Stub.asInterface(service);
       if (vipService != null) {
-         logger.debug("onSeviceConnected called - vipService != null");
+         logger.debug("onServiceConnected called - vipService != null");
          registerVIPListener();
          if (productLibraryFragmentWeakReference != null) {
             ProductLibraryFragment productLibraryFragment = productLibraryFragmentWeakReference.get();
             if (productLibraryFragment != null) {
-               logger.debug("onSeviceConnected called - productLibraryFragment != null");
+               logger.debug("onServiceConnected called - productLibraryFragment != null");
                productLibraryFragment.setVipService(this.vipService);
             }
          }
@@ -374,7 +376,7 @@ public class DataManagementActivity extends TabActivity implements RoboContext, 
 
    @Override
    public void onServiceDisconnected(ComponentName name) {
-      logger.debug("onSeviceDisconnected called - componentClassName: " + name.getClassName());
+      logger.debug("onServiceDisconnected called - componentClassName: " + name.getClassName());
       if (vipService != null) {
          unregisterVIPListener();
          if (productLibraryFragmentWeakReference != null) {
