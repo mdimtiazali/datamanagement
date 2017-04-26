@@ -65,12 +65,14 @@ public class DataManagementActivity extends TabActivity implements RoboContext, 
    private static final Logger logger = LoggerFactory.getLogger(DataManagementActivity.class);
 
    private static final String TAG = DataManagementActivity.class.getName();
+   public static final String PRODUCT_LIBRARY_TAB = "product_library_tab";
 
    protected HashMap<Key<?>, Object> scopedObjects = new HashMap<Key<?>, Object>();
    protected EventManager eventManager;
    private IVIPServiceAIDL vipService;
    private WeakReference<ProductLibraryFragment> productLibraryFragmentWeakReference;
    private TabActivityTab productLibraryTab = null;
+   private boolean calledProductLibraryViaShortcut = false;
 
    private class DataManagementTabListener implements TabActivityListeners.TabListener {
       private final Activity a;
@@ -191,13 +193,23 @@ public class DataManagementActivity extends TabActivity implements RoboContext, 
                   if (productLibraryTab == null) {
                      ProductLibraryFragment productLibraryFragment = new ProductLibraryFragment();
                      productLibraryFragmentWeakReference = new WeakReference<ProductLibraryFragment>(productLibraryFragment);
-                     productLibraryTab = new TabActivityTab(R.string.tab_product_library, R.drawable.tab_product_library_selector, "product_library_tab",
+                     productLibraryTab = new TabActivityTab(R.string.tab_product_library, R.drawable.tab_product_library_selector, PRODUCT_LIBRARY_TAB,
                            new DataManagementTabListener(productLibraryFragmentWeakReference.get(), DataManagementActivity.this));
                      addTab(productLibraryTab);
                      productLibraryFragment.setVipService(vipService);
                   }
-                  logger.debug("Showing productLibraryTab");
-                  showTab(productLibraryTab);
+                  if (productLibraryTab.isHidden()) {
+                     logger.debug("Showing productLibraryTab");
+                     // TabActivity is not handling that for an already shown tab nothing should happen during the call of the method.
+                     // Also it deselects the tab always which leads to a bug here. So only call showTab if it is hidden.
+                     // https://polarion.cnhind.com/polarion/#/project/Core_Display_PDS/workitem?id=COREPDS-1458
+                     showTab(productLibraryTab);
+                  }
+                  if (calledProductLibraryViaShortcut) {
+                     logger.debug("executing shortcut action / jumping to product library");
+                     setSelectedTab(productLibraryTab);
+                     calledProductLibraryViaShortcut = false; // we don't need this value anymore during the life of this activity.
+                  }
                }
             });
          }
@@ -278,6 +290,21 @@ public class DataManagementActivity extends TabActivity implements RoboContext, 
       addTab(exportTab);
       setTabActivityTitle(getString(R.string.app_name));
       selectTabAtPosition(0);
+
+      // It is not possible to jump to the ProductLibraryFragment/Tab at this time. So it's necessary to save
+      // if the activity was called via shortcut to jump to the tab as soon as it is ready.
+      Intent currentIntent = getIntent();
+      // is there any const we can use instead of this string?
+      if (currentIntent.hasExtra("com.cnh.android.shortcut.extra.SHORTCUT")) {
+         Bundle extras = currentIntent.getExtras();
+         logger.debug("Data Management Activity was called via shortcut ", extras.toString());
+         String tabId = getTabId(extras);
+         if (PRODUCT_LIBRARY_TAB.equals(tabId)) {
+            logger.debug("Product Library was called via shortcut");
+            calledProductLibraryViaShortcut = true;
+            extras.remove(PRODUCT_LIBRARY_TAB);
+         }
+      }
    }
 
    /**
