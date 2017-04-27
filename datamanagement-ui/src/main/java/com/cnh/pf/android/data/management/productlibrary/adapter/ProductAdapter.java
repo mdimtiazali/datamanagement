@@ -216,14 +216,15 @@ public final class ProductAdapter extends SearchableSortableExpandableListAdapte
       viewHolder.product = productDetail;
 
       if (viewHolder.product != null) {
-         MeasurementSystem measurementSystem = ProductHelperMethods.getMeasurementSystemForProduct(viewHolder.product, volumeMeasurementSystem, massMeasurementSystem);
          viewHolder.appRate1Text.setText(UnitUtility.formatRateUnits(productDetail, productDetail.getDefaultRate()));
          viewHolder.appRate2Text.setText(UnitUtility.formatRateUnits(productDetail, productDetail.getRate2()));
          viewHolder.deltaRateText.setText(UnitUtility.formatRateUnits(productDetail, productDetail.getDeltaRate()));
          viewHolder.minRateText.setText(UnitUtility.formatRateUnits(productDetail, productDetail.getMinRate()));
          viewHolder.maxRateText.setText(UnitUtility.formatRateUnits(productDetail, productDetail.getMaxRate()));
-         viewHolder.packageText.setText(UnitUtility.formatPackageUnits(productDetail, productDetail.getPackageSize(), measurementSystem));
-         viewHolder.densityText.setText(UnitUtility.formatDensityUnits(productDetail, productDetail.getDensity(), measurementSystem));
+         viewHolder.packageText.setText(UnitUtility.formatPackageUnits(productDetail, productDetail.getPackageSize(),
+               ProductHelperMethods.queryPageSizeMeasurementSystemForProductForm(viewHolder.product.getForm(), context)));
+         viewHolder.densityText
+               .setText(UnitUtility.formatDensityUnits(productDetail, productDetail.getDensity(), UnitsSettings.queryMeasurementSystem(context, UnitsSettings.DENSITY)));
 
          CNHPlanterFanData cnhPlanterFanData = productDetail.getCnhPlanterFanData();
 
@@ -241,7 +242,8 @@ public final class ProductAdapter extends SearchableSortableExpandableListAdapte
          }
 
          if (productDetail.getForm() == ProductForm.SEED || productDetail.getForm() == ProductForm.PLANT) {
-            viewHolder.unitDensityText.setText(UnitUtility.formatUnitDensityUnits(productDetail, productDetail.getUnitDensity(), measurementSystem));
+            viewHolder.unitDensityText
+                  .setText(UnitUtility.formatUnitDensityUnits(productDetail, productDetail.getUnitDensity(), UnitsSettings.queryMeasurementSystem(context, UnitsSettings.DENSITY)));
             viewHolder.unitDensityContainer.setVisibility(View.VISIBLE);
          }
          else {
