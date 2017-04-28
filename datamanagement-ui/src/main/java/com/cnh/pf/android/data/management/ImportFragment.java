@@ -190,6 +190,7 @@ public class ImportFragment extends BaseDataFragment {
 
    @Override
    public void onNewSession() {
+      logger.debug("onNewSession");
       removeProgressPanel();
       super.onNewSession();
    }
@@ -275,13 +276,18 @@ public class ImportFragment extends BaseDataFragment {
       }
       else if (getSession().getSessionOperation().equals(SessionOperation.PERFORM_OPERATIONS)) {
          logger.trace("resetting new session.  Operation completed.");
-         getTreeAdapter().selectAll(treeViewList, false);
-         removeProgressPanel();
-         if (getSession().getResult().equals(Process.Result.SUCCESS)) {
-            Toast.makeText(getActivity(), "Import Completed", Toast.LENGTH_LONG).show();
+         if(getSession().getResult()!=null) {
+            getTreeAdapter().selectAll(treeViewList, false);
+            removeProgressPanel();
+            if (getSession().getResult().equals(Process.Result.SUCCESS)) {
+               Toast.makeText(getActivity(), "Import Completed", Toast.LENGTH_LONG).show();
+            }
+            else if (getSession().getResult().equals(Process.Result.CANCEL)) {
+               Toast.makeText(getActivity(), "Import Cancelled", Toast.LENGTH_LONG).show();
+            }
          }
-         else if (getSession().getResult().equals(Process.Result.CANCEL)) {
-            Toast.makeText(getActivity(), "Import Cancelled", Toast.LENGTH_LONG).show();
+         else {
+            showProgressPanel();
          }
       }
 
