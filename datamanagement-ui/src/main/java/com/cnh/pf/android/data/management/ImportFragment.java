@@ -205,6 +205,10 @@ public class ImportFragment extends BaseDataFragment {
          }
          boolean hasMultipleTargets = false;
          for (Operation operation : getSession().getData()) {
+            if(operation.isShowTargetSelection()) {
+               hasMultipleTargets = true;
+               break;
+            }
             if (operation.getPotentialTargets() != null && operation.getPotentialTargets().size() > 1 && operation.getData().getParent() == null) {
                hasMultipleTargets = true;
                break;
