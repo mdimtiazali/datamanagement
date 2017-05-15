@@ -1286,9 +1286,9 @@ public class ProductMixDialog extends DialogView implements DialogHandlerListene
    }
 
    /**
-    * InitializeDensityUnits if ProductForm is not Seed.
-    * set Density units to toggle button and setup the unitText
-    * if Product is Seed will remove the Density
+    * InitializeDensityUnits.
+    * If ProductForm is not Seed/Plant set Density units to toggle button and setup the unitText
+    * if Product is Seed/Plant will remove the Density
     */
    private void initializeDensityUnits() {
       if (!(productMixForm == ProductForm.SEED || productMixForm == ProductForm.PLANT)) {
@@ -1297,8 +1297,8 @@ public class ProductMixDialog extends DialogView implements DialogHandlerListene
       else {
          dialogDensityHandler.setUnitDensityVisibility(View.VISIBLE);
          dialogDensityHandler.setUnitDensityUnitsOptions(productMix.getProductMixParameters(), productMixForm, productUnitsList);
-         dialogDensityHandler.setProductDensityUnitsOptions(productMix.getProductMixParameters(), productMixForm, productUnitsList);
       }
+      dialogDensityHandler.setProductDensityUnitsOptions(productMix.getProductMixParameters(), productMixForm, productUnitsList);
    }
 
    /**
