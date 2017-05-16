@@ -402,7 +402,7 @@ public class ProductMixDialog extends DialogView implements DialogHandlerListene
                else if (productList.isEmpty()) {
                   log.warn("ProductList is empty");
                }
-               else if (carrierProductHolder.productPickList != null) {
+               if (carrierProductHolder.productPickList != null) {
                   PickListAdapter productListAdapter = new PickListAdapter(carrierProductHolder.productPickList, getContext());
                   fillPickListAdapterWithProducts(productListAdapter, ProductHelperMethods.filterProductList(productList, productMixForm));
                   carrierProductHolder.productPickList.setAdapter(productListAdapter);
@@ -1188,7 +1188,6 @@ public class ProductMixDialog extends DialogView implements DialogHandlerListene
                Product newProduct = new Product();
                newProduct.setName(newProductEditText.getText().toString());
                newProduct.setForm(ProductForm.findByValue(newProductFormPickList.getSelectedItemPosition()));
-               productMixFormPickList.setSelectionByPosition(newProductFormPickList.getSelectedItemPosition());
                MeasurementSystem measurementSystemForRates = ProductHelperMethods.queryApplicationRateMeasurementSystemForProductForm(newProduct.getForm(), getContext());
                ProductHelperMethods.bindProductRateUnits(newProduct,
                      ProductHelperMethods.filterUnitList(newProduct.getForm(), ProductDisplayItem.RATES, measurementSystemForRates, productUnitsList).get(0),
@@ -1199,6 +1198,9 @@ public class ProductMixDialog extends DialogView implements DialogHandlerListene
                new VIPAsyncTask<ProductCommandParams, Product>(params, new GenericListener<Product>() {
                   @Override
                   public void handleEvent(Product product) {
+                     // as side effect this sets the adapter of carrierProductHolder.productPickList ...
+                     productMixFormPickList.setSelectionByPosition(newProductFormPickList.getSelectedItemPosition());
+                     productMixFormPickList.setEnabled(true);
                      productList.add(product);
                      PickListAdapter adapter = carrierProductHolder.productPickList.getAdapter();
                      adapter.add(new PickListItem(adapter.getCount() - 1, product.getName()));
@@ -1208,8 +1210,6 @@ public class ProductMixDialog extends DialogView implements DialogHandlerListene
                      enableAddNewProductButtons(true);
                   }
                }).execute(new SaveProductCommand());
-               productMixFormPickList.setSelectionByPosition(newProductFormPickList.getSelectedItemPosition());
-               productMixFormPickList.setEnabled(true);
             }
          });
       }
