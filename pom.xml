@@ -7,7 +7,7 @@
     <parent>
         <groupId>com.cnh.pf</groupId>
         <artifactId>parent</artifactId>
-        <version>13.1.1-fwk4-SNAPSHOT</version>
+        <version>13.2.0</version>
     </parent>
 
     <artifactId>datamanagement-parent</artifactId>
