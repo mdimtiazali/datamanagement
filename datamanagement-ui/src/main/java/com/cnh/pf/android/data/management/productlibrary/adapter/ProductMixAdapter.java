@@ -25,6 +25,7 @@ import android.widget.TextView;
 
 import com.cnh.android.dialog.DialogViewInterface;
 import com.cnh.android.dialog.TextDialogView;
+import com.cnh.android.pf.widget.utilities.EnumValueToUiStringUtility;
 import com.cnh.android.pf.widget.utilities.MathUtility;
 import com.cnh.android.pf.widget.utilities.ProductHelperMethods;
 import com.cnh.android.pf.widget.utilities.UnitUtility;
@@ -32,6 +33,7 @@ import com.cnh.android.pf.widget.utilities.UnitsSettings;
 import com.cnh.android.pf.widget.utilities.commands.DeleteProductMixCommand;
 import com.cnh.android.pf.widget.utilities.commands.ProductMixCommandParams;
 import com.cnh.android.pf.widget.utilities.tasks.VIPAsyncTask;
+import com.cnh.android.pf.widget.view.productdialogs.DialogActionType;
 import com.cnh.android.vip.aidl.IVIPServiceAIDL;
 import com.cnh.android.widget.activity.TabActivity;
 import com.cnh.android.widget.control.ProgressiveDisclosureView;
@@ -161,9 +163,9 @@ public final class ProductMixAdapter extends SearchableSortableExpandableListAda
       carrierProductApplicationRateTableData.productName = product.getName();
       carrierProductApplicationRateTableData.defaultRate = calculateApplicationRate(recipe.getAmount(), productMixDefaultRate, productMixTotalAmount);
       carrierProductApplicationRateTableData.rate2 = calculateApplicationRate(recipe.getAmount(), productMixRate2, productMixTotalAmount);
-      ProductUnits carrierUnit = ProductHelperMethods.retrieveProductRateUnits(product,
-            ProductHelperMethods.getMeasurementSystemForProduct(product, volumeMeasurementSystem, massMeasurementSystem));
-      carrierProductApplicationRateTableData.unit = carrierUnit.deepCopy();
+      ProductUnits productRateUnits = ProductHelperMethods.retrieveProductRateUnits(product,
+            ProductHelperMethods.queryApplicationRateMeasurementSystemForProductForm(product.getForm(), context));
+      carrierProductApplicationRateTableData.unit = productRateUnits.deepCopy();
       return carrierProductApplicationRateTableData;
    }
 
@@ -197,10 +199,10 @@ public final class ProductMixAdapter extends SearchableSortableExpandableListAda
       if (parameters != null) {
          viewHolder.nameText.setText(parameters.getName());
          if (parameters.getForm() != null) {
-            viewHolder.formText.setText(ProductLibraryFragment.friendlyName(parameters.getForm().name()));
+            viewHolder.formText.setText(EnumValueToUiStringUtility.getUiStringForProductForm(parameters.getForm(), context));
          }
          else {
-            viewHolder.formText.setText(ProductLibraryFragment.friendlyName(ProductForm.LIQUID.name()));
+            viewHolder.formText.setText(EnumValueToUiStringUtility.getUiStringForProductForm(ProductForm.LIQUID, context));
          }
          viewHolder.rateText.setText(UnitUtility.formatRateUnits(parameters, parameters.getDefaultRate()));
       }
@@ -367,7 +369,7 @@ public final class ProductMixAdapter extends SearchableSortableExpandableListAda
 
       @Override
       public void onClick(View view) {
-         ProductMixDialog editProductMixDialog = new ProductMixDialog(context, ProductMixDialog.ProductMixesDialogActionType.EDIT, vipService, productMixDetail,
+         ProductMixDialog editProductMixDialog = new ProductMixDialog(context, DialogActionType.EDIT, vipService, productMixDetail,
                productLibraryFragment, getCopyOfUnfilteredItemList());
          editProductMixDialog.setFirstButtonText(activity.getResources().getString(R.string.save))
                .setSecondButtonText(activity.getResources().getString(R.string.product_dialog_cancel_button)).showThirdButton(false).showThirdButton(false)
@@ -393,7 +395,7 @@ public final class ProductMixAdapter extends SearchableSortableExpandableListAda
 
       @Override
       public void onClick(View view) {
-         ProductMixDialog copyProductMixDialog = new ProductMixDialog(context, ProductMixDialog.ProductMixesDialogActionType.COPY, vipService, productMixDetail,
+         ProductMixDialog copyProductMixDialog = new ProductMixDialog(context, DialogActionType.COPY, vipService, productMixDetail,
                productLibraryFragment, new ArrayList<ProductMix>(getCopyOfUnfilteredItemList()));
          copyProductMixDialog.setFirstButtonText(activity.getResources().getString(R.string.product_dialog_add_button))
                .setSecondButtonText(activity.getResources().getString(R.string.product_dialog_cancel_button)).showThirdButton(false).showThirdButton(false)
@@ -516,10 +518,10 @@ public final class ProductMixAdapter extends SearchableSortableExpandableListAda
                if (rateProductUnits != null && rateProductUnits.isSetMultiplyFactorFromBaseUnits()) {
                   rateUnitFactor = rateProductUnits.getMultiplyFactorFromBaseUnits();
                }
-
-               if (p.getName().toUpperCase().contains(charSequence.toString().toUpperCase())
-                     || (p.getForm() != null && p.getForm().name().toUpperCase().contains(charSequence.toString().toUpperCase()))
-                     || (rateProductUnits != null && rateProductUnits.getName().toUpperCase().contains(charSequence.toString().toUpperCase()))
+               String upperCaseCharSequence = charSequence.toString().toUpperCase();
+               if (p.getName().toUpperCase().contains(upperCaseCharSequence)
+                     || (p.getForm() != null && EnumValueToUiStringUtility.getUiStringForProductForm(p.getForm(), context).toUpperCase().contains(upperCaseCharSequence))
+                     || (rateProductUnits != null && rateProductUnits.getName().toUpperCase().contains(upperCaseCharSequence))
                      || (String.valueOf(MathUtility.getConvertedFromBase(p.getDefaultRate(), rateUnitFactor))).contains(charSequence.toString())) {
                   newProductMixList.add(mix);
                }

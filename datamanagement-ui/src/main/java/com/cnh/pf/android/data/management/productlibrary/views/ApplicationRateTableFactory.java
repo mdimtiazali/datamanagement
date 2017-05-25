@@ -14,6 +14,7 @@ import android.widget.TableLayout;
 import android.widget.TableRow;
 import android.widget.TextView;
 
+import com.cnh.android.pf.widget.utilities.ControllerTypeOrProductFormIconHelper;
 import com.cnh.pf.android.data.management.R;
 import com.cnh.pf.model.product.library.ProductForm;
 import com.cnh.pf.model.product.library.ProductUnits;
@@ -84,7 +85,7 @@ public class ApplicationRateTableFactory {
          TextView productNameTextView = (TextView) tableRow.findViewById(R.id.product_name_text_view);
          productNameTextView.setText(applicationRateTableData.productName);
          if (forDialog) {
-            productNameTextView.setCompoundDrawablesWithIntrinsicBounds(getProductFormImageId(applicationRateTableData.productForm), 0, 0, 0);
+            productNameTextView.setCompoundDrawablesWithIntrinsicBounds(ControllerTypeOrProductFormIconHelper.retrieveProductFormIconId(applicationRateTableData.productForm), 0, 0, 0);
          }
          productNameTextView.setBackgroundResource(tableRowBackgroundId);
 
@@ -127,33 +128,6 @@ public class ApplicationRateTableFactory {
       else {
          applicationRateTextView.setText(String.format("%.2f", rate));
       }
-   }
-
-   /**
-    * Helper Method to get the right icon for a {@link ProductForm}.
-    * @param productForm the selected productForm
-    * @return return the icon of the productForm or the Seed-Icon if the productForm is not implemented
-    */
-   public static int getProductFormImageId(ProductForm productForm) {
-      if (productForm != null) {
-         switch (productForm) {
-         case ANHYDROUS:
-            return R.drawable.ic_anhydrous;
-         case BULK_SEED:
-            return R.drawable.ic_bulk_seed;
-         case GRANULAR:
-            return R.drawable.ic_granular;
-         case LIQUID:
-            return R.drawable.ic_liquid;
-         case SEED:
-            return R.drawable.ic_seed;
-         default:
-            log.warn("ProductFrom not found: {}", productForm.name());
-            return R.drawable.ic_seed;
-         }
-      }
-      log.warn("ProductFrom is null");
-      return R.drawable.ic_seed;
    }
 
    /**
