@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  ~ Copyright (C) 2017 CNH Industrial NV. All rights reserved.
+  ~
+  ~ This software contains proprietary information of CNH Industrial NV. Neither
+  ~ receipt nor possession thereof confers any right to reproduce, use, or
+  ~ disclose in whole or in part any such information without written
+  ~ authorization from CNH Industrial NV.
+  -->
+<!-- the grid view were this is used will set the height to 0dp when adjustViewBounds is not set to true -->
+<ImageView xmlns:android="http://schemas.android.com/apk/res/android"
+           android:layout_width="50dp"
+           android:layout_height="50dp"
+           android:paddingTop="8dp"
+           android:paddingBottom="8dp"
+           android:paddingLeft="20dp"
+           android:paddingRight="20dp"
+           android:src="@drawable/varieties_shape"
+           android:adjustViewBounds="true">
+</ImageView>

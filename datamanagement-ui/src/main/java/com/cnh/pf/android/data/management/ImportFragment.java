@@ -21,6 +21,7 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import com.cnh.android.dialog.DialogViewInterface;
+import com.cnh.android.pf.widget.view.DisabledOverlay;
 import com.cnh.android.widget.activity.TabActivity;
 import com.cnh.android.widget.control.ProgressBarView;
 import com.cnh.jgroups.Datasource;
@@ -193,6 +194,16 @@ public class ImportFragment extends BaseDataFragment {
       logger.debug("onNewSession");
       removeProgressPanel();
       super.onNewSession();
+
+      if (hasLocalSource) {
+         disabled.setVisibility(View.GONE);
+         startText.setVisibility(View.VISIBLE);
+      }
+      else {
+         startText.setVisibility(View.GONE);
+         disabled.setVisibility(View.VISIBLE);
+         disabled.setMode(DisabledOverlay.MODE.DISCONNECTED);
+      }
    }
 
    @Override

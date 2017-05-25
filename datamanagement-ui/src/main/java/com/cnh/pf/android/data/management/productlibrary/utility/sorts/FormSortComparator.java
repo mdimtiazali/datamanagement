@@ -9,6 +9,7 @@
 
 package com.cnh.pf.android.data.management.productlibrary.utility.sorts;
 
+import android.content.Context;
 import com.cnh.pf.model.product.library.Product;
 
 /**
@@ -16,6 +17,13 @@ import com.cnh.pf.model.product.library.Product;
  * Compares products by form
  */
 public class FormSortComparator extends AbstractProductComparator {
+
+   private final Context context;
+
+   public FormSortComparator(Context context){
+      this.context = context;
+   }
+
    /**
     * Compare two products by form
     * @param f1 first product
@@ -23,12 +31,12 @@ public class FormSortComparator extends AbstractProductComparator {
     * @return integer result of form comparison
     */
    public int compare(Product f1, Product f2) {
-      if (isFormEqual(f1, f2)) {
+      if (isFormEqual(f1, f2, context)) {
          if (isNameEqual(f1, f2)) {
             return compareDefaultRate(f1, f2);
          }
          return compareName(f1, f2);
       }
-      return compareForm(f1, f2);
+      return compareForm(f1, f2, context);
    }
 }

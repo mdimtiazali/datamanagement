@@ -9,6 +9,8 @@
 
 package com.cnh.pf.android.data.management.productlibrary.utility.sorts;
 
+import android.content.Context;
+import com.cnh.android.pf.widget.utilities.EnumValueToUiStringUtility;
 import com.cnh.pf.model.product.library.Product;
 import com.cnh.pf.model.product.library.ProductMix;
 
@@ -27,8 +29,8 @@ public abstract class AbstractProductMixComparator implements Comparator<Product
       return getName(m1).compareTo(getName(m2));
    }
 
-   protected int compareForm(ProductMix m1, ProductMix m2) {
-      return getFormName(m1).compareTo(getFormName(m2));
+   protected int compareForm(ProductMix m1, ProductMix m2, Context context) {
+      return getFormName(m1, context).compareTo(getFormName(m2, context));
    }
 
    protected int compareDefaultRate(ProductMix m1, ProductMix m2) {
@@ -39,8 +41,8 @@ public abstract class AbstractProductMixComparator implements Comparator<Product
       return getName(m1).equals(getName(m2));
    }
 
-   protected boolean isFormEqual(ProductMix m1, ProductMix m2) {
-      return getFormName(m1).equals(getFormName(m2));
+   protected boolean isFormEqual(ProductMix m1, ProductMix m2, Context context) {
+      return getFormName(m1, context).equals(getFormName(m2, context));
    }
 
    protected boolean isDefaultRateEqual(ProductMix m1, ProductMix m2) {
@@ -59,15 +61,13 @@ public abstract class AbstractProductMixComparator implements Comparator<Product
       return name;
    }
 
-   // FIXME: Use localized names for this
-   // see https://polarion.cnhind.com/polarion/#/project/pfhmidevdefects/workitem?id=pfhmi-dev-defects-3034
    @Nonnull
-   private static String getFormName(ProductMix productMix) {
+   private static String getFormName(ProductMix productMix, Context context) {
       String name = "";
       if (productMix != null) {
          Product productMixParameters = productMix.getProductMixParameters();
          if (productMixParameters != null) {
-            name = productMixParameters.getForm().name();
+            name = EnumValueToUiStringUtility.getUiStringForProductForm(productMixParameters.getForm(), context);
          }
       }
       return name;

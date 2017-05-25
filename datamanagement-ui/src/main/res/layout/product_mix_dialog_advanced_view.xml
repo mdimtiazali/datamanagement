@@ -16,98 +16,15 @@
         android:layout_width="match_parent"
         cnh:title="@string/product_mix_title_advanced"
         cnh:setAutoResizable="true">
-
-    <LinearLayout
+    <com.cnh.android.widget.control.PickList
+            android:id="@id/product_usage_pick_list"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:orientation="horizontal">
+            cnh:defaultPickListTextId="@string/product_mix_title_picklist_default_select"
+            cnh:headerText="@string/product_mix_title_usage"
+            android:layout_marginBottom="@dimen/product_dialog_input_margin_top"/>
 
-        <LinearLayout
-                android:layout_width="0dp"
-                android:layout_height="wrap_content"
-                android:layout_weight="1"
-                android:layout_marginEnd="10dp"
-                android:orientation="vertical">
+    <include layout="@layout/product_dialog_package_size"/>
+    <include layout="@layout/product_dialog_density"/>
 
-            <com.cnh.android.widget.control.PickList
-                    android:id="@+id/product_mix_advanced_picklist_usage"
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    cnh:defaultPickListTextId="@string/product_mix_title_picklist_default_select"
-                    cnh:headerText="@string/product_mix_title_usage"/>
-
-            <TextView
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:layout_marginTop="15dp"
-                    style="@style/UDWTitleTextStyle"
-                    android:text="@string/product_mix_title_package_size"/>
-            <com.cnh.android.widget.control.UnitText
-                    android:id="@+id/product_mix_advanced_unittext_package_size"
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    style="@style/EditText"
-                    android:inputType="number"
-                    android:imeOptions="flagNoFullscreen|actionDone"
-                    android:singleLine="true"
-                    cnh:unit=" "
-                    cnh:headerText="@string/product_mix_title_package_size"/>
-            <TextView
-                    android:id="@+id/product_mix_advanced_titletext_density"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:layout_marginTop="15dp"
-                    style="@style/UDWTitleTextStyle"
-                    android:text="@string/product_mix_title_density"/>
-            <com.cnh.android.widget.control.UnitText
-                    android:id="@+id/product_mix_advanced_unittext_density"
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    style="@style/EditText"
-                    android:inputType="number"
-                    android:imeOptions="flagNoFullscreen|actionDone"
-                    cnh:unit=" "
-                    android:singleLine="true"
-                    cnh:headerText="@string/product_mix_title_density"/>
-        </LinearLayout>
-
-        <LinearLayout
-                android:layout_width="0dp"
-                android:layout_height="match_parent"
-                android:layout_weight="1"
-                android:layout_marginStart="10dp"
-                android:orientation="vertical"
-                android:layout_gravity="start|bottom"
-                android:gravity="start|bottom">
-
-            <TextView
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    style="@style/UDWTitleTextStyle"
-                    android:text="@string/product_mix_title_package_size_units"/>
-
-
-            <com.cnh.android.pf.widget.controls.SegmentedToggleButtonGroupPickList
-                    android:id="@+id/product_mix_segmentedtogglebuttongroup_advanced_package_size_units"
-                    style="@style/SegmentedToggleButtonSmall"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:orientation="horizontal"
-                    cnh:buttonUseSmallResources="false"
-                    cnh:listUseSmallResources="false"
-                    cnh:headerText="@string/product_mix_title_picklist_default_select"/>
-
-
-            <com.cnh.android.pf.widget.controls.SegmentedToggleButtonGroupPickList
-                    android:id="@+id/product_mix_segmentedtogglebuttongroup_advanced_density_units"
-                    style="@style/SegmentedToggleButtonSmall"
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:orientation="horizontal"
-                    cnh:buttonUseSmallResources="false"
-                    cnh:listUseSmallResources="false"
-                    android:layout_marginTop="10dp"
-                    cnh:togglePicklistHeaderText="@string/product_mix_title_density_unit"/>
-        </LinearLayout>
-    </LinearLayout>
 </com.cnh.android.widget.control.CategoryButtons>
