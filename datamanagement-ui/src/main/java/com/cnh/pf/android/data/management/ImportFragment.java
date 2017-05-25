@@ -21,6 +21,7 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import com.cnh.android.dialog.DialogViewInterface;
+import com.cnh.android.pf.widget.view.DisabledOverlay;
 import com.cnh.android.widget.activity.TabActivity;
 import com.cnh.android.widget.control.ProgressBarView;
 import com.cnh.jgroups.Datasource;
@@ -190,8 +191,17 @@ public class ImportFragment extends BaseDataFragment {
 
    @Override
    public void onNewSession() {
+      super.onNewSession();
       removeProgressPanel();
-      setSession(null);
+
+      if (hasLocalSource) {
+         disabled.setVisibility(View.GONE);
+         startText.setVisibility(View.VISIBLE);
+      } else {
+         startText.setVisibility(View.GONE);
+         disabled.setVisibility(View.VISIBLE);
+         disabled.setMode(DisabledOverlay.MODE.DISCONNECTED);
+      }
    }
 
    @Override
@@ -365,6 +375,12 @@ public class ImportFragment extends BaseDataFragment {
          processDialog.init();
          processDialog.setTitle(getResources().getString(R.string.checking_targets));
          processDialog.setProgress(0);
+         processDialog.setOnDismissListener(new DialogViewInterface.OnDismissListener() {
+            @Override
+            public void onDismiss(DialogViewInterface dialog) {
+               cancel();
+            }
+         });
          processDialog.show();
          setCancelled(false);
          originalData = getSession().getObjectData();

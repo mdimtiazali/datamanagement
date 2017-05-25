@@ -19,12 +19,14 @@ import android.content.Intent;
 import android.content.ServiceConnection;
 import android.os.Bundle;
 import android.os.IBinder;
+import android.os.RemoteException;
 import android.util.AttributeSet;
 import android.view.View;
 
 import com.cnh.android.util.prefs.GlobalPreferences;
 import com.cnh.android.util.prefs.GlobalPreferencesNotAvailableException;
 import com.cnh.android.vip.aidl.IVIPServiceAIDL;
+import com.cnh.android.vip.aidl.SimpleVIPListener;
 import com.cnh.android.vip.constants.VIPConstants;
 import com.cnh.android.widget.activity.TabActivity;
 import com.cnh.android.widget.control.TabActivityListeners;
@@ -32,6 +34,12 @@ import com.cnh.android.widget.control.TabActivityTab;
 import com.cnh.pf.android.data.management.productlibrary.ProductLibraryFragment;
 import com.cnh.pf.data.management.service.ServiceConstants;
 import com.cnh.pf.jgroups.ChannelModule;
+import com.cnh.pf.model.TableChangeEvent;
+import com.cnh.pf.model.vip.vehimp.Vehicle;
+import com.cnh.pf.model.vip.vehimp.VehicleCurrent;
+import com.cnh.pf.model.vip.vehimp.VehicleDeviceClass;
+import com.cnh.pf.model.vip.vehimp.VehicleModel;
+import com.cnh.pf.model.vip.vehimp.VehicleType;
 import com.google.inject.Key;
 
 import org.slf4j.Logger;
@@ -56,10 +64,15 @@ import roboguice.util.RoboContext;
 public class DataManagementActivity extends TabActivity implements RoboContext, ServiceConnection {
    private static final Logger logger = LoggerFactory.getLogger(DataManagementActivity.class);
 
+   private static final String TAG = DataManagementActivity.class.getName();
+   public static final String PRODUCT_LIBRARY_TAB = "product_library_tab";
+
    protected HashMap<Key<?>, Object> scopedObjects = new HashMap<Key<?>, Object>();
    protected EventManager eventManager;
    private IVIPServiceAIDL vipService;
    private WeakReference<ProductLibraryFragment> productLibraryFragmentWeakReference;
+   private TabActivityTab productLibraryTab = null;
+   private boolean calledProductLibraryViaShortcut = false;
 
    private class DataManagementTabListener implements TabActivityListeners.TabListener {
       private final Activity a;
@@ -138,6 +151,128 @@ public class DataManagementActivity extends TabActivity implements RoboContext, 
       }
    }
 
+   private SimpleVIPListener vipListener = new SimpleVIPListener() {
+
+      /**
+       * Check if the given vehicle is a combine
+       * @param vehicle Vehicle to be checked to be a combine or not
+       * @return true if the given vehicle is a combine
+       */
+      private boolean vehicleIsCombine(Vehicle vehicle) {
+         if (vehicle != null) {
+            VehicleModel vehicleModel = vehicle.getVehicleModel();
+            if (vehicleModel != null) {
+               VehicleType vehicleType = vehicleModel.getVehicleType();
+               if (vehicleType != null) {
+                  VehicleDeviceClass vehicleDeviceClass = vehicleType.getName();
+                  boolean vehicleIsCombine = VehicleDeviceClass.COMBINE.equals(vehicleDeviceClass) || VehicleDeviceClass.GENERIC_COMBINE.equals(vehicleDeviceClass);
+                  logger.debug("vehicleIsCombine?: {}", vehicleIsCombine);
+                  return vehicleIsCombine;
+               }
+               else {
+                  logger.error("Could not get Vehicle Type - VehicleType is null!");
+               }
+            }
+            else {
+               logger.error("Could not get Vehicle Type - VehicleModel is null!");
+            }
+         }
+         else {
+            logger.error("Could not get Vehicle Type - Vehicle is null!");
+         }
+         return false;
+      }
+
+      @Override
+      public void deliverVehicleCurrent(VehicleCurrent vehicleCurrent) throws RemoteException {
+         if (hasPCM() && (vehicleCurrent == null || !vehicleIsCombine(vehicleCurrent.getVehicle()))) {
+            //add tab, if not present
+            runOnUiThread(new Runnable() {
+               @Override
+               public void run() {
+                  if (productLibraryTab == null) {
+                     ProductLibraryFragment productLibraryFragment = new ProductLibraryFragment();
+                     productLibraryFragmentWeakReference = new WeakReference<ProductLibraryFragment>(productLibraryFragment);
+                     productLibraryTab = new TabActivityTab(R.string.tab_product_library, R.drawable.tab_product_library_selector, PRODUCT_LIBRARY_TAB,
+                           new DataManagementTabListener(productLibraryFragmentWeakReference.get(), DataManagementActivity.this));
+                     addTab(productLibraryTab);
+                     productLibraryFragment.setVipService(vipService);
+                  }
+                  if (productLibraryTab.isHidden()) {
+                     logger.debug("Showing productLibraryTab");
+                     // TabActivity is not handling that for an already shown tab nothing should happen during the call of the method.
+                     // Also it deselects the tab always which leads to a bug here. So only call showTab if it is hidden.
+                     // https://polarion.cnhind.com/polarion/#/project/Core_Display_PDS/workitem?id=COREPDS-1458
+                     showTab(productLibraryTab);
+                  }
+                  if (calledProductLibraryViaShortcut) {
+                     logger.debug("executing shortcut action / jumping to product library");
+                     setSelectedTab(productLibraryTab);
+                     calledProductLibraryViaShortcut = false; // we don't need this value anymore during the life of this activity.
+                  }
+               }
+            });
+         }
+         else {
+            //remove tab, if it is set
+            if (productLibraryTab != null) {
+               runOnUiThread(new Runnable() {
+                  @Override
+                  public void run() {
+                     //check, if ProductLibraryFragment is shown / Tab is selected
+                     ProductLibraryFragment productLibraryFragment = productLibraryFragmentWeakReference.get();
+                     if (productLibraryFragment != null && productLibraryFragment.isVisible()) {
+                        //select different fragment
+                        selectTabAtPosition(0);
+                     }
+                     logger.debug("Hiding productLibraryTab");
+                     hideTab(productLibraryTab);
+                  }
+               });
+            }
+         }
+      }
+
+      @Override
+      public void onServerConnect() throws RemoteException {
+         if (vipService != null) {
+            vipService.requestVehicleCurrent();
+         }
+      }
+
+      @Override
+      public void onTableChange(final TableChangeEvent action, final String tableName, final String id) throws RemoteException {
+         //current vehicle changed
+         if ((null != action) && (null != tableName) && (null != id)) {
+            if (tableName.equals(VehicleCurrent.class.getName())) {
+               vipService.requestVehicleCurrent();
+            }
+         }
+      }
+   };
+
+   private void registerVIPListener() {
+      if (this.vipService != null) {
+         try {
+            this.vipService.register(TAG, vipListener);
+         }
+         catch (RemoteException e) {
+            logger.error("VIPListener Register failed", e);
+         }
+      }
+   }
+
+   private void unregisterVIPListener() {
+      if (this.vipService != null) {
+         try {
+            this.vipService.unregister(TAG);
+         }
+         catch (RemoteException e) {
+            logger.error("VIPListener unregister failed", e);
+         }
+      }
+   }
+
    @Override
    public void onCreate(Bundle savedInstanceState) {
       logger.debug("onCreate called");
@@ -153,27 +288,37 @@ public class DataManagementActivity extends TabActivity implements RoboContext, 
       TabActivityTab exportTab = new TabActivityTab(R.string.tab_export, R.drawable.tab_export_selector, getResources().getString(R.string.tab_export),
             new DataManagementTabListener(new ExportFragment(), this));
       addTab(exportTab);
-      if(hasPCM()) {
-         productLibraryFragmentWeakReference = new WeakReference<ProductLibraryFragment>(new ProductLibraryFragment());
-         TabActivityTab productLibraryTab = new TabActivityTab(R.string.tab_product_library, R.drawable.tab_product_library_selector, "product_library_tab",
-               new DataManagementTabListener(productLibraryFragmentWeakReference.get(), this));
-         addTab(productLibraryTab);
-      }
       setTabActivityTitle(getString(R.string.app_name));
       selectTabAtPosition(0);
+
+      // It is not possible to jump to the ProductLibraryFragment/Tab at this time. So it's necessary to save
+      // if the activity was called via shortcut to jump to the tab as soon as it is ready.
+      Intent currentIntent = getIntent();
+      // is there any const we can use instead of this string?
+      if (currentIntent.hasExtra("com.cnh.android.shortcut.extra.SHORTCUT")) {
+         Bundle extras = currentIntent.getExtras();
+         logger.debug("Data Management Activity was called via shortcut ", extras.toString());
+         String tabId = getTabId(extras);
+         if (PRODUCT_LIBRARY_TAB.equals(tabId)) {
+            logger.debug("Product Library was called via shortcut");
+            calledProductLibraryViaShortcut = true;
+            extras.remove(PRODUCT_LIBRARY_TAB);
+         }
+      }
    }
 
    /**
     * Check if the configuration includes a pcm
     * @return true if the configuration includes a pcm
     */
-   private boolean hasPCM(){
+   private boolean hasPCM() {
       //pref_key_pcm_standalone
       boolean hasPCM = false;
       try {
          GlobalPreferences globalPreferences = new GlobalPreferences(this);
          hasPCM = globalPreferences.hasPCM();
-      } catch (GlobalPreferencesNotAvailableException e){
+      }
+      catch (GlobalPreferencesNotAvailableException e) {
          if (logger.isWarnEnabled()) {
             logger.warn("global preferences not available - guess that is has pcm? :" + hasPCM, e);
          }
@@ -241,14 +386,15 @@ public class DataManagementActivity extends TabActivity implements RoboContext, 
 
    @Override
    public void onServiceConnected(ComponentName name, IBinder service) {
-      logger.debug("onSeviceConnected called - componentClassName: " + name.getClassName() + " service: " + service.toString());
+      logger.debug("onServiceConnected called - componentClassName: " + name.getClassName() + " service: " + service.toString());
       this.vipService = IVIPServiceAIDL.Stub.asInterface(service);
       if (vipService != null) {
-         logger.debug("onSeviceConnected called - vipService != null");
-         if(productLibraryFragmentWeakReference != null) {
+         logger.debug("onServiceConnected called - vipService != null");
+         registerVIPListener();
+         if (productLibraryFragmentWeakReference != null) {
             ProductLibraryFragment productLibraryFragment = productLibraryFragmentWeakReference.get();
             if (productLibraryFragment != null) {
-               logger.debug("onSeviceConnected called - productLibraryFragment != null");
+               logger.debug("onServiceConnected called - productLibraryFragment != null");
                productLibraryFragment.setVipService(this.vipService);
             }
          }
@@ -257,8 +403,9 @@ public class DataManagementActivity extends TabActivity implements RoboContext, 
 
    @Override
    public void onServiceDisconnected(ComponentName name) {
-      logger.debug("onSeviceDisconnected called - componentClassName: " + name.getClassName());
+      logger.debug("onServiceDisconnected called - componentClassName: " + name.getClassName());
       if (vipService != null) {
+         unregisterVIPListener();
          if (productLibraryFragmentWeakReference != null) {
             ProductLibraryFragment productLibraryFragment = productLibraryFragmentWeakReference.get();
             if (productLibraryFragment != null) {

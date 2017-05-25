@@ -9,6 +9,9 @@
 
 package com.cnh.pf.android.data.management.productlibrary.utility.sorts;
 
+import android.content.Context;
+
+import com.cnh.android.pf.widget.utilities.EnumValueToUiStringUtility;
 import com.cnh.pf.model.product.library.Product;
 
 import java.util.Comparator;
@@ -24,8 +27,8 @@ public abstract class AbstractProductComparator implements Comparator<Product> {
       return f1.getName().compareTo(f2.getName());
    }
 
-   protected int compareForm(Product f1, Product f2) {
-      return f1.getForm().name().compareTo(f2.getForm().name());
+   protected int compareForm(Product f1, Product f2, Context context) {
+      return EnumValueToUiStringUtility.getUiStringForProductForm(f1.getForm(), context).compareTo(EnumValueToUiStringUtility.getUiStringForProductForm(f2.getForm(), context));
    }
 
    protected int compareDefaultRate(Product f1, Product f2) {
@@ -36,8 +39,8 @@ public abstract class AbstractProductComparator implements Comparator<Product> {
       return f1.getName().equals(f2.getName());
    }
 
-   protected boolean isFormEqual(Product f1, Product f2) {
-      return f1.getForm().name().equals(f2.getForm().name());
+   protected boolean isFormEqual(Product f1, Product f2, Context context) {
+      return EnumValueToUiStringUtility.getUiStringForProductForm(f1.getForm(), context).equals(EnumValueToUiStringUtility.getUiStringForProductForm(f2.getForm(), context));
    }
 
    protected boolean isDefaultRateEqual(Product f1, Product f2) {

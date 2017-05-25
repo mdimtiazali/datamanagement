@@ -213,7 +213,10 @@ public class DataManagementService extends RoboService implements SharedPreferen
    public void register(String name, IDataManagementListenerAIDL listener) {
       logger.debug("Register: " + name);
       if (listeners.isEmpty()) {
-         if (!mediator.getChannel().isConnected()) new ConnectTask().execute();
+         if (!mediator.getChannel().isConnected()) {
+            logger.debug("first listener comes in, do ConnectTask");
+            new ConnectTask().execute();
+         }
       }
       listeners.put(name, listener);
    }
@@ -371,6 +374,15 @@ public class DataManagementService extends RoboService implements SharedPreferen
             && Arrays.binarySearch(session.getDestinationTypes(), Datasource.Source.INTERNAL) > -1;
    }
 
+   /**
+    * Return whether DISPLAY or INTERNAL data source is available
+    * @return true if available, false otherwise;
+    */
+   public boolean hasLocalSources() {
+      return dsHelper.getLocalDatasources(new Datasource.Source[] {Datasource.Source.DISPLAY, Datasource.Source.INTERNAL}).size() > 0;
+   }
+
+
    private void performOperations(final DataManagementSession session) {
       try {
          session.setResult(null);
@@ -487,6 +499,8 @@ public class DataManagementService extends RoboService implements SharedPreferen
          try {
             System.setProperty(Global.IPv4, "true");
             mediator.start();
+            logger.debug("mediator started, notify the listeners");
+            sendMediumUpdateEvent();
          }
          catch (Exception e) {
             logger.error("", e);
