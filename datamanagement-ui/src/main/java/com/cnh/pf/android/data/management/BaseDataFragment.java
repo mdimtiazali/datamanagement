@@ -117,6 +117,7 @@ public abstract class BaseDataFragment extends RoboFragment implements IDataMana
     * Callback when new session is started.
     */
    public void onNewSession() {
+      setCancelled(false);
       setSession(null);
       hasLocalSource = getDataManagementService().hasLocalSources();
    }
@@ -347,7 +348,6 @@ public abstract class BaseDataFragment extends RoboFragment implements IDataMana
       logger.debug("onResumeSession {}", session);
       if (session == null) {
          logger.debug("Starting new session");
-         cancelled = false;
          treeViewList.setVisibility(View.GONE);
          onNewSession();
       }
