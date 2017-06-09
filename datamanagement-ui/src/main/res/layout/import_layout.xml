@@ -27,6 +27,10 @@
             android:layout_height="match_parent"
             android:layout_weight="4"
             android:orientation="vertical">
+        <com.cnh.android.pf.widget.view.DisabledOverlay
+                android:id="@+id/disabled_overlay"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"/>
 
         <RelativeLayout
                 android:layout_width="match_parent"
@@ -62,12 +66,12 @@
                 style="@style/TextAppearance.Import.Entity"
                 android:text="@string/select_source_first" />
 
-        <com.cnh.android.widget.control.ProgressBarView
+        <ProgressBar
                 android:id="@+id/tree_progress"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_gravity="center|center_vertical"
-                style="@style/ProgressBarBig.Indeterminate"
+                style="@style/IndeterminateProgressLargeBlue"
                 android:visibility="gone" />
 
         <pl.polidea.treeview.TreeViewList

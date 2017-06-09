@@ -21,6 +21,7 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import com.cnh.android.dialog.DialogViewInterface;
+import com.cnh.android.pf.widget.view.DisabledOverlay;
 import com.cnh.android.widget.activity.TabActivity;
 import com.cnh.android.widget.control.ProgressBarView;
 import com.cnh.jgroups.Datasource;
@@ -190,8 +191,19 @@ public class ImportFragment extends BaseDataFragment {
 
    @Override
    public void onNewSession() {
+      logger.debug("onNewSession");
       removeProgressPanel();
-      setSession(null);
+      super.onNewSession();
+
+      if (hasLocalSource) {
+         disabled.setVisibility(View.GONE);
+         startText.setVisibility(View.VISIBLE);
+      }
+      else {
+         startText.setVisibility(View.GONE);
+         disabled.setVisibility(View.VISIBLE);
+         disabled.setMode(DisabledOverlay.MODE.DISCONNECTED);
+      }
    }
 
    @Override
@@ -205,6 +217,10 @@ public class ImportFragment extends BaseDataFragment {
          }
          boolean hasMultipleTargets = false;
          for (Operation operation : getSession().getData()) {
+            if(operation.isShowTargetSelection()) {
+               hasMultipleTargets = true;
+               break;
+            }
             if (operation.getPotentialTargets() != null && operation.getPotentialTargets().size() > 1 && operation.getData().getParent() == null) {
                hasMultipleTargets = true;
                break;
@@ -271,13 +287,18 @@ public class ImportFragment extends BaseDataFragment {
       }
       else if (getSession().getSessionOperation().equals(SessionOperation.PERFORM_OPERATIONS)) {
          logger.trace("resetting new session.  Operation completed.");
-         getTreeAdapter().selectAll(treeViewList, false);
-         removeProgressPanel();
-         if (getSession().getResult().equals(Process.Result.SUCCESS)) {
-            Toast.makeText(getActivity(), "Import Completed", Toast.LENGTH_LONG).show();
+         if(getSession().getResult()!=null) {
+            getTreeAdapter().selectAll(treeViewList, false);
+            removeProgressPanel();
+            if (getSession().getResult().equals(Process.Result.SUCCESS)) {
+               Toast.makeText(getActivity(), "Import Completed", Toast.LENGTH_LONG).show();
+            }
+            else if (getSession().getResult().equals(Process.Result.CANCEL)) {
+               Toast.makeText(getActivity(), "Import Cancelled", Toast.LENGTH_LONG).show();
+            }
          }
-         else if (getSession().getResult().equals(Process.Result.CANCEL)) {
-            Toast.makeText(getActivity(), "Import Cancelled", Toast.LENGTH_LONG).show();
+         else {
+            showProgressPanel();
          }
       }
 
@@ -365,6 +386,12 @@ public class ImportFragment extends BaseDataFragment {
          processDialog.init();
          processDialog.setTitle(getResources().getString(R.string.checking_targets));
          processDialog.setProgress(0);
+         processDialog.setOnDismissListener(new DialogViewInterface.OnDismissListener() {
+            @Override
+            public void onDismiss(DialogViewInterface dialog) {
+               cancel();
+            }
+         });
          processDialog.show();
          setCancelled(false);
          originalData = getSession().getObjectData();

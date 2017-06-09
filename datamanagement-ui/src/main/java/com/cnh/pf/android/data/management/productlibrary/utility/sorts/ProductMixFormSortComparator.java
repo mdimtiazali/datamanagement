@@ -9,6 +9,7 @@
 
 package com.cnh.pf.android.data.management.productlibrary.utility.sorts;
 
+import android.content.Context;
 import com.cnh.pf.model.product.library.ProductMix;
 
 /**
@@ -16,6 +17,13 @@ import com.cnh.pf.model.product.library.ProductMix;
  * Compares products by form
  */
 public class ProductMixFormSortComparator extends AbstractProductMixComparator {
+
+   private final Context context;
+
+   public ProductMixFormSortComparator(Context context){
+      this.context = context;
+   }
+
    /**
     * Compare two productmixes by form
     * @param f1 first productmix
@@ -23,12 +31,12 @@ public class ProductMixFormSortComparator extends AbstractProductMixComparator {
     * @return integer result of form comparison
     */
    public int compare(ProductMix f1, ProductMix f2) {
-      if (isFormEqual(f1, f2)) {
+      if (isFormEqual(f1, f2, context)) {
          if (isNameEqual(f1, f2)) {
             return compareDefaultRate(f1, f2);
          }
          return compareName(f1, f2);
       }
-      return compareForm(f1, f2);
+      return compareForm(f1, f2, context);
    }
 }

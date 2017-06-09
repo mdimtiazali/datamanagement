@@ -24,7 +24,7 @@ import java.util.Comparator;
  * @author waldschmidt
  */
 public abstract class AbstractVarietyComparator implements Comparator<Variety>{
-
+   
    private CropTypeComparator cropTypeComparator;
 
    /**
