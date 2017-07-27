@@ -14,7 +14,7 @@
    <parent>
       <groupId>com.cnh.pf</groupId>
       <artifactId>parent</artifactId>
-      <version>14.0.0-core-SNAPSHOT</version>
+      <version>14.0.0-rc14-SNAPSHOT</version>
       <relativePath>../../</relativePath>
    </parent>
 
