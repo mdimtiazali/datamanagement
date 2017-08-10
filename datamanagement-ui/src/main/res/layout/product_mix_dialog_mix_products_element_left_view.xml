@@ -28,6 +28,7 @@
                 android:id="@+id/product_mix_product_left_picklist_product"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
+                android:imeOptions="actionDone|flagNoExtractUi"
                 android:layout_marginTop="10dp"
                 android:layout_marginStart="5dp"
                 cnh:allowItemManagement="false"
