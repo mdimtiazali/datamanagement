@@ -17,6 +17,7 @@ import android.content.ComponentName;
 import android.content.Context;
 import android.content.Intent;
 import android.content.ServiceConnection;
+import android.os.AsyncTask;
 import android.os.Bundle;
 import android.os.IBinder;
 import android.os.RemoteException;
@@ -48,6 +49,7 @@ import org.slf4j.LoggerFactory;
 import java.lang.ref.WeakReference;
 import java.lang.reflect.Constructor;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 import roboguice.RoboGuice;
@@ -185,6 +187,8 @@ public class DataManagementActivity extends TabActivity implements RoboContext, 
 
       @Override
       public void deliverVehicleCurrent(VehicleCurrent vehicleCurrent) throws RemoteException {
+         // Take care if you change something here - the vehicle current may have only parts of the data from database inside.
+         // look inside this: GetLightWeightVehicleCurrentAsynTask for detailed information.
          if (hasPCM() && (vehicleCurrent == null || !vehicleIsCombine(vehicleCurrent.getVehicle()))) {
             //add tab, if not present
             runOnUiThread(new Runnable() {
@@ -236,7 +240,8 @@ public class DataManagementActivity extends TabActivity implements RoboContext, 
       @Override
       public void onServerConnect() throws RemoteException {
          if (vipService != null) {
-            vipService.requestVehicleCurrent();
+            GetLightWeightVehicleCurrentAsynTask getLightWeightVehicleCurrentAsynTask = new GetLightWeightVehicleCurrentAsynTask();
+            getLightWeightVehicleCurrentAsynTask.execute();
          }
       }
 
@@ -245,11 +250,71 @@ public class DataManagementActivity extends TabActivity implements RoboContext, 
          //current vehicle changed
          if ((null != action) && (null != tableName) && (null != id)) {
             if (tableName.equals(VehicleCurrent.class.getName())) {
-               vipService.requestVehicleCurrent();
+               GetLightWeightVehicleCurrentAsynTask getLightWeightVehicleCurrentAsynTask = new GetLightWeightVehicleCurrentAsynTask();
+               getLightWeightVehicleCurrentAsynTask.execute();
             }
          }
       }
    };
+
+   /**
+    * AsyncTask to get a light weight vehicle current which includes only {@link VehicleDeviceClass} data.
+    */
+   private class GetLightWeightVehicleCurrentAsynTask extends AsyncTask<Void, Void, List> {
+
+      // Remark: must be Vehicle_full instead of Vehicle because there is a entity defined in hbm.xml
+      // and so HQL uses the entity name instead of the class name.
+      private final String CURRENT_VEHICLE_DEVICE_CLASS_QUERY = "SELECT type.name FROM Vehicle_full v " + "LEFT OUTER JOIN v.vehicleModel AS model "
+            + "LEFT OUTER JOIN model.vehicleType AS type " + "WHERE v.id = (SELECT vehicle.id FROM VehicleCurrent vc WHERE vc.id = 1)";
+
+      @Override
+      protected List doInBackground(Void... nothing) {
+         try {
+            return vipService.genericQuery(CURRENT_VEHICLE_DEVICE_CLASS_QUERY);
+         }
+         catch (RemoteException e) {
+            logger.error("failed to load vehicle current", e);
+         }
+         return null;
+      }
+
+      @Override
+      protected void onPostExecute(List list) {
+         super.onPostExecute(list);
+         if (list != null) {
+            if (list.size() > 1) {
+               logger.warn("got more data then expected");
+            }
+            if (list.size() >= 1) {
+               VehicleDeviceClass vehicleDeviceClass = (VehicleDeviceClass) list.get(0);
+               logger.debug("got vehicle with device class: {}", vehicleDeviceClass);
+               try {
+                  vipListener.deliverVehicleCurrent(createVehicleCurrent(vehicleDeviceClass));
+               }
+               catch (RemoteException e) {
+                  logger.error("this should never happen because method was called locally");
+               }
+            }
+         }
+      }
+
+      /**
+       * factory method to create a vehicle current with only vehicle device class as a single value inside
+       * @param vehicleDeviceClass
+       * @return the vehicle current
+       */
+      private VehicleCurrent createVehicleCurrent(VehicleDeviceClass vehicleDeviceClass) {
+         VehicleCurrent vehicleCurrent = new VehicleCurrent();
+         Vehicle vehicle = new Vehicle();
+         VehicleModel vehicleModel = new VehicleModel();
+         VehicleType vehicleType = new VehicleType();
+         vehicleCurrent.setVehicle(vehicle);
+         vehicle.setVehicleModel(vehicleModel);
+         vehicleModel.setVehicleType(vehicleType);
+         vehicleType.setName(vehicleDeviceClass);
+         return vehicleCurrent;
+      }
+   }
 
    private void registerVIPListener() {
       if (this.vipService != null) {
