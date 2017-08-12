@@ -9,6 +9,7 @@
 package com.cnh.pf.android.data.management.productlibrary;
 
 import android.content.res.Resources;
+import android.os.AsyncTask;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Looper;
@@ -71,6 +72,9 @@ import com.cnh.pf.model.product.library.ProductMix;
 import com.cnh.pf.model.product.library.ProductUnits;
 import com.cnh.pf.model.vip.vehimp.Implement;
 import com.cnh.pf.model.vip.vehimp.ImplementCurrent;
+import com.cnh.pf.model.vip.vehimp.ImplementModel;
+import com.cnh.pf.model.vip.vehimp.ImplementType;
+import com.cnh.pf.model.vip.vehimp.Operation;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -79,9 +83,9 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 
-import roboguice.fragment.provided.RoboFragment;
-
 import javax.annotation.Nullable;
+
+import roboguice.fragment.provided.RoboFragment;
 
 /**
  * ProductLibraryFragment
@@ -482,6 +486,7 @@ public class ProductLibraryFragment extends RoboFragment implements ProductMixCa
          return true;
       }
       for (ControllerProductConfiguration controllerProductConfiguration : controllerProductConfigurationList) {
+         // TODO: this will be null here if objects came from HQLQuery, but delete is a feature of rc15
          if (controllerProductConfiguration != null && controllerProductConfiguration.getController() != null) {
             if (currentImplement.getControllers().contains(controllerProductConfiguration.getController())) {
                for (DriveProductConfiguration driveProductConfiguration : controllerProductConfiguration.getDrives()) {
@@ -831,27 +836,96 @@ public class ProductLibraryFragment extends RoboFragment implements ProductMixCa
    private void registerVIPService() {
       // isResumed() needs to be checked if this is called via setVIPService() - if the method is not resumed objects may be null.
       if (vipService != null && isResumed()) {
-         new Thread() {
-            @Override
-            public synchronized void start() {
-               log.debug("starting thread for vipServiceListener registration");
-               try {
-                  vipService.register(identifier, vipListener);
-                  vipService.requestImplementCurrent();
-                  vipService.requestImplementProductConfigCurrent();
-                  log.debug("vipService registered");
-               }
-               catch (RemoteException e) {
-                  log.error("vipService register failed: ", e);
-               }
-            }
-         }.start();
-      }
-      else {
+         GetLightWeightImplementCurrentAsyncTask getLightWeightImplementCurrentAsyncTask = new GetLightWeightImplementCurrentAsyncTask();
+         getLightWeightImplementCurrentAsyncTask.execute();
+      } else {
          log.debug("cannot register vipListener - vipService == {}", vipService);
       }
    }
 
+   /**
+    * AsyncTask to get a light weight vehicle current which includes only parts of  the {@link ImplementCurrent}s data.
+    */
+   private final class GetLightWeightImplementCurrentAsyncTask extends AsyncTask<Void, Void, List> {
+
+      // TODO: hint for rc15 when deleting products should be implemented - maybe controllers are needed than additionally
+      //   private static String QUERY =
+      //           "SELECT imp.name, type.operation, controller.id, controller.protocol " +
+      //                   "FROM Implement imp " +
+      //                   "LEFT OUTER JOIN imp.implementModel AS model " +
+      //                   "LEFT OUTER JOIN imp.controllers AS controller " +
+      //                   "LEFT OUTER JOIN model.implementType as type " +
+      //                   "WHERE imp.id = (SELECT implement.id FROM ImplementCurrent ic WHERE ic.id = 1)";
+
+      private final String IMPLEMENT_NAME_AND_TYPE_OP_QUERY = "SELECT imp.id, imp.name, type.operation FROM Implement imp " + "LEFT OUTER JOIN imp.implementModel AS model "
+            + "LEFT OUTER JOIN model.implementType AS type " + "WHERE imp.id = (SELECT implement.id FROM ImplementCurrent ic WHERE ic.id = 1)";
+
+      @Override
+      protected void onPreExecute() {
+         super.onPreExecute();
+      }
+
+      @Override
+      protected List doInBackground(Void... nothing) {
+         log.debug("starting thread for vipServiceListener registration");
+         try {
+            vipService.register(identifier, vipListener);
+            // This is only used to check if a product can be deleted. Needs to be proved if this is necessary during
+            // implementing deletion (planned in RC15).
+            vipService.requestImplementProductConfigCurrent();
+
+            final List implementNameAndTypeOp = vipService.genericQuery(IMPLEMENT_NAME_AND_TYPE_OP_QUERY);
+            return implementNameAndTypeOp;
+         }
+         catch (RemoteException e) {
+            log.error("vipService register failed: ", e);
+         }
+         return null;
+      }
+
+      @Override
+      protected void onPostExecute(List list) {
+         super.onPostExecute(list);
+         if (list != null) {
+            if (list.size() > 1){
+               log.warn("got more data then expected");
+            }
+            if (list.size() >= 1) {
+               Object[] singleDatabaseLine = (Object[]) list.get(0);
+               int implementId = (Integer) singleDatabaseLine[0];
+               String implementName = (String) singleDatabaseLine[1];
+               Operation implementTypeOperation = (Operation) singleDatabaseLine[2];
+               log.debug("got implement id: {}, name: {},  and type: {} from pcm", implementId, implementName, implementTypeOperation);
+               try {
+                  vipListener.deliverImplementCurrent(createCurrentImplement(implementId, implementName, implementTypeOperation));
+               } catch (RemoteException e) {
+                  log.error("this should never happen because method was called locally");
+               }
+            }
+         }
+      }
+
+      /**
+       * Factory method to create the current implement with everything we need inside (so this objects contain only the given values)
+       * @param implementId
+       * @param implementName
+       * @param implementTypeOperation
+       * @return the new implementCurrent with only the values gives as parameters
+       */
+      private ImplementCurrent createCurrentImplement(int implementId, String implementName, Operation implementTypeOperation){
+         Implement implement = new Implement();
+         implement.setName(implementName);
+         implement.setId(implementId);
+         ImplementModel implementModel = new ImplementModel();
+         ImplementType implementType = new ImplementType();
+         implementType.setOperation(implementTypeOperation);
+         implementModel.setImplementType(implementType);
+         implement.setImplementModel(implementModel);
+         ImplementCurrent implementCurrent = new ImplementCurrent();
+         implementCurrent.setImplement(implement);
+         return implementCurrent;
+      }
+   };
 
    @Override
    public void onPause() {

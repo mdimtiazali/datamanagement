@@ -149,10 +149,6 @@
             <artifactId>roboblender</artifactId>
             <scope>provided</scope>
         </dependency>
-       <dependency>
-          <groupId>com.jakewharton</groupId>
-          <artifactId>butterknife</artifactId>
-       </dependency>
         <dependency>
             <groupId>com.jakewharton</groupId>
             <artifactId>butterknife</artifactId>
