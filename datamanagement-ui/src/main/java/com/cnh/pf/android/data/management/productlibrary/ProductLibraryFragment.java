@@ -482,7 +482,7 @@ public class ProductLibraryFragment extends RoboFragment implements ProductMixCa
 
    //TODO: Current Validate only Product not Product mixes
    public boolean validateDeleteProduct(Product product) {
-      if (controllerProductConfigurationList == null || controllerProductConfigurationList.isEmpty()) {
+      if (controllerProductConfigurationList == null || controllerProductConfigurationList.isEmpty() || currentImplement == null || currentImplement.getControllers() == null) {
          return true;
       }
       for (ControllerProductConfiguration controllerProductConfiguration : controllerProductConfigurationList) {
