@@ -202,9 +202,12 @@ public final class ProductMixAdapter extends SearchableSortableExpandableListAda
             viewHolder.formText.setText(EnumValueToUiStringUtility.getUiStringForProductForm(parameters.getForm(), context));
          }
          else {
-            viewHolder.formText.setText(EnumValueToUiStringUtility.getUiStringForProductForm(ProductForm.LIQUID, context));
+            // maybe "unknown" would be better - but form should be never null ...
+            log.error("productForm was null - this should never happen" );
+            viewHolder.formText.setText(EnumValueToUiStringUtility.getUiStringForProductForm(ProductForm.ANY, context));
          }
-         viewHolder.rateText.setText(UnitUtility.formatRateUnits(parameters, parameters.getDefaultRate()));
+         viewHolder.rateText.setText(UnitUtility.formatRateUnits(parameters, parameters.getDefaultRate(),
+                 ProductHelperMethods.queryApplicationRateMeasurementSystemForProductForm(parameters.getForm(), context)));
       }
       viewHolder.groupIndicator.setImageDrawable(expanded ? arrowOpenDetails : arrowCloseDetails);
       view.setOnClickListener(listener);
@@ -275,8 +278,10 @@ public final class ProductMixAdapter extends SearchableSortableExpandableListAda
       viewHolder.productMix = productDetail;
       if (viewHolder.productMix != null) {
          Product productMixParameter = viewHolder.productMix.getProductMixParameters();
-         viewHolder.appRate1Text.setText(UnitUtility.formatRateUnits(productMixParameter, productDetail.getProductMixParameters().getDefaultRate()));
-         viewHolder.appRate2Text.setText(UnitUtility.formatRateUnits(productMixParameter, productDetail.getProductMixParameters().getRate2()));
+         viewHolder.appRate1Text.setText(UnitUtility.formatRateUnits(productMixParameter, productMixParameter.getDefaultRate(),
+                 ProductHelperMethods.queryApplicationRateMeasurementSystemForProductForm(productMixParameter.getForm(), context)));
+         viewHolder.appRate2Text.setText(UnitUtility.formatRateUnits(productMixParameter, productMixParameter.getRate2(),
+                 ProductHelperMethods.queryApplicationRateMeasurementSystemForProductForm(productMixParameter.getForm(), context)));
          addProductsToTableLayout(viewHolder.productRecipeTable, viewHolder.productMix);
       }
       viewHolder.alertIcon.setOnClickListener(alertButtonClickListener);
