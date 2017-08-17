@@ -403,6 +403,7 @@ public abstract class BaseDataFragment extends RoboFragment implements IDataMana
       treeViewList.removeAllViewsInLayout();
       treeViewList.setVisibility(View.VISIBLE);
       treeViewList.setAdapter(treeAdapter);
+      manager.collapseChildren(null);
       treeAdapter.setOnTreeItemSelectedListener(new SelectionTreeViewAdapter.OnTreeItemSelectedListener() {
          @Override
          public void onItemSelected() {
