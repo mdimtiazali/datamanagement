@@ -28,6 +28,7 @@ import com.cnh.android.dialog.DialogView;
 import com.cnh.android.dialog.DialogViewInterface;
 import com.cnh.android.pf.widget.view.DisabledOverlay;
 import com.cnh.android.widget.activity.TabActivity;
+import com.cnh.jgroups.Datasource;
 import com.cnh.jgroups.ObjectGraph;
 import com.cnh.jgroups.Operation;
 import com.cnh.pf.android.data.management.adapter.ObjectTreeViewAdapter;
@@ -164,16 +165,21 @@ public abstract class BaseDataFragment extends RoboFragment implements IDataMana
       if (!hasLocalSource && getDataManagementService().hasLocalSources()) {
          hasLocalSource = true;
          disabled.setVisibility(View.GONE);
-         onResumeSession(null);
-         return;
+
       }
       // all local sources gone
-      if (hasLocalSource && !getDataManagementService().hasLocalSources()) {
+      else if (hasLocalSource && !getDataManagementService().hasLocalSources()) {
          hasLocalSource = false;
          disabled.setMode(DisabledOverlay.MODE.DISCONNECTED);
-         onResumeSession(null);
-         return;
       }
+      // both case will trigger a discovery, if there is no session, create a new one
+      if(getSession() == null){
+          setSession(createSession());
+      }
+      // if operation is in progress, do nothing since when operation complete, it will trigger a discovery
+      sessionOperate(getSession(), SessionOperation.DISCOVERY);
+
+      return;
    }
 
    /**
@@ -248,12 +254,20 @@ public abstract class BaseDataFragment extends RoboFragment implements IDataMana
       globalEventManager.registerObserver(DataServiceConnectionImpl.ViewChangeEvent.class, viewChangeListener);
       if (dataServiceConnection.isConnected()) {
          getDataManagementService().register(NAME, BaseDataFragment.this);
-         if (session != null && !session.getSessionOperation().equals(SessionOperation.DISCOVERY)) {
-            onResumeSession(session);
+         if (getSession() == null){
+             setSession(createSession());
          }
-         else {
-            onResumeSession(null);
+         treeViewList.setVisibility(View.GONE);
+         if (hasLocalSource) {
+            disabled.setVisibility(View.GONE);
+            treeProgress.setVisibility(View.VISIBLE);
+         } else {
+            disabled.setVisibility(View.VISIBLE);
+            disabled.setMode(DisabledOverlay.MODE.DISCONNECTED);
+            return;
          }
+         sessionOperate(getSession(), SessionOperation.DISCOVERY);
+
       }
       ((DataManagementActivity) getActivity()).hideSubheader();
    }
@@ -266,7 +280,9 @@ public abstract class BaseDataFragment extends RoboFragment implements IDataMana
    @Override
    public void onDataSessionUpdated(DataManagementSession session) throws RemoteException {
       if (isCurrentOperation(session)) {
-         onResumeSession(session);
+         // when operation is completed, data management service will callback to update status
+         // sub-class should override and take care the action for operation complete
+         sessionUpdated(session);
       }
       else {
          onOtherSessionUpdate(session);
@@ -300,7 +316,7 @@ public abstract class BaseDataFragment extends RoboFragment implements IDataMana
                   public void onButtonClick(DialogViewInterface dialog, int which) {
                      if (which == DialogViewInterface.BUTTON_FIRST) {
                         if (isCurrentOperation(event.getSession())) {
-                           onResumeSession(null);
+                        //   sessionOperate(getSession(),SessionOperation.DISCOVERY);//trigger a new discovery
                         }
                         else {
                            onOtherSessionUpdate(event.getSession());
@@ -321,7 +337,12 @@ public abstract class BaseDataFragment extends RoboFragment implements IDataMana
          logger.debug("onConnected");
          if (event.isConnected()) {
             getDataManagementService().register(NAME, BaseDataFragment.this);
-            onResumeSession(session);
+            // when connect to backend, start a new query, if session is null, create a new one
+            if(getSession() == null){
+               treeViewList.setVisibility(View.INVISIBLE);
+               setSession(createSession());
+            }
+            sessionOperate(getSession(), SessionOperation.DISCOVERY);
          }
          else {
             //Disable all buttons for now
@@ -344,27 +365,43 @@ public abstract class BaseDataFragment extends RoboFragment implements IDataMana
       }
    };
 
-   private void onResumeSession(DataManagementSession session) {
-      logger.debug("onResumeSession {}", session);
-      if (session == null) {
-         logger.debug("Starting new session");
-         treeViewList.setVisibility(View.GONE);
-         onNewSession();
+   /**
+    * Create an new Session for operation
+    * @return DataManagementSession a new data session
+    */
+   public DataManagementSession createSession(){
+      return null;
+   }
+
+   /**
+    * Operation over session
+    * @param  session session to operate
+    */
+   public void sessionOperate(DataManagementSession session, DataManagementSession.SessionOperation operation){
+      logger.trace("sessionOperate(): session {}, operation {} ",session,operation);
+      if(session != null && !session.isProgress()) {
+         getDataManagementService().processOperation(session, operation);
       }
-      else {
-         setSession(session);
-         DataManagementSession.SessionOperation op = session.getSessionOperation();
-         if (op.equals(DataManagementSession.SessionOperation.DISCOVERY)) {
-            treeProgress.setVisibility(View.GONE);
-            initiateTree();
-            updateSelectAllState();
-         }
-         else if (op.equals(DataManagementSession.SessionOperation.CALCULATE_OPERATIONS)) {
-            //Import to existing parent if entity has parent
-            getSession().setData(processPartialImports(getSession().getData()));
-         }
-         processOperations();
+   }
+
+   /**
+    * session have a udpated status
+    * @param  session session that have an update
+    */
+   public void sessionUpdated(DataManagementSession session){
+      DataManagementSession.SessionOperation op = session.getSessionOperation();
+      logger.trace("sessionUpdated() by ", op);
+      if (op.equals(DataManagementSession.SessionOperation.DISCOVERY) && !session.isProgress()) {
+         treeProgress.setVisibility(View.GONE);
+         initiateTree();
+         updateSelectAllState();
       }
+      else if (op.equals(DataManagementSession.SessionOperation.CALCULATE_OPERATIONS)) {
+         //Import to existing parent if entity has parent
+         getSession().setData(processPartialImports(getSession().getData()));
+      }
+      processOperations();
+
    }
 
    private List<Operation> processPartialImports(List<Operation> operations) {
@@ -383,22 +420,34 @@ public abstract class BaseDataFragment extends RoboFragment implements IDataMana
       //Discovery happened
       enableButtons(true);
       List<ObjectGraph> data = session != null && session.getObjectData() != null ? session.getObjectData() : new ArrayList<ObjectGraph>();
-      manager = new InMemoryTreeStateManager<ObjectGraph>();
-      treeBuilder = new TreeBuilder<ObjectGraph>(manager);
+      if(manager == null) {
+         manager = new InMemoryTreeStateManager<ObjectGraph>();
+      }
+      else{
+         manager.clear();
+      }
+      if(treeBuilder == null) {
+         treeBuilder = new TreeBuilder<ObjectGraph>(manager);
+      }
+      else{
+         treeBuilder.clear();
+      }
       for (ObjectGraph graph : data) {
          addToTree(null, graph);
       }
-      treeAdapter = new ObjectTreeViewAdapter(getActivity(), manager, 1) {
-         @Override
-         protected boolean isGroupableEntity(ObjectGraph node) {
-            return TreeEntityHelper.groupables.containsKey(node.getType()) || node.getParent() == null;
-         }
+      if(treeAdapter == null) {
+         treeAdapter = new ObjectTreeViewAdapter(getActivity(), manager, 1) {
+            @Override
+            protected boolean isGroupableEntity(ObjectGraph node) {
+               return TreeEntityHelper.groupables.containsKey(node.getType()) || node.getParent() == null;
+            }
 
-         @Override
-         public boolean isSupportedEntitiy(ObjectGraph node) {
-            return supportedByFormat(node);
-         }
-      };
+            @Override
+            public boolean isSupportedEntitiy(ObjectGraph node) {
+               return supportedByFormat(node);
+            }
+         };
+      }
       treeAdapter.setData(data);
       treeViewList.removeAllViewsInLayout();
       treeViewList.setVisibility(View.VISIBLE);

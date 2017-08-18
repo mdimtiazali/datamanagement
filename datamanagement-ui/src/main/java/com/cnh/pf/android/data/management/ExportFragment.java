@@ -215,10 +215,11 @@ public class ExportFragment extends BaseDataFragment {
       }
    }
    @Override
-   public void onNewSession() {
+   public DataManagementSession createSession(){
+      logger.trace("createSession()");
       super.onNewSession();
-
       DataManagementSession oldSession = getSession();
+
       leftStatusPanel.setVisibility(View.GONE);
       exportDropZone.setVisibility(View.VISIBLE);
       treeViewList.setVisibility(View.GONE);
@@ -229,9 +230,8 @@ public class ExportFragment extends BaseDataFragment {
       } else {
          disabled.setVisibility(View.VISIBLE);
          disabled.setMode(DisabledOverlay.MODE.DISCONNECTED);
-         return;
+         return null;
       }
-
       DataManagementSession session = new DataManagementSession(new Datasource.Source[] { Datasource.Source.INTERNAL, Datasource.Source.DISPLAY }, null, null, null);
       if (oldSession != null) {
          session.setFormat(oldSession.getFormat());
@@ -246,7 +246,7 @@ public class ExportFragment extends BaseDataFragment {
             session.setTargets(Arrays.asList(mediums.get(0)));
          }
       }
-      setSession(getDataManagementService().processOperation(session, SessionOperation.DISCOVERY));
+      return session;
    }
 
    public static boolean isEmpty(Collection<?> collection) {

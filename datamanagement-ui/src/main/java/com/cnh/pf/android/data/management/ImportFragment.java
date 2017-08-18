@@ -49,6 +49,9 @@ import roboguice.event.Observes;
 import roboguice.inject.InjectResource;
 import roboguice.inject.InjectView;
 
+import javax.activation.DataSource;
+
+
 /**
  * Import Tab Fragment, Handles import from external mediums {USB, External Display}.
  * @author oscar.salazar@cnhind.com
@@ -183,15 +186,17 @@ public class ImportFragment extends BaseDataFragment {
       else {
          pathTv.setText(getString(R.string.display_named, event.getDevice().getName()));
       }
-      DataManagementSession session = new DataManagementSession(null, new Datasource.Source[] { Datasource.Source.INTERNAL, Datasource.Source.DISPLAY }, event.getDevices(), null);
-      setSession(session);
+      if(getSession() == null){
+         setSession(createSession());
+      }
+      getSession().setSources(event.getDevices());
       getDataManagementService().processOperation(getSession(), SessionOperation.DISCOVERY);
       if (getTreeAdapter() != null) getTreeAdapter().selectAll(treeViewList, false); //clear out the selection
    }
 
    @Override
-   public void onNewSession() {
-      logger.debug("onNewSession");
+   public DataManagementSession createSession(){
+      logger.debug("createSession()");
       removeProgressPanel();
       super.onNewSession();
 
@@ -204,6 +209,10 @@ public class ImportFragment extends BaseDataFragment {
          disabled.setVisibility(View.VISIBLE);
          disabled.setMode(DisabledOverlay.MODE.DISCONNECTED);
       }
+      //this is a stub Medium device, when user select source, it will be updated
+      List stubDevices = new ArrayList<MediumDevice>();
+      stubDevices.add(new MediumDevice(Datasource.Source.USB));
+      return new DataManagementSession(null, new Datasource.Source[] { Datasource.Source.INTERNAL, Datasource.Source.DISPLAY }, stubDevices, null);
    }
 
    @Override

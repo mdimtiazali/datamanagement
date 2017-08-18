@@ -303,22 +303,29 @@ public class DataManagementService extends RoboService implements SharedPreferen
    public DataManagementSession processOperation(final DataManagementSession session, DataManagementSession.SessionOperation sessionOperation) {
       logger.debug("service.processOperation: {}", sessionOperation);
       session.setSessionOperation(sessionOperation);
+      session.setProgress(true);
       session.setResult(null);
       if (sessionOperation.equals(DataManagementSession.SessionOperation.DISCOVERY)) {
          if (isUsbImport(session)) {
-            logger.debug("Starting USB Datasource");
-            startUsbServices(new String[] { session.getSource().getPath().getPath() }, false, session.getFormat(), new Runnable() {
-               @Override
-               public void run() {
-                  logger.debug("Running discovery");
-                  new DiscoveryTask().executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR, session);
-               }
-            }, new Runnable() {
-               @Override public void run() {
-                  globalEventManager.fire(new ErrorEvent(session, ErrorEvent.DataError.NO_SOURCE_DATASOURCE));
-                  session.setResult(Process.Result.NO_DATASOURCE);
-               }
-            });
+            if(session.getSource() != null && session.getSource().getPath() != null) {
+               logger.debug("Starting USB Datasource: getSource():{}", session.getSource());
+               startUsbServices(new String[] { session.getSource().getPath().getPath() }, false, session.getFormat(), new Runnable() {
+                  @Override
+                  public void run() {
+                     logger.debug("Running discovery");
+                     new DiscoveryTask().executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR, session);
+                  }
+               }, new Runnable() {
+                  @Override
+                  public void run() {
+                     globalEventManager.fire(new ErrorEvent(session, ErrorEvent.DataError.NO_SOURCE_DATASOURCE));
+                     session.setResult(Process.Result.NO_DATASOURCE);
+                  }
+               });
+            }
+            else{
+               session.setProgress(false);
+            }
          }
          else {
             new DiscoveryTask().executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR, session);
@@ -336,6 +343,7 @@ public class DataManagementService extends RoboService implements SharedPreferen
       else {
          logger.error("Couldn't find op");
       }
+      logger.debug("before return Datasource: getSource():{}", session.getSource());
       return session;
    }
 
@@ -579,6 +587,7 @@ public class DataManagementService extends RoboService implements SharedPreferen
       @Override
       protected DataManagementSession doInBackground(DataManagementSession... params) {
          DataManagementSession session = params[0];
+         session.setProgress(true);
          try {
             if (session.getSources() == null && session.getSourceTypes() != null) { //export
                session.setSources(dsHelper.getLocalDatasources(session.getSourceTypes()));
@@ -626,6 +635,7 @@ public class DataManagementService extends RoboService implements SharedPreferen
       protected DataManagementSession doInBackground(DataManagementSession... params) {
          logger.debug("Calculate Targets...");
          DataManagementSession session = params[0];
+         session.setProgress(true);
          try {
             resolveTargets(session);
             Address[] addresses = getAddresses(session.getTargets());
@@ -655,6 +665,7 @@ public class DataManagementService extends RoboService implements SharedPreferen
       protected DataManagementSession doInBackground(DataManagementSession... params) {
          logger.debug("Calculate Conflicts...");
          DataManagementSession session = params[0];
+         session.setProgress(true);
          try {
             Address[] addresses = getAddresses(session.getTargets());
             if (addresses == null || addresses.length > 0) {
@@ -679,6 +690,7 @@ public class DataManagementService extends RoboService implements SharedPreferen
       protected DataManagementSession doInBackground(DataManagementSession... params) {
          logger.debug("Performing Operations...");
          DataManagementSession session = params[0];
+         session.setProgress(true);
          try {
             resolveTargets(session);
             if (session.getData() == null) {
@@ -790,6 +802,7 @@ public class DataManagementService extends RoboService implements SharedPreferen
       protected DataManagementSession doInBackground(DataManagementSession... params) {
          logger.debug("Cancelling...");
          DataManagementSession session = params[0];
+         session.setProgress(true);
          try {
             Address[] addresses = getAddresses(session.getTargets());
             //if process already running tell it to cancel.
@@ -819,6 +832,7 @@ public class DataManagementService extends RoboService implements SharedPreferen
             super.onPostExecute(session);
          }
          else {
+            session.setProgress(false);
             sendStatus(session, statusCancelling);
          }
       }
@@ -842,6 +856,7 @@ public class DataManagementService extends RoboService implements SharedPreferen
       @Override
       protected void onPostExecute(DataManagementSession session) {
          super.onPostExecute(session);
+         session.setProgress(false);
          if (session.getResult() != Result.ERROR) {
             for (IDataManagementListenerAIDL listener : listeners.values()) {
                try {
