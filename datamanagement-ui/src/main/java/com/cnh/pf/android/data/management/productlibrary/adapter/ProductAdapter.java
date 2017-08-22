@@ -146,9 +146,12 @@ public final class ProductAdapter extends SearchableSortableExpandableListAdapte
          viewHolder.formText.setText(EnumValueToUiStringUtility.getUiStringForProductForm(productDetail.getForm(), context));
       }
       else {
-         viewHolder.formText.setText(EnumValueToUiStringUtility.getUiStringForProductForm(productDetail.getForm(), context));
+         // maybe "unknown" would be better - but form should be never null ...
+         log.error("productForm was null - this should never happen" );
+         viewHolder.formText.setText(EnumValueToUiStringUtility.getUiStringForProductForm(ProductForm.ANY, context));
       }
-      viewHolder.rateText.setText(UnitUtility.formatRateUnits(productDetail, productDetail.getDefaultRate()));
+      viewHolder.rateText.setText(UnitUtility.formatRateUnits(productDetail, productDetail.getDefaultRate(),
+              ProductHelperMethods.queryApplicationRateMeasurementSystemForProductForm(productDetail.getForm(), context)));
       viewHolder.groupIndicator.setImageDrawable(expanded ? arrowOpenDetails : arrowCloseDetails);
       view.setOnClickListener(listener);
    }
@@ -216,18 +219,20 @@ public final class ProductAdapter extends SearchableSortableExpandableListAdapte
       viewHolder.product = productDetail;
 
       if (viewHolder.product != null) {
-         viewHolder.appRate1Text.setText(UnitUtility.formatRateUnits(productDetail, productDetail.getDefaultRate()));
-         viewHolder.appRate2Text.setText(UnitUtility.formatRateUnits(productDetail, productDetail.getRate2()));
-         viewHolder.deltaRateText.setText(UnitUtility.formatRateUnits(productDetail, productDetail.getDeltaRate()));
-         viewHolder.minRateText.setText(UnitUtility.formatRateUnits(productDetail, productDetail.getMinRate()));
-         viewHolder.maxRateText.setText(UnitUtility.formatRateUnits(productDetail, productDetail.getMaxRate()));
+         MeasurementSystem rateMeasurementSystem = ProductHelperMethods.queryApplicationRateMeasurementSystemForProductForm(productDetail.getForm(), context);
+         viewHolder.appRate1Text.setText(UnitUtility.formatRateUnits(productDetail, productDetail.getDefaultRate(), rateMeasurementSystem));
+         viewHolder.appRate2Text.setText(UnitUtility.formatRateUnits(productDetail, productDetail.getRate2(), rateMeasurementSystem));
+         viewHolder.deltaRateText.setText(UnitUtility.formatRateUnits(productDetail, productDetail.getDeltaRate(), rateMeasurementSystem));
+         viewHolder.minRateText.setText(UnitUtility.formatRateUnits(productDetail, productDetail.getMinRate(), rateMeasurementSystem));
+         viewHolder.maxRateText.setText(UnitUtility.formatRateUnits(productDetail, productDetail.getMaxRate(), rateMeasurementSystem));
          viewHolder.packageText.setText(UnitUtility.formatPackageUnits(productDetail, productDetail.getPackageSize(),
                ProductHelperMethods.queryPageSizeMeasurementSystemForProductForm(viewHolder.product.getForm(), context)));
          viewHolder.densityText
                .setText(UnitUtility.formatDensityUnits(productDetail, productDetail.getDensity(), UnitsSettings.queryMeasurementSystem(context, UnitsSettings.DENSITY)));
 
+         // FIXME: System spec says: "is only shown if CNHPlanter with vacuum is detected" so this should work like ProductDialog#updateFanSettingsVisibility
+         // https://polarion.cnhind.com/polarion/#/project/pfhmidevdefects/workitem?id=pfhmi-dev-defects-5536
          CNHPlanterFanData cnhPlanterFanData = productDetail.getCnhPlanterFanData();
-
          if (productDetail.getForm() == ProductForm.SEED && cnhPlanterFanData != null) {
             double vacuumUiRate = MathUtility.getConvertedFromBase(cnhPlanterFanData.getVacuumFanDefaultRate1(), unit_constantsConstants.in_H2O_PER_kPa);
             double vacuumUiDelta = MathUtility.getConvertedFromBase(cnhPlanterFanData.getVacuumFanDeltaRate(), unit_constantsConstants.in_H2O_PER_kPa);
