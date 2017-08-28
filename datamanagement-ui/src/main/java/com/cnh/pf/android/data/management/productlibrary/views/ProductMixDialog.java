@@ -865,6 +865,7 @@ public class ProductMixDialog extends DialogView implements DialogHandlerListene
          }
          segmentedToggleButtonGroup.setTag(holder);
          segmentedToggleButtonGroup.setSelectionById((long) 0);
+         segmentedToggleButtonGroup.setVisibility(holder.unitChoices.size() == 1 ? INVISIBLE : VISIBLE);
       }
    }
 
