@@ -30,6 +30,7 @@ import com.cnh.android.pf.widget.utilities.ProductHelperMethods;
 import com.cnh.android.pf.widget.utilities.UiUtility;
 import com.cnh.android.pf.widget.utilities.UnitUtility;
 import com.cnh.android.pf.widget.utilities.UnitsSettings;
+import com.cnh.android.pf.widget.utilities.VIPServiceUtility;
 import com.cnh.android.pf.widget.utilities.commands.DeleteProductCommand;
 import com.cnh.android.pf.widget.utilities.commands.ProductCommandParams;
 import com.cnh.android.pf.widget.utilities.tasks.VIPAsyncTask;
@@ -230,10 +231,8 @@ public final class ProductAdapter extends SearchableSortableExpandableListAdapte
          viewHolder.densityText
                .setText(UnitUtility.formatDensityUnits(productDetail, productDetail.getDensity(), UnitsSettings.queryMeasurementSystem(context, UnitsSettings.DENSITY)));
 
-         // FIXME: System spec says: "is only shown if CNHPlanter with vacuum is detected" so this should work like ProductDialog#updateFanSettingsVisibility
-         // https://polarion.cnhind.com/polarion/#/project/pfhmidevdefects/workitem?id=pfhmi-dev-defects-5536
          CNHPlanterFanData cnhPlanterFanData = productDetail.getCnhPlanterFanData();
-         if (productDetail.getForm() == ProductForm.SEED && cnhPlanterFanData != null) {
+         if (VIPServiceUtility.areFanSettingsPossible(productDetail.getForm(), currentImplement) && cnhPlanterFanData != null) {
             double vacuumUiRate = MathUtility.getConvertedFromBase(cnhPlanterFanData.getVacuumFanDefaultRate1(), unit_constantsConstants.in_H2O_PER_kPa);
             double vacuumUiDelta = MathUtility.getConvertedFromBase(cnhPlanterFanData.getVacuumFanDeltaRate(), unit_constantsConstants.in_H2O_PER_kPa);
             viewHolder.vacuumFanRateText.setText(UiUtility.getValueAsString(vacuumUiRate, 1) + " " + unitInH2O);
