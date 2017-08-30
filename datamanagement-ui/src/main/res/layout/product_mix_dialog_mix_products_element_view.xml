@@ -37,7 +37,7 @@
         <com.cnh.android.pf.widget.controls.SegmentedToggleButtonGroupPickList
                 android:id="@+id/product_mix_segmentedtogglebuttongroup_product_unit"
                 style="@style/SegmentedToggleButtonSmall"
-                android:paddingEnd="5dp"
+                android:paddingEnd="0dp"
                 android:paddingStart="0dp"
                 android:paddingTop="10dp"
                 android:layout_width="match_parent"

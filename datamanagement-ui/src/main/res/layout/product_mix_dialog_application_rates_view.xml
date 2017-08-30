@@ -30,7 +30,7 @@
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:orientation="horizontal"
-                    android:layout_below="@id/application_rate_units_toggle_button_group"
+                    android:layout_below="@+id/application_rates_toggle_button_group_layout"
                     android:paddingStart="10dp"
                     android:paddingEnd="10dp"
                     android:paddingBottom="10dp"
@@ -120,19 +120,28 @@
                             cnh:headerText="@string/product_mix_title_max_application_rate"/>
                 </LinearLayout>
             </LinearLayout>
-
-            <com.cnh.android.pf.widget.controls.SegmentedToggleButtonGroupPickList
-                    android:id="@id/application_rate_units_toggle_button_group"
-                    style="@style/SegmentedToggleButtonSmall"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:layout_alignParentStart="true"
-                    android:layout_marginStart="10dp"
-                    android:orientation="horizontal"
-                    cnh:buttonUseSmallResources="false"
-                    cnh:listUseSmallResources="false"
-                    cnh:headerText="@string/product_mix_title_picklist_default_select"
-                    cnh:togglePicklistHeaderText="@string/product_text_units"/>
+            <LinearLayout
+                          android:id="@+id/application_rates_toggle_button_group_layout"
+                          android:layout_width="match_parent"
+                          android:layout_height="wrap_content"
+                          android:weightSum="2"
+                          android:layout_alignParentStart="true"
+                          android:orientation="horizontal"
+                          android:layout_marginStart="10dp"
+                          android:layout_marginEnd="10dp">
+                <com.cnh.android.pf.widget.controls.SegmentedToggleButtonGroupPickList
+                        android:id="@id/application_rate_units_toggle_button_group"
+                        style="@style/SegmentedToggleButtonSmall"
+                        android:layout_weight="1"
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:orientation="horizontal"
+                        android:layout_marginEnd="10dp"
+                        cnh:buttonUseSmallResources="false"
+                        cnh:listUseSmallResources="false"
+                        cnh:headerText="@string/product_mix_title_picklist_default_select"
+                        cnh:togglePicklistHeaderText="@string/product_text_units"/>
+            </LinearLayout>
         </RelativeLayout>
 
         <LinearLayout
