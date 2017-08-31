@@ -7,7 +7,7 @@
     <parent>
         <groupId>com.cnh.pf</groupId>
         <artifactId>parent</artifactId>
-        <version>14.0.0-appmerge-SNAPSHOT</version>
+        <version>15.0.0-appmerge-SNAPSHOT</version>
     </parent>
 
     <artifactId>datamanagement-parent</artifactId>
