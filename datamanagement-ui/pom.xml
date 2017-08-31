@@ -84,18 +84,6 @@
             <groupId>com.google.guava</groupId>
             <artifactId>guava</artifactId>
         </dependency>
-       <dependency>
-          <groupId>com.cnh.pf</groupId>
-          <artifactId>corelib</artifactId>
-          <version>${corelib.version}</version>
-          <type>aar</type>
-           <exclusions>
-               <exclusion>
-                   <groupId>com.cnh.pf</groupId>
-                   <artifactId>widget</artifactId>
-               </exclusion>
-           </exclusions>
-       </dependency>
         <dependency>
             <groupId>com.cnh.pf</groupId>
             <artifactId>pfwidget</artifactId>
@@ -161,10 +149,6 @@
             <artifactId>roboblender</artifactId>
             <scope>provided</scope>
         </dependency>
-       <dependency>
-          <groupId>com.jakewharton</groupId>
-          <artifactId>butterknife</artifactId>
-       </dependency>
         <dependency>
             <groupId>com.jakewharton</groupId>
             <artifactId>butterknife</artifactId>
