@@ -20,6 +20,7 @@ import android.app.Activity;
 import android.graphics.drawable.Drawable;
 import android.view.View;
 import android.widget.TextView;
+import com.cnh.jgroups.DataTypes;
 import com.cnh.jgroups.ObjectGraph;
 import com.cnh.pf.android.data.management.R;
 import com.cnh.pf.android.data.management.TreeEntityHelper;
@@ -80,6 +81,14 @@ public abstract class ObjectTreeViewAdapter extends SelectionTreeViewAdapter<Obj
             return getSelectionMap().containsKey(input) && isSupportedEntitiy(input) && (Arrays.binarySearch(types, getSelectionMap().get(input)) >= 0);
          }
       });
+   }
+
+   @Override
+   public boolean includeParent(ObjectGraph id) {
+      if (id.getType().equals(DataTypes.FILE)) {
+         return true;
+      }
+      return false;
    }
 
    @Override

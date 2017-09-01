@@ -88,6 +88,13 @@ public abstract class SelectionTreeViewAdapter<T> extends AbstractTreeViewAdapte
       this.listener = listener;
    }
 
+   /**
+    * Should the tree item explicitly include its parent
+    */
+   public boolean includeParent(T id) {
+      return false;
+   }
+
    @Override
    public void handleItemClick(final AdapterView<?> parent, View view, int position, Object id) {
       super.handleItemClick(parent, view, position, id);
@@ -114,6 +121,10 @@ public abstract class SelectionTreeViewAdapter<T> extends AbstractTreeViewAdapte
                   return true;
                }
             });
+
+            if (includeParent((T) id)) {
+               selectionMap.put(getManager().getParent((T) id), SelectionType.FULL);
+            }
          }
       }
       else {
@@ -125,6 +136,9 @@ public abstract class SelectionTreeViewAdapter<T> extends AbstractTreeViewAdapte
                return true;
             }
          });
+         if (includeParent((T) id)) {
+            selectionMap.put(getManager().getParent((T) id), SelectionType.IMPLICIT);
+         }
          //Traverse up, and unselect implicit parent if this is the only selected item
          if (getManager().getParent((T) id) != null) {
             traverseTree(getManager().getParent((T) id), TRAVERSE_UP, new Visitor<T>() {
