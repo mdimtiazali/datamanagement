@@ -25,6 +25,7 @@
             android:id="@+id/display_picklist"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
+            android:imeOptions="actionDone|flagNoExtractUi"
             android:visibility="gone"
             android:background="#FFFF00"
             cnh:allowItemCopying="false"
