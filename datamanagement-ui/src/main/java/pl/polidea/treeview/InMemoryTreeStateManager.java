@@ -11,6 +11,8 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.Stack;
+
 
 /**
  * In-memory manager of tree state.
@@ -379,4 +381,43 @@ public class InMemoryTreeStateManager<T> implements TreeStateManager<T> {
       internalDataSetChanged();
    }
 
+   @Override
+    public Object rmNretNode(T id) {
+        final InMemoryTreeNode<T> node = allNodes.get(id);
+        if (node == null) {
+            throw new NodeAlreadyInTreeException(id.toString(), node.toString());
+        }
+        else{
+            Stack<InMemoryTreeNode<T>> stack = new Stack<InMemoryTreeNode<T>>();
+            stack.push(node);
+            while(stack.size() > 0){
+                InMemoryTreeNode<T> temp = stack.pop();
+                allNodes.remove(temp.getId());
+                if(temp.getChildren() != null) {
+                    for (InMemoryTreeNode<T> t : temp.getChildren()) {
+                        stack.push(t);
+                    }
+                }
+            }
+        }
+        return node;
+    }
+
+    @Override
+    public void addNote(Object n) {
+        InMemoryTreeNode<T> node = (InMemoryTreeNode<T>) n;
+       if(node != null && node.getId() != null) {
+           Stack<InMemoryTreeNode<T>> stack = new Stack<InMemoryTreeNode<T>>();
+           stack.push(node);
+           while(stack.size() > 0){
+               InMemoryTreeNode<T> temp = stack.pop();
+               allNodes.put(temp.getId(),temp);
+               if(temp.getChildren() != null) {
+                   for (InMemoryTreeNode<T> t : temp.getChildren()) {
+                       stack.push(t);
+                   }
+               }
+           }
+       }
+    }
 }

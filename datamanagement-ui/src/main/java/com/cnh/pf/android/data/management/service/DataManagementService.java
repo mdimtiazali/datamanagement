@@ -340,6 +340,9 @@ public class DataManagementService extends RoboService implements SharedPreferen
       else if (sessionOperation.equals(DataManagementSession.SessionOperation.PERFORM_OPERATIONS)) {
          performOperations(session);
       }
+      else if (sessionOperation.equals(DataManagementSession.SessionOperation.UPDATE)) {
+         updateOperations(session);
+      }
       else {
          logger.error("Couldn't find op");
       }
@@ -424,6 +427,22 @@ public class DataManagementService extends RoboService implements SharedPreferen
             performCalled = true;
             new PerformOperationsTask().executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR, session);
          }
+      }
+      catch (Exception e) {
+         logger.error("Could not find destination address for this type", e);
+      }
+   }
+
+   private void updateOperations(final DataManagementSession session) {
+      try {
+         session.setResult(null);
+         performCalled = false;
+         Status status = new com.cnh.android.status.Status("", statusDrawable, getApplicationContext().getPackageName());
+         activeSessions.put(session, status);
+         sendStatus(session, statusStarting);
+
+         performCalled = true;
+         new UpdateOperationsTask().executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR, session);
       }
       catch (Exception e) {
          logger.error("Could not find destination address for this type", e);
@@ -623,10 +642,14 @@ public class DataManagementService extends RoboService implements SharedPreferen
 
    private void resolveTargets(DataManagementSession session) {
       if (session.getTargets() == null && session.getDestinationTypes() != null) { //resolve by type
+         logger.debug("session.getTargets() is null and type isn't null");
          session.setTargets(dsHelper.getLocalDatasources(session.getDestinationTypes()));
       }
-      else if (session.getTarget().getAddress() == null) { //if MediumDevice hasn't been resolved
+      else if (session.getTarget() != null && session.getTarget().getAddress() == null) { //if MediumDevice hasn't been resolved
          session.setTargets(dsHelper.getLocalDatasources(session.getTarget().getType()));
+      }
+      else if(session.getTarget() == null){
+         logger.debug("the Target is null");
       }
    }
 
@@ -838,6 +861,54 @@ public class DataManagementService extends RoboService implements SharedPreferen
       }
    }
 
+   private class UpdateOperationsTask extends SessionOperationTask<Void> {
+      @Override
+      protected DataManagementSession doInBackground(DataManagementSession... params) {
+         logger.debug("Update Operations...");
+         DataManagementSession session = params[0];
+         session.setProgress(true);
+         try {
+            if (session.getData().get(0).getData().getSource().size() > 0) {
+               session.setResults(mediator.updateOperations(session.getData(), session.getData().get(0).getData().getSource()));
+               boolean hasCancelled = Result.CANCEL.equals(session.getResult());
+               for (Rsp<Process> ret : session.getResults()) {
+                  if (ret.hasException()) throw ret.getException();
+                  if (ret.wasReceived() && ret.getValue() != null && ret.getValue().getResult() != null) {
+                     hasCancelled |= Result.CANCEL.equals(ret.getValue().getResult());
+                  }
+                  else {//suspect/unreachable
+                     globalEventManager.fire(new ErrorEvent(session, ErrorEvent.DataError.PERFORM_ERROR));
+                     session.setResult(Result.ERROR);
+                  }
+               }
+               if (hasCancelled) {
+                  session.setResult(Result.CANCEL);
+               }
+               else {
+                  session.setResult(Result.SUCCESS);
+               }
+            }
+            else {
+               globalEventManager.fire(new ErrorEvent(session, ErrorEvent.DataError.NO_TARGET_DATASOURCE));
+               session.setResult(Process.Result.NO_DATASOURCE);
+            }
+         }
+         catch (Throwable e) {
+            logger.error("Send exception in UpdateOperation:", e);
+            session.setResult(Process.Result.ERROR);
+            globalEventManager.fire(new ErrorEvent(session, ErrorEvent.DataError.PERFORM_ERROR, Throwables.getRootCause(e).toString()));
+
+         }
+         return session;
+      }
+
+      @Override
+      protected void onPostExecute(DataManagementSession session) {
+         logger.debug("PerformTask calling completeOperation");
+         completeOperation(session);
+         super.onPostExecute(session);
+      }
+   }
    private class StopTask extends AsyncTask<Address, Void, Void> {
       @Override
       protected Void doInBackground(Address... params) {

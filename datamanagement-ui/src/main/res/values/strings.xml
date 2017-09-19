@@ -219,5 +219,14 @@
     <string name="variety_list_header_name_text">NAME</string>
     <string name="variety_not_available">You have no varieties added.</string>
     <string name="variety_search_hint">Variety, crop type</string>
+    <string name="tab_management">Management</string>
+    <string name="edit_field_name">Name</string>
+    <string name="edit_dialog_header">Edit Name</string>
+    <string name="edit_dialog_save">Save</string>
+    <string name="edit_dialog_cancel">Cancel</string>
+    <string name="tab_mng_none_header">Select item(s) to edit, copy, or delete</string>
+    <string name="tab_mng_items_header">%1$d Item(s) Selected</string>
     <!-- end of productlibrary-package usage -->
+    <string name="edit_name_warning">The item with this name already exists. Please choose a different name</string>
+    <string name="edit_update_title">Updating item</string>
 </resources>

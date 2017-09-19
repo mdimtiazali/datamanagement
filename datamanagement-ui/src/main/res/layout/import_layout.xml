@@ -31,7 +31,17 @@
                 android:id="@+id/disabled_overlay"
                 android:layout_width="match_parent"
                 android:layout_height="match_parent"/>
-
+        <Button
+            android:id="@+id/select_all_btn"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            style="@style/Button"
+            android:enabled="false"
+            android:layout_alignParentRight="true"
+            android:layout_centerVertical="true"
+            android:layout_marginTop="4dp"
+            android:text="@string/select_all"
+            android:textSize="22dp" />
         <RelativeLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
@@ -44,18 +54,6 @@
                     android:layout_centerInParent="true"
                     android:layout_marginTop="4dp"
                     style="@style/TextAppearance.Import.Entity" />
-
-            <Button
-                    android:id="@+id/select_all_btn"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    style="@style/Button"
-                    android:enabled="false"
-                    android:layout_alignParentRight="true"
-                    android:layout_centerVertical="true"
-                    android:layout_marginTop="4dp"
-                    android:text="@string/select_all"
-                    android:textSize="22dp" />
         </RelativeLayout>
 
         <TextView
@@ -73,7 +71,15 @@
                 android:layout_gravity="center|center_vertical"
                 style="@style/IndeterminateProgressLargeBlue"
                 android:visibility="gone" />
-
+        <ImageButton android:id="@+id/dm_refresh"
+                     android:layout_height="wrap_content"
+                     android:layout_width="wrap_content"
+                     android:padding="16dp"
+                     android:layout_weight="1"
+                     android:layout_gravity="center"
+                     android:src="@drawable/refresh"
+                     android:background="@android:color/transparent"
+                     android:visibility="gone"/>
         <pl.polidea.treeview.TreeViewList
                 android:id="@+id/tree_view_list"
                 android:layout_width="match_parent"

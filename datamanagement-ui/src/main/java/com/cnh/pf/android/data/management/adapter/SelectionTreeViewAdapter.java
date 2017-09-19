@@ -28,7 +28,6 @@ import pl.polidea.treeview.TreeViewList;
  * @author oscar.salazar@cnhind.com
  */
 public abstract class SelectionTreeViewAdapter<T> extends AbstractTreeViewAdapter<T> {
-
    /** Notify listener of object selected/unselected*/
    public interface OnTreeItemSelectedListener {
       void onItemSelected();
@@ -75,6 +74,13 @@ public abstract class SelectionTreeViewAdapter<T> extends AbstractTreeViewAdapte
    }
 
    /**
+    * Get the selection map
+    * @return Map
+    */
+   public Map<T, SelectionType> getSelectionMap() {
+      return selectionMap;
+   }
+   /**
     * Get tree item selected listener
     */
    public OnTreeItemSelectedListener getOnTreeItemListener() {
@@ -95,11 +101,7 @@ public abstract class SelectionTreeViewAdapter<T> extends AbstractTreeViewAdapte
       return false;
    }
 
-   @Override
-   public void handleItemClick(final AdapterView<?> parent, View view, int position, Object id) {
-      super.handleItemClick(parent, view, position, id);
-      setListeners(parent);
-
+   public void selectionImpl(Object id){
       if (!selectionMap.containsKey(id)) {
          //Traverse down, select everything
          traverseTree((T) id, TRAVERSE_DOWN, new Visitor<T>() {
@@ -160,17 +162,23 @@ public abstract class SelectionTreeViewAdapter<T> extends AbstractTreeViewAdapte
             });
          }
       }
+   }
+
+   @Override
+   public void handleItemClick(final AdapterView<?> parent, View view, int position, Object id) {
+      super.handleItemClick(parent, view, position, id);
+      setListeners(parent);
+      selectionImpl(id);
       updateViewSelection(parent);
       if (listener != null) {
          listener.onItemSelected();
       }
-   }
-
-   public Map<T, SelectionType> getSelectionMap() {
-      return selectionMap;
+      getManager().refresh();
    }
 
    public abstract boolean isSupportedEntitiy(T node);
+   public  boolean isSupportedEdit(T node){return true;}
+   public  boolean isSupportedCopy(T node){return true;}
 
    /**
     * Makes view state match selection state
@@ -224,7 +232,6 @@ public abstract class SelectionTreeViewAdapter<T> extends AbstractTreeViewAdapte
     * Sets all objects in tree to full selection or clears depending on selectAll
     */
    public void selectAll(AdapterView<?> parent, boolean selectAll) {
-      log.debug("Select All");
       //We can use shortcut by clearing selectionMap, and full selection of root objects
       selectionMap.clear();
       setListeners(parent);

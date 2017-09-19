@@ -190,4 +190,17 @@ public interface TreeStateManager<T> extends Serializable {
     * Refreshes views connected to the manager.
     */
    void refresh();
+
+   /**
+    * Remove and return the specific node from node pool
+    * @param id
+    * @return   InMemoryTreeNode<T>
+    */
+   Object rmNretNode(T id);
+
+   /**
+    * add the specific node to note pool
+    * @param node
+    */
+   void addNote(Object node);
 }

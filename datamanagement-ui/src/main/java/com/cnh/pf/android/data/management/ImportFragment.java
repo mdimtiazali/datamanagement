@@ -49,7 +49,6 @@ import roboguice.event.Observes;
 import roboguice.inject.InjectResource;
 import roboguice.inject.InjectView;
 
-import javax.activation.DataSource;
 
 
 /**
