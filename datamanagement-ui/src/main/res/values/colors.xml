@@ -38,7 +38,7 @@
     <color name="product_mix_dialog_table_dark_cell_color">#ffeeeded</color>
     <color name="product_mix_dialog_table_default_cell_color">#fffcfcfc</color>
 
-    <color name="product_library_empty_table_text">#7d333333</color>
+    <color name="product_library_empty_table_text_color">#7d333333</color>
 
     <color name="odd_rows">#16525252</color>
     <color name="even_rows">#ffffff</color>
