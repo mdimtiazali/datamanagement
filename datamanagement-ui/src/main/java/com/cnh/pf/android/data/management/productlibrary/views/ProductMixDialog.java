@@ -67,6 +67,7 @@ import com.cnh.android.widget.control.PickListEditable.OnPickListItemActionListe
 import com.cnh.android.widget.control.PickListItem;
 import com.cnh.android.widget.control.StepperView;
 import com.cnh.pf.android.data.management.R;
+import com.cnh.pf.android.data.management.productlibrary.ProductLibraryFragment;
 import com.cnh.pf.model.product.library.MeasurementSystem;
 import com.cnh.pf.model.product.library.MixType;
 import com.cnh.pf.model.product.library.Product;
@@ -103,6 +104,7 @@ public class ProductMixDialog extends DialogView implements DialogHandlerListene
    private static final int STEP_SIZE = 1;
    private static final int PRECISION = 2;
 
+   private final String identifier = ProductMixDialog.class.getSimpleName() + System.identityHashCode(this);
    private IVIPServiceAIDL vipService;
    private ProductMix productMix;
    private List<ProductMix> productMixes;
@@ -263,7 +265,7 @@ public class ProductMixDialog extends DialogView implements DialogHandlerListene
       this.productMixes = new ArrayList<ProductMix>(productMixes);
       if (vipService != null) {
          try {
-            vipService.register(ProductMixDialog.class.getSimpleName(), vipListener);
+            vipService.register(identifier, vipListener);
             vipService.requestProductList();
             vipService.requestProductUnitsList(null, null, null, null);
          }
@@ -912,6 +914,7 @@ public class ProductMixDialog extends DialogView implements DialogHandlerListene
          }
          else {
             productCarrier = carrierProductHolder.currentRecipe;
+            productCarrier.setId(productMix.getProductCarrier().getId());
          }
          ProductMixRecipeHelper.setAmountAndUnitsToProductMixRecipe(productCarrier, ((UnitsToggleHolder) carrierProductHolder.productUnit.getTag()).currentChoice,
                carrierProductHolder.productAmountStepper.getValue(), getContext());
@@ -1637,7 +1640,7 @@ public class ProductMixDialog extends DialogView implements DialogHandlerListene
 
    private void unregisterListener() {
       try {
-         vipService.unregister(TAG);
+         vipService.unregister(identifier);
       }
       catch (RemoteException e) {
          log.error("failed");
