@@ -177,9 +177,6 @@ public class ProductLibraryFragment extends RoboFragment implements ProductMixCa
       @Override
       public void onTableChange(TableChangeEvent action, String tableName, String id) throws RemoteException {
          log.debug("OnTableChange - Action:{}, tableName:{}, id:{}", action, tableName, id);
-         if (tableName.equals("com.cnh.pf.model.product.library.Product")) {
-            vipCommunicationHandler.obtainMessage(WHAT_LOAD_PRODUCT_LIST).sendToTarget();
-         }
       }
 
       @Override
@@ -444,7 +441,8 @@ public class ProductLibraryFragment extends RoboFragment implements ProductMixCa
                @Override
                public void productList(Product product) {
                   productList.add(product);
-                  vipCommunicationHandler.obtainMessage(WHAT_LOAD_PRODUCT_LIST).sendToTarget();
+                  // TODO: directly before the save we need to change to loading - but currently this method gets called after the save.
+                  // If we do this we can wait for the next deliver. We need to care about the deliverProductList which may disable loading too early ...
                }
             }, ProductLibraryFragment.this.currentImplement, productList);
 
@@ -1065,7 +1063,10 @@ public class ProductLibraryFragment extends RoboFragment implements ProductMixCa
 
    @Override
    public void loadProductMix(ProductMix productMix) {
-      vipCommunicationHandler.obtainMessage(WHAT_LOAD_PRODUCT_MIX_LIST).sendToTarget();
+      // TODO: directly before the save we need to change to loading - but currently this method gets called after the save.
+      // if we do this we can wait for the next deliver
+      // we need to care about the deliverProductList which may disable loading too early ...
+      // productMixListDisabledOverlay.setMode(DisabledOverlay.MODE.LOADING);;
    }
 
    /**

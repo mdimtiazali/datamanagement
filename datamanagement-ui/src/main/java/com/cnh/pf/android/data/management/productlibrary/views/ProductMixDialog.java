@@ -67,7 +67,6 @@ import com.cnh.android.widget.control.PickListEditable.OnPickListItemActionListe
 import com.cnh.android.widget.control.PickListItem;
 import com.cnh.android.widget.control.StepperView;
 import com.cnh.pf.android.data.management.R;
-import com.cnh.pf.android.data.management.productlibrary.ProductLibraryFragment;
 import com.cnh.pf.model.product.library.MeasurementSystem;
 import com.cnh.pf.model.product.library.MixType;
 import com.cnh.pf.model.product.library.Product;
@@ -990,7 +989,7 @@ public class ProductMixDialog extends DialogView implements DialogHandlerListene
       if (carrierProductHolder.productPickList != null) {
          carrierProductHolder.productPickList.setWidgetHandlesAddNewMode(false);
          carrierProductHolder.productPickList.setOnItemActionListener(new OnProductPickListItemActionListener(productElement));
-         carrierProductHolder.productPickList.setOnItemSelectedListener(new OnProductPickListItemSelectedListener());
+         carrierProductHolder.productPickList.setOnItemSelectedListener(new OnCarrierProductPickListItemSelectedListener());
       }
       if (actionType == DialogActionType.ADD) {
          setUnitToSegmentedToggleButtonGroup(carrierProductHolder.productUnit, productMixForm,
@@ -1000,7 +999,7 @@ public class ProductMixDialog extends DialogView implements DialogHandlerListene
       mixProductsLayout.addView(productElement);
    }
 
-   private class OnProductPickListItemSelectedListener implements PickListEditable.OnItemSelectedListener {
+   private class OnCarrierProductPickListItemSelectedListener implements PickListEditable.OnItemSelectedListener {
       @Override
       public void onItemSelected(AdapterView<?> adapterView, View view, int position, long id, boolean fromUser) {
          carrierProductHolder.productAmountStepper.setOnAdjustableBarChangedListener(new ExtendedOnAdjustableBarChangedListener() {
