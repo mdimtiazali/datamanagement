@@ -57,7 +57,7 @@
     <string name="display_numbered">Display %d</string>
     <string name="display_named">Display %s</string>
     <string name="select_string">Select</string>
-    <string name="export_to">Export To:</string>
+    <string name="export_to">Destination:</string>
     <string name="export_format">Export Format:</string>
     <string name="tab_export">Export</string>
     <string name="percent_complete">% Complete</string>
