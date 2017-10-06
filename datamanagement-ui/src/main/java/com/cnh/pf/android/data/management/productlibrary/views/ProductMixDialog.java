@@ -122,7 +122,6 @@ public class ProductMixDialog extends DialogView implements DialogHandlerListene
    private ProductMixElementHolder carrierProductHolder;
    private double totalAmount = 0;
    private final ArrayList<ProductMixElementHolder> productMixElementHolderList = new ArrayList<ProductMixElementHolder>();
-   private final ArrayList<ProductMixRecipe> recipeDeleteList = new ArrayList<ProductMixRecipe>();
    private TableLayout productMixTable;
    private Button addMoreButton;
    private InputField productMixNameInputField;
@@ -452,14 +451,20 @@ public class ProductMixDialog extends DialogView implements DialogHandlerListene
       //Add Carrier Data to UI
       {
          ProductMixRecipe productCarrier = productMix.getProductCarrier();
-         carrierProductHolder.currentRecipe = productCarrier;
+         carrierProductHolder.currentRecipe = new ProductMixRecipe(productCarrier);
+         if (actionType == DialogActionType.COPY) {
+            carrierProductHolder.currentRecipe.unsetId();
+         }
          List<Product> filteredProduct = ProductHelperMethods.filterProductList(productList, productMixForm);
          addDataToProductElement(productCarrier, carrierProductHolder, filteredProduct);
       }
 
       //Add Product Mix element Data to UI
       for (int i = 0; i < productMix.getRecipe().size(); i++) {
-         ProductMixRecipe recipeElement = productMix.getRecipe().get(i);
+         ProductMixRecipe recipeElement = new ProductMixRecipe(productMix.getRecipe().get(i));
+         if (actionType == DialogActionType.COPY) {
+            recipeElement.unsetId();
+         }
          if (i > 0) {
             addProduct();
          }
@@ -612,11 +617,11 @@ public class ProductMixDialog extends DialogView implements DialogHandlerListene
                   if (productElement.productPickList.getItemByPosition(position) != null) {
                      Product product = getProductByName(productElement.productPickList.getItemByPosition(position).getValue());
                      if (product != null) {
-                        ProductMixRecipe recipe = new ProductMixRecipe();
-                        recipe.setProduct(product);
-                        productElement.currentRecipe = recipe;
+                        if (productElement.currentRecipe == null) {
+                           productElement.currentRecipe = new ProductMixRecipe();
+                        }
+                        productElement.currentRecipe.setProduct(product);
                         productElement.productPickList.setTag(product);
-                        recipeDeleteList.remove(productElement.currentRecipe);
 
                         setUnitToSegmentedToggleButtonGroup(productElement.productUnit, product.getForm(),
                               ProductHelperMethods.queryAmountMeasurementSystemForProductForm(product.getForm(), getContext()), ProductDisplayItem.AMOUNT);
@@ -884,9 +889,9 @@ public class ProductMixDialog extends DialogView implements DialogHandlerListene
          }
          else if (actionType == DialogActionType.COPY) {
             tempProductMix = new ProductMix(this.productMix);
-            tempProductMix.setId(0);
+            tempProductMix.unsetId();
             productMixParameters = new Product(tempProductMix.getProductMixParameters());
-            productMixParameters.setId(0);
+            productMixParameters.unsetId();
          }
          else {
             tempProductMix = this.productMix;
@@ -905,20 +910,10 @@ public class ProductMixDialog extends DialogView implements DialogHandlerListene
          }
 
          ProductMixHelper.bindMixTotalUnits(tempProductMix, carrierUnit, ProductHelperMethods.queryAmountMeasurementSystemForProductForm(productMixForm, getContext()));
-
-         ProductMixRecipe productCarrier;
-         if (actionType != DialogActionType.EDIT) {
-            productCarrier = new ProductMixRecipe();
-            productCarrier.setProduct(carrierProductHolder.currentRecipe.getProduct());
-         }
-         else {
-            productCarrier = carrierProductHolder.currentRecipe;
-            productCarrier.setId(productMix.getProductCarrier().getId());
-         }
-         ProductMixRecipeHelper.setAmountAndUnitsToProductMixRecipe(productCarrier, ((UnitsToggleHolder) carrierProductHolder.productUnit.getTag()).currentChoice,
+         ProductMixRecipeHelper.setAmountAndUnitsToProductMixRecipe(carrierProductHolder.currentRecipe, ((UnitsToggleHolder) carrierProductHolder.productUnit.getTag()).currentChoice,
                carrierProductHolder.productAmountStepper.getValue(), getContext());
          tempProductMix.setMixType(MixType.FORMULA);
-         tempProductMix.setProductCarrier(productCarrier);
+         tempProductMix.setProductCarrier(carrierProductHolder.currentRecipe);
          tempProductMix.setRecipe(createProductRecipeList());
          // this is a bit nasty here - because the productMix object to save is created in this method, there is no place to save the trimmed string in the TextWatcher...
          // if the product object would be created earlier we could save the trimmed string there.
@@ -954,25 +949,13 @@ public class ProductMixDialog extends DialogView implements DialogHandlerListene
     * @return arrayList with all products for the product mix
     */
    private List<ProductMixRecipe> createProductRecipeList() {
-
       List<ProductMixRecipe> productMixRecipeList = new ArrayList<ProductMixRecipe>();
-      if (actionType == DialogActionType.EDIT) {
-         productMixRecipeList = productMix.getRecipe();
-      }
-      productMixRecipeList.removeAll(recipeDeleteList);
-
       for (ProductMixElementHolder productElementHolder : productMixElementHolderList) {
          if (productElementHolder.currentRecipe != null) {
             ProductMixRecipe recipe = productElementHolder.currentRecipe;
-            if (actionType != DialogActionType.EDIT) {
-               recipe = new ProductMixRecipe();
-               recipe.setProduct(productElementHolder.currentRecipe.getProduct());
-            }
             ProductMixRecipeHelper.setAmountAndUnitsToProductMixRecipe(recipe, ((UnitsToggleHolder) productElementHolder.productUnit.getTag()).currentChoice,
                   productElementHolder.productAmountStepper.getValue(), getContext());
-            if (!productMixRecipeList.contains(recipe)) {
-               productMixRecipeList.add(recipe);
-            }
+            productMixRecipeList.add(recipe);
          }
       }
       return productMixRecipeList;
@@ -1016,9 +999,10 @@ public class ProductMixDialog extends DialogView implements DialogHandlerListene
          if (position >= 0) {
             Product product = getProductByName(carrierProductHolder.productPickList.getItemByPosition(position).getValue());
             carrierProductHolder.productPickList.setTag(product);
-            ProductMixRecipe recipe = new ProductMixRecipe();
-            recipe.setProduct(product);
-            carrierProductHolder.currentRecipe = recipe;
+            if (carrierProductHolder.currentRecipe == null) {
+               carrierProductHolder.currentRecipe = new ProductMixRecipe();
+            }
+            carrierProductHolder.currentRecipe.setProduct(product);
             if (product != null) {
                setUnitToSegmentedToggleButtonGroup(carrierProductHolder.productUnit, product.getForm(),
                      ProductHelperMethods.queryAmountMeasurementSystemForProductForm(productMixForm, getContext()), ProductDisplayItem.AMOUNT);
@@ -1340,9 +1324,6 @@ public class ProductMixDialog extends DialogView implements DialogHandlerListene
                log.warn("Could not Remove " + productElement);
             }
             ProductMixRecipe recipe = productElement.currentRecipe;
-            if (recipe != null) {
-               recipeDeleteList.add(recipe);
-            }
             mixProductsLayout.removeView(productElement.elementView);
             updateProductViewList();
             if (recipe != null) {
