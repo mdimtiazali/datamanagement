@@ -73,6 +73,12 @@ public class ImportSourceDialog extends DialogView {
    private HashMap<Integer, MediumDevice> devices;
    private PathTreeViewAdapter.OnPathSelectedListener listener = null;
    private MediumDevice currentDevice;
+   private Set<String> file2Support = new HashSet<String>(){{
+      add("TASKDATA.XML");
+      add("vip.xml");
+      add(".shp");
+      add(".SHP");
+   }};
 
    public ImportSourceDialog(Activity context, List<MediumDevice> mediums) {
       super(context);
@@ -161,10 +167,34 @@ public class ImportSourceDialog extends DialogView {
       else {
          treeBuilder.addRelation(parent, dir);
       }
+
       File[] files = dir.listFiles(new FileFilter() {
+         private boolean isDirAccept(File file){
+            if(file.isDirectory()){
+               File[] fs = file.listFiles();
+               if(fs != null){
+                  for(File f: fs){
+                     if(f.isDirectory()){
+                        return isDirAccept(f);
+                     }
+                     else if(file2Support.contains(Files.getFileExtension(f.getName())) || file2Support.contains(f.getName())){
+                        return true;
+                     }
+                  }
+               }
+            }
+            return false;
+         }
          @Override
          public boolean accept(File file) {
-            return file.isDirectory() || "shp".equalsIgnoreCase(Files.getFileExtension(file.getName()));
+            boolean ret = false;
+            if(file.isDirectory()) {
+               ret = isDirAccept(file);
+            }
+            else if (file2Support.contains(Files.getFileExtension(file.getName()))){
+               ret = true;
+            }
+            return ret;
          }
       });
       if (files != null) {
