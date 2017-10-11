@@ -28,6 +28,7 @@ import android.widget.TextView;
 
 import com.cnh.android.dialog.DialogView;
 import com.cnh.android.dialog.DialogViewInterface;
+import com.cnh.android.persistence.PersistenceClient;
 import com.cnh.android.pf.widget.controls.SegmentedToggleButtonGroupPickList;
 import com.cnh.android.pf.widget.controls.SegmentedToggleButtonGroupPickList.SegmentedTogglePickListListener;
 import com.cnh.android.pf.widget.utilities.EnumValueToUiStringUtility;
@@ -450,20 +451,19 @@ public class ProductMixDialog extends DialogView implements DialogHandlerListene
       }
       //Add Carrier Data to UI
       {
-         ProductMixRecipe productCarrier = productMix.getProductCarrier();
-         carrierProductHolder.currentRecipe = new ProductMixRecipe(productCarrier);
+         carrierProductHolder.currentRecipe = new ProductMixRecipe(productMix.getProductCarrier());
          if (actionType == DialogActionType.COPY) {
-            carrierProductHolder.currentRecipe.unsetId();
+            carrierProductHolder.currentRecipe.setId(PersistenceClient.NEW_OBJECT_ID);
          }
          List<Product> filteredProduct = ProductHelperMethods.filterProductList(productList, productMixForm);
-         addDataToProductElement(productCarrier, carrierProductHolder, filteredProduct);
+         addDataToProductElement(carrierProductHolder.currentRecipe, carrierProductHolder, filteredProduct);
       }
 
       //Add Product Mix element Data to UI
       for (int i = 0; i < productMix.getRecipe().size(); i++) {
          ProductMixRecipe recipeElement = new ProductMixRecipe(productMix.getRecipe().get(i));
          if (actionType == DialogActionType.COPY) {
-            recipeElement.unsetId();
+            recipeElement.setId(PersistenceClient.NEW_OBJECT_ID);
          }
          if (i > 0) {
             addProduct();
@@ -889,9 +889,9 @@ public class ProductMixDialog extends DialogView implements DialogHandlerListene
          }
          else if (actionType == DialogActionType.COPY) {
             tempProductMix = new ProductMix(this.productMix);
-            tempProductMix.unsetId();
+            tempProductMix.setId(PersistenceClient.NEW_OBJECT_ID);
             productMixParameters = new Product(tempProductMix.getProductMixParameters());
-            productMixParameters.unsetId();
+            productMixParameters.setId(PersistenceClient.NEW_OBJECT_ID);
          }
          else {
             tempProductMix = this.productMix;
