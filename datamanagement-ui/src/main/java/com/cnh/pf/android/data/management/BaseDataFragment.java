@@ -123,8 +123,8 @@ public abstract class BaseDataFragment extends RoboFragment implements IDataMana
     * Callback when new session is started.
     */
    public void onNewSession() {
-      setCancelled(false);
-      setSession(null);
+      cancelled = false;
+      session = null;
       hasLocalSource = getDataManagementService().hasLocalSources();
    }
 
@@ -178,7 +178,7 @@ public abstract class BaseDataFragment extends RoboFragment implements IDataMana
       if(getSession() == null){
           setSession(createSession());
       }
-      discoveryUI();
+      progressUI();
       // if operation is in progress, do nothing since when operation complete, it will trigger a discovery
       sessionOperate(getSession(), SessionOperation.DISCOVERY);
 
@@ -228,8 +228,13 @@ public abstract class BaseDataFragment extends RoboFragment implements IDataMana
       refreshBtn.setOnClickListener(new View.OnClickListener() {
          @Override
          public void onClick(View v) {
-            discoveryUI();
-            sessionOperate(getSession(),SessionOperation.DISCOVERY);
+            if(session == null){
+               session = createSession();
+            }
+            configSession(session);
+            progressUI();
+            sessionOperate(session, SessionOperation.DISCOVERY);
+
          }
       });
       treeViewList.setChoiceMode(AbsListView.CHOICE_MODE_NONE);
@@ -264,9 +269,10 @@ public abstract class BaseDataFragment extends RoboFragment implements IDataMana
       globalEventManager.registerObserver(DataServiceConnectionImpl.ViewChangeEvent.class, viewChangeListener);
       if (dataServiceConnection.isConnected()) {
          getDataManagementService().register(NAME, BaseDataFragment.this);
-         if (getSession() == null){
-             setSession(createSession());
+         if (session == null){
+             session = createSession();
          }
+         configSession(session);
          treeViewList.setVisibility(View.GONE);
          if (hasLocalSource) {
             disabled.setVisibility(View.GONE);
@@ -312,6 +318,9 @@ public abstract class BaseDataFragment extends RoboFragment implements IDataMana
       selectAllBtn.setEnabled(enable);
    }
 
+   protected void onErrorOperation() {
+   }
+
    /**Called when the service catches an exception during operation */
    EventListener errorListener = new EventListener<DataServiceConnectionImpl.ErrorEvent>() {
       @Override
@@ -320,26 +329,30 @@ public abstract class BaseDataFragment extends RoboFragment implements IDataMana
          getActivity().runOnUiThread(new Runnable() {
             @Override
             public void run() {
-               DialogView errorDialog = new ErrorDialog(getActivity(), event);
-               errorDialog.setOnButtonClickListener(new DialogViewInterface.OnButtonClickListener() {
-                  @Override
-                  public void onButtonClick(DialogViewInterface dialog, int which) {
-                     if (which == DialogViewInterface.BUTTON_FIRST) {
-                        if (isCurrentOperation(event.getSession())) {
-                           idleUI();
-                           //maybe we should show a dialog with two buttons, cancel and ok, cancel to stop discovery, ok will trigger a new one
-                        //   sessionOperate(getSession(),SessionOperation.DISCOVERY);//trigger a new discovery
-                        }
-                        else {
-                           onOtherSessionUpdate(event.getSession());
-                        }
-                     }
-                  }
-               });
+               if (isCurrentOperation(event.getSession())) {
+                  onErrorOperation(); // should sub-class to provide reset left panel or else operations
+                  //maybe we should show a dialog with two buttons, cancel and ok, cancel to stop discovery, ok will trigger a new one
+                  //   sessionOperate(getSession(),SessionOperation.DISCOVERY);//trigger a new discovery
+               }
+               else {
+                  onOtherSessionUpdate(event.getSession());
+               }
                if(updatingProg != null){
                   updatingProg.dismiss();
                }
-               ((TabActivity) getActivity()).showPopup(errorDialog, true);
+               //if it is import discovery, won't popup the dialog
+               if(event.getSession().getSource() != null && event.getSession().getSource().getType().equals(Datasource.Source.USB) &&
+                     !event.getSession().getSessionOperation().equals(SessionOperation.DISCOVERY)) {
+                  DialogView errorDialog = new ErrorDialog(getActivity(), event);
+               /*   errorDialog.setOnButtonClickListener(new DialogViewInterface.OnButtonClickListener() {
+                     @Override
+                     public void onButtonClick(DialogViewInterface dialog, int which) {
+                        if (which == DialogViewInterface.BUTTON_FIRST) {
+                        }
+                     }
+                  });*/
+                  ((TabActivity) getActivity()).showPopup(errorDialog, true);
+               }
             }
          });
       }
@@ -354,7 +367,7 @@ public abstract class BaseDataFragment extends RoboFragment implements IDataMana
             getDataManagementService().register(NAME, BaseDataFragment.this);
             // when connect to backend, start a new query, if session is null, create a new one
             if(getSession() == null){
-               discoveryUI();
+               progressUI();
                setSession(createSession());
             }
             sessionOperate(getSession(), SessionOperation.DISCOVERY);
@@ -380,7 +393,7 @@ public abstract class BaseDataFragment extends RoboFragment implements IDataMana
       }
    };
    /**reset UI*/
-   private void idleUI(){
+   protected void idleUI(){
       if (hasLocalSource) {
          refreshBtn.setVisibility(View.VISIBLE);
          disabled.setVisibility(View.GONE);
@@ -390,18 +403,21 @@ public abstract class BaseDataFragment extends RoboFragment implements IDataMana
          disabled.setMode(DisabledOverlay.MODE.DISCONNECTED);
       }
    }
-   private void preTreeUI(){
+
+   protected void postTreeUI(){
+      logger.debug("postTreeUI()");
       if (hasLocalSource) {
+         startText.setVisibility(View.GONE);
          refreshBtn.setVisibility(View.GONE);
          disabled.setVisibility(View.GONE);
          treeProgress.setVisibility(View.GONE);
+         treeViewList.setVisibility(View.VISIBLE);
       } else {
          disabled.setVisibility(View.VISIBLE);
          disabled.setMode(DisabledOverlay.MODE.DISCONNECTED);
       }
-
    }
-   private void discoveryUI(){
+   protected void progressUI(){
 
       if (hasLocalSource) {
          refreshBtn.setVisibility(View.GONE);
@@ -422,6 +438,13 @@ public abstract class BaseDataFragment extends RoboFragment implements IDataMana
    }
 
    /**
+    * Config an Session for operation
+    *
+    */
+   public void configSession(DataManagementSession session){
+
+   }
+   /**
     * Operation over session
     * @param  session session to operate
     */
@@ -440,8 +463,8 @@ public abstract class BaseDataFragment extends RoboFragment implements IDataMana
       DataManagementSession.SessionOperation op = session.getSessionOperation();
       logger.trace("sessionUpdated() by ", op);
       if (op.equals(DataManagementSession.SessionOperation.DISCOVERY) && !session.isProgress()) {
-         preTreeUI();
          initiateTree();
+         postTreeUI();
          updateSelectAllState();
       }
       else if (op.equals(DataManagementSession.SessionOperation.CALCULATE_OPERATIONS)) {
@@ -498,8 +521,9 @@ public abstract class BaseDataFragment extends RoboFragment implements IDataMana
       }
       treeAdapter.setData(data);
       treeViewList.removeAllViewsInLayout();
-      treeViewList.setVisibility(View.VISIBLE);
+      treeViewList.setVisibility(View.VISIBLE);//this is for UT
       treeViewList.setAdapter(treeAdapter);
+      treeAdapter.selectAll(treeViewList,false);//to clean all the previous selection
       manager.collapseChildren(null);
       treeAdapter.setOnTreeItemSelectedListener(new SelectionTreeViewAdapter.OnTreeItemSelectedListener() {
          @Override

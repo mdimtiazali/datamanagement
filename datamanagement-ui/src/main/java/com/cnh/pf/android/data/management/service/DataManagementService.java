@@ -20,6 +20,7 @@ import android.graphics.drawable.BitmapDrawable;
 import android.net.Uri;
 import android.os.AsyncTask;
 import android.os.Binder;
+import android.os.Environment;
 import android.os.Handler;
 import android.os.IBinder;
 import android.os.ParcelUuid;
@@ -145,14 +146,14 @@ public class DataManagementService extends RoboService implements SharedPreferen
       if (ACTION_CANCEL.equals(intent.getAction())) {
          cancel(intent.<DataManagementSession> getParcelableExtra("session"));
       }
-      else if (Intent.ACTION_MEDIA_MOUNTED.equals(intent.getAction())) {
+/*      else if (Intent.ACTION_MEDIA_MOUNTED.equals(intent.getAction())) {
          sendMediumUpdateEvent();
          Uri mount = intent.getData();
          File mountFile = new File(mount.getPath());
          logger.info("Media has been mounted @{}: ", mountFile.getAbsolutePath());
          scan(mountFile);
       }
-      else if (Intent.ACTION_MEDIA_UNMOUNTED.equals(intent.getAction()) || Intent.ACTION_MEDIA_BAD_REMOVAL.equals(intent.getAction())
+  */    else if (Intent.ACTION_MEDIA_UNMOUNTED.equals(intent.getAction()) || Intent.ACTION_MEDIA_BAD_REMOVAL.equals(intent.getAction())
             || Intent.ACTION_MEDIA_REMOVED.equals(intent.getAction()) || Intent.ACTION_MEDIA_EJECT.equals(intent.getAction())) {
          logger.info("Media has been unmounted");
          sendMediumUpdateEvent();
@@ -307,7 +308,7 @@ public class DataManagementService extends RoboService implements SharedPreferen
       session.setResult(null);
       if (sessionOperation.equals(DataManagementSession.SessionOperation.DISCOVERY)) {
          if (isUsbImport(session)) {
-            if(session.getSource() != null && session.getSource().getPath() != null) {
+            if(session.getSource() != null && session.getSource().getPath() != null && Environment.getExternalStorageState().equals(Environment.MEDIA_MOUNTED)) {
                logger.debug("Starting USB Datasource: getSource():{}", session.getSource());
                startUsbServices(new String[] { session.getSource().getPath().getPath() }, false, session.getFormat(), new Runnable() {
                   @Override
@@ -318,13 +319,16 @@ public class DataManagementService extends RoboService implements SharedPreferen
                }, new Runnable() {
                   @Override
                   public void run() {
-                     globalEventManager.fire(new ErrorEvent(session, ErrorEvent.DataError.NO_SOURCE_DATASOURCE));
+                     session.setProgress(false);
                      session.setResult(Process.Result.NO_DATASOURCE);
+                     globalEventManager.fire(new ErrorEvent(session, ErrorEvent.DataError.NO_SOURCE_DATASOURCE));
                   }
                });
             }
             else{
                session.setProgress(false);
+               session.setResult(Process.Result.NO_DATASOURCE);
+               globalEventManager.fire(new ErrorEvent(session, ErrorEvent.DataError.NEED_DATA_PATH));
             }
          }
          else {
@@ -461,6 +465,7 @@ public class DataManagementService extends RoboService implements SharedPreferen
       logger.debug("Starting USB datasource");
       if(path.length > 0) {
          final DatasourceContentClient dClient = new DatasourceContentClient(this);
+         getContentResolver().delete(DatasourceContract.Folder.CONTENT_URI, "", null);//clear to avoid previous error will block all following operation
          dClient.addFolderRequest(path);
          getContentResolver().registerContentObserver(DatasourceContract.Folder.CONTENT_URI, true, new ContentObserver(handler) {
 

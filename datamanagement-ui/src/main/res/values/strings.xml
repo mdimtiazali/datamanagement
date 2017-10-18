@@ -96,6 +96,10 @@
     <string name="status_cancelling">Cancelling...</string>
     <string name="status_successful">Successful</string>
     <string name="status_starting">Starting...</string>
+    <string name="import_complete">Import Completed</string>
+    <string name="import_cancel">Import Cancelled</string>
+    <string name="export_complete">Export Completed</string>
+    <string name="export_cancel">Export Cancelled</string>
 
     <string name="usb_data_available">USB Data Available</string>
     <string name="usb_no_data_available">No USB Data Available</string>
