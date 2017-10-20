@@ -1,0 +1,68 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  ~ Copyright (C) 2016 CNH Industrial NV. All rights reserved.
+  ~
+  ~ This software contains proprietary information of CNH Industrial NV. Neither
+  ~ receipt nor possession thereof confers any right to reproduce, use, or
+  ~ disclose in whole or in part any such information without written
+  ~ authorization from CNH Industrial NV.
+  -->
+<resources>
+    <string-array name="group_edit">
+        <item>GROWER</item>
+        <item>FARM</item>
+        <item>FIELD</item>
+    </string-array>
+    <string-array name="edit">
+        <item>VEHICLE</item>
+        <item>IMPLEMENT </item>
+        <!--item>VEHICLE_IMPLEMENT</item-->
+        <item>VEHICLE_IMPLEMENT_CONFIG</item>
+        <item>IMPLEMENT_PRODUCT_CONFIG</item>
+        <item>CROP</item>
+        <!--item>VEHICLE_CROP_CONFIGURATION</item-->
+        <!--item>VEHICLE_CONFIGURATION</item-->
+        <item>HEADER</item>
+        <item>GROWER</item>
+        <item>FARM</item>
+        <item>FIELD</item>
+        <item>TASK</item>
+        <item>NOTE</item>
+        <item>LANDMARK</item>
+        <item>BOUNDARY</item>
+        <item>RX</item>
+        <item>PRODUCT</item>
+        <item>GUIDANCE_CONFIGURATION</item>
+        <item>GUIDANCE_GROUP</item>
+        <item>GUIDANCE_PATTERN</item>
+    </string-array>
+    <string-array name="copy">
+        <item>VEHICLE</item>
+        <item>IMPLEMENT</item>
+        <item>VEHICLE_IMPLEMENT</item>
+        <item>VEHICLE_IMPLEMENT_CONFIG</item>
+        <item>IMPLEMENT_PRODUCT_CONFIG</item>
+        <item>CROP</item>
+        <item>VEHICLE_CROP_CONFIGURATION</item>
+        <item>VEHICLE_CONFIGURATION</item>
+        <item>HEADER</item>
+        <item>FILE</item>
+        <item>GROWER</item>
+        <item>FARM</item>
+        <item>FIELD</item>
+        <item>TASK</item>
+        <item>COVERAGE</item>
+        <item>NOTE</item>
+        <item>LANDMARK</item>
+        <item>BOUNDARY</item>
+        <item>RX</item>
+        <item>RX_ZONE</item>
+        <item>RX_PLAN</item>
+        <item>PRODUCT</item>
+        <item>PRODUCT_MIX</item>
+        <item>GUIDANCE_CONFIGURATION</item>
+        <item>GUIDANCE_GROUP</item>
+        <item>GUIDANCE_PATTERN</item>
+    </string-array>
+
+</resources>

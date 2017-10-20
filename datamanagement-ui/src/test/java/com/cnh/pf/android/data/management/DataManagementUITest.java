@@ -123,16 +123,16 @@ public class DataManagementUITest {
       assertTrue("xml specifies isoxml format", formats.contains("ISOXML"));
       assertTrue("isoxml supporrts customery type", parser.formatSupportsType("ISOXML", DataTypes.GROWER));
       assertFalse("isoxml does not support VEHICLE type", parser.formatSupportsType("ISOXML", "VEHICLE"));
-      assertTrue("xml specifies cnh format", formats.contains("CNH"));
-      assertTrue("cnh supports vehicle type", parser.formatSupportsType("CNH", "VEHICLE"));
-      assertTrue("cnh does not support customer type", parser.formatSupportsType("CNH", DataTypes.GROWER));
-      assertFalse("cnh does not support prescription type", parser.formatSupportsType("CNH", DataTypes.RX));
+      assertTrue("xml specifies cnh format", formats.contains("PF Database"));
+      assertTrue("cnh supports vehicle type", parser.formatSupportsType("PF Database", "VEHICLE"));
+      assertTrue("cnh does not support customer type", parser.formatSupportsType("PF Database", DataTypes.GROWER));
+      assertFalse("cnh does not support prescription type", parser.formatSupportsType("PF Database", DataTypes.RX));
    }
 
    @Test
    public void testISOSupport() throws RemoteException {
       //Initialize export fragment
-      activateTab(1);
+      activateTab(2);
       //Check export fragment visible
       assertTrue("export drop zone is visible", activity.findViewById(R.id.export_drop_zone).getVisibility() == View.VISIBLE);
       ExportFragment fragment = (ExportFragment) ((TabActivity) activity).getFragmentManager().findFragmentByTag("Export");
@@ -161,7 +161,7 @@ public class DataManagementUITest {
    @Test
    public void testRecursiveFormatSupport() throws RemoteException {
       //Initialize export fragment
-      activateTab(1); //0 - Import 1 - Export
+      activateTab(2); //0 - Import 1 - Export
       //Mock picklist, select ISOXML as export format$
       ExportFragment fragment = (ExportFragment) ((TabActivity) activity).getFragmentManager().findFragmentByTag("Export");
       DataManagementSession session = new DataManagementSession(new Datasource.Source[] { Datasource.Source.INTERNAL }, new Datasource.Source[] { Datasource.Source.INTERNAL },
