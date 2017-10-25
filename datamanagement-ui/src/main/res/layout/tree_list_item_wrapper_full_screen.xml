@@ -1,0 +1,55 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  ~ Copyright (C) 2015 CNH Industrial NV. All rights reserved.
+  ~
+  ~ This software contains proprietary information of CNH Industrial NV. Neither
+  ~ receipt nor possession thereof confers any right to reproduce, use, or
+  ~ disclose in whole or in part any such information without written
+  ~ authorization from CNH Industrial NV.
+  -->
+
+<pl.polidea.treeview.ImplicitSelectLinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+                                                android:layout_width="fill_parent"
+                                                android:layout_height="fill_parent"
+                                                android:orientation="horizontal"
+                                                android:descendantFocusability="blocksDescendants">
+
+    <View
+        android:id="@+id/treeview_list_item_indent"
+        android:layout_width="48dp"
+        android:layout_height="fill_parent"/>
+
+    <LinearLayout
+        android:id="@+id/treeview_list_item_frame_layout"
+        android:layout_width="0dp"
+        android:layout_height="fill_parent"
+        android:orientation="horizontal"
+        android:duplicateParentState="true"
+        android:layout_weight="1"
+        android:gravity="center_vertical"
+        android:padding="4dp">
+
+        <ImageView
+            android:id="@+id/treeview_list_item_toggle"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:adjustViewBounds="true"
+            android:paddingLeft="16dp"
+            android:paddingRight="16dp"
+            android:scaleType="center"/>
+
+        <FrameLayout
+            android:id="@+id/treeview_list_item_frame"
+            android:duplicateParentState="true"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:gravity="center_vertical"
+            android:layout_gravity="center_vertical"
+            android:paddingLeft="6dp"
+            android:paddingTop="4dp"
+            android:paddingBottom="4dp"
+            android:paddingRight="4dp"/>
+
+    </LinearLayout>
+</pl.polidea.treeview.ImplicitSelectLinearLayout>
