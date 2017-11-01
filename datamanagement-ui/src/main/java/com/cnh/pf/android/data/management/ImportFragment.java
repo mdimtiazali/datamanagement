@@ -383,6 +383,7 @@ public class ImportFragment extends BaseDataFragment {
 
    /** Shows conflict resolution dialog */
    private void showConflictDialog() {
+      processDialog.hide();
       processDialog.init();
       processDialog.setTitle(getResources().getString(R.string.checking_conflicts));
       processDialog.setProgress(0);
