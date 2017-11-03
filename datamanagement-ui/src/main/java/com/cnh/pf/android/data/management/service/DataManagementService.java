@@ -146,14 +146,14 @@ public class DataManagementService extends RoboService implements SharedPreferen
       if (ACTION_CANCEL.equals(intent.getAction())) {
          cancel(intent.<DataManagementSession> getParcelableExtra("session"));
       }
-/*      else if (Intent.ACTION_MEDIA_MOUNTED.equals(intent.getAction())) {
+      else if (Intent.ACTION_MEDIA_MOUNTED.equals(intent.getAction())) {
          sendMediumUpdateEvent();
-         Uri mount = intent.getData();
+         /*Uri mount = intent.getData();
          File mountFile = new File(mount.getPath());
          logger.info("Media has been mounted @{}: ", mountFile.getAbsolutePath());
-         scan(mountFile);
+         scan(mountFile);*/
       }
-  */    else if (Intent.ACTION_MEDIA_UNMOUNTED.equals(intent.getAction()) || Intent.ACTION_MEDIA_BAD_REMOVAL.equals(intent.getAction())
+      else if (Intent.ACTION_MEDIA_UNMOUNTED.equals(intent.getAction()) || Intent.ACTION_MEDIA_BAD_REMOVAL.equals(intent.getAction())
             || Intent.ACTION_MEDIA_REMOVED.equals(intent.getAction()) || Intent.ACTION_MEDIA_EJECT.equals(intent.getAction())) {
          logger.info("Media has been unmounted");
          sendMediumUpdateEvent();
