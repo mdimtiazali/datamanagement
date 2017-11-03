@@ -76,8 +76,12 @@ public class ImportSourceDialog extends DialogView {
    private Set<String> file2Support = new HashSet<String>(){{
       add("TASKDATA.XML");
       add("vip.xml");
-      add(".shp");
-      add(".SHP");
+      add("shp");
+      add("SHP");
+      add("shx");
+      add("SHX");
+      add("dbf");
+      add("DBF");
    }};
 
    public ImportSourceDialog(Activity context, List<MediumDevice> mediums) {
