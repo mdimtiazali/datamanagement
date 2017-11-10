@@ -175,12 +175,16 @@ public abstract class BaseDataFragment extends RoboFragment implements IDataMana
          hasLocalSource = false;
       }
       // both case will trigger a discovery, if there is no session, create a new one
-      if(getSession() == null){
-          setSession(createSession());
+      if(session == null){
+          session = createSession();
       }
-      progressUI();
-      // if operation is in progress, do nothing since when operation complete, it will trigger a discovery
-      sessionOperate(getSession(), SessionOperation.DISCOVERY);
+      //only in initial or discovery, will trigger a discovery. like perform will also trigger a new datasource start
+      if(session != null && (session.getSessionOperation().equals(SessionOperation.DISCOVERY)||session.getSessionOperation().equals(SessionOperation.INITIAL))) {
+         configSession(session);
+         progressUI();
+         // if operation is in progress, do nothing since when operation complete, it will trigger a discovery
+         sessionOperate(session, SessionOperation.DISCOVERY);
+      }
 
       return;
    }
@@ -449,10 +453,14 @@ public abstract class BaseDataFragment extends RoboFragment implements IDataMana
     * @param  session session to operate
     */
    public void sessionOperate(DataManagementSession session, DataManagementSession.SessionOperation operation){
-      logger.trace("sessionOperate(): session {}, operation {} ",session,operation);
+      logger.trace("sessionOperate(): operation {} ",operation);
       if(session != null && !session.isProgress()) {
          getDataManagementService().processOperation(session, operation);
       }
+      else{
+         logger.trace("sessionOperate(): just return");
+      }
+
    }
 
    /**

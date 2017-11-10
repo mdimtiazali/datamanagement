@@ -478,7 +478,7 @@ public class DataManagementService extends RoboService implements SharedPreferen
                if (dClient.isRequestProcessed()) {
                   logger.info("Got responses from all datasources, continuing. selfchange {}", selfChange);
                   getContentResolver().unregisterContentObserver(this);
-                  handler.postDelayed(dClient.hasValid() ? onSuccess : onFailure, 2000);
+                  handler.postDelayed(dClient.hasValid() ? onSuccess : onFailure, 2000 );
                   getContentResolver().delete(DatasourceContract.Folder.CONTENT_URI, "", null);
                }
                else {
@@ -624,6 +624,7 @@ public class DataManagementService extends RoboService implements SharedPreferen
             if (addrs == null || addrs.length > 0) {
                session.setObjectData(mediator.discovery(addrs));
                if (session.getObjectData() == null || session.getObjectData().isEmpty()) {
+                  session.setProgress(false);
                   globalEventManager.fire(new ErrorEvent(session, ErrorEvent.DataError.NO_DATA));
                   session.setResult(Result.NO_DATASOURCE);
                }
@@ -632,12 +633,14 @@ public class DataManagementService extends RoboService implements SharedPreferen
                }
             }
             else {
+               session.setProgress(false);
                globalEventManager.fire(new ErrorEvent(session, ErrorEvent.DataError.NO_SOURCE_DATASOURCE));
                session.setResult(Process.Result.NO_DATASOURCE);
             }
          }
          catch (Throwable e) {
             logger.debug("error in discovery", e);
+            session.setProgress(false);
             globalEventManager.fire(new ErrorEvent(session, ErrorEvent.DataError.DISCOVERY_ERROR, Throwables.getRootCause(e).getMessage()));
             session.setResult(Process.Result.ERROR);
          }
@@ -675,12 +678,14 @@ public class DataManagementService extends RoboService implements SharedPreferen
             }
             else {
                logger.warn("Skipping calculate targets");
+               session.setProgress(false);
                globalEventManager.fire(new ErrorEvent(session, ErrorEvent.DataError.NO_TARGET_DATASOURCE));
                session.setResult(Process.Result.NO_DATASOURCE);
             }
          }
          catch (Throwable e) {
             logger.error("Send exception in CalculateTargets: ", e);
+            session.setProgress(false);
             globalEventManager.fire(new ErrorEvent(session, ErrorEvent.DataError.CALCULATE_TARGETS_ERROR, Throwables.getRootCause(e).getMessage()));
             session.setResult(Process.Result.ERROR);
          }
@@ -706,6 +711,7 @@ public class DataManagementService extends RoboService implements SharedPreferen
          }
          catch (Throwable e) {
             logger.error("Send exception", e);
+            session.setProgress(false);
             globalEventManager.fire(new ErrorEvent(session, ErrorEvent.DataError.CALCULATE_CONFLICT_ERROR, Throwables.getRootCause(e).getMessage()));
             session.setResult(Process.Result.ERROR);
          }
@@ -737,6 +743,7 @@ public class DataManagementService extends RoboService implements SharedPreferen
                      hasCancelled |= Result.CANCEL.equals(ret.getValue().getResult());
                   }
                   else {//suspect/unreachable
+                     session.setProgress(false);//possible fire will happen before view change
                      globalEventManager.fire(new ErrorEvent(session, ErrorEvent.DataError.PERFORM_ERROR));
                      session.setResult(Result.ERROR);
                   }
@@ -749,6 +756,7 @@ public class DataManagementService extends RoboService implements SharedPreferen
                }
             }
             else {
+               session.setProgress(false);
                globalEventManager.fire(new ErrorEvent(session, ErrorEvent.DataError.NO_TARGET_DATASOURCE));
                session.setResult(Process.Result.NO_DATASOURCE);
             }
@@ -756,6 +764,7 @@ public class DataManagementService extends RoboService implements SharedPreferen
          catch (Throwable e) {
             logger.error("Send exception in PerformOperation:", e);
             session.setResult(Process.Result.ERROR);
+            session.setProgress(false);
             globalEventManager.fire(new ErrorEvent(session, ErrorEvent.DataError.PERFORM_ERROR, Throwables.getRootCause(e).toString()));
 
          }
