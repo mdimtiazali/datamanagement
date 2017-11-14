@@ -12,8 +12,6 @@ package com.cnh.pf.android.data.management.dialog;
 import java.util.HashMap;
 import java.util.Map;
 
-import static org.jgroups.conf.ProtocolConfiguration.log;
-
 import android.app.Activity;
 import android.view.LayoutInflater;
 import android.view.View;

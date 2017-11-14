@@ -347,6 +347,9 @@ public class DataManagementActivity extends TabActivity implements RoboContext, 
       super.onCreate(savedInstanceState);
 
       eventManager = RoboGuice.getInjector(this).getInstance(EventManager.class);
+      TabActivityTab managementTab = new TabActivityTab(R.string.tab_management, R.drawable.tab_management_selector, getResources().getString(R.string.tab_management),
+                                                    new DataManagementTabListener(new ManageFragment(), this));
+      addTab(managementTab);
       TabActivityTab importTab = new TabActivityTab(R.string.tab_import, R.drawable.tab_import_selector, getResources().getString(R.string.tab_import),
             new DataManagementTabListener(new ImportFragment(), this));
       addTab(importTab);
