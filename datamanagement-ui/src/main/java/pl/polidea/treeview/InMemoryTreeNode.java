@@ -10,9 +10,9 @@ import java.util.List;
  * @param <T>
  *            type of the identifier used by the tree
  */
-class InMemoryTreeNode<T> implements Serializable {
+public class InMemoryTreeNode<T> implements Serializable {
    private static final long serialVersionUID = 1L;
-   private final T id;
+   private T id;
    private final T parent;
    private final int level;
    private boolean visible = true;
@@ -96,7 +96,7 @@ class InMemoryTreeNode<T> implements Serializable {
             + childIdListCache + "]";
    }
 
-   T getId() {
+   public T getId() {
       return id;
    }
 
@@ -108,4 +108,7 @@ class InMemoryTreeNode<T> implements Serializable {
       return level;
    }
 
+   public void setId(T id) {
+      this.id = id;
+   }
 }
