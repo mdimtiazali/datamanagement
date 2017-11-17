@@ -46,8 +46,6 @@ import pl.polidea.treeview.TreeNodeInfo;
  */
 public class ManageFragment extends BaseDataFragment {
     private static final Logger logger = LoggerFactory.getLogger(ManageFragment.class);
-    @Inject
-    protected FormatManager formatManager;
     ImageButton delBtn;
     TextView header;
     Set<String> copySet;
@@ -109,11 +107,6 @@ public class ManageFragment extends BaseDataFragment {
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        try {
-            formatManager.parseXml();
-        } catch (Exception e) {
-            logger.error("Error parsing xml file", e);
-        }
         copySet = new HashSet<String>(Arrays.asList(getResources().getStringArray(R.array.copy)));
         editSet = new HashSet<String>(Arrays.asList(getResources().getStringArray(R.array.edit)));
     }
@@ -161,47 +154,60 @@ public class ManageFragment extends BaseDataFragment {
             disabled.setVisibility(View.GONE);
             treeProgress.setVisibility(View.VISIBLE);
         } else {
+            logger.trace("hasLocalSource is false, return null");
             disabled.setVisibility(View.VISIBLE);
             disabled.setMode(DisabledOverlay.MODE.DISCONNECTED);
             return null;
         }
         DataManagementSession session = new DataManagementSession(new Datasource.Source[]{Datasource.Source.INTERNAL, Datasource.Source.DISPLAY}, null, null, null);
+        sessionInit(session);
         if (oldSession != null) {
             session.setFormat(oldSession.getFormat());
             session.setTargets(oldSession.getTargets());
         }
-        if (session.getFormat() == null) { //set defaults
-            session.setFormat(formatManager.getFormats().iterator().next());
-        }
-        if (session.getTarget() == null) {
-            List<MediumDevice> mediums = getDataManagementService().getMediums();
-            if (!mediums.isEmpty()) {
-                session.setTargets(Arrays.asList(mediums.get(0)));
-            }
+        return session;
+    }
+    @Override
+    public void configSession(DataManagementSession session) {
+        sessionInit(session);//only consider one case
+    }
+
+    private DataManagementSession sessionInit(DataManagementSession session) {
+        if(session != null) {
+            session.setSourceTypes(new Datasource.Source[]{Datasource.Source.INTERNAL, Datasource.Source.DISPLAY});
+            session.setSources(null);
+            session.setDestinationTypes(null);
+            session.setTargets(null);
         }
         return session;
     }
-
     @Override
     public void setSession(DataManagementSession session) {
         super.setSession(session);
 
     }
-
+    @Override
+    protected void onErrorOperation() {
+        if(getSession().getSessionOperation().equals(DataManagementSession.SessionOperation.DISCOVERY)){
+            idleUI();
+        }
+        else {
+            logger.debug("Other operations when error");
+            sessionInit(getSession());
+//            postTreeUI();
+        }
+    }
     @Override
     public void processOperations() {
-        if (getSession().getSessionOperation().equals(DataManagementSession.SessionOperation.PERFORM_OPERATIONS)) {
-            logger.trace("resetting new session.  Operation completed.");
-            getTreeAdapter().selectAll(treeViewList, false);
-            if (getSession().getResult() != null) {
-                if (getSession().getResult().equals(Process.Result.SUCCESS)) {
-                    Toast.makeText(getActivity(), "Export Completed", Toast.LENGTH_LONG).show();
-                } else if (getSession().getResult().equals(Process.Result.CANCEL)) {
-                    Toast.makeText(getActivity(), "Import Cancelled", Toast.LENGTH_LONG).show();
-                }
-                onNewSession();
+        if(getSession().getResult() != null && getSession().getResult().equals(Process.Result.ERROR)) {
+            if(getSession().getSessionOperation().equals(DataManagementSession.SessionOperation.DISCOVERY)){
+                idleUI();
             }
-            //else nothing to do
+            else {
+                logger.debug("Other operations when error");
+                sessionInit(getSession());
+                postTreeUI();
+            }
         }
         else if (getSession().getSessionOperation().equals(DataManagementSession.SessionOperation.UPDATE)) {
             if (getSession().getResult() != null){
