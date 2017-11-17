@@ -1,0 +1,54 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  ~ Copyright (C) 2015 CNH Industrial NV. All rights reserved.
+  ~
+  ~ This software contains proprietary information of CNH Industrial NV. Neither
+  ~ receipt nor possession thereof confers any right to reproduce, use, or
+  ~ disclose in whole or in part any such information without written
+  ~ authorization from CNH Industrial NV.
+  -->
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+              android:id="@+id/mng_list_item_with_edit"
+              android:orientation="horizontal"
+              android:layout_width="match_parent"
+              android:layout_height="@dimen/list_item_height"
+              android:paddingTop="@dimen/list_item_padding"
+              android:paddingBottom="@dimen/list_item_padding"
+              android:descendantFocusability="blocksDescendants">
+
+    <TextView
+        android:text="Text"
+        android:duplicateParentState="true"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:id="@+id/tree_list_item_text"
+        android:textSize="20sp"
+        android:fontFamily="sans-seriff"
+        android:layout_weight="1"
+        android:gravity="left"
+        android:textColor="@color/StandardBlackColor"/>
+    <ImageButton
+            android:id="@+id/mng_edit_button"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:src="@drawable/mng_edit_list_item_states"
+            android:background="@null"
+            android:paddingLeft="12dp"
+            android:paddingRight="12dp"
+            android:visibility="invisible"/>
+    <ImageButton
+        android:id="@+id/mng_copy_button"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:src="@drawable/mng_copy_list_item_states"
+        android:background="@null"
+        android:paddingLeft="12dp"
+        android:paddingRight="16dp"
+        android:visibility="invisible"/>
+    <ImageView
+        android:id="@+id/mng_select_inditor"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:src="@drawable/mng_selected_indicator"
+        android:visibility="invisible"/>
+</LinearLayout>
