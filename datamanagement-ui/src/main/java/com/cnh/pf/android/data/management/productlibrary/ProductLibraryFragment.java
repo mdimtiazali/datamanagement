@@ -678,20 +678,19 @@ public class ProductLibraryFragment extends RoboFragment implements ProductMixCa
          setVarietyPanelSubheading();
          if (varietyAdapter == null) {
             varietyAdapter = new VarietyAdapter(getActivity().getApplicationContext(), varietyList, (TabActivity) getActivity(), vipService);
+            varietiesSearch.setFilterable(varietyAdapter);
+            if (varietyComparator != null) {
+               varietyAdapter.sort(varietyComparator, varietySortAscending);
+            }
          }
          else {
+            varietiesSearch.setFilterable(varietyAdapter);
             varietyAdapter.setVarietyList(varietyList);
-            // the new varietyList needs to be filtered with the old filter input
-            varietyAdapter.getFilter().filter(varietiesSearch.getText());
          }
          // Because android creates new views during onCreateView which is also called when the user switches the tab and
          // returns to this tab/fragment. The next lines have to be executed whether we create a new adapter or not.
          varietiesListView.setAdapter(varietyAdapter);
-         varietiesSearch.setFilterable(varietyAdapter);
          varietiesSearch.addTextChangedListener(new SearchInputTextWatcher(varietiesSearch));
-         if (varietyComparator != null) {
-            varietyAdapter.sort(varietyComparator, varietySortAscending);
-         }
          if (varietiesPanel.isExpanded()) {
             varietiesPanel.resizeContent(false);
          }
@@ -707,18 +706,19 @@ public class ProductLibraryFragment extends RoboFragment implements ProductMixCa
          if (productMixAdapter == null) {
             productMixAdapter = new ProductMixAdapter(getActivity().getApplicationContext(), incomingProductMixList, (TabActivity) getActivity(), vipService, volumeMeasurementSystem,
                   massMeasurementSystem, this);
+            productMixSearch.setFilterable(productMixAdapter);
+            if (productMixComparator != null) {
+               productMixAdapter.sort(productMixComparator, productMixSortAscending);
+            }
          }
          else {
+            productMixSearch.setFilterable(productMixAdapter);
             productMixAdapter.setItems(incomingProductMixList);
          }
          // Because android creates new views during onCreateView which is also called when the user switches the tab and
          // returns to this tab/fragment. The next lines have to be executed whether we create a new adapter or not.
          productMixListView.setAdapter(productMixAdapter);
-         productMixSearch.setFilterable(productMixAdapter);
          productMixSearch.addTextChangedListener(new SearchInputTextWatcher(productMixSearch));
-         if (productMixComparator != null) {
-            productMixAdapter.sort(productMixComparator, productMixSortAscending);
-         }
          if (productMixesPanel.isExpanded()) {
             productMixesPanel.resizeContent(false);
          }
@@ -741,22 +741,23 @@ public class ProductLibraryFragment extends RoboFragment implements ProductMixCa
          if (productAdapter == null) {
             productAdapter = new ProductAdapter(getActivity().getApplicationContext(), incomingProductList, (TabActivity) getActivity(), vipService, volumeMeasurementSystem,
                     massMeasurementSystem, this, productUnitsList, currentImplement);
+            productSearch.setFilterable(productAdapter);
+            if (productComparator != null) {
+               productAdapter.sort(productComparator, productSortAscending);
+            }
          }
          else {
+            productSearch.setFilterable(productAdapter);
             productAdapter.setItems(productList);
-         }
-         if (productListView != null) {
-            productListView.setAdapter(productAdapter);
          }
          // Because android creates new views during onCreateView which is also called when the user switches the tab and
          // returns to this tab/fragment. The next lines have to be executed whether we create a new adapter or not.
-         productSearch.setFilterable(productAdapter);
+         if (productListView != null) {
+            productListView.setAdapter(productAdapter);
+         }
          productSearch.addTextChangedListener(new SearchInputTextWatcher(productSearch));
          if (currentProduct == null && productList.size() > 0) {
             currentProduct = productList.get(0);
-         }
-         if (productComparator != null) {
-            productAdapter.sort(productComparator, productSortAscending);
          }
       }
    }
@@ -778,12 +779,6 @@ public class ProductLibraryFragment extends RoboFragment implements ProductMixCa
    public void onCreate(Bundle savedInstanceState) {
       super.onCreate(savedInstanceState);
       log.debug("onCreate");
-
-      if (savedInstanceState != null) {
-         productList = savedInstanceState.getParcelableArrayList(PRODUCT_LIST);
-         currentProduct = savedInstanceState.getParcelable(CURRENT_PRODUCT);
-         productUnitsList = savedInstanceState.getParcelableArrayList(PRODUCT_UNITS_LIST);
-      }
    }
 
    /**
@@ -959,20 +954,6 @@ public class ProductLibraryFragment extends RoboFragment implements ProductMixCa
       productSearch.setClearIconEnabled(false);
       super.onStop();
 
-   }
-
-   /**
-    * Persist UI state for later retrieval
-    * @param outState
-    */
-   @Override
-   public void onSaveInstanceState(Bundle outState) {
-      super.onSaveInstanceState(outState);
-      log.debug("onSaveInstanceState");
-      outState.putParcelable(CURRENT_PRODUCT, currentProduct);
-      outState.putParcelableArrayList(PRODUCT_LIST, (ArrayList<Product>) productList);
-      outState.putParcelableArrayList(PRODUCT_UNITS_LIST, (ArrayList<ProductUnits>) productUnitsList);
-      // TODO: Workitem #4187: Determine, if instance state handling for varieties in necessary here?
    }
 
    /**
