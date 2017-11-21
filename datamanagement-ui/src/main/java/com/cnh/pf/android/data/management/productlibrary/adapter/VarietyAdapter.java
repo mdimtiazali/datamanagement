@@ -106,9 +106,8 @@ public final class VarietyAdapter extends BaseAdapter implements Filterable {
       synchronized (listsLock){
          filteredList = new ArrayList<Variety>(varieties);
          originalList = null;
-         updateFiltering();
+         updateFilteringAndSorting();
       }
-      notifyDataSetChanged();
    }
 
    /**
@@ -123,9 +122,8 @@ public final class VarietyAdapter extends BaseAdapter implements Filterable {
          if (originalList != null) {
             originalList.remove(variety);
          }
-         updateFiltering();
+         updateFilteringAndSorting();
       }
-      notifyDataSetChanged();
    }
 
    @Override
@@ -201,13 +199,13 @@ public final class VarietyAdapter extends BaseAdapter implements Filterable {
    }
 
    /**
-    * Sorts the content of this adapter using the specified comparator.
-    *
-    * @param comparator The comparator used to sort the objects contained
-    *        in this adapter.
+    * Sorts the items inside and updates the adapter but is <b>not</b> informing the view about this change.
+    * @param comparator the comparator used for sorting
+    * @param asc true if the items should be sorted ascending, false otherwise
     */
-   public void sort(Comparator<Variety> comparator, boolean asc) {
+   private void sortWithoutNotify(Comparator<Variety> comparator, boolean asc) {
       synchronized (listsLock) {
+         isFiltered = false;
          lastUsedComparator = comparator;
          lastUsedAsc = asc;
          if (originalList != null) {
@@ -224,6 +222,16 @@ public final class VarietyAdapter extends BaseAdapter implements Filterable {
             Collections.reverse(filteredList);
          }
       }
+   }
+
+   /**
+    * Sorts the content of this adapter using the specified comparator.
+    *
+    * @param comparator The comparator used to sort the objects contained
+    *        in this adapter.
+    */
+   public void sort(Comparator<Variety> comparator, boolean asc) {
+      sortWithoutNotify(comparator, asc);
       notifyDataSetChanged();
    }
 
@@ -240,8 +248,10 @@ public final class VarietyAdapter extends BaseAdapter implements Filterable {
     * not change the lists based on old data. So we set is filtered to false to force the filter to throw away the old
     * data and re-trigger filtering.
     */
-   private void updateFiltering() {
-      isFiltered = false;
+   private void updateFilteringAndSorting() {
+      if (lastUsedComparator != null) {
+         sortWithoutNotify(lastUsedComparator, lastUsedAsc);
+      }
       Filter filter = getFilter();
       if (filter instanceof UpdateableFilter){
          ((UpdateableFilter)filter).updateFiltering();
@@ -334,8 +344,9 @@ public final class VarietyAdapter extends BaseAdapter implements Filterable {
 
       @Override
       protected FilterResults performFiltering(CharSequence charSequence) {
+         this.lastUsedCharSequence = charSequence;
          final FilterResults results = new FilterResults();
-         final ArrayList<Variety> copyOfOriginalList;
+         final List<Variety> copyOfOriginalList;
          synchronized (listsLock) {
             isFiltered = true;
             if (originalList == null) {
@@ -348,7 +359,7 @@ public final class VarietyAdapter extends BaseAdapter implements Filterable {
             results.count = copyOfOriginalList.size();
          }
          else {
-            final ArrayList<Variety> newVarietyList = new ArrayList<Variety>();
+            final List<Variety> newVarietyList = new ArrayList<Variety>();
             for (Variety variety : copyOfOriginalList) {
                if (variety != null) {
                   final String searchString = charSequence.toString().toLowerCase();
@@ -372,7 +383,8 @@ public final class VarietyAdapter extends BaseAdapter implements Filterable {
       protected void publishResults(CharSequence constraint, FilterResults results) {
          synchronized (listsLock){
             if (!isFiltered){
-               // ui thread changed something in parallel during perform filtering
+               // ui thread changed something in parallel during perform filtering. So the list filtered is out-of-date now
+               updateFiltering();
                return;
             } else {
                filteredList = (List<Variety>) results.values;
@@ -383,7 +395,6 @@ public final class VarietyAdapter extends BaseAdapter implements Filterable {
                   VarietyAdapter.this.notifyDataSetChanged();
                }
             }
-            sort(lastUsedComparator, lastUsedAsc);
          }
       }
    }

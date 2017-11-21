@@ -526,6 +526,7 @@ public final class ProductAdapter extends SearchableSortableExpandableListAdapte
 
       @Override
       public void updateFiltering() {
+         log.debug("updateFiltering() called");
          if (lastUsedCharSequence != null) {
             filter(lastUsedCharSequence);
          }
@@ -533,15 +534,18 @@ public final class ProductAdapter extends SearchableSortableExpandableListAdapte
 
       @Override
       protected FilterResults performFiltering(CharSequence charSequence) {
+         log.debug("perform filtering with charSequence: {} called", charSequence);
          this.lastUsedCharSequence = charSequence;
          final FilterResults results = new FilterResults();
-         final ArrayList<Product> copyOfOriginalList;
+         final List<Product> copyOfOriginalList;
          synchronized (listsLock) {
+            log.debug("perform filtering synchronized start");
             isFiltered = true;
             if (originalList == null) {
                originalList = new ArrayList<Product>(filteredList);
             }
             copyOfOriginalList = new ArrayList<Product>(originalList);
+            log.debug("perform filtering synchronized end");
          }
          if (charSequence == null || charSequence.length() == 0) {
             results.values = copyOfOriginalList;
@@ -549,8 +553,9 @@ public final class ProductAdapter extends SearchableSortableExpandableListAdapte
          }
          else {
             final List<Product> newProductList = new ArrayList<Product>();
+            MeasurementSystem measurementSystem = ProductHelperMethods.queryMeasurementSystem(context, UnitsSettings.VOLUME);
             for (Product p : copyOfOriginalList) {
-               final ProductUnits rateProductUnits = ProductHelperMethods.retrieveProductRateUnits(p, ProductHelperMethods.queryMeasurementSystem(context, UnitsSettings.VOLUME));
+               final ProductUnits rateProductUnits = ProductHelperMethods.retrieveProductRateUnits(p, measurementSystem);
                double rateUnitFactor = 1.0;
                if (rateProductUnits != null && rateProductUnits.isSetMultiplyFactorFromBaseUnits()) {
                   rateUnitFactor = rateProductUnits.getMultiplyFactorFromBaseUnits();
@@ -566,14 +571,18 @@ public final class ProductAdapter extends SearchableSortableExpandableListAdapte
             results.values = newProductList;
             results.count = newProductList.size();
          }
+         log.debug("perform filtering end");
          return results;
       }
 
       @Override
       protected void publishResults(CharSequence charSequence, FilterResults filterResults) {
          synchronized (listsLock) {
+            log.debug("publish results start: isFiltered: {}", isFiltered);
             if (!isFiltered) {
-               // ui thread changed something in parallel during perform filtering
+               // ui thread changed something in parallel during perform filtering. So the list filtered is out-of-date now
+               log.debug("retry to filter - sorting has changed during filtering");
+               updateFiltering();
                return;
             }
             else {
@@ -585,6 +594,7 @@ public final class ProductAdapter extends SearchableSortableExpandableListAdapte
                   ProductAdapter.this.notifyDataSetChanged();
                }
             }
+            log.debug("publish results end");
          }
       }
    }
