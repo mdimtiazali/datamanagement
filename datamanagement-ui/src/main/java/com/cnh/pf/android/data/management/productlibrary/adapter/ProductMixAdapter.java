@@ -27,6 +27,7 @@ import com.cnh.android.dialog.DialogViewInterface;
 import com.cnh.android.dialog.TextDialogView;
 import com.cnh.android.pf.widget.utilities.EnumValueToUiStringUtility;
 import com.cnh.android.pf.widget.utilities.MathUtility;
+import com.cnh.android.pf.widget.utilities.MeasurementSystemCache;
 import com.cnh.android.pf.widget.utilities.ProductHelperMethods;
 import com.cnh.android.pf.widget.utilities.UnitUtility;
 import com.cnh.android.pf.widget.utilities.UnitsSettings;
@@ -69,30 +70,27 @@ public final class ProductMixAdapter extends SearchableSortableExpandableListAda
    private final Drawable arrowOpenDetails;
 
    // the measurement systems could be loaded instead by the adapter itself via the vipservice
-   private MeasurementSystem volumeMeasurementSystem;
-   private MeasurementSystem massMeasurementSystem;
    private final ProductLibraryFragment productLibraryFragment;
+   private final MeasurementSystemCache measurementSystemCache;
 
    /**
     * @param context the context of the adapter
     * @param productMixes the list of varieties which should be shown.
     * @param tabActivity the tabActivity
     * @param vipService the vipService
-    * @param massMeasurementSystem the measurementSystem for mass
-    * @param volumeMeasurementSystem the measurementSystem for volume
     * @param productLibraryFragment the productLibraryFragment this adapter is connected to
+    * @param measurementSystemCache the cache used to get data about the current {@link MeasurementSystem}s
     */
    public ProductMixAdapter(final Context context, final List<ProductMix> productMixes, final TabActivity tabActivity, final IVIPServiceAIDL vipService,
-         final MeasurementSystem volumeMeasurementSystem, final MeasurementSystem massMeasurementSystem, final ProductLibraryFragment productLibraryFragment) {
+         final ProductLibraryFragment productLibraryFragment, final MeasurementSystemCache measurementSystemCache) {
       super(productMixes);
       this.context = context;
       this.activity = tabActivity;
       this.vipService = vipService;
-      this.volumeMeasurementSystem = volumeMeasurementSystem;
-      this.massMeasurementSystem = massMeasurementSystem;
       arrowCloseDetails = context.getResources().getDrawable(R.drawable.arrow_down_expanded_productlist);
       arrowOpenDetails = context.getResources().getDrawable(R.drawable.arrow_up_expanded_productlist);
       this.productLibraryFragment = productLibraryFragment;
+      this.measurementSystemCache = measurementSystemCache;
    }
 
    /**
@@ -164,17 +162,18 @@ public final class ProductMixAdapter extends SearchableSortableExpandableListAda
       carrierProductApplicationRateTableData.defaultRate = calculateApplicationRate(recipe.getAmount(), productMixDefaultRate, productMixTotalAmount);
       carrierProductApplicationRateTableData.rate2 = calculateApplicationRate(recipe.getAmount(), productMixRate2, productMixTotalAmount);
       ProductUnits productRateUnits = ProductHelperMethods.retrieveProductRateUnits(product,
-            ProductHelperMethods.queryApplicationRateMeasurementSystemForProductForm(product.getForm(), context));
+            ProductHelperMethods.queryApplicationRateMeasurementSystemForProductForm(product.getForm(), measurementSystemCache));
       carrierProductApplicationRateTableData.unit = productRateUnits.deepCopy();
       return carrierProductApplicationRateTableData;
    }
 
    /**
-    * Calculate the Application Rate for an ProductMix Element
-    * @param amount productMix amount
-    * @param productMixRate the
-    * @param totalAmount
-    * @return
+    * Calculate the application rate for a {@link Product} using the rate for the complete {@link ProductMix} and the amount of a single {@link Product} and the complete
+    * {@link ProductMix}.
+    * @param amount the amount of a single the product
+    * @param productMixRate the rate of the product mix
+    * @param totalAmount the amount of the product mix
+    * @return the application rate of single the product
     */
    private double calculateApplicationRate(double amount, double productMixRate, double totalAmount) {
       double result = amount / totalAmount;
@@ -207,20 +206,13 @@ public final class ProductMixAdapter extends SearchableSortableExpandableListAda
             viewHolder.formText.setText(EnumValueToUiStringUtility.getUiStringForProductForm(ProductForm.ANY, context));
          }
          viewHolder.rateText.setText(UnitUtility.formatRateUnits(parameters, parameters.getDefaultRate(),
-                 ProductHelperMethods.queryApplicationRateMeasurementSystemForProductForm(parameters.getForm(), context)));
+                 ProductHelperMethods.queryApplicationRateMeasurementSystemForProductForm(parameters.getForm(), measurementSystemCache)));
       }
       viewHolder.groupIndicator.setImageDrawable(expanded ? arrowOpenDetails : arrowCloseDetails);
       view.setOnClickListener(listener);
    }
 
-   /**
-    * Retrieve the outer "collapsed" view of a product list item
-    * @param groupId
-    * @param expanded
-    * @param view
-    * @param viewGroup
-    * @return outer view of a product list item
-    */
+   @Override
    public View getGroupView(final int groupId, boolean expanded, View view, final ViewGroup viewGroup) {
       ProductMix productDetail = getGroup(groupId);
       if (productDetail != null) {
@@ -279,9 +271,9 @@ public final class ProductMixAdapter extends SearchableSortableExpandableListAda
       if (viewHolder.productMix != null) {
          Product productMixParameter = viewHolder.productMix.getProductMixParameters();
          viewHolder.appRate1Text.setText(UnitUtility.formatRateUnits(productMixParameter, productMixParameter.getDefaultRate(),
-                 ProductHelperMethods.queryApplicationRateMeasurementSystemForProductForm(productMixParameter.getForm(), context)));
+                 ProductHelperMethods.queryApplicationRateMeasurementSystemForProductForm(productMixParameter.getForm(), measurementSystemCache)));
          viewHolder.appRate2Text.setText(UnitUtility.formatRateUnits(productMixParameter, productMixParameter.getRate2(),
-                 ProductHelperMethods.queryApplicationRateMeasurementSystemForProductForm(productMixParameter.getForm(), context)));
+                 ProductHelperMethods.queryApplicationRateMeasurementSystemForProductForm(productMixParameter.getForm(), measurementSystemCache)));
          addProductsToTableLayout(viewHolder.productRecipeTable, viewHolder.productMix);
       }
       viewHolder.alertIcon.setOnClickListener(alertButtonClickListener);
@@ -290,15 +282,7 @@ public final class ProductMixAdapter extends SearchableSortableExpandableListAda
       viewHolder.deleteButton.setOnClickListener(deleteButtonClickListener);
    }
 
-   /**
-    * Retrieve the "expanded" view of a product list item
-    * @param group
-    * @param child
-    * @param expanded
-    * @param view
-    * @param viewGroup
-    * @return fully expanded product list item view
-    */
+   @Override
    public View getChildView(final int group, int child, boolean expanded, View view, ViewGroup viewGroup) {
       if (view == null) {
          view = LayoutInflater.from(context).inflate(R.layout.product_mix_item_child_details, viewGroup, false);
@@ -516,7 +500,7 @@ public final class ProductMixAdapter extends SearchableSortableExpandableListAda
          }
          else {
             final List<ProductMix> newProductMixList = new ArrayList<ProductMix>();
-            MeasurementSystem measurementSystem = ProductHelperMethods.queryMeasurementSystem(context, UnitsSettings.VOLUME);
+            MeasurementSystem measurementSystem = measurementSystemCache.queryMeasurementSystem(UnitsSettings.VOLUME);
             for (ProductMix mix : copyOfOriginalList) {
                Product p = mix.getProductMixParameters();
                final ProductUnits rateProductUnits = ProductHelperMethods.retrieveProductRateUnits(p, measurementSystem);

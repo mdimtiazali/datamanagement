@@ -28,7 +28,7 @@ import android.widget.RelativeLayout;
 
 import com.cnh.android.dialog.DialogViewInterface;
 import com.cnh.android.pf.widget.controls.SearchInput;
-import com.cnh.android.pf.widget.utilities.ProductHelperMethods;
+import com.cnh.android.pf.widget.utilities.MeasurementSystemCache;
 import com.cnh.android.pf.widget.utilities.UnitsSettings;
 import com.cnh.android.pf.widget.utilities.commands.GetVarietyListCommand;
 import com.cnh.android.pf.widget.utilities.commands.LoadProductMixListCommand;
@@ -94,7 +94,7 @@ import roboguice.fragment.provided.RoboFragment;
  * Provides add/edit product functionality
  * Created by joorjitham on 3/27/2015.
  */
-public class ProductLibraryFragment extends RoboFragment implements ProductMixCallBack {
+public class ProductLibraryFragment extends RoboFragment implements ProductMixCallBack, MeasurementSystemCache.MeasurementSystemListener {
    private static final Logger log = LoggerFactory.getLogger(ProductLibraryFragment.class);
    private final String identifier = ProductLibraryFragment.class.getSimpleName() + System.identityHashCode(this);
    private static final String PRODUCT_LIST = "product list";
@@ -140,9 +140,7 @@ public class ProductLibraryFragment extends RoboFragment implements ProductMixCa
    private ProductMixAdapter productMixAdapter;
    private AbstractProductComparator productComparator;
    private AbstractProductMixComparator productMixComparator;
-   //Products can be measured in either volume or mass
-   private MeasurementSystem volumeMeasurementSystem;
-   private MeasurementSystem massMeasurementSystem;
+   private MeasurementSystemCache measurementSystemCache;
    private boolean productSortAscending;
    private boolean productMixSortAscending;
    private volatile boolean pcmConnected = false;
@@ -295,8 +293,6 @@ public class ProductLibraryFragment extends RoboFragment implements ProductMixCa
             catch (RemoteException ex) {
                log.error("Error in WHAT_LOAD_UNIT_LIST handler", ex);
             }
-            volumeMeasurementSystem = ProductHelperMethods.queryMeasurementSystem(getActivity(), UnitsSettings.VOLUME);
-            massMeasurementSystem = ProductHelperMethods.queryMeasurementSystem(getActivity(), UnitsSettings.MASS);
             break;
          case WHAT_IMPLEMENT:
             log.debug("Loading current implement...");
@@ -711,8 +707,8 @@ public class ProductLibraryFragment extends RoboFragment implements ProductMixCa
          checkMode();
          setProductMixPanelSubheading();
          if (productMixAdapter == null) {
-            productMixAdapter = new ProductMixAdapter(getActivity().getApplicationContext(), incomingProductMixList, (TabActivity) getActivity(), vipService, volumeMeasurementSystem,
-                  massMeasurementSystem, this);
+            productMixAdapter = new ProductMixAdapter(getActivity().getApplicationContext(), incomingProductMixList, (TabActivity) getActivity(), vipService,
+                  this, measurementSystemCache);
             productMixSearch.setFilterable(productMixAdapter);
             if (productMixComparator != null) {
                productMixAdapter.sort(productMixComparator, productMixSortAscending);
@@ -746,8 +742,8 @@ public class ProductLibraryFragment extends RoboFragment implements ProductMixCa
             currentProduct = productList.get((int) productListView.getSelectedId());
          }
          if (productAdapter == null) {
-            productAdapter = new ProductAdapter(getActivity().getApplicationContext(), incomingProductList, (TabActivity) getActivity(), vipService, volumeMeasurementSystem,
-                    massMeasurementSystem, this, productUnitsList, currentImplement);
+            productAdapter = new ProductAdapter(getActivity().getApplicationContext(), incomingProductList, (TabActivity) getActivity(), vipService,
+                  this, productUnitsList, currentImplement, measurementSystemCache);
             productSearch.setFilterable(productAdapter);
             if (productComparator != null) {
                productAdapter.sort(productComparator, productSortAscending);
@@ -796,6 +792,12 @@ public class ProductLibraryFragment extends RoboFragment implements ProductMixCa
    public void onActivityCreated(Bundle savedInstanceState) {
       super.onActivityCreated(savedInstanceState);
       log.debug("onActivityCreated");
+      List<String> measurementSystemParameter = new ArrayList<String>(4);
+      measurementSystemParameter.add(UnitsSettings.VOLUME);
+      measurementSystemParameter.add(UnitsSettings.MASS);
+      measurementSystemParameter.add(UnitsSettings.OTHER);
+      measurementSystemParameter.add(UnitsSettings.DENSITY);
+      measurementSystemCache = new MeasurementSystemCache(measurementSystemParameter, getActivity(), this, false);
    }
 
    /**
@@ -832,8 +834,17 @@ public class ProductLibraryFragment extends RoboFragment implements ProductMixCa
 
       // super on resume must be called before registerVIPService because this checks isResumed()
       super.onResume();
+      measurementSystemCache.registerContentObservers();
       registerVIPService();
    }
+
+   @Override
+   public void onMeasurementSystemChanged(String measurementParameterName, MeasurementSystem measurementSystem) {
+      if (productAdapter != null) {
+         productAdapter.notifyDataSetChanged();
+      }
+   }
+
 
    private void registerVIPService() {
       // isResumed() needs to be checked if this is called via setVIPService() - if the method is not resumed objects may be null.
@@ -934,6 +945,7 @@ public class ProductLibraryFragment extends RoboFragment implements ProductMixCa
       log.debug("onPause called");
       super.onPause();
       unregisterVIPService();
+      measurementSystemCache.unregisterContentObservers();
    }
 
    /**
