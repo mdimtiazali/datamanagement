@@ -26,6 +26,7 @@ import android.widget.ExpandableListView;
 import android.widget.ListView;
 import android.widget.RelativeLayout;
 
+import com.cnh.android.dialog.DialogViewInterface;
 import com.cnh.android.pf.widget.controls.SearchInput;
 import com.cnh.android.pf.widget.utilities.ProductHelperMethods;
 import com.cnh.android.pf.widget.utilities.UnitsSettings;
@@ -107,8 +108,6 @@ public class ProductLibraryFragment extends RoboFragment implements ProductMixCa
    private boolean isProductListDelivered = false;
    private boolean isVarietyListDelivered = false;
    private View productLibraryLayout;
-   private ProductDialog addProductDialog;
-   private ProductMixDialog addProductMixDialog;
    protected DisabledOverlay disabledOverlay;
    private SearchInput productSearch;
    private SearchInput productMixSearch;
@@ -117,7 +116,7 @@ public class ProductLibraryFragment extends RoboFragment implements ProductMixCa
    private ProgressiveDisclosureView productsPanel;
 
    // Varieties
-   private ArrayList<Variety> varietyList;
+   private List<Variety> varietyList;
    private ProgressiveDisclosureView varietiesPanel;
    private SearchInput varietiesSearch;
    private ListView varietiesListView;
@@ -390,7 +389,7 @@ public class ProductLibraryFragment extends RoboFragment implements ProductMixCa
 
          @Override
          public void onClick(View view) {
-            addProductDialog = new ProductDialog(getActivity().getApplicationContext(), vipService, productUnitsList, new ProductDialog.productListCallback() {
+            ProductDialog addProductDialog = new ProductDialog(getActivity().getApplicationContext(), vipService, productUnitsList, new ProductDialog.productListCallback() {
                @Override
                public void productList(Product product) {
                   productList.add(product);
@@ -413,7 +412,7 @@ public class ProductLibraryFragment extends RoboFragment implements ProductMixCa
       btnAddProductMix.setOnClickListener(new OnClickListener() {
          @Override
          public void onClick(View view) {
-            addProductMixDialog = new ProductMixDialog(getActivity().getApplicationContext(), vipService, ProductLibraryFragment.this, productMixList);
+            ProductMixDialog addProductMixDialog = new ProductMixDialog(getActivity().getApplicationContext(), vipService, ProductLibraryFragment.this, productMixList);
             addProductMixDialog.setFirstButtonText(getResources().getString(R.string.product_dialog_add_button))
                   .setSecondButtonText(getResources().getString(R.string.product_dialog_cancel_button)).showThirdButton(false)
                   .setTitle(getResources().getString(R.string.product_mix_title_dialog_add_product_mix)).setBodyHeight(DIALOG_HEIGHT).setBodyView(R.layout.product_mix_dialog);
@@ -433,7 +432,13 @@ public class ProductLibraryFragment extends RoboFragment implements ProductMixCa
          public void onClick(View view) {
             addVarietyDialog = new AddOrEditVarietyDialog(getActivity().getApplicationContext());
             addVarietyDialog.setFirstButtonText(getResources().getString(R.string.variety_dialog_save_button_text))
-                  .setSecondButtonText(getResources().getString(R.string.variety_dialog_cancel_button_text)).setTitle(getResources().getString(R.string.variety_add_dialog_title_text));
+                  .setSecondButtonText(getResources().getString(R.string.variety_dialog_cancel_button_text)).setTitle(getResources().getString(R.string.variety_add_dialog_title_text))
+                  .setOnDismissListener(new DialogViewInterface.OnDismissListener() {
+                     @Override
+                     public void onDismiss(DialogViewInterface dialogViewInterface) {
+                        ProductLibraryFragment.this.addVarietyDialog = null;
+                     }
+                  });
 
             addVarietyDialog.setActionType(AddOrEditVarietyDialog.VarietyDialogActionType.ADD);
             if (varietyList != null){
@@ -441,7 +446,9 @@ public class ProductLibraryFragment extends RoboFragment implements ProductMixCa
             }
             final TabActivity useModal = (DataManagementActivity) getActivity();
             useModal.showModalPopup(addVarietyDialog);
-            addVarietyDialog.setVIPService(vipService);
+            if (addVarietyDialog != null) {
+               addVarietyDialog.setVIPService(vipService);
+            }
          }
       });
       return productLibraryLayout;
