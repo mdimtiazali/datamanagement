@@ -502,7 +502,7 @@ public final class ProductMixAdapter extends SearchableSortableExpandableListAda
       protected FilterResults performFiltering(CharSequence charSequence) {
          this.lastUsedCharSequence = charSequence;
          final FilterResults results = new FilterResults();
-         final ArrayList<ProductMix> copyOfOriginalList;
+         final List<ProductMix> copyOfOriginalList;
          synchronized (listsLock) {
             isFiltered = true;
             if (originalList == null) {
@@ -516,9 +516,10 @@ public final class ProductMixAdapter extends SearchableSortableExpandableListAda
          }
          else {
             final List<ProductMix> newProductMixList = new ArrayList<ProductMix>();
+            MeasurementSystem measurementSystem = ProductHelperMethods.queryMeasurementSystem(context, UnitsSettings.VOLUME);
             for (ProductMix mix : copyOfOriginalList) {
                Product p = mix.getProductMixParameters();
-               final ProductUnits rateProductUnits = ProductHelperMethods.retrieveProductRateUnits(p, ProductHelperMethods.queryMeasurementSystem(context, UnitsSettings.VOLUME));
+               final ProductUnits rateProductUnits = ProductHelperMethods.retrieveProductRateUnits(p, measurementSystem);
                double rateUnitFactor = 1.0;
                if (rateProductUnits != null && rateProductUnits.isSetMultiplyFactorFromBaseUnits()) {
                   rateUnitFactor = rateProductUnits.getMultiplyFactorFromBaseUnits();
@@ -541,7 +542,8 @@ public final class ProductMixAdapter extends SearchableSortableExpandableListAda
       protected void publishResults(CharSequence charSequence, FilterResults filterResults) {
          synchronized (listsLock){
             if (!isFiltered){
-               // ui thread changed something in parallel during perform filtering
+               // ui thread changed something in parallel during perform filtering. So the list filtered is out-of-date now
+               updateFiltering();
                return;
             } else {
                filteredList = (List<ProductMix>) filterResults.values;
