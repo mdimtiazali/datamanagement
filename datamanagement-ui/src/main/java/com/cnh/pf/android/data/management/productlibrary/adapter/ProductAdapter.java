@@ -26,6 +26,7 @@ import com.cnh.android.dialog.DialogViewInterface;
 import com.cnh.android.dialog.TextDialogView;
 import com.cnh.android.pf.widget.utilities.EnumValueToUiStringUtility;
 import com.cnh.android.pf.widget.utilities.MathUtility;
+import com.cnh.android.pf.widget.utilities.MeasurementSystemCache;
 import com.cnh.android.pf.widget.utilities.ProductHelperMethods;
 import com.cnh.android.pf.widget.utilities.UiUtility;
 import com.cnh.android.pf.widget.utilities.UnitUtility;
@@ -74,19 +75,16 @@ public final class ProductAdapter extends SearchableSortableExpandableListAdapte
    private Implement currentImplement;
 
    // the measurement systems could be loaded instead by the adapter itself via the vipservice
-   private MeasurementSystem volumeMeasurementSystem;
-   private MeasurementSystem massMeasurementSystem;
    private final ProductLibraryFragment productLibraryFragment;
+   private final MeasurementSystemCache measurementSystemCache;
 
    public ProductAdapter(final Context context, final List<Product> products, final TabActivity tabActivity, final IVIPServiceAIDL vipService,
-         final MeasurementSystem volumeMeasurementSystem, final MeasurementSystem massMeasurementSystem, final ProductLibraryFragment productLibraryFragment,
-         final List<ProductUnits> productUnits, final Implement currentImplement) {
+         final ProductLibraryFragment productLibraryFragment, final List<ProductUnits> productUnits, final Implement currentImplement,
+         final MeasurementSystemCache measurementSystemCache) {
       super(products);
       this.context = context;
       this.activity = tabActivity;
       this.vipService = vipService;
-      this.volumeMeasurementSystem = volumeMeasurementSystem;
-      this.massMeasurementSystem = massMeasurementSystem;
       arrowCloseDetails = context.getResources().getDrawable(R.drawable.arrow_down_expanded_productlist);
       arrowOpenDetails = context.getResources().getDrawable(R.drawable.arrow_up_expanded_productlist);
       this.unitInH2O = context.getString(R.string.unit_in_h2o);
@@ -94,6 +92,7 @@ public final class ProductAdapter extends SearchableSortableExpandableListAdapte
       this.productLibraryFragment = productLibraryFragment;
       this.productUnits = productUnits;
       this.currentImplement = currentImplement;
+      this.measurementSystemCache = measurementSystemCache;
    }
 
    /**
@@ -152,19 +151,12 @@ public final class ProductAdapter extends SearchableSortableExpandableListAdapte
          viewHolder.formText.setText(EnumValueToUiStringUtility.getUiStringForProductForm(ProductForm.ANY, context));
       }
       viewHolder.rateText.setText(UnitUtility.formatRateUnits(productDetail, productDetail.getDefaultRate(),
-              ProductHelperMethods.queryApplicationRateMeasurementSystemForProductForm(productDetail.getForm(), context)));
+              ProductHelperMethods.queryApplicationRateMeasurementSystemForProductForm(productDetail.getForm(), measurementSystemCache)));
       viewHolder.groupIndicator.setImageDrawable(expanded ? arrowOpenDetails : arrowCloseDetails);
       view.setOnClickListener(listener);
    }
 
-   /**
-    * Retrieve the outer "collapsed" view of a product list item
-    * @param position
-    * @param expanded
-    * @param view
-    * @param viewGroup
-    * @return outer view of a product list item
-    */
+   @Override
    public View getGroupView(final int position, boolean expanded, View view, final ViewGroup viewGroup) {
       if (view == null) {
          view = LayoutInflater.from(context).inflate(R.layout.product_item, viewGroup, false);
@@ -220,16 +212,16 @@ public final class ProductAdapter extends SearchableSortableExpandableListAdapte
       viewHolder.product = productDetail;
 
       if (viewHolder.product != null) {
-         MeasurementSystem rateMeasurementSystem = ProductHelperMethods.queryApplicationRateMeasurementSystemForProductForm(productDetail.getForm(), context);
+         MeasurementSystem rateMeasurementSystem = ProductHelperMethods.queryApplicationRateMeasurementSystemForProductForm(productDetail.getForm(), measurementSystemCache);
          viewHolder.appRate1Text.setText(UnitUtility.formatRateUnits(productDetail, productDetail.getDefaultRate(), rateMeasurementSystem));
          viewHolder.appRate2Text.setText(UnitUtility.formatRateUnits(productDetail, productDetail.getRate2(), rateMeasurementSystem));
          viewHolder.deltaRateText.setText(UnitUtility.formatRateUnits(productDetail, productDetail.getDeltaRate(), rateMeasurementSystem));
          viewHolder.minRateText.setText(UnitUtility.formatRateUnits(productDetail, productDetail.getMinRate(), rateMeasurementSystem));
          viewHolder.maxRateText.setText(UnitUtility.formatRateUnits(productDetail, productDetail.getMaxRate(), rateMeasurementSystem));
          viewHolder.packageText.setText(UnitUtility.formatPackageUnits(productDetail, productDetail.getPackageSize(),
-               ProductHelperMethods.queryPageSizeMeasurementSystemForProductForm(viewHolder.product.getForm(), context)));
+               ProductHelperMethods.queryPageSizeMeasurementSystemForProductForm(viewHolder.product.getForm(), measurementSystemCache)));
          viewHolder.densityText
-               .setText(UnitUtility.formatDensityUnits(productDetail, productDetail.getDensity(), UnitsSettings.queryMeasurementSystem(context, UnitsSettings.DENSITY)));
+               .setText(UnitUtility.formatDensityUnits(productDetail, productDetail.getDensity(), measurementSystemCache.queryMeasurementSystem(UnitsSettings.DENSITY)));
 
          CNHPlanterFanData cnhPlanterFanData = productDetail.getCnhPlanterFanData();
          if (VIPServiceUtility.areFanSettingsPossible(productDetail.getForm(), currentImplement) && cnhPlanterFanData != null) {
@@ -247,7 +239,7 @@ public final class ProductAdapter extends SearchableSortableExpandableListAdapte
 
          if (productDetail.getForm() == ProductForm.SEED || productDetail.getForm() == ProductForm.PLANT) {
             viewHolder.unitDensityText
-                  .setText(UnitUtility.formatUnitDensityUnits(productDetail, productDetail.getUnitDensity(), UnitsSettings.queryMeasurementSystem(context, UnitsSettings.DENSITY)));
+                  .setText(UnitUtility.formatUnitDensityUnits(productDetail, productDetail.getUnitDensity(), measurementSystemCache.queryMeasurementSystem(UnitsSettings.DENSITY)));
             viewHolder.unitDensityContainer.setVisibility(View.VISIBLE);
          }
          else {
@@ -553,7 +545,7 @@ public final class ProductAdapter extends SearchableSortableExpandableListAdapte
          }
          else {
             final List<Product> newProductList = new ArrayList<Product>();
-            MeasurementSystem measurementSystem = ProductHelperMethods.queryMeasurementSystem(context, UnitsSettings.VOLUME);
+            MeasurementSystem measurementSystem = measurementSystemCache.queryMeasurementSystem(UnitsSettings.VOLUME);
             for (Product p : copyOfOriginalList) {
                final ProductUnits rateProductUnits = ProductHelperMethods.retrieveProductRateUnits(p, measurementSystem);
                double rateUnitFactor = 1.0;
