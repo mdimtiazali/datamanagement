@@ -23,8 +23,7 @@ import java.util.List;
  * Extension of a {@link com.cnh.android.pf.widget.adapters.SearchableExpandableListAdapter}.
  * This classed is prepared for sorting of it's elements. You need to configure a comparator to use the functionality.
  *
- * Remark: In the cases this class is used synchro
- * nization for the item list is used. Because this lead to errors this
+ * Remark: In the cases this class is used synchronization for the item list used. Because this lead to errors this
  * class has package visibility and is not public.
  *
  * @author waldschmidt
@@ -35,6 +34,8 @@ abstract class SearchableSortableExpandableListAdapter<T> extends SearchableExpa
    List<T> filteredList;  // in ArrayAdapter called mObjects
    List<T> originalList; // in ArrayAdapter called mOriginalValues
    boolean isFiltered = false; // only change this in block synchronized by listsLock
+   Comparator<T> lastUsedComparator; // the comparator used the last time to sort the list
+   boolean lastUsedAsc; // the direction the sorting was done the last time. This attribute must be ignored if lastUsedComparator is null.
 
    // lock for filteredList and originalList
    protected final Object listsLock = new Object();
@@ -63,12 +64,12 @@ abstract class SearchableSortableExpandableListAdapter<T> extends SearchableExpa
     * @param items the new list of items
     */
    public void setItems(List<T> items) {
+      log.debug("set items called");
       synchronized (listsLock){
          filteredList = new ArrayList<T>(items);
          originalList = null;
-         updateFiltering();
+         updateFilteringAndSorting();
       }
-      notifyDataSetChanged();
    }
 
    /**
@@ -83,18 +84,20 @@ abstract class SearchableSortableExpandableListAdapter<T> extends SearchableExpa
          if (originalList != null) {
             originalList.remove(item);
          }
-         updateFiltering();
+         updateFilteringAndSorting();
       }
-      notifyDataSetChanged();
    }
 
    /**
-    * If the list was changed - it's possible that the filter has working at a temporary copy of the old list and he must
+    * If the list was changed - it's possible that the filter has worked at a temporary copy of the old list and he must
     * not change the lists based on old data. So we set is filtered to false to force the filter to throw away the old
     * data and re-trigger filtering.
    */
-   private void updateFiltering() {
-      isFiltered = false;
+   private void updateFilteringAndSorting() {
+      log.debug("update filtering of adapter called");
+      if (lastUsedComparator != null) {
+         sortWithoutNotify(lastUsedComparator, lastUsedAsc);
+      }
       Filter filter = getFilter();
       if (filter instanceof UpdateableFilter){
          ((UpdateableFilter)filter).updateFiltering();
@@ -102,12 +105,17 @@ abstract class SearchableSortableExpandableListAdapter<T> extends SearchableExpa
    }
 
    /**
-    * Sorts the items inside and updates the adapter.
+    * Sorts the items inside and updates the adapter but is <b>not</b> informing the view about this change.
     * @param comparator the comparator used for sorting
     * @param asc true if the items should be sorted ascending, false otherwise
     */
-   public void sort(Comparator<T> comparator, boolean asc) {
+   private void sortWithoutNotify(Comparator<T> comparator, boolean asc){
+      log.debug("sort called");
       synchronized (listsLock) {
+         isFiltered = false;
+         lastUsedComparator = comparator;
+         lastUsedAsc = asc;
+         log.debug("sort synchronized start");
          if (originalList != null) {
             Collections.sort(originalList, comparator);
             if (!asc) {
@@ -121,7 +129,17 @@ abstract class SearchableSortableExpandableListAdapter<T> extends SearchableExpa
          if (!asc) {
             Collections.reverse(filteredList);
          }
+         log.debug("sort synchronized end");
       }
+   }
+
+   /**
+    * Sorts the items inside and updates the adapter.
+    * @param comparator the comparator used for sorting
+    * @param asc true if the items should be sorted ascending, false otherwise
+    */
+   public void sort(Comparator<T> comparator, boolean asc) {
+      sortWithoutNotify(comparator, asc);
       notifyDataSetChanged();
    }
 

@@ -41,10 +41,10 @@ public class ErrorDialog extends DialogView {
       View view = layoutInflater.inflate(R.layout.error_layout, null);
       ButterKnife.bind(this, view);
 
-      this.setTitle(event.getType().toString());
+      this.setTitle(context.getString(event.getType().resource()));
       errorString.setText(Strings.isNullOrEmpty(event.getError()) ? "No Details" : event.getError());
       setBodyView(view);
-      setFirstButtonText(getResources().getString(R.string.cancel));
+      setFirstButtonText(getResources().getString(R.string.done));
       showFirstButton(true);
       showSecondButton(false);
       showThirdButton(false);

@@ -39,4 +39,43 @@
         <item name="android:textColor">@color/list_item_text_color</item>
         <item name="android:textSize">@dimen/list_item_large_text_size</item>
     </style>
+    <style name="DmAppTheme" parent="@android:style/Theme.NoTitleBar.Fullscreen">
+
+            <!-- Android default styles -->
+            <!--         <item name="android:windowBackground">@color/defaultWindowBackground</item> -->
+            <item name="android:windowBackground">@drawable/launching_bg</item>
+            <item name="android:textColor">@color/defaultTextColor</item>
+            <item name="android:textSize">@dimen/default_text_size</item>
+
+            <!-- 		<item name="android:errorMessageBackground">@drawable/popup_inline_error</item> -->
+            <!-- 		<item name="android:errorMessageAboveBackground">@drawable/popup_inline_error_above</item> -->
+
+            <!-- Cnh widgets -->
+
+            <!--         <item name="EditText">@style/EditText</item> -->
+            <!--         <item name="EditTextBig">@style/EditTextBig</item> -->
+            <!--         <item name="EditTextSmall">@style/EditTextSmall</item> -->
+
+            <item name="InputField">@style/InputField</item>
+            <item name="InputFieldBig">@style/InputFieldBig</item>
+            <item name="InputFieldSmall">@style/InputFieldSmall</item>
+
+            <item name="OnOff">@style/InputField</item>
+            <item name="OnOffBig">@style/OnOffBig</item>
+            <item name="OnOffSmall">@style/OnOffSmall</item>
+
+            <item name="CheckBox">@style/CheckBox</item>
+
+            <item name="InfoButton">@style/InfoButton</item>
+
+            <item name="ProgressBar">@style/ProgressBar</item>
+
+            <item name="SliderVerticalSmall_Right">@style/SliderVertical.Right</item>
+            <item name="SliderVerticalBig_Right">@style/SliderVertical.Right</item>
+            <item name="Slider_Interactive_With_Increment">@style/Slider.Interactive.With.Increment</item>
+
+            <item name="Stepper">@style/Stepper</item>
+            <item name="SpinnerStepper">@style/SpinnerStepper</item>
+
+        </style>
 </resources>

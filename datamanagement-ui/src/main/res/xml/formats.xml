@@ -26,7 +26,7 @@
       <type>LANDMARK</type>
    </format>
 
-   <format name="CNH" pcm="true" standalone="true" path="XDATA">
+   <format name="PF Database" pcm="true" standalone="true" path="PFDATABASE">
       <type>!RX_PLAN</type>
       <type>!RX</type>
       <type>!RX_ZONE</type>
