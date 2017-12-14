@@ -14,7 +14,7 @@
    <parent>
       <groupId>com.cnh.pf</groupId>
       <artifactId>parent</artifactId>
-      <version>15.0.0-lift-SNAPSHOT</version>
+      <version>0.0.712-lift-SNAPSHOT</version>
       <relativePath>../../</relativePath>
    </parent>
 
