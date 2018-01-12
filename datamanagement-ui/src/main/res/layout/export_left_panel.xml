@@ -27,7 +27,7 @@
                 style="@style/TextAppearance.Import.Entity"
                 android:text="@string/export_to" />
 
-        <com.cnh.android.widget.control.PickListEditable
+        <com.cnh.android.widget.control.PickList
                 android:id="@+id/export_medium_picklist"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
@@ -60,7 +60,7 @@
                     cnh:popup_title="@string/export_format" />
         </RelativeLayout>
 
-        <com.cnh.android.widget.control.PickListEditable
+        <com.cnh.android.widget.control.PickList
                 android:id="@+id/export_format_picklist"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
