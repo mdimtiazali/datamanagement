@@ -184,6 +184,7 @@ public class ImportFragment extends BaseDataFragment {
       if(getSession() == null){
          setSession(createSession());
       }
+      configSession(getSession());
       getSession().setSources(event.getDevices());
       getDataManagementService().processOperation(getSession(), SessionOperation.DISCOVERY);
       previousDevices = event.getDevices();
@@ -218,6 +219,7 @@ public class ImportFragment extends BaseDataFragment {
    public void configSession(DataManagementSession session) {
       if(previousDevices != null){
          logger.debug("previous devices are {}",previousDevices);
+         session.setTargets(null);
          session.setSources(previousDevices);
       }
       else {
