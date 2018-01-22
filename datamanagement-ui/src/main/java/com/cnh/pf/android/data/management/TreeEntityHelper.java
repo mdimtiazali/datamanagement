@@ -32,7 +32,7 @@ public class TreeEntityHelper {
       TYPE_ICONS.put(DataTypes.TASK, R.drawable.ic_datatree_tasks);
       TYPE_ICONS.put(DataTypes.RX, R.drawable.ic_datatree_prescription);
       TYPE_ICONS.put(DataTypes.RX_PLAN, R.drawable.ic_datatree_prescription);
-      TYPE_ICONS.put(DataTypes.PRODUCT, R.drawable.ic_datatree_obstacles);
+      TYPE_ICONS.put(DataTypes.PRODUCT, R.drawable.ic_datatree_products);
       TYPE_ICONS.put(DataTypes.PRODUCT_MIX, R.drawable.ic_datatree_obstacles);
       TYPE_ICONS.put(DataTypes.BOUNDARY, R.drawable.ic_datatree_boundaries);
       TYPE_ICONS.put(DataTypes.LANDMARK, R.drawable.ic_datatree_obstacles);

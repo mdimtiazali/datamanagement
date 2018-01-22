@@ -22,6 +22,7 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import com.cnh.android.pf.widget.view.DisabledOverlay;
+import com.cnh.android.widget.control.PickList;
 import com.cnh.android.widget.control.PickListAdapter;
 import com.cnh.android.widget.control.PickListEditable;
 import com.cnh.android.widget.control.PickListItem;
@@ -56,9 +57,9 @@ public class ExportFragment extends BaseDataFragment {
    @Inject
    protected FormatManager formatManager;
    @InjectView(R.id.export_medium_picklist)
-   PickListEditable exportMediumPicklist;
+   PickList exportMediumPicklist;
    @InjectView(R.id.export_format_picklist)
-   PickListEditable exportFormatPicklist;
+   PickList exportFormatPicklist;
    @InjectView(R.id.export_drop_zone)
    LinearLayout exportDropZone;
    @InjectView(R.id.export_selected_btn)
@@ -204,21 +205,30 @@ public class ExportFragment extends BaseDataFragment {
    private void addMediumExportToPickList(){
       DataManagementService service = getDataManagementService();
       if (service == null) return;
-
-      exportMediumPicklist.getAdapter().clear();
+      if(exportMediumPicklist.findNext(false) != -1) {
+         exportMediumPicklist.clearList();
+      }
+      boolean resetTagert = true;
       List<MediumDevice> devices = service.getMediums();
       if (!isEmpty(devices)) {
          int deviceId = 0;
          for (MediumDevice device : devices) {
             exportMediumPicklist.addItem(new ObjectPickListItem<MediumDevice>(deviceId++, device.getType().toString(), device));
+            if(getSession() != null && getSession().getTarget() != null &&getSession().getTarget().getType() == device.getType()){
+               resetTagert = false;
+            }
          }
+      }
+      if(getSession() != null && resetTagert) {
+         getSession().setTargets(null);
       }
    }
    @Override
-   public void onNewSession() {
+   public DataManagementSession createSession(){
+      logger.trace("createSession()");
       super.onNewSession();
-
       DataManagementSession oldSession = getSession();
+
       leftStatusPanel.setVisibility(View.GONE);
       exportDropZone.setVisibility(View.VISIBLE);
       treeViewList.setVisibility(View.GONE);
@@ -229,26 +239,37 @@ public class ExportFragment extends BaseDataFragment {
       } else {
          disabled.setVisibility(View.VISIBLE);
          disabled.setMode(DisabledOverlay.MODE.DISCONNECTED);
-         return;
+         return null;
       }
-
-      DataManagementSession session = new DataManagementSession(new Datasource.Source[] { Datasource.Source.INTERNAL, Datasource.Source.DISPLAY }, null, null, null);
+      DataManagementSession session = new DataManagementSession(null, null, null, null);
+      sessionInit(session);
       if (oldSession != null) {
          session.setFormat(oldSession.getFormat());
          session.setTargets(oldSession.getTargets());
       }
-      if (session.getFormat() == null) { //set defaults
-         session.setFormat(formatManager.getFormats().iterator().next());
-      }
-      if (session.getTarget() == null) {
-         List<MediumDevice> mediums = getDataManagementService().getMediums();
-         if (!mediums.isEmpty()) {
-            session.setTargets(Arrays.asList(mediums.get(0)));
-         }
-      }
-      setSession(getDataManagementService().processOperation(session, SessionOperation.DISCOVERY));
+      return session;
    }
 
+   @Override
+   public void configSession(DataManagementSession session) {
+      sessionInit(session);//only consider one case
+   }
+
+   private DataManagementSession sessionInit(DataManagementSession session) {
+      if(session != null) {
+         session.setSourceTypes(new Datasource.Source[]{Datasource.Source.INTERNAL, Datasource.Source.DISPLAY});
+         session.setSources(null);
+         session.setDestinationTypes(null);
+         session.setTargets(null);
+         session.setFormat(exportFormatPicklist.getSelectedItem() != null? exportFormatPicklist.getSelectedItem().getValue():formatManager.getFormats().iterator().next());
+         List<MediumDevice> mediums = getDataManagementService().getMediums();
+         if (exportMediumPicklist.getAdapter().getCount() > 0) {
+            ObjectPickListItem<MediumDevice> item = (ObjectPickListItem<MediumDevice>) exportMediumPicklist.getSelectedItem();
+            session.setTargets(item != null ? Arrays.asList(item.getObject()) : null);
+         }
+      }
+      return session;
+   }
    public static boolean isEmpty(Collection<?> collection) {
       return collection == null || collection.isEmpty();
    }
@@ -290,22 +311,47 @@ public class ExportFragment extends BaseDataFragment {
    }
 
    @Override
+   protected void onErrorOperation() {
+      if(getSession().getSessionOperation().equals(SessionOperation.DISCOVERY)){
+         idleUI();
+      }
+      else {
+         logger.debug("Other operations when error");
+         sessionInit(getSession());
+         removeProgressPanel();
+         postTreeUI();
+      }
+   }
+
+   @Override
    public void processOperations() {
-      if (getSession().getSessionOperation().equals(SessionOperation.PERFORM_OPERATIONS)) {
-         logger.trace("resetting new session.  Operation completed.");
-         getTreeAdapter().selectAll(treeViewList, false);
-         if(getSession().getResult()!=null) {
-            removeProgressPanel();
-            if (getSession().getResult().equals(Process.Result.SUCCESS)) {
-               Toast.makeText(getActivity(), "Export Completed", Toast.LENGTH_LONG).show();
-            }
-            else if (getSession().getResult().equals(Process.Result.CANCEL)) {
-               Toast.makeText(getActivity(), "Import Cancelled", Toast.LENGTH_LONG).show();
-            }
-            onNewSession();
+      logger.debug("processOperation() session result: {}",getSession().getResult());
+      if(getSession().getResult() != null && getSession().getResult().equals(Process.Result.ERROR)) {
+         if(getSession().getSessionOperation().equals(SessionOperation.DISCOVERY)){
+            idleUI();
          }
          else {
-            showProgressPanel();
+            logger.debug("Other operations when error");
+            sessionInit(getSession());
+            removeProgressPanel();
+            postTreeUI();
+         }
+      }
+      else {
+         if (getSession().getSessionOperation().equals(SessionOperation.PERFORM_OPERATIONS)) {
+            logger.trace("resetting new session.  Operation completed.");
+            getTreeAdapter().selectAll(treeViewList, false);
+            if (getSession().getResult() != null) {
+               removeProgressPanel();
+               if (getSession().getResult().equals(Process.Result.SUCCESS)) {
+                  Toast.makeText(getActivity(), getString(R.string.export_complete), Toast.LENGTH_LONG).show();
+               } else if (getSession().getResult().equals(Process.Result.CANCEL)) {
+                  Toast.makeText(getActivity(), getString(R.string.export_cancel), Toast.LENGTH_LONG).show();
+               }
+               configSession(getSession());
+            } else {
+               showProgressPanel();
+            }
          }
       }
       checkExportButton();

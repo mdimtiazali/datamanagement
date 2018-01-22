@@ -25,6 +25,7 @@ import android.view.View;
 import com.cnh.android.util.prefs.GlobalPreferences;
 import com.cnh.android.util.prefs.GlobalPreferencesNotAvailableException;
 import com.cnh.android.widget.activity.TabActivity;
+import com.cnh.android.widget.control.PickList;
 import com.cnh.android.widget.control.PickListEditable;
 import com.cnh.jgroups.DataTypes;
 import com.cnh.jgroups.Datasource;
@@ -123,16 +124,16 @@ public class DataManagementUITest {
       assertTrue("xml specifies isoxml format", formats.contains("ISOXML"));
       assertTrue("isoxml supporrts customery type", parser.formatSupportsType("ISOXML", DataTypes.GROWER));
       assertFalse("isoxml does not support VEHICLE type", parser.formatSupportsType("ISOXML", "VEHICLE"));
-      assertTrue("xml specifies cnh format", formats.contains("CNH"));
-      assertTrue("cnh supports vehicle type", parser.formatSupportsType("CNH", "VEHICLE"));
-      assertTrue("cnh does not support customer type", parser.formatSupportsType("CNH", DataTypes.GROWER));
-      assertFalse("cnh does not support prescription type", parser.formatSupportsType("CNH", DataTypes.RX));
+      assertTrue("xml specifies cnh format", formats.contains("PF Database"));
+      assertTrue("cnh supports vehicle type", parser.formatSupportsType("PF Database", "VEHICLE"));
+      assertTrue("cnh does not support customer type", parser.formatSupportsType("PF Database", DataTypes.GROWER));
+      assertFalse("cnh does not support prescription type", parser.formatSupportsType("PF Database", DataTypes.RX));
    }
 
    @Test
    public void testISOSupport() throws RemoteException {
       //Initialize export fragment
-      activateTab(1);
+      activateTab(2);
       //Check export fragment visible
       assertTrue("export drop zone is visible", activity.findViewById(R.id.export_drop_zone).getVisibility() == View.VISIBLE);
       ExportFragment fragment = (ExportFragment) ((TabActivity) activity).getFragmentManager().findFragmentByTag("Export");
@@ -148,7 +149,7 @@ public class DataManagementUITest {
       //Assert tree view shows results of discovery
       assertEquals("Object Tree View is visible", View.VISIBLE, fragment.getView().findViewById(R.id.tree_view_list).getVisibility());
       //Mock picklist, select ISOXML as export format$
-      fragment.exportFormatPicklist = mock(PickListEditable.class);
+      fragment.exportFormatPicklist = mock(PickList.class);
       when(fragment.exportFormatPicklist.getSelectedItemValue()).thenReturn("ISOXML");
       //Select non-supported format from tree to export, check to make sure its supported state is false
       ObjectTreeViewAdapter adapter = (ObjectTreeViewAdapter) fragment.treeViewList.getAdapter();
@@ -161,7 +162,7 @@ public class DataManagementUITest {
    @Test
    public void testRecursiveFormatSupport() throws RemoteException {
       //Initialize export fragment
-      activateTab(1); //0 - Import 1 - Export
+      activateTab(2); //0 - Import 1 - Export
       //Mock picklist, select ISOXML as export format$
       ExportFragment fragment = (ExportFragment) ((TabActivity) activity).getFragmentManager().findFragmentByTag("Export");
       DataManagementSession session = new DataManagementSession(new Datasource.Source[] { Datasource.Source.INTERNAL }, new Datasource.Source[] { Datasource.Source.INTERNAL },
@@ -171,7 +172,7 @@ public class DataManagementUITest {
       session.setFormat("ISOXML");
       fragment.setSession(session);
       fireDiscoveryEvent(fragment, session);
-      fragment.exportFormatPicklist = mock(PickListEditable.class);
+      fragment.exportFormatPicklist = mock(PickList.class);
       when(fragment.exportFormatPicklist.getSelectedItemValue()).thenReturn("ISOXML");
       //Set selected item to top of tree, will import everything recursive
       ObjectTreeViewAdapter adapter = (ObjectTreeViewAdapter) fragment.treeViewList.getAdapter();
