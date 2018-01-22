@@ -205,7 +205,7 @@ public class ExportFragment extends BaseDataFragment {
    private void addMediumExportToPickList(){
       DataManagementService service = getDataManagementService();
       if (service == null) return;
-      if(exportMediumPicklist.findNext(false) != -1) {
+      if(exportMediumPicklist.findItemPositionById(0) != -1) {
          exportMediumPicklist.clearList();
       }
       boolean resetTagert = true;
