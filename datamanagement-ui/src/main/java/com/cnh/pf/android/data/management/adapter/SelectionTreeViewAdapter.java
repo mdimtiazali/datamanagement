@@ -174,7 +174,6 @@ public abstract class SelectionTreeViewAdapter<T> extends AbstractTreeViewAdapte
       if (listener != null) {
          listener.onItemSelected();
       }
-      getManager().refresh();
    }
 
    public abstract boolean isSupportedEntitiy(T node);

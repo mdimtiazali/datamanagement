@@ -381,10 +381,10 @@ public class InMemoryTreeStateManager<T> implements TreeStateManager<T> {
    }
 
    @Override
-   public Object rmNretNode(T id) {
+   public Object rmNretNode(final T id) {
       final InMemoryTreeNode<T> node = allNodes.get(id);
       if (node == null) {
-         throw new NodeAlreadyInTreeException(id.toString(), node.toString());
+         throw new NodeNotInTreeException(id.toString());
       }
       else {
          Stack<InMemoryTreeNode<T>> stack = new Stack<InMemoryTreeNode<T>>();

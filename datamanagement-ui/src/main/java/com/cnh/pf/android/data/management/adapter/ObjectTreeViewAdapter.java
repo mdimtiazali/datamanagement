@@ -106,15 +106,17 @@ public abstract class ObjectTreeViewAdapter extends SelectionTreeViewAdapter<Obj
 
    @Override
    public View updateView(View view, TreeNodeInfo treeNodeInfo) {
-      final TextView nameView = (TextView) view;
-      ObjectGraph graph = (ObjectGraph) treeNodeInfo.getId();
-      nameView.setText(graph.getName());
-      nameView.setTextColor(getActivity().getResources().getColorStateList(R.color.tree_text_color));
-      if (TreeEntityHelper.hasIcon(graph.getType()) && (graph instanceof GroupObjectGraph || !isGroupableEntity(graph))) {
-         nameView.setCompoundDrawablesWithIntrinsicBounds(TreeEntityHelper.getIcon(graph.getType()), 0, 0, 0);
-      }
-      else {
-         nameView.setCompoundDrawablesWithIntrinsicBounds(0, 0, 0, 0);
+      if (view instanceof TextView) {
+         final TextView nameView = (TextView) view;
+         ObjectGraph graph = (ObjectGraph) treeNodeInfo.getId();
+         nameView.setText(graph.getName());
+         nameView.setTextColor(getActivity().getResources().getColorStateList(R.color.tree_text_color));
+         if (TreeEntityHelper.hasIcon(graph.getType()) && (graph instanceof GroupObjectGraph || !isGroupableEntity(graph))) {
+            nameView.setCompoundDrawablesWithIntrinsicBounds(TreeEntityHelper.getIcon(graph.getType()), 0, 0, 0);
+         }
+         else {
+            nameView.setCompoundDrawablesWithIntrinsicBounds(0, 0, 0, 0);
+         }
       }
       return view;
    }
@@ -206,8 +208,7 @@ public abstract class ObjectTreeViewAdapter extends SelectionTreeViewAdapter<Obj
             if (toggle != null) toggle.setTag(getTreeId(position));
             if (frameLayout != null) frameLayout.setTag(getTreeId(position));
             if (editBtn != null) editBtn.setTag(getTreeId(position));
-            if (copyBtn != null) editBtn.setTag(getTreeId(position));
-
+            if (copyBtn != null) copyBtn.setTag(getTreeId(position));
          }
       }
    }
