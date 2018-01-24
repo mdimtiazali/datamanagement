@@ -14,7 +14,7 @@
    <parent>
       <groupId>com.cnh.pf</groupId>
       <artifactId>parent</artifactId>
-      <version>b8.0.0-pco-SNAPSHOT</version>
+      <version>16.0.0-agdpco-SNAPSHOT</version>
       <relativePath>../../</relativePath>
    </parent>
 
