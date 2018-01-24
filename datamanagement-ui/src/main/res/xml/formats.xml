@@ -15,6 +15,7 @@
       <type>FARM</type>
       <type>FIELD</type>
       <type>TASK</type>
+      <type>FILE</type>
       <type>RX_PLAN</type>
       <type>RX</type>
       <type>RX_ZONE</type>
