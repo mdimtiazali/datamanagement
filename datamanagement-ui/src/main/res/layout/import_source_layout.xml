@@ -41,6 +41,8 @@
             android:visibility="gone"
             android:divider="@android:color/transparent"
             android:dividerHeight="8dp"
+            android:choiceMode="none"
+            android:listSelector="#00000000"
             cnh:collapsible="true"
             cnh:draw_line="true"
             cnh:indent_width="18dp"
