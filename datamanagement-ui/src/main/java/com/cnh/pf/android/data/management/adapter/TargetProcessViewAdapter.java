@@ -68,6 +68,7 @@ public class TargetProcessViewAdapter extends DataManagementBaseAdapter {
       //make the target picklists
       while(current != null) {
          final PickListEditable pl = (PickListEditable) inflater.inflate(R.layout.select_target_picklist, (ViewGroup)viewHolder.getRoot(), false);
+         pl.setAddButtonEnabled(false);
          pl.setAdapter(new PickListAdapter(pl, context));
          pl.setOnItemSelectedListener(new PickListEditable.OnItemSelectedListener() {
             @Override public void onItemSelected(AdapterView<?> parent, View view, int position, long id, boolean b) {

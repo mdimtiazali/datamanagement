@@ -22,6 +22,7 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import com.cnh.android.pf.widget.view.DisabledOverlay;
+import com.cnh.android.widget.control.PickList;
 import com.cnh.android.widget.control.PickListAdapter;
 import com.cnh.android.widget.control.PickListEditable;
 import com.cnh.android.widget.control.PickListItem;
@@ -56,9 +57,9 @@ public class ExportFragment extends BaseDataFragment {
    @Inject
    protected FormatManager formatManager;
    @InjectView(R.id.export_medium_picklist)
-   PickListEditable exportMediumPicklist;
+   PickList exportMediumPicklist;
    @InjectView(R.id.export_format_picklist)
-   PickListEditable exportFormatPicklist;
+   PickList exportFormatPicklist;
    @InjectView(R.id.export_drop_zone)
    LinearLayout exportDropZone;
    @InjectView(R.id.export_selected_btn)
@@ -204,14 +205,22 @@ public class ExportFragment extends BaseDataFragment {
    private void addMediumExportToPickList(){
       DataManagementService service = getDataManagementService();
       if (service == null) return;
-
-      exportMediumPicklist.getAdapter().clear();
+      if(exportMediumPicklist.findItemPositionById(0) != -1) {
+         exportMediumPicklist.clearList();
+      }
+      boolean resetTagert = true;
       List<MediumDevice> devices = service.getMediums();
       if (!isEmpty(devices)) {
          int deviceId = 0;
          for (MediumDevice device : devices) {
             exportMediumPicklist.addItem(new ObjectPickListItem<MediumDevice>(deviceId++, device.getType().toString(), device));
+            if(getSession() != null && getSession().getTarget() != null &&getSession().getTarget().getType() == device.getType()){
+               resetTagert = false;
+            }
          }
+      }
+      if(getSession() != null && resetTagert) {
+         getSession().setTargets(null);
       }
    }
    @Override
@@ -252,7 +261,7 @@ public class ExportFragment extends BaseDataFragment {
          session.setSources(null);
          session.setDestinationTypes(null);
          session.setTargets(null);
-         session.setFormat(formatManager.getFormats().iterator().next());
+         session.setFormat(exportFormatPicklist.getSelectedItem() != null? exportFormatPicklist.getSelectedItem().getValue():formatManager.getFormats().iterator().next());
          List<MediumDevice> mediums = getDataManagementService().getMediums();
          if (exportMediumPicklist.getAdapter().getCount() > 0) {
             ObjectPickListItem<MediumDevice> item = (ObjectPickListItem<MediumDevice>) exportMediumPicklist.getSelectedItem();
@@ -339,7 +348,7 @@ public class ExportFragment extends BaseDataFragment {
                } else if (getSession().getResult().equals(Process.Result.CANCEL)) {
                   Toast.makeText(getActivity(), getString(R.string.export_cancel), Toast.LENGTH_LONG).show();
                }
-               onNewSession();
+               configSession(getSession());
             } else {
                showProgressPanel();
             }
