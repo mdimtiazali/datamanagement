@@ -13,10 +13,9 @@ import java.util.Map;
 import java.util.Set;
 import java.util.Stack;
 
-
 /**
  * In-memory manager of tree state.
- * 
+ *
  * @param <T>
  *            type of identifier
  */
@@ -40,7 +39,7 @@ public class InMemoryTreeStateManager<T> implements TreeStateManager<T> {
 
    /**
     * If true new nodes are visible by default.
-    * 
+    *
     * @param visibleByDefault
     *            if true, then newly added nodes are expanded by default
     */
@@ -382,42 +381,42 @@ public class InMemoryTreeStateManager<T> implements TreeStateManager<T> {
    }
 
    @Override
-    public Object rmNretNode(T id) {
-        final InMemoryTreeNode<T> node = allNodes.get(id);
-        if (node == null) {
-            throw new NodeAlreadyInTreeException(id.toString(), node.toString());
-        }
-        else{
-            Stack<InMemoryTreeNode<T>> stack = new Stack<InMemoryTreeNode<T>>();
-            stack.push(node);
-            while(stack.size() > 0){
-                InMemoryTreeNode<T> temp = stack.pop();
-                allNodes.remove(temp.getId());
-                if(temp.getChildren() != null) {
-                    for (InMemoryTreeNode<T> t : temp.getChildren()) {
-                        stack.push(t);
-                    }
-                }
-            }
-        }
-        return node;
-    }
-
-    @Override
-    public void addNote(Object n) {
-        InMemoryTreeNode<T> node = (InMemoryTreeNode<T>) n;
-       if(node != null && node.getId() != null) {
-           Stack<InMemoryTreeNode<T>> stack = new Stack<InMemoryTreeNode<T>>();
-           stack.push(node);
-           while(stack.size() > 0){
-               InMemoryTreeNode<T> temp = stack.pop();
-               allNodes.put(temp.getId(),temp);
-               if(temp.getChildren() != null) {
-                   for (InMemoryTreeNode<T> t : temp.getChildren()) {
-                       stack.push(t);
-                   }
+   public Object rmNretNode(T id) {
+      final InMemoryTreeNode<T> node = allNodes.get(id);
+      if (node == null) {
+         throw new NodeAlreadyInTreeException(id.toString(), node.toString());
+      }
+      else {
+         Stack<InMemoryTreeNode<T>> stack = new Stack<InMemoryTreeNode<T>>();
+         stack.push(node);
+         while (stack.size() > 0) {
+            InMemoryTreeNode<T> temp = stack.pop();
+            allNodes.remove(temp.getId());
+            if (temp.getChildren() != null) {
+               for (InMemoryTreeNode<T> t : temp.getChildren()) {
+                  stack.push(t);
                }
-           }
-       }
-    }
+            }
+         }
+      }
+      return node;
+   }
+
+   @Override
+   public void addNote(Object n) {
+      InMemoryTreeNode<T> node = (InMemoryTreeNode<T>) n;
+      if (node != null && node.getId() != null) {
+         Stack<InMemoryTreeNode<T>> stack = new Stack<InMemoryTreeNode<T>>();
+         stack.push(node);
+         while (stack.size() > 0) {
+            InMemoryTreeNode<T> temp = stack.pop();
+            allNodes.put(temp.getId(), temp);
+            if (temp.getChildren() != null) {
+               for (InMemoryTreeNode<T> t : temp.getChildren()) {
+                  stack.push(t);
+               }
+            }
+         }
+      }
+   }
 }
