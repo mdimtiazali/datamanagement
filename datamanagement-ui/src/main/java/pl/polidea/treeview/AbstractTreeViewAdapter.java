@@ -17,9 +17,9 @@ import android.widget.LinearLayout;
 import android.widget.ListAdapter;
 
 import com.cnh.pf.android.data.management.R;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
 
 import java.util.List;
 
@@ -295,7 +295,7 @@ public abstract class AbstractTreeViewAdapter<T> extends BaseAdapter implements 
 
    }
 
-   public List<T> getVisibleList(){
+   public List<T> getVisibleList() {
       return treeStateManager.getVisibleList();
    }
 }
