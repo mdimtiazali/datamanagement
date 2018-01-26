@@ -80,6 +80,7 @@ public abstract class SelectionTreeViewAdapter<T> extends AbstractTreeViewAdapte
    public Map<T, SelectionType> getSelectionMap() {
       return selectionMap;
    }
+
    /**
     * Get tree item selected listener
     */
@@ -101,7 +102,7 @@ public abstract class SelectionTreeViewAdapter<T> extends AbstractTreeViewAdapte
       return false;
    }
 
-   public void selectionImpl(Object id){
+   public void selectionImpl(Object id) {
       if (!selectionMap.containsKey(id)) {
          //Traverse down, select everything
          traverseTree((T) id, TRAVERSE_DOWN, new Visitor<T>() {
@@ -177,8 +178,14 @@ public abstract class SelectionTreeViewAdapter<T> extends AbstractTreeViewAdapte
    }
 
    public abstract boolean isSupportedEntitiy(T node);
-   public  boolean isSupportedEdit(T node){return true;}
-   public  boolean isSupportedCopy(T node){return true;}
+
+   public boolean isSupportedEdit(T node) {
+      return true;
+   }
+
+   public boolean isSupportedCopy(T node) {
+      return true;
+   }
 
    /**
     * Makes view state match selection state
@@ -285,9 +292,8 @@ public abstract class SelectionTreeViewAdapter<T> extends AbstractTreeViewAdapte
    }
 
    public boolean hasSelection() {
-      for(Map.Entry<T, SelectionType> entry : getSelectionMap().entrySet()) {
-         if(isSupportedEntitiy(entry.getKey()))
-            return true;
+      for (Map.Entry<T, SelectionType> entry : getSelectionMap().entrySet()) {
+         if (isSupportedEntitiy(entry.getKey())) return true;
       }
       return false;
    }
