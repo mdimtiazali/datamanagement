@@ -6,6 +6,7 @@ import android.os.RemoteException;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.AdapterView;
 import android.widget.ImageButton;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
@@ -35,6 +36,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
+import pl.polidea.treeview.ImplicitSelectLinearLayout;
 import pl.polidea.treeview.InMemoryTreeStateManager;
 import pl.polidea.treeview.TreeBuilder;
 import pl.polidea.treeview.TreeNodeInfo;
@@ -371,19 +373,40 @@ public class ManageFragment extends BaseDataFragment {
                   nameView.setCompoundDrawablesWithIntrinsicBounds(0, 0, 0, 0);
                }
                indicatorShown(view, treeNodeInfo);
-               if (getSelectionMap().containsKey(graph)) {
-                  if (isSupportedCopy(graph)) {
-                     cpButton.setVisibility(View.VISIBLE);
-                  }
-                  if (isSupportedEdit(graph)) {
-                     editButton.setVisibility(View.VISIBLE);
-                  }
-               }
-               else {
-                  cpButton.setVisibility(View.INVISIBLE);
-                  editButton.setVisibility(View.INVISIBLE);
-               }
                return view;
+            }
+
+            @Override
+            public void updateViewSelection(final AdapterView<?> parent) {
+
+               for (int i = 0; i < parent.getChildCount(); i++) {
+                  View child = parent.getChildAt(i);
+                  ObjectGraph node = (ObjectGraph) child.getTag(); //tree associates ObjectGraph with each view
+                  if (node == null) continue;
+                  ImplicitSelectLinearLayout layout = (ImplicitSelectLinearLayout) child;
+                  layout.setSupported(isSupportedEntitiy(node));
+
+                  final ImageButton cpButton = (ImageButton) child.findViewById(R.id.mng_copy_button);
+                  final ImageButton editButton = (ImageButton) child.findViewById(R.id.mng_edit_button);
+
+                  if (getSelectionMap().containsKey(node)) {
+                     SelectionType type = getSelectionMap().get(node);
+                     layout.setSelected(SelectionType.FULL.equals(type));
+                     layout.setImplicitlySelected(SelectionType.IMPLICIT.equals(type));
+                     if (isSupportedCopy(node)) {
+                        cpButton.setVisibility(View.VISIBLE);
+                     }
+                     if (isSupportedEdit(node)) {
+                        editButton.setVisibility(View.VISIBLE);
+                     }
+                  }
+                  else {
+                     layout.setSelected(false);
+                     layout.setImplicitlySelected(false);
+                     cpButton.setVisibility(View.INVISIBLE);
+                     editButton.setVisibility(View.INVISIBLE);
+                  }
+               }
             }
 
             @Override
@@ -478,5 +501,4 @@ public class ManageFragment extends BaseDataFragment {
    public void onMediumsUpdated(List<MediumDevice> mediums) throws RemoteException {
 
    }
-
 }
