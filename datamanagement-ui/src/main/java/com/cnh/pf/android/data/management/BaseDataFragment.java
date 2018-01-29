@@ -52,6 +52,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.List;
 
 import pl.polidea.treeview.InMemoryTreeStateManager;
@@ -59,6 +60,8 @@ import pl.polidea.treeview.NodeAlreadyInTreeException;
 import pl.polidea.treeview.TreeBuilder;
 import pl.polidea.treeview.TreeStateManager;
 import pl.polidea.treeview.TreeViewList;
+import pl.polidea.treeview.InMemoryTreeNode;
+import pl.polidea.treeview.SortableChildrenTree;
 import roboguice.config.DefaultRoboModule;
 import roboguice.event.EventListener;
 import roboguice.event.EventManager;
@@ -111,6 +114,26 @@ public abstract class BaseDataFragment extends RoboFragment implements IDataMana
 
    /** Current session */
    protected volatile DataManagementSession session = null;
+
+   /**
+    * Comparator to sort list items in alphabetical order. Depending on requirement this could
+    * be implemented differently but current requirement specifies alphabetical order.
+    */
+   private Comparator<InMemoryTreeNode<ObjectGraph>> comparator = new Comparator<InMemoryTreeNode<ObjectGraph>>() {
+      @Override
+      public int compare(InMemoryTreeNode<ObjectGraph> lhs, InMemoryTreeNode<ObjectGraph> rhs) {
+         return lhs.getId().getName().compareTo(rhs.getId().getName());
+      }
+   };
+
+   /**
+    * Sort a list of child nodes under each tree parent node.
+    */
+   protected void sortTreeList() {
+      if (manager != null && manager instanceof SortableChildrenTree) {
+         ((SortableChildrenTree) manager).sortChildren(comparator);
+      }
+   }
 
    /**
     * Extending class must inflate layout to be populated on the left panel
@@ -471,7 +494,7 @@ public abstract class BaseDataFragment extends RoboFragment implements IDataMana
       DataManagementSession.SessionOperation op = session.getSessionOperation();
       logger.trace("sessionUpdated() by ", op);
       if (op.equals(DataManagementSession.SessionOperation.DISCOVERY) && !session.isProgress()) {
-         initiateTree();
+         initializeTree();
          postTreeUI();
          updateSelectAllState();
       }
@@ -494,26 +517,7 @@ public abstract class BaseDataFragment extends RoboFragment implements IDataMana
       return operations;
    }
 
-   void initiateTree() {
-      logger.debug("initateTree");
-      //Discovery happened
-      enableButtons(true);
-      List<ObjectGraph> data = session != null && session.getObjectData() != null ? session.getObjectData() : new ArrayList<ObjectGraph>();
-      if(manager == null) {
-         manager = new InMemoryTreeStateManager<ObjectGraph>();
-      }
-      else{
-         manager.clear();
-      }
-      if(treeBuilder == null) {
-         treeBuilder = new TreeBuilder<ObjectGraph>(manager);
-      }
-      else{
-         treeBuilder.clear();
-      }
-      for (ObjectGraph graph : data) {
-         addToTree(null, graph);
-      }
+   protected void createTreeAdapter() {
       if(treeAdapter == null) {
          treeAdapter = new ObjectTreeViewAdapter(getActivity(), manager, 1) {
             @Override
@@ -527,6 +531,31 @@ public abstract class BaseDataFragment extends RoboFragment implements IDataMana
             }
          };
       }
+   }
+
+   protected void initializeTree() {
+      logger.debug("initializeTree");
+      //Discovery happened
+      enableButtons(true);
+      if(manager == null) {
+         manager = new InMemoryTreeStateManager<ObjectGraph>();
+      }
+      else{
+         manager.clear();
+      }
+      if(treeBuilder == null) {
+         treeBuilder = new TreeBuilder<ObjectGraph>(manager);
+      }
+      else{
+         treeBuilder.clear();
+      }
+      List<ObjectGraph> data = session != null && session.getObjectData() != null ? session.getObjectData() : new ArrayList<ObjectGraph>();
+      for (ObjectGraph graph : data) {
+         addToTree(null, graph);
+      }
+      sortTreeList();
+      createTreeAdapter();
+
       treeAdapter.setData(data);
       treeViewList.removeAllViewsInLayout();
       treeViewList.setVisibility(View.VISIBLE);//this is for UT
