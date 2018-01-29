@@ -288,7 +288,7 @@ public class ImportFragment extends BaseDataFragment {
          }
          else if (getSession().getSessionOperation().equals(SessionOperation.CALCULATE_OPERATIONS) && !isCancelled()) {
             logger.debug("Calculate Targets");
-            if (getSession().getData() == null) {
+            if (getSession().getData() == null || getSession().getData().isEmpty()) {
                Toast.makeText(getActivity(), "No operations came back from server.  Check connectivity", Toast.LENGTH_SHORT).show();
                cancel();
                return;
@@ -427,6 +427,7 @@ public class ImportFragment extends BaseDataFragment {
    /** Check if session returned by service is an import operation*/
    @Override
    public boolean isCurrentOperation(DataManagementSession session) {
+      logger.trace("isCurrentOperation( {} == {})", session.getUuid(), getSession().getUuid());
       return session.equals(getSession());
    }
 
