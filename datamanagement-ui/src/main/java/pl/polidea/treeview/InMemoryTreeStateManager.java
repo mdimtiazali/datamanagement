@@ -12,6 +12,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.Stack;
+import java.util.Comparator;
 
 /**
  * In-memory manager of tree state.
@@ -19,7 +20,7 @@ import java.util.Stack;
  * @param <T>
  *            type of identifier
  */
-public class InMemoryTreeStateManager<T> implements TreeStateManager<T> {
+public class InMemoryTreeStateManager<T> implements TreeStateManager<T>, SortableChildrenTree<T> {
    private static final String TAG = InMemoryTreeStateManager.class.getSimpleName();
    private static final long serialVersionUID = 1L;
    private final Map<T, InMemoryTreeNode<T>> allNodes = new HashMap<T, InMemoryTreeNode<T>>();
@@ -35,6 +36,27 @@ public class InMemoryTreeStateManager<T> implements TreeStateManager<T> {
       for (final DataSetObserver observer : observers) {
          observer.onChanged();
       }
+   }
+
+   /**
+    * Sort a list of child nodes in the tree data recursively
+    * @param node parent node whose child nodes get sorted.
+    * @param comparator comparator object to implement comparison logic
+    */
+   private void recursiveSortChildren(InMemoryTreeNode<T> node, Comparator<? super InMemoryTreeNode<T>> comparator) {
+      if (node.getChildrenListSize() == 0) {
+         return;
+      }
+
+      Collections.sort(node.getChildren(), comparator);
+      for (InMemoryTreeNode<T> child : node.getChildren()) {
+         recursiveSortChildren(child, comparator);
+      }
+   }
+
+   @Override
+   public void sortChildren(Comparator<? super InMemoryTreeNode<T>> comparator) {
+      recursiveSortChildren(this.topSentinel, comparator);
    }
 
    /**
