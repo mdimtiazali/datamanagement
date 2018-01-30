@@ -170,6 +170,17 @@ public class ImportFragment extends BaseDataFragment {
       boolean connected = getDataManagementService() != null;
       isActiveOperation |= connected && getDataManagementService().hasActiveSession();
       boolean hasSelection = getTreeAdapter() != null && getTreeAdapter().hasSelection();
+      boolean defaultButtonText = true;
+      if (getTreeAdapter() != null && getTreeAdapter().getSelectionMap() != null) {
+         int selectedItemCount = getTreeAdapter().getSelectionMap().size();
+         if (selectedItemCount > 0) {
+            defaultButtonText = false;
+            importSelectedBtn.setText(getResources().getString(R.string.import_selected) + " (" + treeAdapter.getSelectionMap().size() + ")");
+         }
+      }
+      if (defaultButtonText == true) {
+         importSelectedBtn.setText(getResources().getString(R.string.import_selected));
+      }
       importSourceBtn.setEnabled(connected && !isActiveOperation);
       importSelectedBtn.setEnabled(connected && hasSelection && !isActiveOperation && s != null);
    }
