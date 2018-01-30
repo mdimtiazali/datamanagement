@@ -22,6 +22,7 @@ import android.widget.TextView;
 import com.cnh.android.dialog.DialogView;
 import com.cnh.android.dialog.DialogViewInterface;
 import com.cnh.android.widget.activity.TabActivity;
+import com.cnh.jgroups.DataTypes;
 import com.cnh.jgroups.Operation;
 import com.cnh.pf.android.data.management.R;
 import com.cnh.pf.model.TypedValue;
@@ -143,7 +144,15 @@ public class DataConflictViewAdapter extends DataManagementBaseAdapter {
       final Operation operation = operationList.get(position);
       final ColumnViewHolder viewHolder = (ColumnViewHolder) convertView;
       //a <type> named <name> already exists
-      viewHolder.conflictFileTv.setText(context.getResources().getString(R.string.duplicate_file, getTypeString(operation.getData().getType()), operation.getData().getName()));
+      if ((operation.getData().getType().equals(DataTypes.PRODUCT_MIX)) || (operation.getData().getType().equals(DataTypes.PRODUCT)))
+      {
+         viewHolder.conflictFileTv.setText(context.getResources().getString(R.string.duplicate_file, DataTypes.PRODUCT + " / " + DataTypes.PRODUCT_MIX, operation.getData().getName()));
+      }
+      else
+      {
+         viewHolder.conflictFileTv.setText(context.getResources().getString(R.string.duplicate_file, getTypeString(operation.getData().getType()), operation.getData().getName()));
+      }
+
       populateDescriptionLayout(viewHolder.columnsLayout, viewHolder.exitingFile, viewHolder.newFile, operation.getConflictDataTyped(), operation.getData().getData());
       return convertView;
    }
