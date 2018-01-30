@@ -429,6 +429,17 @@ public class ExportFragment extends BaseDataFragment {
       DataManagementSession s = getSession();
       boolean isActiveOperation = s != null && s.getSessionOperation().equals(SessionOperation.PERFORM_OPERATIONS) && s.getResult() == null;
       isActiveOperation |= getDataManagementService().hasActiveSession();
+      boolean defaultButtonText = true;
+      if (getTreeAdapter() != null && getTreeAdapter().getSelectionMap() != null) {
+         int selectedItemCount = getTreeAdapter().getSelectionMap().size();
+         if (selectedItemCount > 0) {
+            defaultButtonText = false;
+            exportSelectedBtn.setText(getResources().getString(R.string.export_selected) + " (" + getTreeAdapter().getSelectionMap().size() + ")");
+         }
+      }
+      if (defaultButtonText == true) {
+         exportSelectedBtn.setText(getResources().getString(R.string.export_selected));
+      }
       boolean hasSelection = getTreeAdapter() != null && s != null && s.getTarget() != null && s.getFormat() != null && getTreeAdapter().hasSelection();
 
       exportSelectedBtn.setEnabled(hasSelection && !isActiveOperation);
