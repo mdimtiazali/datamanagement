@@ -53,6 +53,8 @@ import roboguice.inject.InjectView;
  */
 public class ExportFragment extends BaseDataFragment {
    private static final Logger logger = LoggerFactory.getLogger(ExportFragment.class);
+   private static final String SAVED_MEDIUM = "medium";
+   private static final String SAVED_FORMAT = "format";
 
    @Inject
    protected FormatManager formatManager;
@@ -143,13 +145,102 @@ public class ExportFragment extends BaseDataFragment {
             return false;
          }
       });
+
       startText.setVisibility(View.GONE);
    }
 
    @Override public void onResume() {
+      // Needs to clear tree selection. Otherwise, the previous selection is latched
+      // until new DISCOVERY operation is finished.
+      clearTreeSelection();
       populateExportToPickList();
       populateFormatPickList();
       super.onResume();
+   }
+
+   /**
+    * Restore user selection for the format pick list. This works when a user switches back to this fragment.
+    * PickList doesn't maintain its state upon fragment (tab) switch.
+    */
+   private void restoreFormatSelection() {
+      if (getArguments() != null && getArguments().getString(SAVED_FORMAT) != null) {
+         String selectedFormat = getArguments().getString(SAVED_FORMAT);
+
+         for (int i = 0; i < exportFormatPicklist.getAdapter().getCount(); i++) {
+            PickListItem item = exportFormatPicklist.getAdapter().getItem(i);
+            if (item.getValue().equals(selectedFormat)) {
+               exportFormatPicklist.setSelectionByPosition(i);
+               break;
+            }
+         }
+      }
+   }
+
+   /**
+    * Save the current selection for the format pick list and it will be used later when a user comes back
+    * to this fragment (tab).
+    * @param selectedFormat current format selection in string
+    */
+   private void saveFormatSelection(String selectedFormat) {
+      if (getArguments() != null) {
+         getArguments().putString(SAVED_FORMAT, selectedFormat);
+      }
+   }
+
+   /**
+    * Reset the format selection.
+    */
+   private void resetFormatSelection() {
+      if (getArguments() != null) {
+         getArguments().putString(SAVED_FORMAT, null);
+      }
+   }
+
+   /**
+    * Restore user selection for the medium pick list. This works when a user switches back to this fragment.
+    * PickList doesn't maintain its state upon fragment (tab) switch.
+    */
+   private void restoreMediumSelection() {
+      if (getArguments() != null && getArguments().getParcelable(SAVED_MEDIUM) != null) {
+         boolean found = false;
+         MediumDevice savedMedium = getArguments().getParcelable(SAVED_MEDIUM);
+
+         for (int i = 0; i < exportMediumPicklist.getAdapter().getCount(); i++) {
+            ObjectPickListItem<MediumDevice> item = (ObjectPickListItem<MediumDevice>) exportMediumPicklist.getAdapter().getItem(i);
+            // Since there is no equals() defined in MediumDevice, comparison against toString()  would indicate
+            // the equality of the object correctly. MediumDevice.toString() takes all attributes into account.
+            if (item.getObject().toString().equals(savedMedium.toString())) {
+               exportMediumPicklist.setSelectionByPosition(i);
+               found = true;
+               break;
+            }
+         }
+
+         if (!found) {
+            // Reset the selection if the previous selection cannot be found.
+            resetMediumSelection();
+         }
+      }
+   }
+
+   /**
+    * Save the current selection for the medium pick list and it will be used later when a user comes back
+    * to this fragment (tab).
+    * @param selectedMedium current medium device selection
+    */
+   private void saveMediumSelection(MediumDevice selectedMedium) {
+      if (getArguments() != null) {
+         getArguments().putParcelable(SAVED_MEDIUM, selectedMedium);
+      }
+   }
+
+   /**
+    * Reset the medium selection.
+    */
+   private void resetMediumSelection() {
+      if (getArguments() != null) {
+         getArguments().putParcelable(SAVED_MEDIUM, null);
+      }
    }
 
    private void populateFormatPickList() {
@@ -160,11 +251,14 @@ public class ExportFragment extends BaseDataFragment {
          exportFormatPicklist.addItem(new PickListItem(formatId++, format));
       }
 
+      restoreFormatSelection();
       exportFormatPicklist.setOnItemSelectedListener(new PickListEditable.OnItemSelectedListener() {
          @Override
          public void onItemSelected(AdapterView<?> adapterView, View view, int position, long id, boolean b) {
             if (getSession() != null) {
-               getSession().setFormat(id != -1 ? exportFormatPicklist.findItemById(id).getValue() : null);
+               String selectedFormat = (id != -1 ? exportFormatPicklist.findItemById(id).getValue() : null);
+               getSession().setFormat(selectedFormat);
+               saveFormatSelection(selectedFormat);
                logger.trace("setFormat {}", getSession().getFormat());
             }
             if (getTreeAdapter() != null) {
@@ -176,6 +270,7 @@ public class ExportFragment extends BaseDataFragment {
 
          @Override
          public void onNothingSelected(AdapterView<?> adapterView) {
+            resetFormatSelection();
             getSession().setFormat(null);
          }
       });
@@ -189,12 +284,16 @@ public class ExportFragment extends BaseDataFragment {
             if (getSession() != null) {
                ObjectPickListItem<MediumDevice> item = (ObjectPickListItem<MediumDevice>) exportMediumPicklist.findItemById(id);
                getSession().setTargets(item != null ? Arrays.asList(item.getObject()) : null);
+               if (item != null) {
+                  saveMediumSelection(item.getObject());
+               }
             }
             checkExportButton();
          }
 
          @Override
          public void onNothingSelected(AdapterView<?> parent) {
+            resetMediumSelection();
             getSession().setTargets(null);
             checkExportButton();
          }
@@ -208,18 +307,21 @@ public class ExportFragment extends BaseDataFragment {
       if(exportMediumPicklist.findItemPositionById(0) != -1) {
          exportMediumPicklist.clearList();
       }
-      boolean resetTagert = true;
+      boolean resetTarget = true;
       List<MediumDevice> devices = service.getMediums();
       if (!isEmpty(devices)) {
          int deviceId = 0;
          for (MediumDevice device : devices) {
             exportMediumPicklist.addItem(new ObjectPickListItem<MediumDevice>(deviceId++, device.getType().toString(), device));
             if(getSession() != null && getSession().getTarget() != null &&getSession().getTarget().getType() == device.getType()){
-               resetTagert = false;
+               resetTarget = false;
             }
          }
+         restoreMediumSelection();
+      } else {
+         resetMediumSelection();
       }
-      if(getSession() != null && resetTagert) {
+      if(getSession() != null && resetTarget) {
          getSession().setTargets(null);
       }
    }
@@ -261,8 +363,8 @@ public class ExportFragment extends BaseDataFragment {
          session.setSources(null);
          session.setDestinationTypes(null);
          session.setTargets(null);
-         session.setFormat(exportFormatPicklist.getSelectedItem() != null? exportFormatPicklist.getSelectedItem().getValue():formatManager.getFormats().iterator().next());
-         List<MediumDevice> mediums = getDataManagementService().getMediums();
+         session.setFormat(exportFormatPicklist.getSelectedItem() != null ?
+                 exportFormatPicklist.getSelectedItem().getValue() : null);
          if (exportMediumPicklist.getAdapter().getCount() > 0) {
             ObjectPickListItem<MediumDevice> item = (ObjectPickListItem<MediumDevice>) exportMediumPicklist.getSelectedItem();
             session.setTargets(item != null ? Arrays.asList(item.getObject()) : null);
