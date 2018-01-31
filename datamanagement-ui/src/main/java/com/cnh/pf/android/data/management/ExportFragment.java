@@ -319,23 +319,16 @@ public class ExportFragment extends BaseDataFragment {
          logger.debug("Other operations when error");
          sessionInit(getSession());
          removeProgressPanel();
+         setExportPicklistsReadOnly(false);
          postTreeUI();
       }
    }
 
    @Override
    public void processOperations() {
-      logger.debug("processOperation() session result: {}",getSession().getResult());
-      if(getSession().getResult() != null && getSession().getResult().equals(Process.Result.ERROR)) {
-         if(getSession().getSessionOperation().equals(SessionOperation.DISCOVERY)){
-            idleUI();
-         }
-         else {
-            logger.debug("Other operations when error");
-            sessionInit(getSession());
-            removeProgressPanel();
-            postTreeUI();
-         }
+      logger.debug("processOperation() session result: {}", getSession().getResult());
+      if (getSession().getResult() != null && getSession().getResult().equals(Process.Result.ERROR)) {
+         onErrorOperation();
       }
       else {
          if (getSession().getSessionOperation().equals(SessionOperation.PERFORM_OPERATIONS)) {
@@ -343,6 +336,7 @@ public class ExportFragment extends BaseDataFragment {
             getTreeAdapter().selectAll(treeViewList, false);
             if (getSession().getResult() != null) {
                removeProgressPanel();
+               setExportPicklistsReadOnly(false);
                if (getSession().getResult().equals(Process.Result.SUCCESS)) {
                   Toast.makeText(getActivity(), getString(R.string.export_complete), Toast.LENGTH_LONG).show();
                } else if (getSession().getResult().equals(Process.Result.CANCEL)) {
@@ -388,6 +382,15 @@ public class ExportFragment extends BaseDataFragment {
       checkExportButton();
    }
 
+   /**
+    * Set export picklists as enabled or disabled.
+    * @param readOnly True if picklists are to be set to readonly, false otherwise
+    */
+   private void setExportPicklistsReadOnly(boolean readOnly) {
+      exportMediumPicklist.setReadOnly(readOnly);
+      exportFormatPicklist.setReadOnly(readOnly);
+   }
+
    @Override
    protected void onOtherSessionUpdate(DataManagementSession session) {
       logger.debug("Other session has been updated");
@@ -403,6 +406,7 @@ public class ExportFragment extends BaseDataFragment {
       if (!getSession().getObjectData().isEmpty()) {
          setSession(getDataManagementService().processOperation(getSession(), SessionOperation.PERFORM_OPERATIONS));
          showProgressPanel();
+         setExportPicklistsReadOnly(true);
       }
       else {
          Toast.makeText(getActivity(), "No data of selected format selected", Toast.LENGTH_LONG).show();
