@@ -83,6 +83,10 @@ public class DataManagementActivity extends TabActivity implements RoboContext, 
       public DataManagementTabListener(Fragment fragment, Activity a) {
          this.fragment = fragment;
          this.a = a;
+
+         // Create a place to store internal state within fragment for fragment switching.
+         // Fragment.onSaveInstanceState is NOT called upon tab (fragment) switch.
+         this.fragment.setArguments(new Bundle());
       }
 
       /**
@@ -149,6 +153,7 @@ public class DataManagementActivity extends TabActivity implements RoboContext, 
 
       @Override
       public void onTabRemoved(TabActivityTab tab) {
+         fragment.getArguments().clear();
          a.getFragmentManager().beginTransaction().remove(fragment).commit();
       }
    }

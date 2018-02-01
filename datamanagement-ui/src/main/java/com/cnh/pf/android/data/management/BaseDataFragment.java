@@ -533,6 +533,15 @@ public abstract class BaseDataFragment extends RoboFragment implements IDataMana
       }
    }
 
+   /**
+    * Clear selection on the tree items.
+    */
+   protected void clearTreeSelection() {
+      if (treeAdapter != null) {
+         treeAdapter.selectAll(treeViewList, false);
+      }
+   }
+
    protected void initializeTree() {
       logger.debug("initializeTree");
       //Discovery happened
