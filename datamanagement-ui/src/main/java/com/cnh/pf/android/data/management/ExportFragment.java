@@ -74,13 +74,14 @@ public class ExportFragment extends BaseDataFragment {
    ProgressBarView progressBar;
    @InjectView(R.id.operation_name)
    TextView operationName;
-   @InjectView(R.id.percent_tv)
-   TextView percentTv;
 
    private int dragAcceptColor;
    private int dragRejectColor;
    private int dragEnterColor;
    private int transparentColor;
+
+   private String loading_string;
+   private String x_of_y_format;
 
    @Override
    public void onCreate(Bundle savedInstanceState) {
@@ -95,6 +96,8 @@ public class ExportFragment extends BaseDataFragment {
       dragRejectColor = getResources().getColor(R.color.drag_reject);
       dragEnterColor = getResources().getColor(R.color.drag_enter);
       transparentColor = getResources().getColor(android.R.color.transparent);
+      loading_string = getResources().getString(R.string.loading_string);
+      x_of_y_format = getResources().getString(R.string.x_of_y_format);
    }
 
    @Override
@@ -147,6 +150,7 @@ public class ExportFragment extends BaseDataFragment {
       });
 
       startText.setVisibility(View.GONE);
+      operationName.setText(R.string.exporting_string);
    }
 
    @Override public void onResume() {
@@ -470,7 +474,7 @@ public class ExportFragment extends BaseDataFragment {
       logger.debug("onProgressPublished: {}", progress);
       final Double percent = ((progress * 1.0) / max) * 100;
       progressBar.setProgress(percent.intValue());
-      percentTv.setText(percent.intValue() + "");
+      progressBar.setSecondText(true, loading_string, String.format(x_of_y_format, progress, max), true);
    }
 
    @Override
@@ -517,12 +521,10 @@ public class ExportFragment extends BaseDataFragment {
 
    /** Inflates left panel progress view */
    private void showProgressPanel() {
-      leftStatusPanel.setVisibility(View.VISIBLE);
       exportDropZone.setVisibility(View.GONE);
-      progressBar.setTitle(getResources().getString(R.string.exporting_string));
-      operationName.setText(getResources().getString(R.string.exporting_data));
+      progressBar.setSecondText(true, loading_string, null, true);
       progressBar.setProgress(0);
-      percentTv.setText("0");
+      leftStatusPanel.setVisibility(View.VISIBLE);
    }
 
    /** Removes left panel progress view and replaces with operation view */

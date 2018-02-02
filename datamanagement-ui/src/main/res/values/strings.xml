@@ -52,6 +52,7 @@
     <string name="import_drag_and_drop"><![CDATA[Drag & Drop \nto Import \nto PCM/Display]]></string>
     <string name="export_drag_and_drop"><![CDATA[Drag & Drop \nto Export]]></string>
     <string name="select_all">Select All</string>
+    <string formatted="false" name="x_of_y_format">%d of %d</string>
     <string name="usb_string">USB</string>
     <string name="display_string">Display</string>
     <string name="display_numbered">Display %d</string>
@@ -61,6 +62,7 @@
     <string name="export_format">Export Format:</string>
     <string name="tab_export">Export</string>
     <string name="percent_complete">% Complete</string>
+    <string name="loading_string">Loading</string>
     <string name="exporting_string">Exporting</string>
     <string name="importing_string">Importing</string>
     <string name="exporting_data">Exporting Data</string>

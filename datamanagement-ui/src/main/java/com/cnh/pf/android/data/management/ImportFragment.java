@@ -41,7 +41,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 import java.util.Set;
 
@@ -69,10 +68,6 @@ public class ImportFragment extends BaseDataFragment {
    ImageButton stopBtn;
    @InjectView(R.id.progress_bar)
    ProgressBarView progressBar;
-   @InjectView(R.id.operation_name)
-   TextView operationName;
-   @InjectView(R.id.percent_tv)
-   TextView percentTv;
    @InjectView(R.id.left_status)
    LinearLayout leftStatus;
    ProcessDialog processDialog;
@@ -90,7 +85,21 @@ public class ImportFragment extends BaseDataFragment {
    String selectTargetStr;
    @InjectResource(R.string.next)
    String nextStr;
+   @InjectView(R.id.operation_name)
+   TextView operationName;
 
+   private String importing_data;
+   private String loading_string;
+   private String x_of_y_format;
+
+   @Override
+   public void onCreate(Bundle savedInstanceState) {
+      super.onCreate(savedInstanceState);
+
+      importing_data = getResources().getString(R.string.importing_data);
+      loading_string = getResources().getString(R.string.loading_string);
+      x_of_y_format = getResources().getString(R.string.x_of_y_format);
+   }
 
    @Override
    public void inflateViews(LayoutInflater inflater, View leftPanel) {
@@ -144,6 +153,7 @@ public class ImportFragment extends BaseDataFragment {
       });
       processDialog = new ProcessDialog(getActivity());
       startText.setVisibility(View.GONE);
+      operationName.setText(R.string.importing_string);
       checkImportButton();
    }
 
@@ -421,12 +431,10 @@ public class ImportFragment extends BaseDataFragment {
 
    /** Inflates left panel progress view */
    private void showProgressPanel() {
-      leftStatus.setVisibility(View.VISIBLE);
       importDropZone.setVisibility(View.GONE);
-      operationName.setText(getResources().getString(R.string.importing_data));
-      progressBar.setTitle(getResources().getString(R.string.importing_string));
+      progressBar.setSecondText(true, loading_string, null, true);
       progressBar.setProgress(0);
-      percentTv.setText("0");
+      leftStatus.setVisibility(View.VISIBLE);
    }
 
    /** Removes left panel progress view and replaces with operation view */
@@ -451,13 +459,8 @@ public class ImportFragment extends BaseDataFragment {
    @Override
    public void onProgressPublished(String operation, int progress, int max) {
       final Double percent = ((progress * 1.0) / max) * 100;
-      if (processDialog.isShown()) {
-         processDialog.setProgress(percent.intValue());
-      }
-      else {
-         progressBar.setProgress(percent.intValue());
-         percentTv.setText(Integer.toString(percent.intValue()));
-      }
+      progressBar.setProgress(percent.intValue());
+      progressBar.setSecondText(true, loading_string, String.format(x_of_y_format, progress, max), true);
    }
 
    @Override
