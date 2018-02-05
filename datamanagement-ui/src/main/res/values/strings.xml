@@ -79,6 +79,7 @@
     <string name="rename_file">Rename %s</string>
     <string name="file_name">File Name</string>
     <string name="empty_discovery">No data found</string>
+    <string name="export_cancel_confirmation">This will cancel current export.\nDo you want to proceed?</string>
 
     <string name="format_description">ISOXML:
       \nAll files can be exported in ISOXML.

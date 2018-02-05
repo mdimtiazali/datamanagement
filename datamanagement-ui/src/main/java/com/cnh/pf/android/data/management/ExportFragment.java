@@ -9,6 +9,7 @@
 
 package com.cnh.pf.android.data.management;
 
+import android.content.res.Resources;
 import android.os.Bundle;
 import android.os.RemoteException;
 import android.view.DragEvent;
@@ -21,7 +22,10 @@ import android.widget.LinearLayout;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import com.cnh.android.dialog.DialogViewInterface;
+import com.cnh.android.dialog.TextDialogView;
 import com.cnh.android.pf.widget.view.DisabledOverlay;
+import com.cnh.android.widget.activity.TabActivity;
 import com.cnh.android.widget.control.PickList;
 import com.cnh.android.widget.control.PickListAdapter;
 import com.cnh.android.widget.control.PickListEditable;
@@ -83,6 +87,9 @@ public class ExportFragment extends BaseDataFragment {
    private String loading_string;
    private String x_of_y_format;
 
+   private TextDialogView lastDialogView;
+   private static final int CANCEL_DIALOG_WIDTH = 550;
+
    @Override
    public void onCreate(Bundle savedInstanceState) {
       super.onCreate(savedInstanceState);
@@ -92,12 +99,13 @@ public class ExportFragment extends BaseDataFragment {
       catch (Exception e) {
          logger.error("Error parsing xml file", e);
       }
-      dragAcceptColor = getResources().getColor(R.color.drag_accept);
-      dragRejectColor = getResources().getColor(R.color.drag_reject);
-      dragEnterColor = getResources().getColor(R.color.drag_enter);
-      transparentColor = getResources().getColor(android.R.color.transparent);
-      loading_string = getResources().getString(R.string.loading_string);
-      x_of_y_format = getResources().getString(R.string.x_of_y_format);
+      final Resources resources = getResources();
+      dragAcceptColor = resources.getColor(R.color.drag_accept);
+      dragRejectColor = resources.getColor(R.color.drag_reject);
+      dragEnterColor = resources.getColor(R.color.drag_enter);
+      transparentColor = resources.getColor(android.R.color.transparent);
+      loading_string = resources.getString(R.string.loading_string);
+      x_of_y_format = resources.getString(R.string.x_of_y_format);
    }
 
    @Override
@@ -117,7 +125,35 @@ public class ExportFragment extends BaseDataFragment {
       stopButton.setOnClickListener(new View.OnClickListener() {
          @Override
          public void onClick(View v) {
-            getDataManagementService().cancel(session);
+
+            final Resources resources = getResources();
+            final TextDialogView cancelDialogue = new TextDialogView(ExportFragment.this.getActivity());
+            cancelDialogue.setFirstButtonText(resources.getString(R.string.yes));
+            cancelDialogue.setSecondButtonText(resources.getString(R.string.no));
+            cancelDialogue.showThirdButton(false);
+            cancelDialogue.setTitle(resources.getString(R.string.cancel));
+            cancelDialogue.setBodyText(resources.getString(R.string.export_cancel_confirmation));
+            cancelDialogue.setIcon(resources.getDrawable(R.drawable.ic_alert_red));
+            cancelDialogue.setOnButtonClickListener(new DialogViewInterface.OnButtonClickListener() {
+               @Override
+               public void onButtonClick(DialogViewInterface dialog, int buttonId) {
+                  if (buttonId == TextDialogView.BUTTON_FIRST) {
+                     getDataManagementService().cancel(session);
+                  }
+
+               }
+            });
+            cancelDialogue.setOnDismissListener(new DialogViewInterface.OnDismissListener() {
+               @Override
+               public void onDismiss(DialogViewInterface dialogViewInterface) {
+                  //remove reference just closed dialogue
+                  lastDialogView = null;
+               }
+            });
+            cancelDialogue.setDialogWidth(CANCEL_DIALOG_WIDTH);
+            lastDialogView = cancelDialogue;
+            final TabActivity tabActivity = (DataManagementActivity) getActivity();
+            tabActivity.showModalPopup(cancelDialogue);
          }
       });
       exportDropZone.setOnDragListener(new View.OnDragListener() {
@@ -531,6 +567,10 @@ public class ExportFragment extends BaseDataFragment {
    private void removeProgressPanel() {
       leftStatusPanel.setVisibility(View.GONE);
       exportDropZone.setVisibility(View.VISIBLE);
+      if (lastDialogView != null) {
+         final TabActivity tabActivity = (DataManagementActivity) getActivity();
+         tabActivity.dismissPopup(lastDialogView);
+      }
    }
 
    private void checkExportButton() {
