@@ -30,6 +30,23 @@
         </dependency>
         <dependency>
             <groupId>com.cnh.pf</groupId>
+            <artifactId>libfault</artifactId>
+            <version>${project.version}</version>
+            <exclusions>
+                <exclusion>
+                    <groupId>org.slf4j</groupId>
+                    <artifactId>slf4j-api</artifactId>
+                </exclusion>
+            </exclusions>
+       </dependency>
+       <dependency>
+          <groupId>com.cnh.pf</groupId>
+          <artifactId>libsignalclient</artifactId>
+          <version>${project.version}</version>
+       </dependency>
+
+       <dependency>
+            <groupId>com.cnh.pf</groupId>
             <artifactId>libaidlpf</artifactId>
             <version>${project.version}</version>
             <type>aar</type>

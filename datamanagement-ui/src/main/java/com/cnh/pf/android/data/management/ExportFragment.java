@@ -33,6 +33,7 @@ import com.cnh.android.widget.control.PickListItem;
 import com.cnh.android.widget.control.ProgressBarView;
 import com.cnh.jgroups.Datasource;
 import com.cnh.jgroups.ObjectGraph;
+import com.cnh.pf.android.data.management.faults.FaultCodes;
 import com.cnh.pf.android.data.management.parser.FormatManager;
 import com.cnh.pf.android.data.management.service.DataManagementService;
 import com.cnh.pf.data.management.DataManagementSession;
@@ -53,6 +54,7 @@ import roboguice.inject.InjectView;
 
 /**
  * Export Tab Fragment, handles export to external mediums {USB, External Display}.
+ *
  * @author oscar.salazar@cnhind.com
  */
 public class ExportFragment extends BaseDataFragment {
@@ -95,10 +97,10 @@ public class ExportFragment extends BaseDataFragment {
       super.onCreate(savedInstanceState);
       try {
          formatManager.parseXml();
-      }
-      catch (Exception e) {
+      } catch (Exception e) {
          logger.error("Error parsing xml file", e);
       }
+
       final Resources resources = getResources();
       dragAcceptColor = resources.getColor(R.color.drag_accept);
       dragRejectColor = resources.getColor(R.color.drag_reject);
@@ -160,26 +162,26 @@ public class ExportFragment extends BaseDataFragment {
          @Override
          public boolean onDrag(View v, DragEvent event) {
             switch (event.getAction()) {
-            case DragEvent.ACTION_DRAG_STARTED:
-               if (exportSelectedBtn.isEnabled()) {
-                  exportDropZone.setBackgroundColor(dragAcceptColor);
-               }
-               return true;
-            case DragEvent.ACTION_DRAG_ENDED:
-               exportDropZone.setBackgroundColor(transparentColor);
-               return true;
-            case DragEvent.ACTION_DRAG_ENTERED:
-               exportDropZone.setBackgroundColor(exportSelectedBtn.isEnabled() ? dragEnterColor : dragRejectColor);
-               return true;
-            case DragEvent.ACTION_DRAG_EXITED:
-               exportDropZone.setBackgroundColor(exportSelectedBtn.isEnabled() ? dragAcceptColor : transparentColor);
-               return true;
-            case DragEvent.ACTION_DROP:
-               logger.info("Dropped");
-               if (exportSelectedBtn.isEnabled()) {
-                  exportSelected();
-               }
-               return true;
+               case DragEvent.ACTION_DRAG_STARTED:
+                  if (exportSelectedBtn.isEnabled()) {
+                     exportDropZone.setBackgroundColor(dragAcceptColor);
+                  }
+                  return true;
+               case DragEvent.ACTION_DRAG_ENDED:
+                  exportDropZone.setBackgroundColor(transparentColor);
+                  return true;
+               case DragEvent.ACTION_DRAG_ENTERED:
+                  exportDropZone.setBackgroundColor(exportSelectedBtn.isEnabled() ? dragEnterColor : dragRejectColor);
+                  return true;
+               case DragEvent.ACTION_DRAG_EXITED:
+                  exportDropZone.setBackgroundColor(exportSelectedBtn.isEnabled() ? dragAcceptColor : transparentColor);
+                  return true;
+               case DragEvent.ACTION_DROP:
+                  logger.info("Dropped");
+                  if (exportSelectedBtn.isEnabled()) {
+                     exportSelected();
+                  }
+                  return true;
             }
             return false;
          }
@@ -189,7 +191,8 @@ public class ExportFragment extends BaseDataFragment {
       operationName.setText(R.string.exporting_string);
    }
 
-   @Override public void onResume() {
+   @Override
+   public void onResume() {
       // Needs to clear tree selection. Otherwise, the previous selection is latched
       // until new DISCOVERY operation is finished.
       clearTreeSelection();
@@ -341,19 +344,43 @@ public class ExportFragment extends BaseDataFragment {
       addMediumExportToPickList();
    }
 
-   private void addMediumExportToPickList(){
+   private boolean isExportProcessActive() {
+      DataManagementSession currentDataManagementSession = getSession();
+
+      return (null != currentDataManagementSession && (getSession().getSessionOperation() == SessionOperation.PERFORM_OPERATIONS) && getSession().isProgress());
+   }
+
+   private void addMediumExportToPickList() {
+      if(isExportProcessActive()) {
+         // The export process is running, but the USB stick was removed.
+         if(null != faultHandler) {
+            faultHandler.setFault(FaultCodes.FAULT_CODE_USB_REMOVED_DURING_EXPORT);
+         }
+
+         // Cancel the export session and reset the UI.
+         getDataManagementService().cancel(session);
+      }
+      else {
+         if(null != faultHandler) {
+            faultHandler.clearFault(FaultCodes.FAULT_CODE_USB_REMOVED_DURING_EXPORT);
+         }
+      }
+
       DataManagementService service = getDataManagementService();
       if (service == null) return;
-      if(exportMediumPicklist.findItemPositionById(0) != -1) {
+      if (exportMediumPicklist.findItemPositionById(0) != -1) {
          exportMediumPicklist.clearList();
       }
+
       boolean resetTarget = true;
+
       List<MediumDevice> devices = service.getMediums();
       if (!isEmpty(devices)) {
          int deviceId = 0;
          for (MediumDevice device : devices) {
             exportMediumPicklist.addItem(new ObjectPickListItem<MediumDevice>(deviceId++, device.getType().toString(), device));
-            if(getSession() != null && getSession().getTarget() != null &&getSession().getTarget().getType() == device.getType()){
+
+            if (getSession() != null && getSession().getTarget() != null && getSession().getTarget().getType() == device.getType()) {
                resetTarget = false;
             }
          }
@@ -361,12 +388,14 @@ public class ExportFragment extends BaseDataFragment {
       } else {
          resetMediumSelection();
       }
-      if(getSession() != null && resetTarget) {
+
+      if (getSession() != null && resetTarget) {
          getSession().setTargets(null);
       }
    }
+
    @Override
-   public DataManagementSession createSession(){
+   public DataManagementSession createSession() {
       logger.trace("createSession()");
       super.onNewSession();
       DataManagementSession oldSession = getSession();
@@ -398,7 +427,7 @@ public class ExportFragment extends BaseDataFragment {
    }
 
    private DataManagementSession sessionInit(DataManagementSession session) {
-      if(session != null) {
+      if (session != null) {
          session.setSourceTypes(new Datasource.Source[]{Datasource.Source.INTERNAL, Datasource.Source.DISPLAY});
          session.setSources(null);
          session.setDestinationTypes(null);
@@ -412,6 +441,7 @@ public class ExportFragment extends BaseDataFragment {
       }
       return session;
    }
+
    public static boolean isEmpty(Collection<?> collection) {
       return collection == null || collection.isEmpty();
    }
@@ -427,8 +457,7 @@ public class ExportFragment extends BaseDataFragment {
          logger.debug("setSession format: {}", session.getFormat());
          if (session.getFormat() == null) {
             exportFormatPicklist.setSelectionById(-1);
-         }
-         else {
+         } else {
             exportFormatPicklist.setSelectionByPosition(new ArrayList<String>(formatManager.getFormats()).indexOf(session.getFormat()));
          }
 
@@ -444,8 +473,7 @@ public class ExportFragment extends BaseDataFragment {
          if (!found) {
             exportMediumPicklist.setSelectionById(-1);
          }
-      }
-      else {
+      } else {
          exportFormatPicklist.setSelectionById(-1);
          exportMediumPicklist.setSelectionById(-1);
       }
@@ -454,10 +482,9 @@ public class ExportFragment extends BaseDataFragment {
 
    @Override
    protected void onErrorOperation() {
-      if(getSession().getSessionOperation().equals(SessionOperation.DISCOVERY)){
+      if (getSession().getSessionOperation().equals(SessionOperation.DISCOVERY)) {
          idleUI();
-      }
-      else {
+      } else {
          logger.debug("Other operations when error");
          sessionInit(getSession());
          removeProgressPanel();
@@ -555,7 +582,9 @@ public class ExportFragment extends BaseDataFragment {
       }
    }
 
-   /** Inflates left panel progress view */
+   /**
+    * Inflates left panel progress view
+    */
    private void showProgressPanel() {
       exportDropZone.setVisibility(View.GONE);
       progressBar.setSecondText(true, loading_string, null, true);
@@ -563,7 +592,9 @@ public class ExportFragment extends BaseDataFragment {
       leftStatusPanel.setVisibility(View.VISIBLE);
    }
 
-   /** Removes left panel progress view and replaces with operation view */
+   /**
+    * Removes left panel progress view and replaces with operation view
+    */
    private void removeProgressPanel() {
       leftStatusPanel.setVisibility(View.GONE);
       exportDropZone.setVisibility(View.VISIBLE);
