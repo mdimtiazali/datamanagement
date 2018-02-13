@@ -290,7 +290,9 @@ public class ProductLibraryFragment extends RoboFragment implements ProductMixCa
             new VIPAsyncTask<IVIPServiceAIDL, List<ProductMix>>(vipService, new GenericListener<List<ProductMix>>() {
                @Override
                public void handleEvent(List<ProductMix> productMixList) {
-                  populateProductMixes(productMixList);
+                  if(isAdded()) {
+                     populateProductMixes(productMixList);
+                  }
                }
             }).execute(new LoadProductMixListCommand());
             break;
@@ -329,7 +331,9 @@ public class ProductLibraryFragment extends RoboFragment implements ProductMixCa
                @Override
                public void handleEvent(final List<Variety> newVarietyList) {
                   log.debug("got variety list: {}", newVarietyList);
-                  populateVarieties(newVarietyList);
+                  if(isAdded()) {
+                     populateVarieties(newVarietyList);
+                  }
                }
             }).execute(new GetVarietyListCommand());
             break;

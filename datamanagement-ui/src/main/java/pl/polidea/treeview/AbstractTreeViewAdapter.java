@@ -1,3 +1,12 @@
+/*
+ * Copyright (C) 2015 CNH Industrial NV. All rights reserved.
+ *
+ * This software contains proprietary information of CNH Industrial NV. Neither
+ * receipt nor possession thereof confers any right to reproduce, use, or
+ * disclose in whole or in part any such information without written
+ * authorization from CNH Industrial NV.
+ */
+
 package pl.polidea.treeview;
 
 import android.app.Activity;
@@ -17,9 +26,9 @@ import android.widget.LinearLayout;
 import android.widget.ListAdapter;
 
 import com.cnh.pf.android.data.management.R;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
 
 import java.util.List;
 
@@ -295,7 +304,7 @@ public abstract class AbstractTreeViewAdapter<T> extends BaseAdapter implements 
 
    }
 
-   public List<T> getVisibleList(){
+   public List<T> getVisibleList() {
       return treeStateManager.getVisibleList();
    }
 }

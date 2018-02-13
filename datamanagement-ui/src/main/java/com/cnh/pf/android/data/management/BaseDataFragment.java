@@ -39,6 +39,7 @@ import com.cnh.pf.android.data.management.connection.DataServiceConnection;
 import com.cnh.pf.android.data.management.connection.DataServiceConnectionImpl;
 import com.cnh.pf.android.data.management.connection.DataServiceConnectionImpl.ConnectionEvent;
 import com.cnh.pf.android.data.management.dialog.ErrorDialog;
+import com.cnh.pf.android.data.management.faults.DMFaultHandler;
 import com.cnh.pf.android.data.management.graph.GroupObjectGraph;
 import com.cnh.pf.android.data.management.helper.TreeDragShadowBuilder;
 import com.cnh.pf.android.data.management.service.DataManagementService;
@@ -52,6 +53,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.List;
 
 import pl.polidea.treeview.InMemoryTreeStateManager;
@@ -59,6 +61,8 @@ import pl.polidea.treeview.NodeAlreadyInTreeException;
 import pl.polidea.treeview.TreeBuilder;
 import pl.polidea.treeview.TreeStateManager;
 import pl.polidea.treeview.TreeViewList;
+import pl.polidea.treeview.InMemoryTreeNode;
+import pl.polidea.treeview.SortableChildrenTree;
 import roboguice.config.DefaultRoboModule;
 import roboguice.event.EventListener;
 import roboguice.event.EventManager;
@@ -109,8 +113,30 @@ public abstract class BaseDataFragment extends RoboFragment implements IDataMana
    protected boolean hasLocalSource = false;
    protected ProgressDialog updatingProg;
 
+   protected DMFaultHandler faultHandler = null;
+
    /** Current session */
    protected volatile DataManagementSession session = null;
+
+   /**
+    * Comparator to sort list items in alphabetical order. Depending on requirement this could
+    * be implemented differently but current requirement specifies alphabetical order.
+    */
+   private Comparator<InMemoryTreeNode<ObjectGraph>> comparator = new Comparator<InMemoryTreeNode<ObjectGraph>>() {
+      @Override
+      public int compare(InMemoryTreeNode<ObjectGraph> lhs, InMemoryTreeNode<ObjectGraph> rhs) {
+         return lhs.getId().getName().compareTo(rhs.getId().getName());
+      }
+   };
+
+   /**
+    * Sort a list of child nodes under each tree parent node.
+    */
+   protected void sortTreeList() {
+      if (manager != null && manager instanceof SortableChildrenTree) {
+         ((SortableChildrenTree) manager).sortChildren(comparator);
+      }
+   }
 
    /**
     * Extending class must inflate layout to be populated on the left panel
@@ -323,6 +349,7 @@ public abstract class BaseDataFragment extends RoboFragment implements IDataMana
    }
 
    protected void onErrorOperation() {
+
    }
 
    /**Called when the service catches an exception during operation */
@@ -344,17 +371,17 @@ public abstract class BaseDataFragment extends RoboFragment implements IDataMana
                if(updatingProg != null){
                   updatingProg.dismiss();
                }
-               //if it is import discovery, won't popup the dialog
-               if(event.getSession().getSource() != null && event.getSession().getSource().getType().equals(Datasource.Source.USB) &&
-                     !event.getSession().getSessionOperation().equals(SessionOperation.DISCOVERY)) {
+               //suppress error message of need data path at import.
+               if(event.getSession().getSource() != null && event.getSession().getSource().getType().equals(Datasource.Source.USB)
+                     && (event.getType() != DataServiceConnectionImpl.ErrorEvent.DataError.NEED_DATA_PATH)) {
                   DialogView errorDialog = new ErrorDialog(getActivity(), event);
-               /*   errorDialog.setOnButtonClickListener(new DialogViewInterface.OnButtonClickListener() {
+                  errorDialog.setOnButtonClickListener(new DialogViewInterface.OnButtonClickListener() {
                      @Override
                      public void onButtonClick(DialogViewInterface dialog, int which) {
                         if (which == DialogViewInterface.BUTTON_FIRST) {
                         }
                      }
-                  });*/
+                  });
                   ((TabActivity) getActivity()).showPopup(errorDialog, true);
                }
             }
@@ -471,7 +498,7 @@ public abstract class BaseDataFragment extends RoboFragment implements IDataMana
       DataManagementSession.SessionOperation op = session.getSessionOperation();
       logger.trace("sessionUpdated() by ", op);
       if (op.equals(DataManagementSession.SessionOperation.DISCOVERY) && !session.isProgress()) {
-         initiateTree();
+         initializeTree();
          postTreeUI();
          updateSelectAllState();
       }
@@ -494,26 +521,7 @@ public abstract class BaseDataFragment extends RoboFragment implements IDataMana
       return operations;
    }
 
-   void initiateTree() {
-      logger.debug("initateTree");
-      //Discovery happened
-      enableButtons(true);
-      List<ObjectGraph> data = session != null && session.getObjectData() != null ? session.getObjectData() : new ArrayList<ObjectGraph>();
-      if(manager == null) {
-         manager = new InMemoryTreeStateManager<ObjectGraph>();
-      }
-      else{
-         manager.clear();
-      }
-      if(treeBuilder == null) {
-         treeBuilder = new TreeBuilder<ObjectGraph>(manager);
-      }
-      else{
-         treeBuilder.clear();
-      }
-      for (ObjectGraph graph : data) {
-         addToTree(null, graph);
-      }
+   protected void createTreeAdapter() {
       if(treeAdapter == null) {
          treeAdapter = new ObjectTreeViewAdapter(getActivity(), manager, 1) {
             @Override
@@ -527,6 +535,40 @@ public abstract class BaseDataFragment extends RoboFragment implements IDataMana
             }
          };
       }
+   }
+
+   /**
+    * Clear selection on the tree items.
+    */
+   protected void clearTreeSelection() {
+      if (treeAdapter != null) {
+         treeAdapter.selectAll(treeViewList, false);
+      }
+   }
+
+   protected void initializeTree() {
+      logger.debug("initializeTree");
+      //Discovery happened
+      enableButtons(true);
+      if(manager == null) {
+         manager = new InMemoryTreeStateManager<ObjectGraph>();
+      }
+      else{
+         manager.clear();
+      }
+      if(treeBuilder == null) {
+         treeBuilder = new TreeBuilder<ObjectGraph>(manager);
+      }
+      else{
+         treeBuilder.clear();
+      }
+      List<ObjectGraph> data = session != null && session.getObjectData() != null ? session.getObjectData() : new ArrayList<ObjectGraph>();
+      for (ObjectGraph graph : data) {
+         addToTree(null, graph);
+      }
+      sortTreeList();
+      createTreeAdapter();
+
       treeAdapter.setData(data);
       treeViewList.removeAllViewsInLayout();
       treeViewList.setVisibility(View.VISIBLE);//this is for UT
@@ -606,5 +648,13 @@ public abstract class BaseDataFragment extends RoboFragment implements IDataMana
 
    protected void setCancelled(boolean cancelled) {
       this.cancelled = cancelled;
+   }
+
+   /**
+    * Sets a new fault handler.
+    * @param faultHandler The new fault handler. Can be null to unset the fault handler.
+    */
+   public void setFaultHandler(DMFaultHandler faultHandler) {
+      this.faultHandler = faultHandler;
    }
 }
