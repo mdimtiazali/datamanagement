@@ -39,7 +39,6 @@ import com.cnh.pf.android.data.management.connection.DataServiceConnection;
 import com.cnh.pf.android.data.management.connection.DataServiceConnectionImpl;
 import com.cnh.pf.android.data.management.connection.DataServiceConnectionImpl.ConnectionEvent;
 import com.cnh.pf.android.data.management.dialog.ErrorDialog;
-import com.cnh.pf.android.data.management.faults.DMFaultHandler;
 import com.cnh.pf.android.data.management.graph.GroupObjectGraph;
 import com.cnh.pf.android.data.management.helper.TreeDragShadowBuilder;
 import com.cnh.pf.android.data.management.service.DataManagementService;
@@ -112,8 +111,6 @@ public abstract class BaseDataFragment extends RoboFragment implements IDataMana
    protected boolean cancelled;
    protected boolean hasLocalSource = false;
    protected ProgressDialog updatingProg;
-
-   protected DMFaultHandler faultHandler = null;
 
    /** Current session */
    protected volatile DataManagementSession session = null;
@@ -648,13 +645,5 @@ public abstract class BaseDataFragment extends RoboFragment implements IDataMana
 
    protected void setCancelled(boolean cancelled) {
       this.cancelled = cancelled;
-   }
-
-   /**
-    * Sets a new fault handler.
-    * @param faultHandler The new fault handler. Can be null to unset the fault handler.
-    */
-   public void setFaultHandler(DMFaultHandler faultHandler) {
-      this.faultHandler = faultHandler;
    }
 }
