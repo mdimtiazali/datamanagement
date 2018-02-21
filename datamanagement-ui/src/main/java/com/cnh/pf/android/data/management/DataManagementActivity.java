@@ -32,6 +32,7 @@ import com.cnh.android.vip.constants.VIPConstants;
 import com.cnh.android.widget.activity.TabActivity;
 import com.cnh.android.widget.control.TabActivityListeners;
 import com.cnh.android.widget.control.TabActivityTab;
+import com.cnh.pf.android.data.management.faults.DMFaultHandler;
 import com.cnh.pf.android.data.management.productlibrary.ProductLibraryFragment;
 import com.cnh.pf.data.management.service.ServiceConstants;
 import com.cnh.pf.jgroups.ChannelModule;
@@ -76,6 +77,8 @@ public class DataManagementActivity extends TabActivity implements RoboContext, 
    private TabActivityTab productLibraryTab = null;
    private boolean calledProductLibraryViaShortcut = false;
 
+   private DMFaultHandler dmFaultHandler;
+
    private class DataManagementTabListener implements TabActivityListeners.TabListener {
       private final Activity a;
       private final Fragment fragment;
@@ -83,6 +86,10 @@ public class DataManagementActivity extends TabActivity implements RoboContext, 
       public DataManagementTabListener(Fragment fragment, Activity a) {
          this.fragment = fragment;
          this.a = a;
+
+         // Create a place to store internal state within fragment for fragment switching.
+         // Fragment.onSaveInstanceState is NOT called upon tab (fragment) switch.
+         this.fragment.setArguments(new Bundle());
       }
 
       /**
@@ -149,6 +156,7 @@ public class DataManagementActivity extends TabActivity implements RoboContext, 
 
       @Override
       public void onTabRemoved(TabActivityTab tab) {
+         fragment.getArguments().clear();
          a.getFragmentManager().beginTransaction().remove(fragment).commit();
       }
    }
@@ -338,21 +346,51 @@ public class DataManagementActivity extends TabActivity implements RoboContext, 
       }
    }
 
+   private TabActivityTab createActivityTab(BaseDataFragment fragment, int titleRes, int drawableRes, String tabId) {
+      if(null != fragment) {
+         fragment.setFaultHandler(dmFaultHandler);
+
+         return new TabActivityTab(titleRes, drawableRes, tabId, new DataManagementTabListener(fragment, this));
+      }
+      else {
+         return null;
+      }
+   }
+
    @Override
    public void onCreate(Bundle savedInstanceState) {
       logger.debug("onCreate called");
+
       final Application app = getApplication();
       //Phoenix Workaround (phoenix sometimes cannot read the manifest)
       RoboGuiceHelper.help(app, new String[] { "com.cnh.pf.android.data.management", "com.cnh.pf.jgroups" }, new RoboModule(app), new ChannelModule(app));
       super.onCreate(savedInstanceState);
 
+      // Creation of the DM fault handler
+      try {
+         GlobalPreferences globalPreferences = new GlobalPreferences(this);
+         String pcmIpAddress = globalPreferences.getPCMIpAddress();
+
+         dmFaultHandler = new DMFaultHandler(pcmIpAddress);
+         dmFaultHandler.startHandler();   // TODO: Not sure how this is implemented in other UI apps. It could be moved into onResume() and stopped in onPause().
+      } catch (GlobalPreferencesNotAvailableException e) {
+         logger.error("", e);
+      }
+
       eventManager = RoboGuice.getInjector(this).getInstance(EventManager.class);
-      TabActivityTab importTab = new TabActivityTab(R.string.tab_import, R.drawable.tab_import_selector, getResources().getString(R.string.tab_import),
-            new DataManagementTabListener(new ImportFragment(), this));
+
+      // Create Management tab
+      TabActivityTab managementTab = createActivityTab(new ManageFragment(), R.string.tab_management, R.drawable.tab_management_selector, getResources().getString(R.string.tab_management));
+      addTab(managementTab);
+
+      // Create Import tab
+      TabActivityTab importTab = createActivityTab(new ImportFragment(), R.string.tab_import, R.drawable.tab_import_selector, getResources().getString(R.string.tab_import));
       addTab(importTab);
-      TabActivityTab exportTab = new TabActivityTab(R.string.tab_export, R.drawable.tab_export_selector, getResources().getString(R.string.tab_export),
-            new DataManagementTabListener(new ExportFragment(), this));
+
+      // Create Export tab
+      TabActivityTab exportTab = createActivityTab(new ExportFragment(), R.string.tab_export, R.drawable.tab_export_selector, getResources().getString(R.string.tab_export));
       addTab(exportTab);
+
       setTabActivityTitle(getString(R.string.app_name));
       selectTabAtPosition(0);
 

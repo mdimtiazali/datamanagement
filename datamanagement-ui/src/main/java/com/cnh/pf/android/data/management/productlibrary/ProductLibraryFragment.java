@@ -26,8 +26,9 @@ import android.widget.ExpandableListView;
 import android.widget.ListView;
 import android.widget.RelativeLayout;
 
+import com.cnh.android.dialog.DialogViewInterface;
 import com.cnh.android.pf.widget.controls.SearchInput;
-import com.cnh.android.pf.widget.utilities.ProductHelperMethods;
+import com.cnh.android.pf.widget.utilities.MeasurementSystemCache;
 import com.cnh.android.pf.widget.utilities.UnitsSettings;
 import com.cnh.android.pf.widget.utilities.commands.GetVarietyListCommand;
 import com.cnh.android.pf.widget.utilities.commands.LoadProductMixListCommand;
@@ -93,7 +94,7 @@ import roboguice.fragment.provided.RoboFragment;
  * Provides add/edit product functionality
  * Created by joorjitham on 3/27/2015.
  */
-public class ProductLibraryFragment extends RoboFragment implements ProductMixCallBack {
+public class ProductLibraryFragment extends RoboFragment implements ProductMixCallBack, MeasurementSystemCache.MeasurementSystemListener {
    private static final Logger log = LoggerFactory.getLogger(ProductLibraryFragment.class);
    private final String identifier = ProductLibraryFragment.class.getSimpleName() + System.identityHashCode(this);
    private static final String PRODUCT_LIST = "product list";
@@ -107,8 +108,6 @@ public class ProductLibraryFragment extends RoboFragment implements ProductMixCa
    private boolean isProductListDelivered = false;
    private boolean isVarietyListDelivered = false;
    private View productLibraryLayout;
-   private ProductDialog addProductDialog;
-   private ProductMixDialog addProductMixDialog;
    protected DisabledOverlay disabledOverlay;
    private SearchInput productSearch;
    private SearchInput productMixSearch;
@@ -117,7 +116,7 @@ public class ProductLibraryFragment extends RoboFragment implements ProductMixCa
    private ProgressiveDisclosureView productsPanel;
 
    // Varieties
-   private ArrayList<Variety> varietyList;
+   private List<Variety> varietyList;
    private ProgressiveDisclosureView varietiesPanel;
    private SearchInput varietiesSearch;
    private ListView varietiesListView;
@@ -141,9 +140,7 @@ public class ProductLibraryFragment extends RoboFragment implements ProductMixCa
    private ProductMixAdapter productMixAdapter;
    private AbstractProductComparator productComparator;
    private AbstractProductMixComparator productMixComparator;
-   //Products can be measured in either volume or mass
-   private MeasurementSystem volumeMeasurementSystem;
-   private MeasurementSystem massMeasurementSystem;
+   private MeasurementSystemCache measurementSystemCache;
    private boolean productSortAscending;
    private boolean productMixSortAscending;
    private volatile boolean pcmConnected = false;
@@ -272,7 +269,9 @@ public class ProductLibraryFragment extends RoboFragment implements ProductMixCa
             new VIPAsyncTask<IVIPServiceAIDL, List<ProductMix>>(vipService, new GenericListener<List<ProductMix>>() {
                @Override
                public void handleEvent(List<ProductMix> productMixList) {
-                  populateProductMixes(productMixList);
+                  if(isAdded()) {
+                     populateProductMixes(productMixList);
+                  }
                }
             }).execute(new LoadProductMixListCommand());
             break;
@@ -296,8 +295,6 @@ public class ProductLibraryFragment extends RoboFragment implements ProductMixCa
             catch (RemoteException ex) {
                log.error("Error in WHAT_LOAD_UNIT_LIST handler", ex);
             }
-            volumeMeasurementSystem = ProductHelperMethods.queryMeasurementSystem(getActivity(), UnitsSettings.VOLUME);
-            massMeasurementSystem = ProductHelperMethods.queryMeasurementSystem(getActivity(), UnitsSettings.MASS);
             break;
          case WHAT_IMPLEMENT:
             log.debug("Loading current implement...");
@@ -313,7 +310,9 @@ public class ProductLibraryFragment extends RoboFragment implements ProductMixCa
                @Override
                public void handleEvent(final List<Variety> newVarietyList) {
                   log.debug("got variety list: {}", newVarietyList);
-                  populateVarieties(newVarietyList);
+                  if(isAdded()) {
+                     populateVarieties(newVarietyList);
+                  }
                }
             }).execute(new GetVarietyListCommand());
             break;
@@ -390,7 +389,7 @@ public class ProductLibraryFragment extends RoboFragment implements ProductMixCa
 
          @Override
          public void onClick(View view) {
-            addProductDialog = new ProductDialog(getActivity().getApplicationContext(), vipService, productUnitsList, new ProductDialog.productListCallback() {
+            ProductDialog addProductDialog = new ProductDialog(getActivity().getApplicationContext(), vipService, productUnitsList, new ProductDialog.productListCallback() {
                @Override
                public void productList(Product product) {
                   productList.add(product);
@@ -413,7 +412,7 @@ public class ProductLibraryFragment extends RoboFragment implements ProductMixCa
       btnAddProductMix.setOnClickListener(new OnClickListener() {
          @Override
          public void onClick(View view) {
-            addProductMixDialog = new ProductMixDialog(getActivity().getApplicationContext(), vipService, ProductLibraryFragment.this, productMixList);
+            ProductMixDialog addProductMixDialog = new ProductMixDialog(getActivity().getApplicationContext(), vipService, ProductLibraryFragment.this, productMixList);
             addProductMixDialog.setFirstButtonText(getResources().getString(R.string.product_dialog_add_button))
                   .setSecondButtonText(getResources().getString(R.string.product_dialog_cancel_button)).showThirdButton(false)
                   .setTitle(getResources().getString(R.string.product_mix_title_dialog_add_product_mix)).setBodyHeight(DIALOG_HEIGHT).setBodyView(R.layout.product_mix_dialog);
@@ -433,7 +432,13 @@ public class ProductLibraryFragment extends RoboFragment implements ProductMixCa
          public void onClick(View view) {
             addVarietyDialog = new AddOrEditVarietyDialog(getActivity().getApplicationContext());
             addVarietyDialog.setFirstButtonText(getResources().getString(R.string.variety_dialog_save_button_text))
-                  .setSecondButtonText(getResources().getString(R.string.variety_dialog_cancel_button_text)).setTitle(getResources().getString(R.string.variety_add_dialog_title_text));
+                  .setSecondButtonText(getResources().getString(R.string.variety_dialog_cancel_button_text)).setTitle(getResources().getString(R.string.variety_add_dialog_title_text))
+                  .setOnDismissListener(new DialogViewInterface.OnDismissListener() {
+                     @Override
+                     public void onDismiss(DialogViewInterface dialogViewInterface) {
+                        ProductLibraryFragment.this.addVarietyDialog = null;
+                     }
+                  });
 
             addVarietyDialog.setActionType(AddOrEditVarietyDialog.VarietyDialogActionType.ADD);
             if (varietyList != null){
@@ -441,7 +446,9 @@ public class ProductLibraryFragment extends RoboFragment implements ProductMixCa
             }
             final TabActivity useModal = (DataManagementActivity) getActivity();
             useModal.showModalPopup(addVarietyDialog);
-            addVarietyDialog.setVIPService(vipService);
+            if (addVarietyDialog != null) {
+               addVarietyDialog.setVIPService(vipService);
+            }
          }
       });
       return productLibraryLayout;
@@ -678,20 +685,19 @@ public class ProductLibraryFragment extends RoboFragment implements ProductMixCa
          setVarietyPanelSubheading();
          if (varietyAdapter == null) {
             varietyAdapter = new VarietyAdapter(getActivity().getApplicationContext(), varietyList, (TabActivity) getActivity(), vipService);
+            varietiesSearch.setFilterable(varietyAdapter);
+            if (varietyComparator != null) {
+               varietyAdapter.sort(varietyComparator, varietySortAscending);
+            }
          }
          else {
+            varietiesSearch.setFilterable(varietyAdapter);
             varietyAdapter.setVarietyList(varietyList);
-            // the new varietyList needs to be filtered with the old filter input
-            varietyAdapter.getFilter().filter(varietiesSearch.getText());
          }
          // Because android creates new views during onCreateView which is also called when the user switches the tab and
          // returns to this tab/fragment. The next lines have to be executed whether we create a new adapter or not.
          varietiesListView.setAdapter(varietyAdapter);
-         varietiesSearch.setFilterable(varietyAdapter);
          varietiesSearch.addTextChangedListener(new SearchInputTextWatcher(varietiesSearch));
-         if (varietyComparator != null) {
-            varietyAdapter.sort(varietyComparator, varietySortAscending);
-         }
          if (varietiesPanel.isExpanded()) {
             varietiesPanel.resizeContent(false);
          }
@@ -705,20 +711,21 @@ public class ProductLibraryFragment extends RoboFragment implements ProductMixCa
          checkMode();
          setProductMixPanelSubheading();
          if (productMixAdapter == null) {
-            productMixAdapter = new ProductMixAdapter(getActivity().getApplicationContext(), incomingProductMixList, (TabActivity) getActivity(), vipService, volumeMeasurementSystem,
-                  massMeasurementSystem, this);
+            productMixAdapter = new ProductMixAdapter(getActivity().getApplicationContext(), incomingProductMixList, (TabActivity) getActivity(), vipService,
+                  this, measurementSystemCache);
+            productMixSearch.setFilterable(productMixAdapter);
+            if (productMixComparator != null) {
+               productMixAdapter.sort(productMixComparator, productMixSortAscending);
+            }
          }
          else {
+            productMixSearch.setFilterable(productMixAdapter);
             productMixAdapter.setItems(incomingProductMixList);
          }
          // Because android creates new views during onCreateView which is also called when the user switches the tab and
          // returns to this tab/fragment. The next lines have to be executed whether we create a new adapter or not.
          productMixListView.setAdapter(productMixAdapter);
-         productMixSearch.setFilterable(productMixAdapter);
          productMixSearch.addTextChangedListener(new SearchInputTextWatcher(productMixSearch));
-         if (productMixComparator != null) {
-            productMixAdapter.sort(productMixComparator, productMixSortAscending);
-         }
          if (productMixesPanel.isExpanded()) {
             productMixesPanel.resizeContent(false);
          }
@@ -739,24 +746,25 @@ public class ProductLibraryFragment extends RoboFragment implements ProductMixCa
             currentProduct = productList.get((int) productListView.getSelectedId());
          }
          if (productAdapter == null) {
-            productAdapter = new ProductAdapter(getActivity().getApplicationContext(), incomingProductList, (TabActivity) getActivity(), vipService, volumeMeasurementSystem,
-                    massMeasurementSystem, this, productUnitsList, currentImplement);
+            productAdapter = new ProductAdapter(getActivity().getApplicationContext(), incomingProductList, (TabActivity) getActivity(), vipService,
+                  this, productUnitsList, currentImplement, measurementSystemCache);
+            productSearch.setFilterable(productAdapter);
+            if (productComparator != null) {
+               productAdapter.sort(productComparator, productSortAscending);
+            }
          }
          else {
+            productSearch.setFilterable(productAdapter);
             productAdapter.setItems(productList);
-         }
-         if (productListView != null) {
-            productListView.setAdapter(productAdapter);
          }
          // Because android creates new views during onCreateView which is also called when the user switches the tab and
          // returns to this tab/fragment. The next lines have to be executed whether we create a new adapter or not.
-         productSearch.setFilterable(productAdapter);
+         if (productListView != null) {
+            productListView.setAdapter(productAdapter);
+         }
          productSearch.addTextChangedListener(new SearchInputTextWatcher(productSearch));
          if (currentProduct == null && productList.size() > 0) {
             currentProduct = productList.get(0);
-         }
-         if (productComparator != null) {
-            productAdapter.sort(productComparator, productSortAscending);
          }
       }
    }
@@ -778,12 +786,6 @@ public class ProductLibraryFragment extends RoboFragment implements ProductMixCa
    public void onCreate(Bundle savedInstanceState) {
       super.onCreate(savedInstanceState);
       log.debug("onCreate");
-
-      if (savedInstanceState != null) {
-         productList = savedInstanceState.getParcelableArrayList(PRODUCT_LIST);
-         currentProduct = savedInstanceState.getParcelable(CURRENT_PRODUCT);
-         productUnitsList = savedInstanceState.getParcelableArrayList(PRODUCT_UNITS_LIST);
-      }
    }
 
    /**
@@ -794,6 +796,12 @@ public class ProductLibraryFragment extends RoboFragment implements ProductMixCa
    public void onActivityCreated(Bundle savedInstanceState) {
       super.onActivityCreated(savedInstanceState);
       log.debug("onActivityCreated");
+      List<String> measurementSystemParameter = new ArrayList<String>(4);
+      measurementSystemParameter.add(UnitsSettings.VOLUME);
+      measurementSystemParameter.add(UnitsSettings.MASS);
+      measurementSystemParameter.add(UnitsSettings.OTHER);
+      measurementSystemParameter.add(UnitsSettings.DENSITY);
+      measurementSystemCache = new MeasurementSystemCache(measurementSystemParameter, getActivity(), this, false);
    }
 
    /**
@@ -830,8 +838,17 @@ public class ProductLibraryFragment extends RoboFragment implements ProductMixCa
 
       // super on resume must be called before registerVIPService because this checks isResumed()
       super.onResume();
+      measurementSystemCache.registerContentObservers();
       registerVIPService();
    }
+
+   @Override
+   public void onMeasurementSystemChanged(String measurementParameterName, MeasurementSystem measurementSystem) {
+      if (productAdapter != null) {
+         productAdapter.notifyDataSetChanged();
+      }
+   }
+
 
    private void registerVIPService() {
       // isResumed() needs to be checked if this is called via setVIPService() - if the method is not resumed objects may be null.
@@ -932,6 +949,7 @@ public class ProductLibraryFragment extends RoboFragment implements ProductMixCa
       log.debug("onPause called");
       super.onPause();
       unregisterVIPService();
+      measurementSystemCache.unregisterContentObservers();
    }
 
    /**
@@ -959,20 +977,6 @@ public class ProductLibraryFragment extends RoboFragment implements ProductMixCa
       productSearch.setClearIconEnabled(false);
       super.onStop();
 
-   }
-
-   /**
-    * Persist UI state for later retrieval
-    * @param outState
-    */
-   @Override
-   public void onSaveInstanceState(Bundle outState) {
-      super.onSaveInstanceState(outState);
-      log.debug("onSaveInstanceState");
-      outState.putParcelable(CURRENT_PRODUCT, currentProduct);
-      outState.putParcelableArrayList(PRODUCT_LIST, (ArrayList<Product>) productList);
-      outState.putParcelableArrayList(PRODUCT_UNITS_LIST, (ArrayList<ProductUnits>) productUnitsList);
-      // TODO: Workitem #4187: Determine, if instance state handling for varieties in necessary here?
    }
 
    /**

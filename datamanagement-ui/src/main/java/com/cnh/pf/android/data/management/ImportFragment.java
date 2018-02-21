@@ -49,6 +49,8 @@ import roboguice.event.Observes;
 import roboguice.inject.InjectResource;
 import roboguice.inject.InjectView;
 
+
+
 /**
  * Import Tab Fragment, Handles import from external mediums {USB, External Display}.
  * @author oscar.salazar@cnhind.com
@@ -66,15 +68,12 @@ public class ImportFragment extends BaseDataFragment {
    ImageButton stopBtn;
    @InjectView(R.id.progress_bar)
    ProgressBarView progressBar;
-   @InjectView(R.id.operation_name)
-   TextView operationName;
-   @InjectView(R.id.percent_tv)
-   TextView percentTv;
    @InjectView(R.id.left_status)
    LinearLayout leftStatus;
    ProcessDialog processDialog;
    //store original data in case cancel is pressed.  so we can restore it.
    private List<ObjectGraph> originalData;
+   private List<MediumDevice> previousDevices;//keep the previous path of process
 
    @InjectResource(R.string.keep_both)
    String keepBothStr;
@@ -86,7 +85,21 @@ public class ImportFragment extends BaseDataFragment {
    String selectTargetStr;
    @InjectResource(R.string.next)
    String nextStr;
+   @InjectView(R.id.operation_name)
+   TextView operationName;
 
+   private String importing_data;
+   private String loading_string;
+   private String x_of_y_format;
+
+   @Override
+   public void onCreate(Bundle savedInstanceState) {
+      super.onCreate(savedInstanceState);
+
+      importing_data = getResources().getString(R.string.importing_data);
+      loading_string = getResources().getString(R.string.loading_string);
+      x_of_y_format = getResources().getString(R.string.x_of_y_format);
+   }
 
    @Override
    public void inflateViews(LayoutInflater inflater, View leftPanel) {
@@ -139,6 +152,8 @@ public class ImportFragment extends BaseDataFragment {
          }
       });
       processDialog = new ProcessDialog(getActivity());
+      startText.setVisibility(View.GONE);
+      operationName.setText(R.string.importing_string);
       checkImportButton();
    }
 
@@ -165,6 +180,17 @@ public class ImportFragment extends BaseDataFragment {
       boolean connected = getDataManagementService() != null;
       isActiveOperation |= connected && getDataManagementService().hasActiveSession();
       boolean hasSelection = getTreeAdapter() != null && getTreeAdapter().hasSelection();
+      boolean defaultButtonText = true;
+      if (getTreeAdapter() != null && getTreeAdapter().getSelectionMap() != null) {
+         int selectedItemCount = getTreeAdapter().getSelectionMap().size();
+         if (selectedItemCount > 0) {
+            defaultButtonText = false;
+            importSelectedBtn.setText(getResources().getString(R.string.import_selected) + " (" + treeAdapter.getSelectionMap().size() + ")");
+         }
+      }
+      if (defaultButtonText == true) {
+         importSelectedBtn.setText(getResources().getString(R.string.import_selected));
+      }
       importSourceBtn.setEnabled(connected && !isActiveOperation);
       importSelectedBtn.setEnabled(connected && hasSelection && !isActiveOperation && s != null);
    }
@@ -172,133 +198,201 @@ public class ImportFragment extends BaseDataFragment {
    /**Called when user selects Import source, from Import Source Dialog*/
    private void onImportSourceSelected(@Observes(EventThread.UI) ImportSourceDialog.ImportSourceSelectedEvent event) {
       logger.debug("onImportSourceSelected( {} )", event.getDevice());
-      removeProgressPanel();
       startText.setVisibility(View.GONE);
-      treeProgress.setVisibility(View.VISIBLE);
-      treeViewList.setVisibility(View.GONE);
+      removeProgressPanel();
+      progressUI();
 
-      if (event.getDevice().getType().equals(Datasource.Source.USB)) {
-         pathTv.setText(event.getDevice().getPath() == null ? "" : event.getDevice().getPath().getPath());
+      if(getSession() == null){
+         setSession(createSession());
       }
-      else {
-         pathTv.setText(getString(R.string.display_named, event.getDevice().getName()));
-      }
-      DataManagementSession session = new DataManagementSession(null, new Datasource.Source[] { Datasource.Source.INTERNAL, Datasource.Source.DISPLAY }, event.getDevices(), null);
-      setSession(session);
+      configSession(getSession());
+      getSession().setSources(event.getDevices());
       getDataManagementService().processOperation(getSession(), SessionOperation.DISCOVERY);
-      if (getTreeAdapter() != null) getTreeAdapter().selectAll(treeViewList, false); //clear out the selection
+      previousDevices = event.getDevices();
    }
 
    @Override
-   public void onNewSession() {
-      logger.debug("onNewSession");
+   public DataManagementSession createSession(){
+      logger.debug("createSession()");
       removeProgressPanel();
       super.onNewSession();
 
       if (hasLocalSource) {
          disabled.setVisibility(View.GONE);
-         startText.setVisibility(View.VISIBLE);
+         startText.setVisibility(View.INVISIBLE);
       }
       else {
          startText.setVisibility(View.GONE);
          disabled.setVisibility(View.VISIBLE);
          disabled.setMode(DisabledOverlay.MODE.DISCONNECTED);
       }
+      //this is a stub Medium device, when user select source, it will be updated
+      List stubDevices = new ArrayList<MediumDevice>();
+      stubDevices.add(new MediumDevice(Datasource.Source.USB));
+      return new DataManagementSession(null, new Datasource.Source[] { Datasource.Source.INTERNAL, Datasource.Source.DISPLAY }, stubDevices, null);
+   }
+   /** we have to override here since two cases to consider, when import fragment was created with session from savedInstanceState,
+    *  resumed with previous session will include the previous datasource address
+    * when import fragment was resume from onPause(), it also include previous datasource address
+    * with datasource address won't be processed for dicovery. it need path.
+    **/
+   @Override
+   public void configSession(DataManagementSession session) {
+      if(previousDevices != null){
+         logger.debug("previous devices are {}",previousDevices);
+         session.setTargets(null);
+         session.setSources(previousDevices);
+      }
+      else {
+         sessionInit(session);
+      }
    }
 
    @Override
+   protected void onErrorOperation() {
+      if(getSession().getSessionOperation().equals(SessionOperation.DISCOVERY)){
+         previousDevices = null;//clean to null
+         idleUI();
+         pathTv.setText("");
+         startText.setVisibility(View.VISIBLE);
+      }
+      else {
+         logger.debug("Other operations when error");
+         sessionInit(getSession());
+         removeProgressPanel();
+         postTreeUI();
+      }
+   }
+   private DataManagementSession sessionInit(DataManagementSession session) {
+      logger.debug("sessionInit() enter");
+      if(session != null) {
+         session.setSourceTypes(null);
+         session.setSources(new ArrayList<MediumDevice>() {{
+            add(new MediumDevice(Datasource.Source.USB));
+         }});
+         session.setDestinationTypes(new Datasource.Source[]{Datasource.Source.INTERNAL, Datasource.Source.DISPLAY});
+         session.setTargets(null);
+      }
+      return session;
+   }
+   //this is a stub Medium device, when user select source, it will be updated
+
+   @Override
    public void processOperations() {
-      if (getSession().getSessionOperation().equals(SessionOperation.CALCULATE_OPERATIONS) && !isCancelled()) {
-         logger.debug("Calculate Targets");
-         if (getSession().getData() == null) {
-            Toast.makeText(getActivity(), "No operations came back from server.  Check connectivity", Toast.LENGTH_SHORT).show();
-            cancel();
-            return;
-         }
-         boolean hasMultipleTargets = false;
-         for (Operation operation : getSession().getData()) {
-            if(operation.isShowTargetSelection()) {
-               hasMultipleTargets = true;
-               break;
-            }
-            if (operation.getPotentialTargets() != null && operation.getPotentialTargets().size() > 1 && operation.getData().getParent() == null) {
-               hasMultipleTargets = true;
-               break;
-            }
-         }
-         if (hasMultipleTargets) {
-            TargetProcessViewAdapter adapter = new TargetProcessViewAdapter(getActivity(), getSession().getData());
-            processDialog.setAdapter(adapter);
-            processDialog.setTitle(selectTargetStr);
-            processDialog.setFirstButtonText(nextStr);
-            processDialog.showFirstButton(true);
-            processDialog.showSecondButton(false);
-            processDialog.clearLoading();
-            adapter.setOnTargetsSelectedListener(new TargetProcessViewAdapter.OnTargetsSelectedListener() {
-               @Override
-               public void onCompletion(List<Operation> operations) {
-                  logger.debug("onCompletion: {}", operations.toString());
-                  getSession().setData(operations);
-                  logger.debug("Going to Calculate Conflicts");
-                  showConflictDialog();
-                  setSession(getDataManagementService().processOperation(getSession(), SessionOperation.CALCULATE_CONFLICTS));
-               }
-            });
+      // need to take care of error case in here
+      if(getSession().getResult().equals(Process.Result.NO_DATASOURCE) && getSession().getSessionOperation().equals(SessionOperation.DISCOVERY)){
+         removeProgressPanel();
+         startText.setVisibility(View.VISIBLE);
+
+      }
+      else if(getSession().getResult().equals(Process.Result.ERROR)) {
+         if(getSession().getSessionOperation().equals(SessionOperation.DISCOVERY)){
+            idleUI();
          }
          else {
-            logger.debug("Found no targets with no parents, skipping to Calculate Conflicts");
-            showConflictDialog();
-            setSession(getDataManagementService().processOperation(getSession(), SessionOperation.CALCULATE_CONFLICTS));
-         }
-      }
-      else if (getSession().getSessionOperation().equals(SessionOperation.CALCULATE_CONFLICTS) && !isCancelled()) {
-         logger.debug("Calculate Conflicts");
-         //Check for conflicts
-         boolean hasConflicts = false;
-         for (Operation operation : getSession().getData()) {
-            hasConflicts |= operation.isConflict();
-         }
-         if (hasConflicts) {
-            DataConflictViewAdapter adapter = new DataConflictViewAdapter(getActivity(), getSession().getData());
-            processDialog.setAdapter(adapter);
-            processDialog.setTitle(dataConflictStr);
-            processDialog.showFirstButton(true);
-            processDialog.setFirstButtonText(keepBothStr);
-            processDialog.showSecondButton(true);
-            processDialog.setSecondButtonText(replaceStr);
-            processDialog.clearLoading();
-            adapter.setOnTargetsSelectedListener(new DataManagementBaseAdapter.OnTargetsSelectedListener() {
-               @Override
-               public void onCompletion(List<Operation> operations) {
-                  logger.debug("onCompletion {}", operations);
-                  processDialog.hide();
-                  showProgressPanel();
-                  getSession().setData(operations);
-                  setSession(getDataManagementService().processOperation(getSession(), SessionOperation.PERFORM_OPERATIONS));
-               }
-            });
-         }
-         else {
-            logger.debug("No conflicts found");
-            processDialog.hide();
-            showProgressPanel();
-            setSession(getDataManagementService().processOperation(getSession(), SessionOperation.PERFORM_OPERATIONS));
-         }
-      }
-      else if (getSession().getSessionOperation().equals(SessionOperation.PERFORM_OPERATIONS)) {
-         logger.trace("resetting new session.  Operation completed.");
-         if(getSession().getResult()!=null) {
-            getTreeAdapter().selectAll(treeViewList, false);
             removeProgressPanel();
-            if (getSession().getResult().equals(Process.Result.SUCCESS)) {
-               Toast.makeText(getActivity(), "Import Completed", Toast.LENGTH_LONG).show();
-            }
-            else if (getSession().getResult().equals(Process.Result.CANCEL)) {
-               Toast.makeText(getActivity(), "Import Cancelled", Toast.LENGTH_LONG).show();
-            }
+            postTreeUI();
          }
-         else {
-            showProgressPanel();
+      }
+      else {
+         if (getSession().getSessionOperation().equals(SessionOperation.DISCOVERY)){
+            if(previousDevices != null){
+
+               if(previousDevices.get(0).getType().equals(Datasource.Source.USB)){
+                  pathTv.setText(previousDevices.get(0).getPath() == null ? "" : previousDevices.get(0).getPath().getPath());
+               }
+               else {
+                  pathTv.setText(getString(R.string.display_named, previousDevices.get(0).getName()));
+               }
+            }
+
+         }
+         else if (getSession().getSessionOperation().equals(SessionOperation.CALCULATE_OPERATIONS) && !isCancelled()) {
+            logger.debug("Calculate Targets");
+            if (getSession().getData() == null || getSession().getData().isEmpty()) {
+               Toast.makeText(getActivity(), "No operations came back from server.  Check connectivity", Toast.LENGTH_SHORT).show();
+               cancel();
+               return;
+            }
+            boolean hasMultipleTargets = false;
+            for (Operation operation : getSession().getData()) {
+               if (operation.isShowTargetSelection()) {
+                  hasMultipleTargets = true;
+                  break;
+               }
+               if (operation.getPotentialTargets() != null && operation.getPotentialTargets().size() > 1 && operation.getData().getParent() == null) {
+                  hasMultipleTargets = true;
+                  break;
+               }
+            }
+            if (hasMultipleTargets) {
+               TargetProcessViewAdapter adapter = new TargetProcessViewAdapter(getActivity(), getSession().getData());
+               processDialog.setAdapter(adapter);
+               processDialog.setTitle(selectTargetStr);
+               processDialog.setFirstButtonText(nextStr);
+               processDialog.showFirstButton(true);
+               processDialog.showSecondButton(false);
+               processDialog.clearLoading();
+               adapter.setOnTargetsSelectedListener(new TargetProcessViewAdapter.OnTargetsSelectedListener() {
+                  @Override
+                  public void onCompletion(List<Operation> operations) {
+                     logger.debug("onCompletion: {}", operations.toString());
+                     getSession().setData(operations);
+                     logger.debug("Going to Calculate Conflicts");
+                     showConflictDialog();
+                     setSession(getDataManagementService().processOperation(getSession(), SessionOperation.CALCULATE_CONFLICTS));
+                  }
+               });
+            } else {
+               logger.debug("Found no targets with no parents, skipping to Calculate Conflicts");
+               showConflictDialog();
+               setSession(getDataManagementService().processOperation(getSession(), SessionOperation.CALCULATE_CONFLICTS));
+            }
+         } else if (getSession().getSessionOperation().equals(SessionOperation.CALCULATE_CONFLICTS) && !isCancelled()) {
+            logger.debug("Calculate Conflicts");
+            //Check for conflicts
+            boolean hasConflicts = false;
+            for (Operation operation : getSession().getData()) {
+               hasConflicts |= operation.isConflict();
+            }
+            if (hasConflicts) {
+               DataConflictViewAdapter adapter = new DataConflictViewAdapter(getActivity(), getSession().getData());
+               processDialog.setAdapter(adapter);
+               processDialog.setTitle(dataConflictStr);
+               processDialog.showFirstButton(true);
+               processDialog.setFirstButtonText(keepBothStr);
+               processDialog.showSecondButton(true);
+               processDialog.setSecondButtonText(replaceStr);
+               processDialog.clearLoading();
+               adapter.setOnTargetsSelectedListener(new DataManagementBaseAdapter.OnTargetsSelectedListener() {
+                  @Override
+                  public void onCompletion(List<Operation> operations) {
+                     logger.debug("onCompletion {}", operations);
+                     processDialog.hide();
+                     showProgressPanel();
+                     getSession().setData(operations);
+                     setSession(getDataManagementService().processOperation(getSession(), SessionOperation.PERFORM_OPERATIONS));
+                  }
+               });
+            } else {
+               logger.debug("No conflicts found");
+               processDialog.hide();
+               showProgressPanel();
+               setSession(getDataManagementService().processOperation(getSession(), SessionOperation.PERFORM_OPERATIONS));
+            }
+         } else if (getSession().getSessionOperation().equals(SessionOperation.PERFORM_OPERATIONS)) {
+            logger.trace("resetting new session.  Operation completed.");
+            if (getSession().getResult() != null) {
+               getTreeAdapter().selectAll(treeViewList, false);
+               removeProgressPanel();
+               if (getSession().getResult().equals(Process.Result.SUCCESS)) {
+                  Toast.makeText(getActivity(), getString(R.string.import_complete), Toast.LENGTH_LONG).show();
+               } else if (getSession().getResult().equals(Process.Result.CANCEL)) {
+                  Toast.makeText(getActivity(), getString(R.string.import_cancel), Toast.LENGTH_LONG).show();
+               }
+            } else {
+               showProgressPanel();
+            }
          }
       }
 
@@ -312,6 +406,7 @@ public class ImportFragment extends BaseDataFragment {
 
    /** Shows conflict resolution dialog */
    private void showConflictDialog() {
+      processDialog.hide();
       processDialog.init();
       processDialog.setTitle(getResources().getString(R.string.checking_conflicts));
       processDialog.setProgress(0);
@@ -321,6 +416,7 @@ public class ImportFragment extends BaseDataFragment {
             cancel();
          }
       });
+      processDialog.show();
    }
 
    void cancel() {
@@ -335,12 +431,10 @@ public class ImportFragment extends BaseDataFragment {
 
    /** Inflates left panel progress view */
    private void showProgressPanel() {
-      leftStatus.setVisibility(View.VISIBLE);
       importDropZone.setVisibility(View.GONE);
-      operationName.setText(getResources().getString(R.string.importing_data));
-      progressBar.setTitle(getResources().getString(R.string.importing_string));
+      progressBar.setSecondText(true, loading_string, null, true);
       progressBar.setProgress(0);
-      percentTv.setText("0");
+      leftStatus.setVisibility(View.VISIBLE);
    }
 
    /** Removes left panel progress view and replaces with operation view */
@@ -352,6 +446,7 @@ public class ImportFragment extends BaseDataFragment {
    /** Check if session returned by service is an import operation*/
    @Override
    public boolean isCurrentOperation(DataManagementSession session) {
+      logger.trace("isCurrentOperation( {} == {})", session.getUuid(), getSession().getUuid());
       return session.equals(getSession());
    }
 
@@ -364,13 +459,8 @@ public class ImportFragment extends BaseDataFragment {
    @Override
    public void onProgressPublished(String operation, int progress, int max) {
       final Double percent = ((progress * 1.0) / max) * 100;
-      if (processDialog.isShown()) {
-         processDialog.setProgress(percent.intValue());
-      }
-      else {
-         progressBar.setProgress(percent.intValue());
-         percentTv.setText(Integer.toString(percent.intValue()));
-      }
+      progressBar.setProgress(percent.intValue());
+      progressBar.setSecondText(true, loading_string, String.format(x_of_y_format, progress, max), true);
    }
 
    @Override

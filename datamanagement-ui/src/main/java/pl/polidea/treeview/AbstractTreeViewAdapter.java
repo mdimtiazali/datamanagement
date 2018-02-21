@@ -1,3 +1,12 @@
+/*
+ * Copyright (C) 2015 CNH Industrial NV. All rights reserved.
+ *
+ * This software contains proprietary information of CNH Industrial NV. Neither
+ * receipt nor possession thereof confers any right to reproduce, use, or
+ * disclose in whole or in part any such information without written
+ * authorization from CNH Industrial NV.
+ */
+
 package pl.polidea.treeview;
 
 import android.app.Activity;
@@ -21,6 +30,8 @@ import com.cnh.pf.android.data.management.R;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.util.List;
+
 /**
  * Adapter used to feed the table view.
  *
@@ -29,7 +40,6 @@ import org.slf4j.LoggerFactory;
  */
 public abstract class AbstractTreeViewAdapter<T> extends BaseAdapter implements ListAdapter {
    protected static final Logger log = LoggerFactory.getLogger(AbstractTreeViewAdapter.class);
-
    private final TreeStateManager<T> treeStateManager;
    private final int numberOfLevels;
    private final LayoutInflater layoutInflater;
@@ -40,7 +50,6 @@ public abstract class AbstractTreeViewAdapter<T> extends BaseAdapter implements 
    private Drawable expandedDrawable;
    private Drawable indicatorBackgroundDrawable;
    private Drawable rowBackgroundDrawable;
-
    private final OnClickListener indicatorClickListener = new OnClickListener() {
       @Override
       public void onClick(final View v) {
@@ -154,12 +163,12 @@ public abstract class AbstractTreeViewAdapter<T> extends BaseAdapter implements 
       //                + " with position " + position);
       final TreeNodeInfo<T> nodeInfo = getTreeNodeInfo(position);
       if (convertView == null) {
-         //            Log.d(TAG, "Creating the view a new");
+         //            Log.d("getview", "Creating the view a new");
          final LinearLayout layout = (LinearLayout) layoutInflater.inflate(getTreeListItemWrapperId(), null);
          return populateTreeItem(layout, getNewChildView(nodeInfo), nodeInfo, true);
       }
       else {
-         //            Log.d(TAG, "Reusing the view");
+         //            Log.d("getview", "Reusing the view");
          final LinearLayout linear = (LinearLayout) convertView;
          final FrameLayout frameLayout = (FrameLayout) linear.findViewById(R.id.treeview_list_item_frame);
          final View childView = frameLayout.getChildAt(0);
@@ -295,4 +304,7 @@ public abstract class AbstractTreeViewAdapter<T> extends BaseAdapter implements 
 
    }
 
+   public List<T> getVisibleList() {
+      return treeStateManager.getVisibleList();
+   }
 }

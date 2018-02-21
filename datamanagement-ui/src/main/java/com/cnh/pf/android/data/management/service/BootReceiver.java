@@ -27,6 +27,11 @@ public class BootReceiver extends BroadcastReceiver {
    @Override
    public void onReceive(Context context, Intent intent) {
       logger.info("Got Broadcast: " + intent.getAction());
-      context.startService(new Intent(context, MulticastRouteService.class).setAction(intent.getAction()));
+      if("com.cnh.android.intent.action.BOOT_COMPLETED_PRI_2".equals(intent.getAction())){
+         context.startService(new Intent(context, DataManagementService.class).setAction(intent.getAction()));
+      }
+      else {
+         context.startService(new Intent(context, MulticastRouteService.class).setAction(intent.getAction()));
+      }
    }
 }

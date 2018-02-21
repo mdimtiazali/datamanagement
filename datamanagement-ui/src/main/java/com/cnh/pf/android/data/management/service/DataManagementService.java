@@ -20,6 +20,7 @@ import android.graphics.drawable.BitmapDrawable;
 import android.net.Uri;
 import android.os.AsyncTask;
 import android.os.Binder;
+import android.os.Environment;
 import android.os.Handler;
 import android.os.IBinder;
 import android.os.ParcelUuid;
@@ -147,10 +148,10 @@ public class DataManagementService extends RoboService implements SharedPreferen
       }
       else if (Intent.ACTION_MEDIA_MOUNTED.equals(intent.getAction())) {
          sendMediumUpdateEvent();
-         Uri mount = intent.getData();
+         /*Uri mount = intent.getData();
          File mountFile = new File(mount.getPath());
          logger.info("Media has been mounted @{}: ", mountFile.getAbsolutePath());
-         scan(mountFile);
+         scan(mountFile);*/
       }
       else if (Intent.ACTION_MEDIA_UNMOUNTED.equals(intent.getAction()) || Intent.ACTION_MEDIA_BAD_REMOVAL.equals(intent.getAction())
             || Intent.ACTION_MEDIA_REMOVED.equals(intent.getAction()) || Intent.ACTION_MEDIA_EJECT.equals(intent.getAction())) {
@@ -303,22 +304,32 @@ public class DataManagementService extends RoboService implements SharedPreferen
    public DataManagementSession processOperation(final DataManagementSession session, DataManagementSession.SessionOperation sessionOperation) {
       logger.debug("service.processOperation: {}", sessionOperation);
       session.setSessionOperation(sessionOperation);
+      session.setProgress(true);
       session.setResult(null);
       if (sessionOperation.equals(DataManagementSession.SessionOperation.DISCOVERY)) {
          if (isUsbImport(session)) {
-            logger.debug("Starting USB Datasource");
-            startUsbServices(new String[] { session.getSource().getPath().getPath() }, false, session.getFormat(), new Runnable() {
-               @Override
-               public void run() {
-                  logger.debug("Running discovery");
-                  new DiscoveryTask().executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR, session);
-               }
-            }, new Runnable() {
-               @Override public void run() {
-                  globalEventManager.fire(new ErrorEvent(session, ErrorEvent.DataError.NO_SOURCE_DATASOURCE));
-                  session.setResult(Process.Result.NO_DATASOURCE);
-               }
-            });
+            if(session.getSource() != null && session.getSource().getPath() != null && Environment.getExternalStorageState().equals(Environment.MEDIA_MOUNTED)) {
+               logger.debug("Starting USB Datasource: getSource():{}", session.getSource());
+               startUsbServices(new String[] { session.getSource().getPath().getPath() }, false, session.getFormat(), new Runnable() {
+                  @Override
+                  public void run() {
+                     logger.debug("Running discovery");
+                     new DiscoveryTask().executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR, session);
+                  }
+               }, new Runnable() {
+                  @Override
+                  public void run() {
+                     session.setProgress(false);
+                     session.setResult(Process.Result.NO_DATASOURCE);
+                     globalEventManager.fire(new ErrorEvent(session, ErrorEvent.DataError.NO_SOURCE_DATASOURCE));
+                  }
+               });
+            }
+            else{
+               session.setProgress(false);
+               session.setResult(Process.Result.NO_DATASOURCE);
+               globalEventManager.fire(new ErrorEvent(session, ErrorEvent.DataError.NEED_DATA_PATH));
+            }
          }
          else {
             new DiscoveryTask().executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR, session);
@@ -333,9 +344,13 @@ public class DataManagementService extends RoboService implements SharedPreferen
       else if (sessionOperation.equals(DataManagementSession.SessionOperation.PERFORM_OPERATIONS)) {
          performOperations(session);
       }
+      else if (sessionOperation.equals(DataManagementSession.SessionOperation.UPDATE)) {
+         updateOperations(session);
+      }
       else {
          logger.error("Couldn't find op");
       }
+      logger.debug("before return Datasource: getSource():{}", session.getSource());
       return session;
    }
 
@@ -422,6 +437,22 @@ public class DataManagementService extends RoboService implements SharedPreferen
       }
    }
 
+   private void updateOperations(final DataManagementSession session) {
+      try {
+         session.setResult(null);
+         performCalled = false;
+         Status status = new com.cnh.android.status.Status("", statusDrawable, getApplicationContext().getPackageName());
+         activeSessions.put(session, status);
+         sendStatus(session, statusStarting);
+
+         performCalled = true;
+         new UpdateOperationsTask().executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR, session);
+      }
+      catch (Exception e) {
+         logger.error("Could not find destination address for this type", e);
+      }
+   }
+
    private void scanUsbServices(String[] path, boolean create, String format, final Runnable onSuccess, final Runnable onFailure) {
       startUsbServices(path, create, format, ServiceConstants.ACTION_SCAN, onSuccess, onFailure);
    }
@@ -434,6 +465,7 @@ public class DataManagementService extends RoboService implements SharedPreferen
       logger.debug("Starting USB datasource");
       if(path.length > 0) {
          final DatasourceContentClient dClient = new DatasourceContentClient(this);
+         getContentResolver().delete(DatasourceContract.Folder.CONTENT_URI, "", null);//clear to avoid previous error will block all following operation
          dClient.addFolderRequest(path);
          getContentResolver().registerContentObserver(DatasourceContract.Folder.CONTENT_URI, true, new ContentObserver(handler) {
 
@@ -446,7 +478,7 @@ public class DataManagementService extends RoboService implements SharedPreferen
                if (dClient.isRequestProcessed()) {
                   logger.info("Got responses from all datasources, continuing. selfchange {}", selfChange);
                   getContentResolver().unregisterContentObserver(this);
-                  handler.postDelayed(dClient.hasValid() ? onSuccess : onFailure, 2000);
+                  handler.postDelayed(dClient.hasValid() ? onSuccess : onFailure, 2000 );
                   getContentResolver().delete(DatasourceContract.Folder.CONTENT_URI, "", null);
                }
                else {
@@ -579,6 +611,7 @@ public class DataManagementService extends RoboService implements SharedPreferen
       @Override
       protected DataManagementSession doInBackground(DataManagementSession... params) {
          DataManagementSession session = params[0];
+         session.setProgress(true);
          try {
             if (session.getSources() == null && session.getSourceTypes() != null) { //export
                session.setSources(dsHelper.getLocalDatasources(session.getSourceTypes()));
@@ -591,6 +624,7 @@ public class DataManagementService extends RoboService implements SharedPreferen
             if (addrs == null || addrs.length > 0) {
                session.setObjectData(mediator.discovery(addrs));
                if (session.getObjectData() == null || session.getObjectData().isEmpty()) {
+                  session.setProgress(false);
                   globalEventManager.fire(new ErrorEvent(session, ErrorEvent.DataError.NO_DATA));
                   session.setResult(Result.NO_DATASOURCE);
                }
@@ -599,12 +633,14 @@ public class DataManagementService extends RoboService implements SharedPreferen
                }
             }
             else {
+               session.setProgress(false);
                globalEventManager.fire(new ErrorEvent(session, ErrorEvent.DataError.NO_SOURCE_DATASOURCE));
                session.setResult(Process.Result.NO_DATASOURCE);
             }
          }
          catch (Throwable e) {
             logger.debug("error in discovery", e);
+            session.setProgress(false);
             globalEventManager.fire(new ErrorEvent(session, ErrorEvent.DataError.DISCOVERY_ERROR, Throwables.getRootCause(e).getMessage()));
             session.setResult(Process.Result.ERROR);
          }
@@ -614,10 +650,14 @@ public class DataManagementService extends RoboService implements SharedPreferen
 
    private void resolveTargets(DataManagementSession session) {
       if (session.getTargets() == null && session.getDestinationTypes() != null) { //resolve by type
+         logger.debug("session.getTargets() is null and type isn't null");
          session.setTargets(dsHelper.getLocalDatasources(session.getDestinationTypes()));
       }
-      else if (session.getTarget().getAddress() == null) { //if MediumDevice hasn't been resolved
+      else if (session.getTarget() != null && session.getTarget().getAddress() == null) { //if MediumDevice hasn't been resolved
          session.setTargets(dsHelper.getLocalDatasources(session.getTarget().getType()));
+      }
+      else if(session.getTarget() == null){
+         logger.debug("the Target is null");
       }
    }
 
@@ -626,6 +666,7 @@ public class DataManagementService extends RoboService implements SharedPreferen
       protected DataManagementSession doInBackground(DataManagementSession... params) {
          logger.debug("Calculate Targets...");
          DataManagementSession session = params[0];
+         session.setProgress(true);
          try {
             resolveTargets(session);
             Address[] addresses = getAddresses(session.getTargets());
@@ -637,12 +678,14 @@ public class DataManagementService extends RoboService implements SharedPreferen
             }
             else {
                logger.warn("Skipping calculate targets");
+               session.setProgress(false);
                globalEventManager.fire(new ErrorEvent(session, ErrorEvent.DataError.NO_TARGET_DATASOURCE));
                session.setResult(Process.Result.NO_DATASOURCE);
             }
          }
          catch (Throwable e) {
             logger.error("Send exception in CalculateTargets: ", e);
+            session.setProgress(false);
             globalEventManager.fire(new ErrorEvent(session, ErrorEvent.DataError.CALCULATE_TARGETS_ERROR, Throwables.getRootCause(e).getMessage()));
             session.setResult(Process.Result.ERROR);
          }
@@ -655,6 +698,7 @@ public class DataManagementService extends RoboService implements SharedPreferen
       protected DataManagementSession doInBackground(DataManagementSession... params) {
          logger.debug("Calculate Conflicts...");
          DataManagementSession session = params[0];
+         session.setProgress(true);
          try {
             Address[] addresses = getAddresses(session.getTargets());
             if (addresses == null || addresses.length > 0) {
@@ -667,6 +711,7 @@ public class DataManagementService extends RoboService implements SharedPreferen
          }
          catch (Throwable e) {
             logger.error("Send exception", e);
+            session.setProgress(false);
             globalEventManager.fire(new ErrorEvent(session, ErrorEvent.DataError.CALCULATE_CONFLICT_ERROR, Throwables.getRootCause(e).getMessage()));
             session.setResult(Process.Result.ERROR);
          }
@@ -679,6 +724,7 @@ public class DataManagementService extends RoboService implements SharedPreferen
       protected DataManagementSession doInBackground(DataManagementSession... params) {
          logger.debug("Performing Operations...");
          DataManagementSession session = params[0];
+         session.setProgress(true);
          try {
             resolveTargets(session);
             if (session.getData() == null) {
@@ -697,6 +743,7 @@ public class DataManagementService extends RoboService implements SharedPreferen
                      hasCancelled |= Result.CANCEL.equals(ret.getValue().getResult());
                   }
                   else {//suspect/unreachable
+                     session.setProgress(false);//possible fire will happen before view change
                      globalEventManager.fire(new ErrorEvent(session, ErrorEvent.DataError.PERFORM_ERROR));
                      session.setResult(Result.ERROR);
                   }
@@ -709,6 +756,7 @@ public class DataManagementService extends RoboService implements SharedPreferen
                }
             }
             else {
+               session.setProgress(false);
                globalEventManager.fire(new ErrorEvent(session, ErrorEvent.DataError.NO_TARGET_DATASOURCE));
                session.setResult(Process.Result.NO_DATASOURCE);
             }
@@ -716,6 +764,7 @@ public class DataManagementService extends RoboService implements SharedPreferen
          catch (Throwable e) {
             logger.error("Send exception in PerformOperation:", e);
             session.setResult(Process.Result.ERROR);
+            session.setProgress(false);
             globalEventManager.fire(new ErrorEvent(session, ErrorEvent.DataError.PERFORM_ERROR, Throwables.getRootCause(e).toString()));
 
          }
@@ -790,6 +839,7 @@ public class DataManagementService extends RoboService implements SharedPreferen
       protected DataManagementSession doInBackground(DataManagementSession... params) {
          logger.debug("Cancelling...");
          DataManagementSession session = params[0];
+         session.setProgress(true);
          try {
             Address[] addresses = getAddresses(session.getTargets());
             //if process already running tell it to cancel.
@@ -819,11 +869,60 @@ public class DataManagementService extends RoboService implements SharedPreferen
             super.onPostExecute(session);
          }
          else {
+            session.setProgress(false);
             sendStatus(session, statusCancelling);
          }
       }
    }
 
+   private class UpdateOperationsTask extends SessionOperationTask<Void> {
+      @Override
+      protected DataManagementSession doInBackground(DataManagementSession... params) {
+         logger.debug("Update Operations...");
+         DataManagementSession session = params[0];
+         session.setProgress(true);
+         try {
+            if (session.getData().get(0).getData().getSource().size() > 0) {
+               session.setResults(mediator.updateOperations(session.getData(), session.getData().get(0).getData().getSource()));
+               boolean hasCancelled = Result.CANCEL.equals(session.getResult());
+               for (Rsp<Process> ret : session.getResults()) {
+                  if (ret.hasException()) throw ret.getException();
+                  if (ret.wasReceived() && ret.getValue() != null && ret.getValue().getResult() != null) {
+                     hasCancelled |= Result.CANCEL.equals(ret.getValue().getResult());
+                  }
+                  else {//suspect/unreachable
+                     globalEventManager.fire(new ErrorEvent(session, ErrorEvent.DataError.PERFORM_ERROR));
+                     session.setResult(Result.ERROR);
+                  }
+               }
+               if (hasCancelled) {
+                  session.setResult(Result.CANCEL);
+               }
+               else {
+                  session.setResult(Result.SUCCESS);
+               }
+            }
+            else {
+               globalEventManager.fire(new ErrorEvent(session, ErrorEvent.DataError.NO_TARGET_DATASOURCE));
+               session.setResult(Process.Result.NO_DATASOURCE);
+            }
+         }
+         catch (Throwable e) {
+            logger.error("Send exception in UpdateOperation:", e);
+            session.setResult(Process.Result.ERROR);
+            globalEventManager.fire(new ErrorEvent(session, ErrorEvent.DataError.PERFORM_ERROR, Throwables.getRootCause(e).toString()));
+
+         }
+         return session;
+      }
+
+      @Override
+      protected void onPostExecute(DataManagementSession session) {
+         logger.debug("PerformTask calling completeOperation");
+         completeOperation(session);
+         super.onPostExecute(session);
+      }
+   }
    private class StopTask extends AsyncTask<Address, Void, Void> {
       @Override
       protected Void doInBackground(Address... params) {
@@ -842,6 +941,7 @@ public class DataManagementService extends RoboService implements SharedPreferen
       @Override
       protected void onPostExecute(DataManagementSession session) {
          super.onPostExecute(session);
+         session.setProgress(false);
          if (session.getResult() != Result.ERROR) {
             for (IDataManagementListenerAIDL listener : listeners.values()) {
                try {

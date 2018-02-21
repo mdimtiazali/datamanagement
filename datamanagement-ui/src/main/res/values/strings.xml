@@ -52,15 +52,17 @@
     <string name="import_drag_and_drop"><![CDATA[Drag & Drop \nto Import \nto PCM/Display]]></string>
     <string name="export_drag_and_drop"><![CDATA[Drag & Drop \nto Export]]></string>
     <string name="select_all">Select All</string>
+    <string formatted="false" name="x_of_y_format">%d of %d</string>
     <string name="usb_string">USB</string>
     <string name="display_string">Display</string>
     <string name="display_numbered">Display %d</string>
     <string name="display_named">Display %s</string>
     <string name="select_string">Select</string>
-    <string name="export_to">Export To:</string>
+    <string name="export_to">Destination:</string>
     <string name="export_format">Export Format:</string>
     <string name="tab_export">Export</string>
     <string name="percent_complete">% Complete</string>
+    <string name="loading_string">Loading</string>
     <string name="exporting_string">Exporting</string>
     <string name="importing_string">Importing</string>
     <string name="exporting_data">Exporting Data</string>
@@ -77,6 +79,7 @@
     <string name="rename_file">Rename %s</string>
     <string name="file_name">File Name</string>
     <string name="empty_discovery">No data found</string>
+    <string name="export_cancel_confirmation">This will cancel current export.\nDo you want to proceed?</string>
 
     <string name="format_description">ISOXML:
       \nAll files can be exported in ISOXML.
@@ -96,6 +99,10 @@
     <string name="status_cancelling">Cancelling...</string>
     <string name="status_successful">Successful</string>
     <string name="status_starting">Starting...</string>
+    <string name="import_complete">Import Completed</string>
+    <string name="import_cancel">Import Cancelled</string>
+    <string name="export_complete">Export Completed</string>
+    <string name="export_cancel">Export Cancelled</string>
 
     <string name="usb_data_available">USB Data Available</string>
     <string name="usb_no_data_available">No USB Data Available</string>
@@ -219,5 +226,14 @@
     <string name="variety_list_header_name_text">NAME</string>
     <string name="variety_not_available">You have no varieties added.</string>
     <string name="variety_search_hint">Variety, crop type</string>
+    <string name="tab_management">Management</string>
+    <string name="edit_field_name">Name</string>
+    <string name="edit_dialog_header">Edit Name</string>
+    <string name="edit_dialog_save">Save</string>
+    <string name="edit_dialog_cancel">Cancel</string>
+    <string name="tab_mng_none_header">Select item(s) to edit, copy, or delete</string>
+    <string name="tab_mng_items_header">%1$d Item(s) Selected</string>
     <!-- end of productlibrary-package usage -->
+    <string name="edit_name_warning">The item with this name already exists. Please choose a different name</string>
+    <string name="edit_update_title">Updating item</string>
 </resources>

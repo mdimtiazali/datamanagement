@@ -49,4 +49,19 @@
     <dimen name="variety_dialog_content_padding_top">10dp</dimen>
     <dimen name="variety_dialog_content_padding_bottom">2dp</dimen>
     <dimen name="variety_dialog_content_padding_left_and_right">42dp</dimen>
+    <!--hard code for mngmnt tab-->
+    <dimen name="header_indent_width">28dp</dimen>
+    <dimen name="button_margin_top">4dp</dimen>
+    <dimen name="button_margin_bottom">4dp</dimen>
+    <dimen name="select_button_width">136dp</dimen>
+    <dimen name="del_button_width">96dp</dimen>
+    <dimen name="button_height">48dp</dimen>
+    <dimen name="header_height">56dp</dimen>
+    <dimen name="button_margin_right">8dp</dimen>
+
+    <!-- Import/Export perform - left layout -->
+    <dimen name="dataexchange_perform_box_top_margin">16dp</dimen>
+    <dimen name="dataexchange_perform_box_bottom_margin">16dp</dimen>
+    <dimen name="dataexchange_perform_title_to_progressbar_margin">22dp</dimen>
+
 </resources>
