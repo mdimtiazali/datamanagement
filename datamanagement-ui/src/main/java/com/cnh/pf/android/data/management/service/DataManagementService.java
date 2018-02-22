@@ -8,6 +8,7 @@
  */
 package com.cnh.pf.android.data.management.service;
 
+import static android.os.Environment.MEDIA_BAD_REMOVAL;
 import static com.cnh.pf.data.management.service.ServiceConstants.ACTION_STOP;
 
 import android.app.Application;
@@ -476,8 +477,13 @@ public class DataManagementService extends RoboService implements SharedPreferen
                }
             }, new Runnable() {
                @Override public void run() {
-                  globalEventManager.fire(new ErrorEvent(session, ErrorEvent.DataError.NO_TARGET_DATASOURCE));
+                  logger.debug("Unable to start USB services for USB export");
+                  if (Environment.getExternalStorageState().equals(MEDIA_BAD_REMOVAL) && isFaultServiceConnected()) {
+                     faultService.getFault(FaultCode.USB_REMOVED_DURING_EXPORT).alert();
+                  }
+                  session.setProgress(false);
                   session.setResult(Process.Result.NO_DATASOURCE);
+                  globalEventManager.fire(new ErrorEvent(session, ErrorEvent.DataError.NO_TARGET_DATASOURCE));
                }
             });
          }
@@ -517,7 +523,7 @@ public class DataManagementService extends RoboService implements SharedPreferen
 
    private void startUsbServices(String[] path, boolean create, String format, String intent, final Runnable onSuccess, final Runnable onFailure) {
       logger.debug("Starting USB datasource");
-      if(path.length > 0) {
+      if(path.length > 0 && !Environment.getExternalStorageState().equals(MEDIA_BAD_REMOVAL)) {
          final DatasourceContentClient dClient = new DatasourceContentClient(this);
          getContentResolver().delete(DatasourceContract.Folder.CONTENT_URI, "", null);//clear to avoid previous error will block all following operation
          dClient.addFolderRequest(path);
@@ -797,6 +803,11 @@ public class DataManagementService extends RoboService implements SharedPreferen
          try {
             if (!resolveSources(session) || !resolveTargets(session)) {
                logger.debug("Unable to resolve source/target addresses");
+               if (Environment.getExternalStorageState().equals(MEDIA_BAD_REMOVAL) && isFaultServiceConnected()) {
+                  if (isUsbExport(session)) {
+                     faultService.getFault(FaultCode.USB_REMOVED_DURING_EXPORT).alert();
+                  }
+               }
                session.setResult(Result.CANCEL);
                session.setProgress(false);
                return session;
