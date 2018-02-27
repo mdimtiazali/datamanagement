@@ -19,7 +19,6 @@ import com.cnh.jgroups.Datasource;
 import com.cnh.jgroups.ObjectGraph;
 import com.cnh.jgroups.Operation;
 import com.cnh.pf.android.data.management.adapter.ObjectTreeViewAdapter;
-import com.cnh.pf.android.data.management.adapter.SelectionTreeViewAdapter;
 import com.cnh.pf.android.data.management.dialog.EditDialog;
 import com.cnh.pf.android.data.management.graph.GroupObjectGraph;
 import com.cnh.pf.data.management.DataManagementSession;
@@ -37,8 +36,6 @@ import java.util.List;
 import java.util.Set;
 
 import pl.polidea.treeview.ImplicitSelectLinearLayout;
-import pl.polidea.treeview.InMemoryTreeStateManager;
-import pl.polidea.treeview.TreeBuilder;
 import pl.polidea.treeview.TreeNodeInfo;
 
 /**
@@ -262,32 +259,11 @@ public class ManageFragment extends BaseDataFragment {
       }
    }
 
-   private void init() {
-      enableButtons(true);
-      header.setText(getResources().getString(R.string.tab_mng_none_header));
-      if (manager == null) {
-         manager = new InMemoryTreeStateManager<ObjectGraph>();
-      }
-      else {
-         manager.clear();
-      }
-      if (treeBuilder == null) {
-         treeBuilder = new TreeBuilder<ObjectGraph>(manager);
-      }
-      else {
-         treeBuilder.clear();
-      }
-   }
-
+   /** Since the tree list on Management tab requires different behaviors (edit,delete,...),
+    * this fragment doesn't use tree adapter provided by the BaseDataFragment.
+    */
    @Override
-   void initiateTree() {
-      logger.debug("initateTree");
-      init();
-      data = session != null && session.getObjectData() != null ? session.getObjectData() : new ArrayList<ObjectGraph>();
-      for (ObjectGraph graph : data) {
-         addToTree(null, graph);
-      }
-
+   public void createTreeAdapter() {
       if (treeAdapter == null) {
          treeAdapter = new ObjectTreeViewAdapter(getActivity(), manager, 1) {
             @Override
@@ -465,18 +441,13 @@ public class ManageFragment extends BaseDataFragment {
       else {
          treeAdapter.getSelectionMap().clear();
       }
-      treeAdapter.setData(data);
-      treeViewList.removeAllViewsInLayout();
-      treeViewList.setVisibility(View.VISIBLE);
-      treeViewList.setAdapter(treeAdapter);
-      manager.collapseChildren(null);
-      treeAdapter.setOnTreeItemSelectedListener(new SelectionTreeViewAdapter.OnTreeItemSelectedListener() {
-         @Override
-         public void onItemSelected() {
-            logger.debug("onTreeItemSelected");
-            onTreeItemSelected();
-         }
-      });
+   }
+
+   @Override
+   protected void initializeTree() {
+      super.initializeTree();
+      // display header message when tree items get populated.
+      header.setText(getResources().getString(R.string.tab_mng_none_header));
    }
 
    @Override
