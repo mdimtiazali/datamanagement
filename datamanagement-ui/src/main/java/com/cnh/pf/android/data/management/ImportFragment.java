@@ -10,6 +10,7 @@
 package com.cnh.pf.android.data.management;
 
 import android.os.Bundle;
+import android.os.Environment;
 import android.os.RemoteException;
 import android.view.DragEvent;
 import android.view.LayoutInflater;
@@ -49,6 +50,7 @@ import roboguice.event.Observes;
 import roboguice.inject.InjectResource;
 import roboguice.inject.InjectView;
 
+import static android.os.Environment.MEDIA_BAD_REMOVAL;
 
 
 /**
@@ -165,7 +167,7 @@ public class ImportFragment extends BaseDataFragment {
 
    @Override
    protected void onOtherSessionUpdate(DataManagementSession session) {
-      logger.debug("Other session has been updated");
+      logger.debug("Other session has been updated: {}", session.getSessionOperation().name());
       if (session.getSessionOperation().equals(SessionOperation.PERFORM_OPERATIONS)) {
          logger.trace("Other operation completed. Enabling UI.");
          checkImportButton();
@@ -178,7 +180,6 @@ public class ImportFragment extends BaseDataFragment {
             && (s.getSessionOperation().equals(SessionOperation.CALCULATE_CONFLICTS) || s.getSessionOperation().equals(SessionOperation.CALCULATE_OPERATIONS)
                   || (s.getSessionOperation().equals(SessionOperation.PERFORM_OPERATIONS) && s.getResult() == null));
       boolean connected = getDataManagementService() != null;
-      isActiveOperation |= connected && getDataManagementService().hasActiveSession();
       boolean hasSelection = getTreeAdapter() != null && getTreeAdapter().hasSelection();
       boolean defaultButtonText = true;
       if (getTreeAdapter() != null && getTreeAdapter().getSelectionMap() != null) {
@@ -205,6 +206,7 @@ public class ImportFragment extends BaseDataFragment {
       if(getSession() == null){
          setSession(createSession());
       }
+      setCancelled(false);
       configSession(getSession());
       getSession().setSources(event.getDevices());
       getDataManagementService().processOperation(getSession(), SessionOperation.DISCOVERY);
@@ -253,7 +255,7 @@ public class ImportFragment extends BaseDataFragment {
       if(getSession().getSessionOperation().equals(SessionOperation.DISCOVERY)){
          previousDevices = null;//clean to null
          idleUI();
-         pathTv.setText("");
+         pathText.setText("");
          startText.setVisibility(View.VISIBLE);
       }
       else {
@@ -280,10 +282,10 @@ public class ImportFragment extends BaseDataFragment {
    @Override
    public void processOperations() {
       // need to take care of error case in here
+      logger.debug("processOperations()-SessionOperation:{}, Result:{}", getSession().getSessionOperation().name(), getSession().getResult().name());
       if(getSession().getResult().equals(Process.Result.NO_DATASOURCE) && getSession().getSessionOperation().equals(SessionOperation.DISCOVERY)){
          removeProgressPanel();
          startText.setVisibility(View.VISIBLE);
-
       }
       else if(getSession().getResult().equals(Process.Result.ERROR)) {
          if(getSession().getSessionOperation().equals(SessionOperation.DISCOVERY)){
@@ -294,15 +296,19 @@ public class ImportFragment extends BaseDataFragment {
             postTreeUI();
          }
       }
+      else if (getSession().getResult().equals(Process.Result.CANCEL)) {
+         getSession().setSessionOperation(SessionOperation.DISCOVERY);
+         checkImportButton();
+      }
       else {
          if (getSession().getSessionOperation().equals(SessionOperation.DISCOVERY)){
             if(previousDevices != null){
 
                if(previousDevices.get(0).getType().equals(Datasource.Source.USB)){
-                  pathTv.setText(previousDevices.get(0).getPath() == null ? "" : previousDevices.get(0).getPath().getPath());
+                  pathText.setText(previousDevices.get(0).getPath() == null ? "" : previousDevices.get(0).getPath().getPath());
                }
                else {
-                  pathTv.setText(getString(R.string.display_named, previousDevices.get(0).getName()));
+                  pathText.setText(getString(R.string.display_named, previousDevices.get(0).getName()));
                }
             }
 
@@ -497,5 +503,28 @@ public class ImportFragment extends BaseDataFragment {
    @Override
    public void onMediumsUpdated(List<MediumDevice> mediums) throws RemoteException {
       logger.info("onMediumsUpdated {}", mediums);
+      boolean usbFound = false;
+
+      for (MediumDevice medium : mediums) {
+         if (medium.getType() == Datasource.Source.USB) {
+            usbFound = true;
+            break;
+         }
+      }
+
+      // No USB plugged in. Reset the screen to initial state and reset session state as well.
+      if (!usbFound && !isCancelled() && Environment.getExternalStorageState().equals(MEDIA_BAD_REMOVAL)) {
+         logger.debug("Reset the import screen and session state.");
+         if (getTreeAdapter() != null) getTreeAdapter().selectAll(treeViewList, false);
+         processDialog.hide();
+         setCancelled(true);
+         checkImportButton();
+         sessionInit(getSession());
+         removeProgressPanel();
+         getSession().setObjectData(null);
+         pathText.setText("");
+         startText.setVisibility(View.VISIBLE);
+         updateSelectAllState();
+      }
    }
 }

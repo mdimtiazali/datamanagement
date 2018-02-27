@@ -305,12 +305,6 @@ public class ExportFragment extends BaseDataFragment {
       if (getArguments() != null) {
          getArguments().putParcelable(SAVED_MEDIUM, null);
       }
-      //cancel session if USB stick has been removed - but service did not stop export process
-      DataManagementService dataManagementService = getDataManagementService();
-      if (dataManagementService != null && dataManagementService.hasActiveSession()) {
-         logger.error("Stopped current session in DataManagementService!");
-         dataManagementService.cancel(getSession());
-      }
    }
 
    private void populateFormatPickList() {
@@ -528,16 +522,6 @@ public class ExportFragment extends BaseDataFragment {
                   Toast.makeText(getActivity(), getString(R.string.export_complete), Toast.LENGTH_LONG).show();
                }
                else {
-                  if (session.getResult().equals(Process.Result.CANCEL)) {
-                     Toast.makeText(getActivity(), getString(R.string.export_cancel), Toast.LENGTH_LONG).show();
-                     createSession();
-
-                     exportFinishedStatePanel.setVisibility(View.GONE);
-                     leftStatusPanel.setVisibility(View.GONE);
-                     exportDropZone.setVisibility(View.VISIBLE);
-                     treeViewList.setVisibility(View.GONE);
-
-                  }
                   showDragAndDropZone();
                }
                configSession(session);
@@ -677,7 +661,6 @@ public class ExportFragment extends BaseDataFragment {
    private void checkExportButton() {
       DataManagementSession s = getSession();
       boolean isActiveOperation = s != null && s.getSessionOperation().equals(SessionOperation.PERFORM_OPERATIONS) && s.getResult() == null;
-      isActiveOperation |= getDataManagementService().hasActiveSession();
       boolean defaultButtonText = true;
       if (getTreeAdapter() != null && getTreeAdapter().getSelectionMap() != null) {
          int selectedItemCount = getTreeAdapter().getSelectionMap().size();

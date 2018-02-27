@@ -14,10 +14,7 @@ import static com.cnh.pf.data.management.service.ServiceConstants.ACTION_STOP;
 import android.app.Application;
 import android.app.NotificationManager;
 import android.content.SharedPreferences;
-import android.content.ServiceConnection;
-import android.content.ComponentName;
 import android.content.Intent;
-import android.content.Context;
 import android.database.ContentObserver;
 import android.graphics.drawable.BitmapDrawable;
 import android.net.Uri;
@@ -38,8 +35,8 @@ import com.cnh.jgroups.Operation;
 import com.cnh.pf.android.data.management.R;
 import com.cnh.pf.android.data.management.RoboModule;
 import com.cnh.pf.android.data.management.connection.DataServiceConnectionImpl.ErrorEvent;
+import com.cnh.pf.android.data.management.fault.DMFaultHandler;
 import com.cnh.pf.android.data.management.fault.FaultCode;
-import com.cnh.pf.android.data.management.fault.FaultService;
 import com.cnh.pf.android.data.management.helper.DatasourceHelper;
 import com.cnh.pf.android.data.management.parser.FormatManager;
 import com.cnh.pf.data.management.DataManagementSession;
@@ -72,6 +69,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.atomic.AtomicReference;
 
 import javax.annotation.Nullable;
 import javax.inject.Inject;
@@ -108,6 +106,9 @@ public class DataManagementService extends RoboService implements SharedPreferen
    @Inject
    private FormatManager formatManager;
 
+   @Inject
+   private DMFaultHandler faultHandler;
+
    @InjectResource(R.string.exporting_string)
    private String exporting;
    @InjectResource(R.string.importing_string)
@@ -125,7 +126,28 @@ public class DataManagementService extends RoboService implements SharedPreferen
    NotificationManager notifyManager;
 
    boolean performCalled;
-   private Map<DataManagementSession, Status> activeSessions = new HashMap<DataManagementSession, Status>();
+   // This is to keep track of a session's STATUS and send broadcast message to STATUS UI.
+   private Map<DataManagementSession, Status> activeStatusUpdateSessions = new HashMap<DataManagementSession, Status>();
+   // This is to maintain reference to current active session.
+   private AtomicReference<DataManagementSession> currentSession = new AtomicReference<DataManagementSession>();
+
+   private void setCurrentSession(final DataManagementSession session) {
+      currentSession.set(session);
+   }
+
+   private DataManagementSession getCurrentSession() {
+      return currentSession.get();
+   }
+
+   private boolean hasActiveSession() {
+      if (currentSession.get() != null) {
+         return currentSession.get().getSessionOperation() == DataManagementSession.SessionOperation.DISCOVERY ||
+                 currentSession.get().getSessionOperation() == DataManagementSession.SessionOperation.PERFORM_OPERATIONS ||
+                 currentSession.get().getSessionOperation() == DataManagementSession.SessionOperation.CALCULATE_CONFLICTS ||
+                 currentSession.get().getSessionOperation() == DataManagementSession.SessionOperation.CALCULATE_OPERATIONS;
+      }
+      return false;
+   }
 
    ConcurrentHashMap<String, IDataManagementListenerAIDL> listeners = new ConcurrentHashMap<String, IDataManagementListenerAIDL>();
    private Handler handler = new Handler();
@@ -138,41 +160,6 @@ public class DataManagementService extends RoboService implements SharedPreferen
    private static Status dataStatus;
 
    private boolean isScanningUsb;
-
-   /* A service to provide fault alert/reset functionality */
-   private FaultService faultService;
-   private ServiceConnection faultServiceConnection = new ServiceConnection() {
-      @Override
-      public void onServiceConnected(ComponentName name, IBinder service) {
-         FaultService.LocalBinder binder = (FaultService.LocalBinder) service;
-         faultService = binder.getService();
-      }
-
-      @Override
-      public void onServiceDisconnected(ComponentName name) {
-         faultService = null;
-      }
-   };
-
-   private boolean isFaultServiceConnected() {
-      return faultService != null;
-   }
-
-   /**
-    * Bind to fault service
-    */
-   private void bindFaultService() {
-      bindService(new Intent(this, FaultService.class), faultServiceConnection, Context.BIND_AUTO_CREATE);
-   }
-
-   /**
-    * Disconnect from fault service
-    */
-   private void unbindFaultService() {
-      if (isFaultServiceConnected()) {
-         unbindService(faultServiceConnection);
-      }
-   }
 
    @Override
    public int onStartCommand(Intent intent, int flags, int startId) {
@@ -187,9 +174,8 @@ public class DataManagementService extends RoboService implements SharedPreferen
       }
       else if (Intent.ACTION_MEDIA_MOUNTED.equals(intent.getAction())) {
          sendMediumUpdateEvent();
-         if (isFaultServiceConnected()) {
-            faultService.getFault(FaultCode.USB_REMOVED_DURING_EXPORT).reset();
-         }
+         faultHandler.getFault(FaultCode.USB_REMOVED_DURING_EXPORT).reset();
+         faultHandler.getFault(FaultCode.USB_REMOVED_DURING_IMPORT).reset();
          /*Uri mount = intent.getData();
          File mountFile = new File(mount.getPath());
          logger.info("Media has been mounted @{}: ", mountFile.getAbsolutePath());
@@ -198,18 +184,31 @@ public class DataManagementService extends RoboService implements SharedPreferen
       else if (Intent.ACTION_MEDIA_UNMOUNTED.equals(intent.getAction()) || Intent.ACTION_MEDIA_BAD_REMOVAL.equals(intent.getAction())
             || Intent.ACTION_MEDIA_REMOVED.equals(intent.getAction()) || Intent.ACTION_MEDIA_EJECT.equals(intent.getAction())) {
          logger.info("Media has been unmounted");
-         if (performCalled && hasActiveSession() && Intent.ACTION_MEDIA_BAD_REMOVAL.equals(intent.getAction())) {
-            logger.debug("Bad USB removal during performOperation");
-            // If USB stick gets pulled out during the perform operation, the current ongoing session
-            // needs to be cancelled and alert corresponding fault.
-            final DataManagementSession activeSession = getActiveSession();
-            cancel(activeSession);
-            if (isUsbExport(activeSession) && isFaultServiceConnected()) {
-               faultService.getFault(FaultCode.USB_REMOVED_DURING_EXPORT).alert();
+         if (hasActiveSession() && Intent.ACTION_MEDIA_BAD_REMOVAL.equals(intent.getAction())) {
+            logger.debug("Bad USB removal during task");
+            // If USB stick gets pulled out during the task (discovery, perform operation),
+            // the current ongoing session needs to be cancelled and alert corresponding fault.
+            final DataManagementSession currentSession = getCurrentSession();
+            logger.debug("Current active session: {}", currentSession);
+
+            if (currentSession.isProgress() && (isUsbImport(currentSession) || isUsbExport(currentSession))) {
+               logger.debug("USB unplugged while interacting with datasources. Cancel the current session.");
+               cancel(currentSession);
+               FaultCode faultCode = isUsbExport(currentSession) ? FaultCode.USB_REMOVED_DURING_EXPORT :
+                       FaultCode.USB_REMOVED_DURING_IMPORT;
+               faultHandler.getFault(faultCode).alert();
+            } else if (isUsbImport(currentSession) && currentSession.getObjectData() != null &&
+                    (currentSession.getSessionOperation() == DataManagementSession.SessionOperation.DISCOVERY ||
+                    currentSession.getSessionOperation() == DataManagementSession.SessionOperation.CALCULATE_CONFLICTS)) {
+               logger.debug("USB unplugged while waiting for the user response (discovery/conflict resolution).");
+
+               currentSession.setResult(Result.CANCEL);
+               currentSession.setSessionOperation(DataManagementSession.SessionOperation.DISCOVERY);
+               faultHandler.getFault(FaultCode.USB_REMOVED_DURING_IMPORT).alert();
             }
-         } else {
-            sendMediumUpdateEvent();
          }
+
+         sendMediumUpdateEvent();
          removeUsbStatus();
       }
       return START_STICKY;
@@ -242,12 +241,10 @@ public class DataManagementService extends RoboService implements SharedPreferen
       catch (Exception e) {
          logger.error("error in onCreate", e);
       }
-      bindFaultService();
    }
 
    @Override
    public void onDestroy() {
-      unbindFaultService();
       stopUsbServices();
       sendBroadcast(new Intent(ServiceConstants.ACTION_INTERNAL_DATA_STOP).addFlags(Intent.FLAG_INCLUDE_STOPPED_PACKAGES));
       removeUsbStatus();
@@ -263,8 +260,8 @@ public class DataManagementService extends RoboService implements SharedPreferen
    }
 
    public DataManagementSession getSession() {
-      if (!activeSessions.isEmpty()) {
-         return activeSessions.keySet().iterator().next();
+      if (!activeStatusUpdateSessions.isEmpty()) {
+         return activeStatusUpdateSessions.keySet().iterator().next();
       }
       return null;
    }
@@ -361,6 +358,7 @@ public class DataManagementService extends RoboService implements SharedPreferen
       session.setSessionOperation(sessionOperation);
       session.setProgress(true);
       session.setResult(null);
+      setCurrentSession(session);
       if (sessionOperation.equals(DataManagementSession.SessionOperation.DISCOVERY)) {
          if (isUsbImport(session)) {
             if(session.getSource() != null && session.getSource().getPath() != null && Environment.getExternalStorageState().equals(Environment.MEDIA_MOUNTED)) {
@@ -374,6 +372,7 @@ public class DataManagementService extends RoboService implements SharedPreferen
                }, new Runnable() {
                   @Override
                   public void run() {
+                     logger.debug("Unable to start USB services for USB import");
                      session.setProgress(false);
                      session.setResult(Process.Result.NO_DATASOURCE);
                      globalEventManager.fire(new ErrorEvent(session, ErrorEvent.DataError.NO_SOURCE_DATASOURCE));
@@ -410,15 +409,15 @@ public class DataManagementService extends RoboService implements SharedPreferen
    }
 
    /**
-    * Return whether an operation is currently executing.
+    * Return whether an status-update required operation is currently executing.
     * @return true executing, false otherwise;
     */
-   public boolean hasActiveSession() {
-      return !isScanningUsb && getActiveSession() != null;
+   public boolean hasActiveStatusUpdateSession() {
+      return !isScanningUsb && getActiveStatusUpdateSession() != null;
    }
 
-   public DataManagementSession getActiveSession() {
-      for (Map.Entry<DataManagementSession, Status> entry : activeSessions.entrySet()) {
+   public DataManagementSession getActiveStatusUpdateSession() {
+      for (Map.Entry<DataManagementSession, Status> entry : activeStatusUpdateSessions.entrySet()) {
          if (entry.getKey().getResult() == null && entry.getKey().getSessionOperation().equals(DataManagementSession.SessionOperation.PERFORM_OPERATIONS)) {
             return entry.getKey();
          }
@@ -456,19 +455,18 @@ public class DataManagementService extends RoboService implements SharedPreferen
       return dsHelper.getLocalDatasources(new Datasource.Source[] {Datasource.Source.DISPLAY, Datasource.Source.INTERNAL}).size() > 0;
    }
 
-
    private void performOperations(final DataManagementSession session) {
       try {
          session.setResult(null);
          performCalled = false;
          Status status = new com.cnh.android.status.Status("", statusDrawable, getApplicationContext().getPackageName());
-         activeSessions.put(session, status);
+         activeStatusUpdateSessions.put(session, status);
          sendStatus(session, statusStarting);
          if (isUsbExport(session)) {
             File destinationFolder = new File(session.getTarget().getPath(), formatManager.getFormat(session.getFormat()).path);
             startUsbServices(new String[] { destinationFolder.getPath() }, true, session.getFormat(), new Runnable() {
                @Override public void run() {
-                  if (!hasActiveSession()) {
+                  if (!hasActiveStatusUpdateSession()) {
                      logger.debug("Operation cancelled before calling performOperations");
                      return; //if cancel was pressed before datasource started
                   }
@@ -478,14 +476,17 @@ public class DataManagementService extends RoboService implements SharedPreferen
             }, new Runnable() {
                @Override public void run() {
                   logger.debug("Unable to start USB services for USB export");
-                  if (Environment.getExternalStorageState().equals(MEDIA_BAD_REMOVAL) && isFaultServiceConnected()) {
-                     faultService.getFault(FaultCode.USB_REMOVED_DURING_EXPORT).alert();
-                  }
                   session.setProgress(false);
                   session.setResult(Process.Result.NO_DATASOURCE);
                   globalEventManager.fire(new ErrorEvent(session, ErrorEvent.DataError.NO_TARGET_DATASOURCE));
                }
             });
+         }
+         else if (isUsbImport(session) && Environment.getExternalStorageState().equals(MEDIA_BAD_REMOVAL)) {
+            logger.debug("Unable to continue PerformOperation for USB import");
+            session.setProgress(false);
+            session.setResult(Process.Result.NO_DATASOURCE);
+            globalEventManager.fire(new ErrorEvent(session, ErrorEvent.DataError.NO_SOURCE_DATASOURCE));
          }
          else {
             performCalled = true;
@@ -502,7 +503,7 @@ public class DataManagementService extends RoboService implements SharedPreferen
          session.setResult(null);
          performCalled = false;
          Status status = new com.cnh.android.status.Status("", statusDrawable, getApplicationContext().getPackageName());
-         activeSessions.put(session, status);
+         activeStatusUpdateSessions.put(session, status);
          sendStatus(session, statusStarting);
 
          performCalled = true;
@@ -751,7 +752,7 @@ public class DataManagementService extends RoboService implements SharedPreferen
             if (addresses == null || addresses.length > 0) {
                session.setData(mediator.calculateOperations(session.getObjectData(), addresses));
                logger.debug("Got operation: {}", session.getData());
-               session.setResult(Process.Result.SUCCESS);
+               session.setResult(Result.CANCEL.equals(session.getResult()) ? Result.CANCEL : Result.SUCCESS);
             } else {
                logger.warn("Skipping calculate targets");
                session.setProgress(false);
@@ -779,13 +780,13 @@ public class DataManagementService extends RoboService implements SharedPreferen
             Address[] addresses = getAddresses(session.getTargets());
             if (addresses == null || addresses.length > 0) {
                session.setData(mediator.calculateConflicts(session.getData(), addresses));
-               session.setResult(Process.Result.SUCCESS);
+               session.setResult(Result.CANCEL.equals(session.getResult()) ? Result.CANCEL : Result.SUCCESS);
             } else {
                session.setResult(Process.Result.NO_DATASOURCE);
             }
          }
          catch (Throwable e) {
-            logger.error("Send exception", e);
+            logger.error("Send exception: ", e);
             session.setProgress(false);
             globalEventManager.fire(new ErrorEvent(session, ErrorEvent.DataError.CALCULATE_CONFLICT_ERROR, Throwables.getRootCause(e).getMessage()));
             session.setResult(Process.Result.ERROR);
@@ -803,11 +804,6 @@ public class DataManagementService extends RoboService implements SharedPreferen
          try {
             if (!resolveSources(session) || !resolveTargets(session)) {
                logger.debug("Unable to resolve source/target addresses");
-               if (Environment.getExternalStorageState().equals(MEDIA_BAD_REMOVAL) && isFaultServiceConnected()) {
-                  if (isUsbExport(session)) {
-                     faultService.getFault(FaultCode.USB_REMOVED_DURING_EXPORT).alert();
-                  }
-               }
                session.setResult(Result.CANCEL);
                session.setProgress(false);
                return session;
@@ -871,11 +867,9 @@ public class DataManagementService extends RoboService implements SharedPreferen
       }
       if (isUsbExport(session)) {//stop USB datasources after export
          new StopTask().execute(getAddresses(session.getTargets()));
-         // Update medium list in case USB mounting status changes during the process.
-         sendMediumUpdateEvent();
       }
 
-      final Status status = activeSessions.remove(session);
+      final Status status = activeStatusUpdateSessions.remove(session);
       handler.postDelayed(new Runnable() {
          @Override
          public void run() {
@@ -896,7 +890,7 @@ public class DataManagementService extends RoboService implements SharedPreferen
    }
 
    private void sendStatus(DataManagementSession session, String message) {
-      sendStatus(session, activeSessions.get(session), message);
+      sendStatus(session, activeStatusUpdateSessions.get(session), message);
    }
 
    private void sendStatus(DataManagementSession session, Status status, String message) {
@@ -938,7 +932,7 @@ public class DataManagementService extends RoboService implements SharedPreferen
             }
          }
          catch (Exception e) {
-            logger.error("Send exception", e);
+            logger.error("Send exception: ", e);
             globalEventManager.fire(new ErrorEvent(session, ErrorEvent.DataError.PERFORM_ERROR, Throwables.getRootCause(e).getMessage()));
          }
          return session;
@@ -951,12 +945,11 @@ public class DataManagementService extends RoboService implements SharedPreferen
          if (Process.Result.CANCEL.equals(session.getResult()) && !performCalled) {
             logger.debug("CancelTask calling completeOperation");
             completeOperation(session);
-            super.onPostExecute(session);
          }
          else {
-            session.setProgress(false);
             sendStatus(session, statusCancelling);
          }
+         session.setProgress(false);
       }
    }
 
@@ -1027,6 +1020,7 @@ public class DataManagementService extends RoboService implements SharedPreferen
       protected void onPostExecute(DataManagementSession session) {
          super.onPostExecute(session);
          session.setProgress(false);
+         logger.debug("onPostExecute: {}", this.getClass().getSimpleName());
          if (session.getResult() != Result.ERROR) {
             for (IDataManagementListenerAIDL listener : listeners.values()) {
                try {

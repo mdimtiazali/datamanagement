@@ -10,36 +10,33 @@
 package com.cnh.pf.android.data.management.fault;
 
 import android.app.Service;
-import android.content.Intent;
-import android.os.Binder;
-import android.os.IBinder;
 import com.cnh.pf.fault.FaultHandler;
 import com.cnh.pf.signal.OnConnectionChangeListener;
 import com.cnh.pf.signal.Producer;
 import com.cnh.pf.signal.SignalUri;
 import com.google.common.net.HostAndPort;
+import com.google.inject.Inject;
+import com.google.inject.Singleton;
+import com.google.inject.name.Named;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import roboguice.context.event.OnCreateEvent;
 import roboguice.context.event.OnDestroyEvent;
 import roboguice.event.EventThread;
 import roboguice.event.Observes;
-import roboguice.service.RoboService;
 
-import javax.inject.Inject;
-import javax.inject.Named;
 import java.util.HashMap;
 import java.util.Map;
 
 /**
- * FaultService manages the signal producer to send fault alert/reset signals and
+ * DMFaultHandler manages the signal producer to send fault alert/reset signals and
  * provides an fault object for the actual alert/reset behavior.
  *
  * @author: junsu.shin@cnhind.com
  */
-public class FaultService extends RoboService {
-   private static final Logger logger = LoggerFactory.getLogger(FaultService.class);
-   private LocalBinder localBinder = new LocalBinder();
+@Singleton
+public class DMFaultHandler implements OnConnectionChangeListener {
+   private static final Logger logger = LoggerFactory.getLogger(DMFaultHandler.class);
 
    @Inject
    @Named("daemon")
@@ -47,7 +44,21 @@ public class FaultService extends RoboService {
 
    private Producer producer;
    private FaultHandler faultHandler;
-   private boolean isConnected;
+
+   @Override
+   public void onConnectionChanged(boolean connected) {
+      logger.debug("onConnectionChanged: {}", connected);
+      if (connected) {
+         logger.debug("Initialize DM FaultHandler.");
+         faultHandler = new FaultHandler();
+         faultHandler.initialize(producer, SignalUri.FAULT_DM);
+
+         // reset all fault codes
+         for (FaultCode code : FaultCode.values()) {
+            getFault(code).reset();
+         }
+      }
+   }
 
    /**
     * Connect to signals
@@ -58,16 +69,8 @@ public class FaultService extends RoboService {
       logger.debug("Connecting to {}", daemonAddress);
       try {
          producer = new Producer(daemonAddress);
-         producer.setOnConnectionChangeListener(new OnConnectionChangeListener() {
-            @Override
-            public void onConnectionChanged(boolean connected) {
-               logger.debug("onConnectionChanged: {}", connected);
-               isConnected = connected;
-            }
-         });
+         producer.setOnConnectionChangeListener(this);
          producer.start();
-         faultHandler = new FaultHandler();
-         faultHandler.initialize(producer, SignalUri.FAULT_DM);
       }
       catch (Exception e) {
          logger.error("Exception in connecting to Signal", e);
@@ -116,6 +119,8 @@ public class FaultService extends RoboService {
       public void alert() {
          if (handler != null && handler.isInitialized()) {
             handler.setFault(code.getCode());
+         } else {
+            logger.debug("Fault handler is not ready.");
          }
       }
 
@@ -125,6 +130,8 @@ public class FaultService extends RoboService {
       public void reset() {
          if (handler != null && handler.isInitialized()) {
             handler.clearFault(code.getCode());
+         } else {
+            logger.debug("Fault handler is not ready.");
          }
       }
    }
@@ -142,26 +149,5 @@ public class FaultService extends RoboService {
       }
 
       return fault;
-   }
-
-   @Override
-   public IBinder onBind(Intent intent) {
-      logger.debug("onBind");
-      return localBinder;
-   }
-
-   @Override
-   public boolean onUnbind(Intent intent) {
-      logger.debug("onUnbind");
-      return super.onUnbind(intent);
-   }
-
-   /**
-    * Local binder class to provide fault service object.
-    */
-   public class LocalBinder extends Binder {
-      public FaultService getService() {
-         return FaultService.this;
-      }
    }
 }

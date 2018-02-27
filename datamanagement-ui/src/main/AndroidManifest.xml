@@ -52,7 +52,6 @@
       </receiver>
 
       <service android:name=".service.MulticastRouteService"/>
-      <service android:name=".fault.FaultService"/>
 
       <provider android:name="com.cnh.pf.android.data.management.service.DatasourceContentProvider"
          android:authorities="com.cnh.pf.android.data.management.datasourceprovider"
