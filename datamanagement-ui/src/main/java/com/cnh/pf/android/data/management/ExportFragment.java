@@ -11,6 +11,7 @@ package com.cnh.pf.android.data.management;
 
 import android.content.res.Resources;
 import android.os.Bundle;
+import android.os.Handler;
 import android.os.RemoteException;
 import android.view.DragEvent;
 import android.view.LayoutInflater;
@@ -53,6 +54,7 @@ import roboguice.inject.InjectView;
 
 /**
  * Export Tab Fragment, handles export to external mediums {USB, External Display}.
+ *
  * @author oscar.salazar@cnhind.com
  */
 public class ExportFragment extends BaseDataFragment {
@@ -68,11 +70,13 @@ public class ExportFragment extends BaseDataFragment {
    PickList exportFormatPicklist;
    @InjectView(R.id.export_drop_zone)
    LinearLayout exportDropZone;
+   @InjectView(R.id.export_finished_state_panel)
+   LinearLayout exportFinishedStatePanel;
    @InjectView(R.id.export_selected_btn)
    Button exportSelectedBtn;
    @InjectView(R.id.stop_button)
    ImageButton stopButton;
-   @InjectView(R.id.status_panel)
+   @InjectView(R.id.left_status_panel)
    LinearLayout leftStatusPanel;
    @InjectView(R.id.progress_bar)
    ProgressBarView progressBar;
@@ -84,11 +88,15 @@ public class ExportFragment extends BaseDataFragment {
    private int dragEnterColor;
    private int transparentColor;
 
+   private int progressCurrentValue = 0;
+   private int progressMaxValue = 0;
+
    private String loading_string;
    private String x_of_y_format;
 
    private TextDialogView lastDialogView;
    private static final int CANCEL_DIALOG_WIDTH = 550;
+   private static final int SHOWING_FEEDBACK_AFTER_PROGRESS_MS = 2000;
 
    @Override
    public void onCreate(Bundle savedInstanceState) {
@@ -99,6 +107,7 @@ public class ExportFragment extends BaseDataFragment {
       catch (Exception e) {
          logger.error("Error parsing xml file", e);
       }
+
       final Resources resources = getResources();
       dragAcceptColor = resources.getColor(R.color.drag_accept);
       dragRejectColor = resources.getColor(R.color.drag_reject);
@@ -138,7 +147,7 @@ public class ExportFragment extends BaseDataFragment {
                @Override
                public void onButtonClick(DialogViewInterface dialog, int buttonId) {
                   if (buttonId == TextDialogView.BUTTON_FIRST) {
-                     getDataManagementService().cancel(session);
+                     getDataManagementService().cancel(getSession());
                   }
 
                }
@@ -185,16 +194,31 @@ public class ExportFragment extends BaseDataFragment {
          }
       });
 
+      exportFinishedStatePanel.setVisibility(View.GONE);
       startText.setVisibility(View.GONE);
       operationName.setText(R.string.exporting_string);
    }
 
-   @Override public void onResume() {
+   @Override
+   public void onResume() {
       // Needs to clear tree selection. Otherwise, the previous selection is latched
       // until new DISCOVERY operation is finished.
       clearTreeSelection();
       populateExportToPickList();
       populateFormatPickList();
+      DataManagementSession session = getSession();
+      if (session != null) {
+         if (session.getResult() == null) {
+            //may be although null if building tree is in progress - additionally compare for session operation!
+            SessionOperation sessionOperation = session.getSessionOperation();
+            if (sessionOperation != null && sessionOperation.equals(SessionOperation.PERFORM_OPERATIONS)) {
+               //still in operation mode - disable picklists and show process
+               setExportPicklistsReadOnly(true);
+               showProgressPanel();
+               updateProgressbar(progressCurrentValue, progressMaxValue);
+            }
+         }
+      }
       super.onResume();
    }
 
@@ -281,6 +305,12 @@ public class ExportFragment extends BaseDataFragment {
       if (getArguments() != null) {
          getArguments().putParcelable(SAVED_MEDIUM, null);
       }
+      //cancel session if USB stick has been removed - but service did not stop export process
+      DataManagementService dataManagementService = getDataManagementService();
+      if (dataManagementService != null && dataManagementService.hasActiveSession()) {
+         logger.error("Stopped current session in DataManagementService!");
+         dataManagementService.cancel(getSession());
+      }
    }
 
    private void populateFormatPickList() {
@@ -341,44 +371,53 @@ public class ExportFragment extends BaseDataFragment {
       addMediumExportToPickList();
    }
 
-   private void addMediumExportToPickList(){
+   private boolean isExportProcessActive() {
+      DataManagementSession currentDataManagementSession = getSession();
+
+      return (null != currentDataManagementSession && (getSession().getSessionOperation() == SessionOperation.PERFORM_OPERATIONS) && getSession().isProgress());
+   }
+
+   private void addMediumExportToPickList() {
       DataManagementService service = getDataManagementService();
       if (service == null) return;
-      if(exportMediumPicklist.findItemPositionById(0) != -1) {
+      if (exportMediumPicklist.findItemPositionById(0) != -1) {
          exportMediumPicklist.clearList();
       }
+
       boolean resetTarget = true;
+
       List<MediumDevice> devices = service.getMediums();
       if (!isEmpty(devices)) {
          int deviceId = 0;
          for (MediumDevice device : devices) {
             exportMediumPicklist.addItem(new ObjectPickListItem<MediumDevice>(deviceId++, device.getType().toString(), device));
-            if(getSession() != null && getSession().getTarget() != null &&getSession().getTarget().getType() == device.getType()){
+
+            if (getSession() != null && getSession().getTarget() != null && getSession().getTarget().getType() == device.getType()) {
                resetTarget = false;
             }
          }
          restoreMediumSelection();
-      } else {
+      }
+      else {
          resetMediumSelection();
       }
-      if(getSession() != null && resetTarget) {
+
+      if (getSession() != null && resetTarget) {
          getSession().setTargets(null);
       }
    }
+
    @Override
-   public DataManagementSession createSession(){
+   public DataManagementSession createSession() {
       logger.trace("createSession()");
       super.onNewSession();
       DataManagementSession oldSession = getSession();
 
-      leftStatusPanel.setVisibility(View.GONE);
-      exportDropZone.setVisibility(View.VISIBLE);
-      treeViewList.setVisibility(View.GONE);
-
       if (hasLocalSource) {
          disabled.setVisibility(View.GONE);
          treeProgress.setVisibility(View.VISIBLE);
-      } else {
+      }
+      else {
          disabled.setVisibility(View.VISIBLE);
          disabled.setMode(DisabledOverlay.MODE.DISCONNECTED);
          return null;
@@ -398,13 +437,12 @@ public class ExportFragment extends BaseDataFragment {
    }
 
    private DataManagementSession sessionInit(DataManagementSession session) {
-      if(session != null) {
-         session.setSourceTypes(new Datasource.Source[]{Datasource.Source.INTERNAL, Datasource.Source.DISPLAY});
+      if (session != null) {
+         session.setSourceTypes(new Datasource.Source[] { Datasource.Source.INTERNAL, Datasource.Source.DISPLAY });
          session.setSources(null);
          session.setDestinationTypes(null);
          session.setTargets(null);
-         session.setFormat(exportFormatPicklist.getSelectedItem() != null ?
-                 exportFormatPicklist.getSelectedItem().getValue() : null);
+         session.setFormat(exportFormatPicklist.getSelectedItem() != null ? exportFormatPicklist.getSelectedItem().getValue() : null);
          if (exportMediumPicklist.getAdapter().getCount() > 0) {
             ObjectPickListItem<MediumDevice> item = (ObjectPickListItem<MediumDevice>) exportMediumPicklist.getSelectedItem();
             session.setTargets(item != null ? Arrays.asList(item.getObject()) : null);
@@ -412,6 +450,7 @@ public class ExportFragment extends BaseDataFragment {
       }
       return session;
    }
+
    public static boolean isEmpty(Collection<?> collection) {
       return collection == null || collection.isEmpty();
    }
@@ -454,13 +493,12 @@ public class ExportFragment extends BaseDataFragment {
 
    @Override
    protected void onErrorOperation() {
-      if(getSession().getSessionOperation().equals(SessionOperation.DISCOVERY)){
+      if (getSession().getSessionOperation().equals(SessionOperation.DISCOVERY)) {
          idleUI();
       }
       else {
          logger.debug("Other operations when error");
-         sessionInit(getSession());
-         removeProgressPanel();
+         showFinishedStatePanel(false);
          setExportPicklistsReadOnly(false);
          postTreeUI();
       }
@@ -468,24 +506,43 @@ public class ExportFragment extends BaseDataFragment {
 
    @Override
    public void processOperations() {
-      logger.debug("processOperation() session result: {}", getSession().getResult());
-      if (getSession().getResult() != null && getSession().getResult().equals(Process.Result.ERROR)) {
+      DataManagementSession session = getSession();
+      if (session == null) {
+         showDragAndDropZone();
+         return;
+      }
+      logger.debug("processOperation() session result: {}", session.getResult());
+      if (session.getResult() != null && session.getResult().equals(Process.Result.ERROR)) {
          onErrorOperation();
       }
       else {
-         if (getSession().getSessionOperation().equals(SessionOperation.PERFORM_OPERATIONS)) {
+         if (session.getSessionOperation().equals(SessionOperation.PERFORM_OPERATIONS)) {
             logger.trace("resetting new session.  Operation completed.");
             getTreeAdapter().selectAll(treeViewList, false);
-            if (getSession().getResult() != null) {
-               removeProgressPanel();
+            if (session.getResult() != null) {
                setExportPicklistsReadOnly(false);
-               if (getSession().getResult().equals(Process.Result.SUCCESS)) {
+               if (session.getResult().equals(Process.Result.SUCCESS)) {
+                  showFinishedStatePanel(true);
+                  progressCurrentValue = 0;
+                  progressMaxValue = 0;
                   Toast.makeText(getActivity(), getString(R.string.export_complete), Toast.LENGTH_LONG).show();
-               } else if (getSession().getResult().equals(Process.Result.CANCEL)) {
-                  Toast.makeText(getActivity(), getString(R.string.export_cancel), Toast.LENGTH_LONG).show();
                }
-               configSession(getSession());
-            } else {
+               else {
+                  if (session.getResult().equals(Process.Result.CANCEL)) {
+                     Toast.makeText(getActivity(), getString(R.string.export_cancel), Toast.LENGTH_LONG).show();
+                     createSession();
+
+                     exportFinishedStatePanel.setVisibility(View.GONE);
+                     leftStatusPanel.setVisibility(View.GONE);
+                     exportDropZone.setVisibility(View.VISIBLE);
+                     treeViewList.setVisibility(View.GONE);
+
+                  }
+                  showDragAndDropZone();
+               }
+               configSession(session);
+            }
+            else {
                showProgressPanel();
             }
          }
@@ -505,12 +562,18 @@ public class ExportFragment extends BaseDataFragment {
       checkExportButton();
    }
 
+   private void updateProgressbar(int progressValue, int maxValue) {
+      progressCurrentValue = progressValue;
+      progressMaxValue = maxValue;
+      final Double percent = ((progressValue * 1.0) / maxValue) * 100;
+      progressBar.setProgress(percent.intValue());
+      progressBar.setSecondText(true, loading_string, String.format(x_of_y_format, progressValue, maxValue), true);
+   }
+
    @Override
    public void onProgressPublished(String operation, int progress, int max) {
       logger.debug("onProgressPublished: {}", progress);
-      final Double percent = ((progress * 1.0) / max) * 100;
-      progressBar.setProgress(percent.intValue());
-      progressBar.setSecondText(true, loading_string, String.format(x_of_y_format, progress, max), true);
+      updateProgressbar(progress, max);
    }
 
    @Override
@@ -543,6 +606,8 @@ public class ExportFragment extends BaseDataFragment {
    }
 
    void exportSelected() {
+      progressCurrentValue = 0;
+      progressMaxValue = 0;
       getSession().setData(null);
       getSession().setObjectData(new ArrayList<ObjectGraph>(getTreeAdapter().getSelected()));
       if (!getSession().getObjectData().isEmpty()) {
@@ -555,22 +620,58 @@ public class ExportFragment extends BaseDataFragment {
       }
    }
 
-   /** Inflates left panel progress view */
-   private void showProgressPanel() {
-      exportDropZone.setVisibility(View.GONE);
-      progressBar.setSecondText(true, loading_string, null, true);
-      progressBar.setProgress(0);
-      leftStatusPanel.setVisibility(View.VISIBLE);
+   private void showDragAndDropZone() {
+      logger.debug("showDragAndDropZone");
+      exportFinishedStatePanel.setVisibility(View.GONE);
+      exportDropZone.setVisibility(View.VISIBLE);
+      leftStatusPanel.setVisibility(View.GONE);
    }
 
-   /** Removes left panel progress view and replaces with operation view */
-   private void removeProgressPanel() {
-      leftStatusPanel.setVisibility(View.GONE);
-      exportDropZone.setVisibility(View.VISIBLE);
+   /**
+    * This method is called to represent the finished export state in the UI.
+    * @param successfullyFinished True if export finished successfully, false in case of an occurred error.
+    */
+   private void showFinishedStatePanel(boolean successfullyFinished) {
+      logger.debug("showFinishedStatePanel:{}", successfullyFinished);
+      //show content depending on success or failure
+      if (successfullyFinished) {
+         //successfully finished
+         exportDropZone.setVisibility(View.GONE);
+         leftStatusPanel.setVisibility(View.GONE);
+         exportFinishedStatePanel.setVisibility(View.VISIBLE);
+      }
+      else {
+         //error appeared
+         progressBar.setErrorProgress(true, getResources().getString(R.string.pb_error));
+         stopButton.setVisibility(View.GONE);
+      }
+      //post cleanup to show drag and drop zone after time X
+      final Handler handler = new Handler();
+      handler.postDelayed(new Runnable() {
+         @Override
+         public void run() {
+            showDragAndDropZone();
+         }
+      }, SHOWING_FEEDBACK_AFTER_PROGRESS_MS);
+      //if cancel popup was active - close popup (cannot be canceled anyway)
       if (lastDialogView != null) {
          final TabActivity tabActivity = (DataManagementActivity) getActivity();
          tabActivity.dismissPopup(lastDialogView);
       }
+   }
+
+   /** Inflates left panel progress view */
+   private void showProgressPanel() {
+      logger.debug("showProgressPanel");
+      //reset button and process
+      stopButton.setVisibility(View.VISIBLE);
+      progressBar.setErrorProgress(false, getResources().getString(R.string.pb_error));
+      progressBar.setSecondText(true, loading_string, null, true);
+      progressBar.setProgress(0);
+      //set visibility of sections
+      exportFinishedStatePanel.setVisibility(View.GONE);
+      exportDropZone.setVisibility(View.GONE);
+      leftStatusPanel.setVisibility(View.VISIBLE);
    }
 
    private void checkExportButton() {

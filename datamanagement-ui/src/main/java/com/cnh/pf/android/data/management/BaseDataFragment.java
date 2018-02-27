@@ -346,6 +346,7 @@ public abstract class BaseDataFragment extends RoboFragment implements IDataMana
    }
 
    protected void onErrorOperation() {
+
    }
 
    /**Called when the service catches an exception during operation */
@@ -367,17 +368,17 @@ public abstract class BaseDataFragment extends RoboFragment implements IDataMana
                if(updatingProg != null){
                   updatingProg.dismiss();
                }
-               //if it is import discovery, won't popup the dialog
-               if(event.getSession().getSource() != null && event.getSession().getSource().getType().equals(Datasource.Source.USB) &&
-                     !event.getSession().getSessionOperation().equals(SessionOperation.DISCOVERY)) {
+               //suppress error message of need data path at import.
+               if(event.getSession().getSource() != null && event.getSession().getSource().getType().equals(Datasource.Source.USB)
+                     && (event.getType() != DataServiceConnectionImpl.ErrorEvent.DataError.NEED_DATA_PATH)) {
                   DialogView errorDialog = new ErrorDialog(getActivity(), event);
-               /*   errorDialog.setOnButtonClickListener(new DialogViewInterface.OnButtonClickListener() {
+                  errorDialog.setOnButtonClickListener(new DialogViewInterface.OnButtonClickListener() {
                      @Override
                      public void onButtonClick(DialogViewInterface dialog, int which) {
                         if (which == DialogViewInterface.BUTTON_FIRST) {
                         }
                      }
-                  });*/
+                  });
                   ((TabActivity) getActivity()).showPopup(errorDialog, true);
                }
             }

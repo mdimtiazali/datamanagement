@@ -68,7 +68,7 @@ public class ImportFragment extends BaseDataFragment {
    ImageButton stopBtn;
    @InjectView(R.id.progress_bar)
    ProgressBarView progressBar;
-   @InjectView(R.id.left_status)
+   @InjectView(R.id.left_status_panel)
    LinearLayout leftStatus;
    ProcessDialog processDialog;
    //store original data in case cancel is pressed.  so we can restore it.

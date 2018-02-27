@@ -343,24 +343,33 @@ public class DataManagementActivity extends TabActivity implements RoboContext, 
       }
    }
 
+   private TabActivityTab createActivityTab(BaseDataFragment fragment, int titleRes, int drawableRes, String tabId) {
+      return new TabActivityTab(titleRes, drawableRes, tabId, new DataManagementTabListener(fragment, this));
+   }
+
    @Override
    public void onCreate(Bundle savedInstanceState) {
       logger.debug("onCreate called");
+
       final Application app = getApplication();
       //Phoenix Workaround (phoenix sometimes cannot read the manifest)
       RoboGuiceHelper.help(app, new String[] { "com.cnh.pf.android.data.management", "com.cnh.pf.jgroups" }, new RoboModule(app), new ChannelModule(app));
       super.onCreate(savedInstanceState);
 
       eventManager = RoboGuice.getInjector(this).getInstance(EventManager.class);
-      TabActivityTab managementTab = new TabActivityTab(R.string.tab_management, R.drawable.tab_management_selector, getResources().getString(R.string.tab_management),
-                                                    new DataManagementTabListener(new ManageFragment(), this));
+
+      // Create Management tab
+      TabActivityTab managementTab = createActivityTab(new ManageFragment(), R.string.tab_management, R.drawable.tab_management_selector, getResources().getString(R.string.tab_management));
       addTab(managementTab);
-      TabActivityTab importTab = new TabActivityTab(R.string.tab_import, R.drawable.tab_import_selector, getResources().getString(R.string.tab_import),
-            new DataManagementTabListener(new ImportFragment(), this));
+
+      // Create Import tab
+      TabActivityTab importTab = createActivityTab(new ImportFragment(), R.string.tab_import, R.drawable.tab_import_selector, getResources().getString(R.string.tab_import));
       addTab(importTab);
-      TabActivityTab exportTab = new TabActivityTab(R.string.tab_export, R.drawable.tab_export_selector, getResources().getString(R.string.tab_export),
-            new DataManagementTabListener(new ExportFragment(), this));
+
+      // Create Export tab
+      TabActivityTab exportTab = createActivityTab(new ExportFragment(), R.string.tab_export, R.drawable.tab_export_selector, getResources().getString(R.string.tab_export));
       addTab(exportTab);
+
       setTabActivityTitle(getString(R.string.app_name));
       selectTabAtPosition(0);
 
