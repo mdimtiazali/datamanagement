@@ -88,7 +88,7 @@ public abstract class BaseDataFragment extends RoboFragment implements IDataMana
    @Inject
    EventManager globalEventManager;
    @InjectView(R.id.path_tv)
-   TextView pathTv;
+   TextView pathText;
    @InjectView(R.id.select_all_btn)
    Button selectAllBtn;
    @InjectView(R.id.tree_view_list)
@@ -493,7 +493,7 @@ public abstract class BaseDataFragment extends RoboFragment implements IDataMana
     */
    public void sessionUpdated(DataManagementSession session){
       DataManagementSession.SessionOperation op = session.getSessionOperation();
-      logger.trace("sessionUpdated() by ", op);
+      logger.debug("sessionUpdated() by {}", op.name());
       if (op.equals(DataManagementSession.SessionOperation.DISCOVERY) && !session.isProgress()) {
          initializeTree();
          postTreeUI();
@@ -504,7 +504,6 @@ public abstract class BaseDataFragment extends RoboFragment implements IDataMana
          getSession().setData(processPartialImports(getSession().getData()));
       }
       processOperations();
-
    }
 
    private List<Operation> processPartialImports(List<Operation> operations) {
