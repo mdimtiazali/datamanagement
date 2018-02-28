@@ -367,8 +367,9 @@ public class ImportFragment extends BaseDataFragment {
                processDialog.setTitle(dataConflictStr);
                processDialog.showFirstButton(true);
                processDialog.setFirstButtonText(keepBothStr);
-               processDialog.showSecondButton(true);
-               processDialog.setSecondButtonText(replaceStr);
+               // TEMPORARY: Do now show the second button (Replace button)
+               processDialog.showSecondButton(false);
+//               processDialog.setSecondButtonText(replaceStr);
                processDialog.clearLoading();
                adapter.setOnTargetsSelectedListener(new DataManagementBaseAdapter.OnTargetsSelectedListener() {
                   @Override
@@ -471,6 +472,11 @@ public class ImportFragment extends BaseDataFragment {
 
    @Override
    public boolean supportedByFormat(ObjectGraph node) {
+      // TEMPORARY: Do not import the four data types
+      if (node.getType().equals("IMPLEMENT") || node.getType().equals("VEHICLE_IMPLEMENT") ||
+              node.getType().equals("VEHICLE_IMPLEMENT_CONFIG") || node.getType().equals("IMPLEMENT_PRODUCT_CONFIG")) {
+         return false;
+      }
       //For import, all formats supported
       return true;
    }
