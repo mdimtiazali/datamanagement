@@ -11,8 +11,13 @@ package com.cnh.pf.android.data.management;
 
 import android.app.Application;
 
+import com.cnh.android.util.prefs.GlobalPreferences;
+import com.cnh.android.util.prefs.GlobalPreferencesNotAvailableException;
 import com.cnh.jgroups.Mediator;
 import com.cnh.pf.android.data.management.helper.DatasourceHelper;
+import com.cnh.pf.model.constants.Ports;
+import com.google.common.base.Throwables;
+import com.google.common.net.HostAndPort;
 import com.google.inject.AbstractModule;
 import com.google.inject.Provider;
 import com.google.inject.Provides;
@@ -53,6 +58,25 @@ public class RoboModule extends AbstractModule {
    public Mediator getMediator(@Named("data") JChannel channel) {
       logger.debug("Using channel {}", channel.getProperties());
       return new Mediator(channel, "DataManagementService");
+   }
+
+   @Provides
+   @Singleton
+   @Named("daemon")
+   public HostAndPort getDaemon() {
+      try {
+         GlobalPreferences gp = new GlobalPreferences(application);
+         if(gp.hasPCM()) {
+            return HostAndPort.fromParts(gp.getPCMIpAddress(), Ports.SIGNAL_DAEMON_PORT);
+         }
+         else {
+            return HostAndPort.fromParts("localhost", Ports.SIGNAL_DAEMON_PORT);
+         }
+      }
+      catch (GlobalPreferencesNotAvailableException e) {
+         Throwables.propagate(e);
+         return null;
+      }
    }
 
    @Singleton
