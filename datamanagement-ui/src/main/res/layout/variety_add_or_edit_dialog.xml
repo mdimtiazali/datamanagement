@@ -1,0 +1,65 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  ~ Copyright (C) 2016 CNH Industrial NV. All rights reserved.
+  ~
+  ~ This software contains proprietary information of CNH Industrial NV. Neither
+  ~ receipt nor possession thereof confers any right to reproduce, use, or
+  ~ disclose in whole or in part any such information without written
+  ~ authorization from CNH Industrial NV.
+  -->
+<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
+             xmlns:cnh="http://schemas.android.com/apk/res-auto"
+             android:orientation="vertical"
+             android:layout_width="match_parent"
+             android:layout_height="match_parent">
+    <LinearLayout
+            android:orientation="vertical"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent">
+        <com.cnh.android.widget.control.InputField
+                android:id="@+id/variety_dialog_name_input_field"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:imeOptions="actionDone|flagNoExtractUi"
+                cnh:searchIcon="false"
+                cnh:clearIcon="false"
+                android:singleLine="true"
+                android:inputType="textCapWords"
+                cnh:headerText="@string/variety_add_or_edit_dialog_name_header_text">
+        </com.cnh.android.widget.control.InputField>
+        <com.cnh.android.widget.control.PickList
+                android:id="@+id/variety_dialog_crop_type_pick_list"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                style="@style/PickList"
+                cnh:headerText="@string/variety_add_or_edit_dialog_crop_type_header_text"
+                android:layout_marginTop="10dp">
+        </com.cnh.android.widget.control.PickList>
+        <TextView
+                android:paddingStart="4dp"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="Color Picker"
+                style="@style/TextAppearance.PickListHeader.Big"
+                android:layout_marginTop="10dp"
+        />
+        <!-- Remark: auto_fit + stretch mode can lead to invisible items -->
+        <!-- Remark: auto_fit requires that the columnWidth is set manually, GridView is not able to calculate it (see
+            http://stackoverflow.com/questions/6912922/android-how-does-gridview-auto-fit-find-the-number-of-columns)
+        -->
+        <GridView
+                android:layout_gravity="center"
+                android:id="@+id/variety_color_picker_grid"
+                android:layout_width="match_parent"
+                android:layout_height="0dp"
+                android:layout_weight="1"
+                android:numColumns="auto_fit"
+                android:columnWidth="90dp"
+                android:stretchMode="none"/>
+    </LinearLayout>
+    <com.cnh.android.pf.widget.view.DisabledOverlay
+            android:id="@+id/variety_dialog_disabled_overlay"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:layout_gravity="center"/>
+</FrameLayout>

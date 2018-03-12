@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  ~ Copyright (C) 2016 CNH Industrial NV. All rights reserved.
+  ~
+  ~ This software contains proprietary information of CNH Industrial NV. Neither
+  ~ receipt nor possession thereof confers any right to reproduce, use, or
+  ~ disclose in whole or in part any such information without written
+  ~ authorization from CNH Industrial NV.
+  -->
+<com.cnh.android.widget.control.PickListEditable xmlns:android="http://schemas.android.com/apk/res/android"
+                                                 xmlns:cnh="http://schemas.android.com/apk/res/com.cnh.pf.android.data.management"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:imeOptions="actionDone|flagNoExtractUi"
+            cnh:title="@string/target"
+            cnh:allowItemCreation="false"
+            cnh:allowItemDeletion="false"
+            cnh:allowItemManagement="false"
+            cnh:allowItemCopying="false"
+            cnh:allowItemEditing="false" />

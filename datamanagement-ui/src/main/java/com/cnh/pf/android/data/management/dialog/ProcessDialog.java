@@ -9,19 +9,26 @@
  */
 package com.cnh.pf.android.data.management.dialog;
 
+import java.util.HashMap;
+import java.util.Map;
+
 import android.app.Activity;
 import android.view.LayoutInflater;
 import android.view.View;
+import android.view.ViewGroup;
 
+import com.cnh.android.dialog.DialogView;
 import com.cnh.android.dialog.DialogViewInterface;
+import com.cnh.android.widget.activity.TabActivity;
+import com.cnh.android.widget.control.ProgressBarView;
+import com.cnh.jgroups.Operation;
 import com.cnh.pf.android.data.management.R;
 import com.cnh.pf.android.data.management.adapter.DataConflictViewAdapter;
 import com.cnh.pf.android.data.management.adapter.DataManagementBaseAdapter;
-import com.cnh.android.dialog.DialogView;
-import com.cnh.android.widget.activity.TabActivity;
-import com.cnh.android.widget.control.ProgressBarView;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
 import roboguice.RoboGuice;
 import roboguice.inject.InjectResource;
 
@@ -32,17 +39,17 @@ import roboguice.inject.InjectResource;
 public class ProcessDialog extends DialogView {
    private static final Logger logger = LoggerFactory.getLogger(ProcessDialog.class);
 
-   @InjectResource(R.string.keep_both) String keepBothStr;
-   @InjectResource(R.string.copy_and_replace) String replaceStr;
-   @InjectResource(R.string.cancel) String cancelStr;
-   @InjectResource(R.string.data_conflict) String dataConflictStr;
+   @InjectResource(R.string.cancel)
+   String cancelStr;
+
    private DataManagementBaseAdapter adapter;
-   private View activeView;
    private Activity context;
    private ProgressBarView pbBar;
-
+   private View body;
    private DataConflictViewAdapter.OnActionSelectedListener listener;
 
+   // maps from object type to ViewHolder cache
+   private final Map<String, DataManagementBaseAdapter.ViewHolder> viewCache = new HashMap<String, DataManagementBaseAdapter.ViewHolder>();
 
    public ProcessDialog(Activity context) {
       super(context);
@@ -51,16 +58,26 @@ public class ProcessDialog extends DialogView {
       init();
    }
 
-   private void init() {
-      setFirstButtonText(context.getResources().getString(R.string.cancel));
+   public void init() {
+      setThirdButtonText(cancelStr);
       showSecondButton(false);
-      showThirdButton(false);
+      showFirstButton(false);
+      setDismissOnButtonClick(false);
 
-      LayoutInflater inflater = ((Activity)getContext()).getLayoutInflater();
+      LayoutInflater inflater = ((Activity) getContext()).getLayoutInflater();
       View view = inflater.inflate(R.layout.progress_layout, null);
       pbBar = (ProgressBarView) view.findViewById(R.id.progress_bar);
       pbBar.setProgress(0);
-      activeView = this.setBodyView(view);
+      setBodyView(view);
+   }
+
+   @Override
+   public DialogView setBodyView(View view) {
+      if (body != null) {
+         ((ViewGroup) body.getParent()).removeView(body);
+      }
+      body = view;
+      return super.setBodyView(view);
    }
 
    /**
@@ -68,41 +85,51 @@ public class ProcessDialog extends DialogView {
     */
    public void clearLoading() {
       pbBar.setVisibility(GONE);
-      setBodyView(adapter.getView(null));
       listener = adapter.getActionListener();
-      setTitle(dataConflictStr);
 
-      setFirstButtonText(keepBothStr);
-      setSecondButtonText(replaceStr);
-      setThirdButtonText(cancelStr);
       setOnButtonClickListener(new OnButtonClickListener() {
          @Override
          public void onButtonClick(DialogViewInterface dialog, int which) {
             if (which == DialogViewInterface.BUTTON_FIRST) {
-               listener.onButtonSelected(DataManagementBaseAdapter.OnActionSelectedListener.Action.COPY_AND_KEEP_BOTH);
+               listener.onButtonSelected(ProcessDialog.this, DataManagementBaseAdapter.Action.ACTION1);
             }
             else if (which == DialogViewInterface.BUTTON_SECOND) {
-               listener.onButtonSelected(DataManagementBaseAdapter.OnActionSelectedListener.Action.REPLACE);
+               listener.onButtonSelected(ProcessDialog.this, DataManagementBaseAdapter.Action.ACTION2);
             }
             else if (which == DialogViewInterface.BUTTON_THIRD) {
-               ProcessDialog.this.hide();
+               listener.onButtonSelected(ProcessDialog.this, null);
+               ProcessDialog.this.dismiss();
             }
          }
       });
 
       adapter.setOnTargetSelectedListener(new DataManagementBaseAdapter.OnTargetSelectedListener() {
          @Override
-         public void onTargetSelected(boolean done, View convertView) {
-            if (!done) {
-               View targetView = adapter.getView(convertView);
-               if (targetView == null) {
-                  ProcessDialog.this.dismiss();
-               }
-            } else {
-               ProcessDialog.this.dismiss();
-            }
+         public void onTargetSelected() {
+            updateView();
          }
       });
+      viewCache.clear();
+      updateView();
+   }
+
+   //let adapter either create new or reuse existing view
+   private void updateView() {
+      final String nextType = adapter.getType(adapter.getPosition());
+      DataManagementBaseAdapter.ViewHolder targetView = null;
+      if(viewCache.containsKey(nextType)) {
+         targetView = adapter.getView(viewCache.get(nextType));
+      }
+      else {
+         targetView = adapter.getView(null);
+         viewCache.put(nextType, targetView);
+      }
+      if (targetView == null) {
+         hide();
+      }
+      else if (targetView.getRoot() != body){
+         setBodyView(targetView.getRoot());
+      }
    }
 
    /**
@@ -135,6 +162,7 @@ public class ProcessDialog extends DialogView {
    public void setProgress(int progress) {
       logger.debug("setProgress:" + progress);
       pbBar.setProgress(progress);
+      invalidate();
    }
 
    @Override

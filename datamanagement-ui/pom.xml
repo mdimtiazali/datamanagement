@@ -1,5 +1,4 @@
-<?xml version="1.0" encoding="UTF-8"?>
-<!--
+<?xml version="1.0" encoding="UTF-8"?><!--
   ~ Copyright (C) 2015 CNH Industrial NV. All rights reserved.
   ~
   ~ This software contains proprietary information of CNH Industrial NV. Neither
@@ -8,15 +7,14 @@
   ~ authorization from CNH Industrial NV.
   -->
 
-<project xmlns="http://maven.apache.org/POM/4.0.0"
-         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
     <modelVersion>4.0.0</modelVersion>
 
    <parent>
       <groupId>com.cnh.pf</groupId>
       <artifactId>parent</artifactId>
-      <version>6.59.1.2-SNAPSHOT</version>
+      <version>b8.0.0-mg-SNAPSHOT</version>
       <relativePath>../../</relativePath>
    </parent>
 
@@ -32,51 +30,112 @@
         </dependency>
         <dependency>
             <groupId>com.cnh.pf</groupId>
+            <artifactId>libfault</artifactId>
+            <version>${project.version}</version>
+            <exclusions>
+                <exclusion>
+                    <groupId>org.slf4j</groupId>
+                    <artifactId>slf4j-api</artifactId>
+                </exclusion>
+            </exclusions>
+       </dependency>
+       <dependency>
+          <groupId>com.cnh.pf</groupId>
+          <artifactId>libsignalclient</artifactId>
+          <version>${project.version}</version>
+       </dependency>
+
+       <dependency>
+            <groupId>com.cnh.pf</groupId>
+            <artifactId>libaidlpf</artifactId>
+            <version>${project.version}</version>
+            <type>aar</type>
+            <exclusions>
+                <exclusion>
+                    <groupId>android</groupId>
+                    <artifactId>android-parcelable</artifactId>
+                </exclusion>
+                <exclusion>
+                    <groupId>com.cnh.pf</groupId>
+                    <artifactId>pfmodel</artifactId>
+                </exclusion>
+            </exclusions>
+        </dependency>
+        <dependency>
+            <groupId>com.cnh.pf</groupId>
             <artifactId>libdatamng-android</artifactId>
             <version>${project.version}</version>
-           <type>aar</type>
+            <type>aar</type>
             <exclusions>
-               <exclusion>
-                  <groupId>android</groupId>
-                  <artifactId>android-parcelable</artifactId>
-               </exclusion>
-               <exclusion>
-                  <groupId>org.codehaus.groovy</groupId>
-                  <artifactId>groovy</artifactId>
-               </exclusion>
-               <exclusion>
-                  <groupId>ch.qos.logback</groupId>
-                  <artifactId>logback-core</artifactId>
-               </exclusion>
-               <exclusion>
-                  <groupId>ch.qos.logback</groupId>
-                  <artifactId>logback-classic</artifactId>
-               </exclusion>
+                <exclusion>
+                    <groupId>android</groupId>
+                    <artifactId>android-parcelable</artifactId>
+                </exclusion>
+                <exclusion>
+                    <groupId>org.codehaus.groovy</groupId>
+                    <artifactId>groovy</artifactId>
+                </exclusion>
+                <exclusion>
+                    <groupId>ch.qos.logback</groupId>
+                    <artifactId>logback-core</artifactId>
+                </exclusion>
+                <exclusion>
+                    <groupId>ch.qos.logback</groupId>
+                    <artifactId>logback-classic</artifactId>
+                </exclusion>
+                <exclusion>
+                    <groupId>com.google.code.gson</groupId>
+                    <artifactId>gson</artifactId>
+                </exclusion>
+                <exclusion>
+                    <groupId>com.google.guava</groupId>
+                    <artifactId>guava</artifactId>
+                </exclusion>
+                <exclusion>
+                    <groupId>javax.inject</groupId>
+                    <artifactId>javax.inject</artifactId>
+                </exclusion>
             </exclusions>
+        </dependency>
+        <dependency>
+            <groupId>com.google.guava</groupId>
+            <artifactId>guava</artifactId>
         </dependency>
         <dependency>
             <groupId>com.cnh.pf</groupId>
             <artifactId>pfwidget</artifactId>
             <version>${project.version}</version>
             <type>aar</type>
-           <exclusions>
-              <exclusion>
-                 <groupId>com.cnh.pf</groupId>
-                 <artifactId>pfmodel</artifactId>
-              </exclusion>
-              <exclusion>
-                 <groupId>com.cnh.pf</groupId>
-                 <artifactId>corelib</artifactId>
-              </exclusion>
-              <exclusion>
-                 <groupId>com.cnh.pf</groupId>
-                 <artifactId>libaidlpf</artifactId>
-              </exclusion>
-              <exclusion>
-                 <groupId>android</groupId>
-                 <artifactId>android-parcelable</artifactId>
-              </exclusion>
-           </exclusions>
+            <exclusions>
+                <exclusion>
+                    <groupId>org.hibernate</groupId>
+                    <artifactId>hibernate-core</artifactId>
+                </exclusion>
+                <exclusion>
+                    <groupId>javax.validation</groupId>
+                    <artifactId>validation-api</artifactId>
+                </exclusion>
+                <exclusion>
+                    <groupId>com.cnh.pf</groupId>
+                    <artifactId>libaidlpf</artifactId>
+                </exclusion>
+                <exclusion>
+                    <groupId>android</groupId>
+                    <artifactId>android-parcelable</artifactId>
+                </exclusion>
+                <exclusion>
+                    <groupId>com.vividsolutions</groupId>
+                    <artifactId>jts</artifactId>
+                </exclusion>
+                <exclusion>
+                    <groupId>org.apache.commons.lang</groupId>
+                    <artifactId>commons-lang3</artifactId>
+                </exclusion>
+                <exclusion>
+                    <groupId>com.cnh.pf</groupId>
+                    <artifactId>pfmodel</artifactId>
+                </exclusion>
+            </exclusions>
         </dependency>
         <dependency>
             <groupId>com.github.tony19</groupId>
@@ -107,38 +166,39 @@
             <artifactId>roboblender</artifactId>
             <scope>provided</scope>
         </dependency>
-       <dependency>
-          <groupId>com.jakewharton</groupId>
-          <artifactId>butterknife</artifactId>
-       </dependency>
-       <dependency>
-          <groupId>junit</groupId>
-          <artifactId>junit</artifactId>
-          <scope>test</scope>
-       </dependency>
-       <dependency>
-          <groupId>org.robolectric</groupId>
-          <artifactId>robolectric-cnh</artifactId>
-          <version>3.0</version>
-          <scope>test</scope>
-          <exclusions>
-             <exclusion>
-                <groupId>org.robolectric</groupId>
-                <artifactId>robolectric-resources</artifactId>
-             </exclusion>
-          </exclusions>
-       </dependency>
-       <dependency>
-          <groupId>org.robolectric</groupId>
-          <artifactId>robolectric-resources-cnh</artifactId>
-          <version>3.0</version>
-          <scope>test</scope>
-       </dependency>
-       <dependency>
-          <groupId>org.mockito</groupId>
-          <artifactId>mockito-core</artifactId>
-          <scope>test</scope>
-       </dependency>
+        <dependency>
+            <groupId>com.jakewharton</groupId>
+            <artifactId>butterknife</artifactId>
+        </dependency>
+
+        <dependency>
+            <groupId>junit</groupId>
+            <artifactId>junit</artifactId>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.robolectric</groupId>
+            <artifactId>robolectric-cnh</artifactId>
+            <version>3.0</version>
+            <scope>test</scope>
+            <exclusions>
+                <exclusion>
+                    <groupId>org.robolectric</groupId>
+                    <artifactId>robolectric-resources</artifactId>
+                </exclusion>
+            </exclusions>
+        </dependency>
+        <dependency>
+            <groupId>org.robolectric</groupId>
+            <artifactId>robolectric-resources-cnh</artifactId>
+            <version>3.0</version>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.mockito</groupId>
+            <artifactId>mockito-core</artifactId>
+            <scope>test</scope>
+        </dependency>
     </dependencies>
 
     <build>
@@ -148,7 +208,8 @@
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-compiler-plugin</artifactId>
                 <configuration>
-                    <compilerArgument>-AguiceAnnotationDatabasePackageName=com.cnh.pf.android.data.management</compilerArgument>
+                    <compilerArgument>-AguiceAnnotationDatabasePackageName=com.cnh.pf.android.data.management
+                    </compilerArgument>
                     <fork>true</fork>
                 </configuration>
             </plugin>
@@ -157,32 +218,24 @@
                 <artifactId>android-maven-plugin</artifactId>
                 <extensions>true</extensions>
                 <configuration>
+                   <extractDuplicates>true</extractDuplicates>
                    <dex>
+                       <multiDex>false</multiDex>
+                       <mainDexList>${project.basedir}/MainDexList.txt</mainDexList>
                       <jvmArguments>
                          <jvmArgument>-Xmx2096M</jvmArgument>
                       </jvmArguments>
                    </dex>
-                    <sdk>
-                        <platform>18</platform>
-                    </sdk>
-                    <manifest>
-                        <debuggable>true</debuggable>
-                        <versionName/>
-                        <versionCodeUpdateFromVersion>true</versionCodeUpdateFromVersion>
-                    </manifest>
                     <attachSources>true</attachSources>
-                    <!-- these default values are set explicitly so IntelliJ can see them -->
-                    <androidManifestFile>${project.basedir}/src/main/AndroidManifest.xml</androidManifestFile>
-                    <resourceDirectory>${project.basedir}/src/main/res</resourceDirectory>
-                    <assetsDirectory>${project.basedir}/src/main/assets</assetsDirectory>
+                    <extractDuplicates>true</extractDuplicates>
+                    <proguard>
+                        <skip>false</skip>
+                        <config>proguard.cfg</config>
+                        <configs>
+                            <config>${env.ANDROID_HOME}/tools/proguard/proguard-android.txt</config>
+                        </configs>
+                    </proguard>
                 </configuration>
-                <executions>
-                    <execution>
-                        <id>manifest</id>
-                        <phase>process-resources</phase>
-                        <goals><goal>manifest-update</goal></goals>
-                    </execution>
-                </executions>
             </plugin>
         </plugins>
     </build>

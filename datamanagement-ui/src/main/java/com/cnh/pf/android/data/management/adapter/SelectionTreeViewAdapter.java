@@ -14,19 +14,20 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.AbsListView;
 import android.widget.AdapterView;
+
+import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
+
 import pl.polidea.treeview.AbstractTreeViewAdapter;
 import pl.polidea.treeview.ImplicitSelectLinearLayout;
 import pl.polidea.treeview.TreeStateManager;
 import pl.polidea.treeview.TreeViewList;
-import java.util.Map;
-import java.util.concurrent.ConcurrentHashMap;
 
 /**
  * TreeViewAdapter with functionality to full/partially select child/parent objects in tree
  * @author oscar.salazar@cnhind.com
  */
 public abstract class SelectionTreeViewAdapter<T> extends AbstractTreeViewAdapter<T> {
-
    /** Notify listener of object selected/unselected*/
    public interface OnTreeItemSelectedListener {
       void onItemSelected();
@@ -73,6 +74,14 @@ public abstract class SelectionTreeViewAdapter<T> extends AbstractTreeViewAdapte
    }
 
    /**
+    * Get the selection map
+    * @return Map
+    */
+   public Map<T, SelectionType> getSelectionMap() {
+      return selectionMap;
+   }
+
+   /**
     * Get tree item selected listener
     */
    public OnTreeItemSelectedListener getOnTreeItemListener() {
@@ -86,38 +95,20 @@ public abstract class SelectionTreeViewAdapter<T> extends AbstractTreeViewAdapte
       this.listener = listener;
    }
 
-   @Override
-   public void handleItemClick(final AdapterView<?> parent, View view, int position, Object id) {
-      super.handleItemClick(parent, view, position, id);
-      ((TreeViewList)parent).setOnScrollListener(new AbsListView.OnScrollListener() {
-         @Override
-         public void onScrollStateChanged(AbsListView view, int scrollState) {
+   /**
+    * Should the tree item explicitly include its parent
+    */
+   public boolean includeParent(T id) {
+      return false;
+   }
 
-         }
-
-         @Override
-         public void onScroll(AbsListView view, int firstVisibleItem, int visibleItemCount, int totalItemCount) {
-            updateViewSelection(view);
-         }
-      });
-      parent.setOnHierarchyChangeListener(new ViewGroup.OnHierarchyChangeListener() {
-         @Override
-         public void onChildViewAdded(View p, View child) {
-            updateViewSelection(parent);
-         }
-
-         @Override
-         public void onChildViewRemoved(View p, View child) {
-            updateViewSelection(parent);
-         }
-      });
-
+   public void selectionImpl(Object id) {
       if (!selectionMap.containsKey(id)) {
          //Traverse down, select everything
          traverseTree((T) id, TRAVERSE_DOWN, new Visitor<T>() {
             @Override
             public boolean visit(T node) {
-//               itemSelectionChange(node, SelectionType.FULL);
+               //               itemSelectionChange(node, SelectionType.FULL);
                selectionMap.put(node, SelectionType.FULL);
                return true;
             }
@@ -130,17 +121,13 @@ public abstract class SelectionTreeViewAdapter<T> extends AbstractTreeViewAdapte
                   if (selectionMap.get(node) == null) {
                      selectionMap.put(node, SelectionType.IMPLICIT);
                   }
-                  boolean hasAllChildrenSelected = true;
-                  for (T child : getManager().getChildren(node)) {
-                     if (!selectionMap.containsKey(child) || selectionMap.get(child).equals(SelectionType.IMPLICIT) ) {
-                        hasAllChildrenSelected = false;
-                        break;
-                     }
-                  }
-                  if (hasAllChildrenSelected) selectionMap.put(node, SelectionType.FULL);
                   return true;
                }
             });
+
+            if (includeParent((T) id)) {
+               selectionMap.put(getManager().getParent((T) id), SelectionType.FULL);
+            }
          }
       }
       else {
@@ -152,56 +139,99 @@ public abstract class SelectionTreeViewAdapter<T> extends AbstractTreeViewAdapte
                return true;
             }
          });
-         //Traverse up, and unselect parent if this is the only selected item
-         traverseTree((T) id, TRAVERSE_UP, new Visitor<T>() {
-            @Override
-            public boolean visit(T node) {
-               boolean hasOtherSelectedChildren = false;
-               for (T child : getManager().getChildren(node)) {
-                  if (selectionMap.containsKey(child)) {
-                     hasOtherSelectedChildren = true;
-                     break;
+         if (includeParent((T) id)) {
+            selectionMap.put(getManager().getParent((T) id), SelectionType.IMPLICIT);
+         }
+         //Traverse up, and unselect implicit parent if this is the only selected item
+         if (getManager().getParent((T) id) != null) {
+            traverseTree(getManager().getParent((T) id), TRAVERSE_UP, new Visitor<T>() {
+               @Override
+               public boolean visit(T node) {
+                  boolean hasOtherSelectedChildren = false;
+                  for (T child : getManager().getChildren(node)) {
+                     if (selectionMap.containsKey(child)) {
+                        hasOtherSelectedChildren = true;
+                        break;
+                     }
                   }
+                  if (!hasOtherSelectedChildren && SelectionType.IMPLICIT.equals(selectionMap.get(node))) {
+                     selectionMap.remove(node);
+                     return true;
+                  }
+                  return false;
                }
-               if (hasOtherSelectedChildren) {
-                  selectionMap.put(node, SelectionType.IMPLICIT);
-               }
-               else {
-                  selectionMap.remove(node);
-               }
-               return true;
-            }
-         });
+            });
+         }
       }
+   }
+
+   @Override
+   public void handleItemClick(final AdapterView<?> parent, View view, int position, Object id) {
+      super.handleItemClick(parent, view, position, id);
+      setListeners(parent);
+      selectionImpl(id);
       updateViewSelection(parent);
       if (listener != null) {
          listener.onItemSelected();
       }
    }
 
-   public Map<T, SelectionType> getSelectionMap() {
-      return selectionMap;
+   public abstract boolean isSupportedEntitiy(T node);
+
+   public boolean isSupportedEdit(T node) {
+      return true;
+   }
+
+   public boolean isSupportedCopy(T node) {
+      return true;
    }
 
    /**
     * Makes view state match selection state
     * @param parent  the tree view
     */
-   protected void updateViewSelection(final AdapterView< ? > parent) {
-      for(int i=0; i<parent.getChildCount(); i++) {
+   public void updateViewSelection(final AdapterView<?> parent) {
+      for (int i = 0; i < parent.getChildCount(); i++) {
          View child = parent.getChildAt(i);
          T node = (T) child.getTag(); //tree associates ObjectGraph with each view
-         if(node==null) continue;
+         if (node == null) continue;
          ImplicitSelectLinearLayout layout = (ImplicitSelectLinearLayout) child;
-         if(selectionMap.containsKey(node)) {
+         layout.setSupported(isSupportedEntitiy(node));
+         if (selectionMap.containsKey(node)) {
             SelectionType type = selectionMap.get(node);
-            child.setSelected(SelectionType.FULL.equals(type));
+            layout.setSelected(SelectionType.FULL.equals(type));
             layout.setImplicitlySelected(SelectionType.IMPLICIT.equals(type));
-         } else {
-            child.setSelected(false);
+         }
+         else {
+            layout.setSelected(false);
             layout.setImplicitlySelected(false);
          }
       }
+   }
+
+   private void setListeners(final AdapterView<?> parent) {
+      parent.setOnHierarchyChangeListener(new ViewGroup.OnHierarchyChangeListener() {
+         @Override
+         public void onChildViewAdded(View p, View child) {
+            updateViewSelection(parent);
+         }
+
+         @Override
+         public void onChildViewRemoved(View p, View child) {
+            updateViewSelection(parent);
+         }
+      });
+      ((TreeViewList) parent).setOnScrollListener(new AbsListView.OnScrollListener() {
+         @Override
+         public void onScrollStateChanged(AbsListView view, int scrollState) {
+
+         }
+
+         @Override
+         public void onScroll(AbsListView view, int firstVisibleItem, int visibleItemCount, int totalItemCount) {
+            updateViewSelection(view);
+         }
+      });
    }
 
    /**
@@ -210,10 +240,12 @@ public abstract class SelectionTreeViewAdapter<T> extends AbstractTreeViewAdapte
    public void selectAll(AdapterView<?> parent, boolean selectAll) {
       //We can use shortcut by clearing selectionMap, and full selection of root objects
       selectionMap.clear();
+      setListeners(parent);
       if (selectAll) {
          for (T graph : getManager().getChildren(null)) {
             traverseTree(graph, TRAVERSE_DOWN, new Visitor<T>() {
-               @Override public boolean visit(T node) {
+               @Override
+               public boolean visit(T node) {
                   selectionMap.put(node, SelectionType.FULL);
                   return true;
                }
@@ -224,5 +256,44 @@ public abstract class SelectionTreeViewAdapter<T> extends AbstractTreeViewAdapte
       if (listener != null) {
          listener.onItemSelected();
       }
+   }
+
+   /**
+    * Determines if all nodes in tree are fully selected.
+    */
+   class SelectAllVisitor implements Visitor<T> {
+      boolean result = true;
+
+      @Override
+      public boolean visit(T node) {
+         if (!SelectionType.FULL.equals(selectionMap.get(node))) {
+            result = false;
+            return false;
+         }
+         return true;
+      }
+
+      public boolean getResult() {
+         return result;
+      }
+   }
+
+   /**
+    * Are all nodes fully selected?
+    * @return
+    */
+   public boolean areAllSelected() {
+      SelectAllVisitor v = new SelectAllVisitor();
+      for (T graph : getManager().getChildren(null)) {
+         traverseTree(graph, TRAVERSE_DOWN, v);
+      }
+      return v.getResult();
+   }
+
+   public boolean hasSelection() {
+      for (Map.Entry<T, SelectionType> entry : getSelectionMap().entrySet()) {
+         if (isSupportedEntitiy(entry.getKey())) return true;
+      }
+      return false;
    }
 }

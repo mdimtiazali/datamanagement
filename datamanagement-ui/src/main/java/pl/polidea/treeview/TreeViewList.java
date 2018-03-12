@@ -8,8 +8,6 @@
  */
 package pl.polidea.treeview;
 
-import java.lang.reflect.Field;
-
 import android.content.Context;
 import android.content.res.TypedArray;
 import android.graphics.Canvas;
@@ -23,7 +21,10 @@ import android.view.View;
 import android.widget.AdapterView;
 import android.widget.ListAdapter;
 import android.widget.ListView;
+
 import com.cnh.pf.android.data.management.R;
+
+import java.lang.reflect.Field;
 
 /**
  * Tree view, expandable multi-level.
@@ -47,15 +48,14 @@ public class TreeViewList extends ListView {
    private static final int DEFAULT_EXPANDED_RESOURCE = R.drawable.expanded;
    private static final int DEFAULT_INDENT = 0;
    private static final int DEFAULT_LINE_WIDTH = 2;
-   private static final int DEFAULT_GRAVITY = Gravity.LEFT
-         | Gravity.CENTER_VERTICAL;
+   private static final int DEFAULT_GRAVITY = Gravity.LEFT | Gravity.CENTER_VERTICAL;
    private Drawable expandedDrawable;
    private Drawable collapsedDrawable;
    private Drawable rowBackgroundDrawable;
    private Drawable indicatorBackgroundDrawable;
    private int indentWidth = 0;
    private int indicatorGravity = 0;
-   private AbstractTreeViewAdapter< ? > treeAdapter;
+   private AbstractTreeViewAdapter<?> treeAdapter;
    private boolean collapsible;
    private boolean handleTrackballPress;
    private Paint linePaint = new Paint();
@@ -75,7 +75,7 @@ public class TreeViewList extends ListView {
 
    private Integer getFirstPosition() {
       try {
-         return (Integer)fFirstPosition.get(this);
+         return (Integer) fFirstPosition.get(this);
       }
       catch (IllegalAccessException e) {
          Log.e("TreeViewList", "Error", e);
@@ -91,64 +91,50 @@ public class TreeViewList extends ListView {
       this(context, null);
    }
 
-   public TreeViewList(final Context context, final AttributeSet attrs,
-         final int defStyle) {
+   public TreeViewList(final Context context, final AttributeSet attrs, final int defStyle) {
       super(context, attrs, defStyle);
       linePaint.setStyle(Paint.Style.STROKE);
       parseAttributes(context, attrs);
    }
 
    private void parseAttributes(final Context context, final AttributeSet attrs) {
-      final TypedArray a = context.obtainStyledAttributes(attrs,
-            R.styleable.TreeViewList);
+      final TypedArray a = context.obtainStyledAttributes(attrs, R.styleable.TreeViewList);
       expandedDrawable = a.getDrawable(R.styleable.TreeViewList_src_expanded);
       if (expandedDrawable == null) {
-         expandedDrawable = context.getResources().getDrawable(
-               DEFAULT_EXPANDED_RESOURCE);
+         expandedDrawable = context.getResources().getDrawable(DEFAULT_EXPANDED_RESOURCE);
       }
-      collapsedDrawable = a
-            .getDrawable(R.styleable.TreeViewList_src_collapsed);
+      collapsedDrawable = a.getDrawable(R.styleable.TreeViewList_src_collapsed);
       if (collapsedDrawable == null) {
-         collapsedDrawable = context.getResources().getDrawable(
-               DEFAULT_COLLAPSED_RESOURCE);
+         collapsedDrawable = context.getResources().getDrawable(DEFAULT_COLLAPSED_RESOURCE);
       }
-      indentWidth = a.getDimensionPixelSize(
-            R.styleable.TreeViewList_indent_width, DEFAULT_INDENT);
-      indicatorGravity = a.getInteger(
-            R.styleable.TreeViewList_indicator_gravity, DEFAULT_GRAVITY);
-      indicatorBackgroundDrawable = a
-            .getDrawable(R.styleable.TreeViewList_indicator_background);
-      rowBackgroundDrawable = a
-            .getDrawable(R.styleable.TreeViewList_row_background);
+      indentWidth = a.getDimensionPixelSize(R.styleable.TreeViewList_indent_width, DEFAULT_INDENT);
+      indicatorGravity = a.getInteger(R.styleable.TreeViewList_indicator_gravity, DEFAULT_GRAVITY);
+      indicatorBackgroundDrawable = a.getDrawable(R.styleable.TreeViewList_indicator_background);
+      rowBackgroundDrawable = a.getDrawable(R.styleable.TreeViewList_row_background);
       collapsible = a.getBoolean(R.styleable.TreeViewList_collapsible, true);
-      handleTrackballPress = a.getBoolean(
-            R.styleable.TreeViewList_handle_trackball_press, true);
+      handleTrackballPress = a.getBoolean(R.styleable.TreeViewList_handle_trackball_press, true);
 
       drawLine = a.getBoolean(R.styleable.TreeViewList_draw_line, false);
-      linePaint.setStrokeWidth(a.getDimensionPixelSize(
-            R.styleable.TreeViewList_line_width, DEFAULT_LINE_WIDTH));
+      linePaint.setStrokeWidth(a.getDimensionPixelSize(R.styleable.TreeViewList_line_width, DEFAULT_LINE_WIDTH));
       linePaint.setColor(a.getColor(R.styleable.TreeViewList_line_color, getResources().getColor(R.color.tree_line)));
    }
 
    @Override
    public void setAdapter(final ListAdapter adapter) {
       if (!(adapter instanceof AbstractTreeViewAdapter)) {
-         throw new TreeConfigurationException(
-               "The adapter is not of TreeViewAdapter type");
+         throw new TreeConfigurationException("The adapter is not of TreeViewAdapter type");
       }
-      treeAdapter = (AbstractTreeViewAdapter< ? >) adapter;
+      treeAdapter = (AbstractTreeViewAdapter<?>) adapter;
       syncAdapter();
       super.setAdapter(treeAdapter);
    }
 
    private void calculateIndentWidth() {
       if (expandedDrawable != null) {
-         indentWidth = Math.max(getIndentWidth(),
-               expandedDrawable.getIntrinsicWidth());
+         indentWidth = Math.max(getIndentWidth(), expandedDrawable.getIntrinsicWidth());
       }
       if (collapsedDrawable != null) {
-         indentWidth = Math.max(getIndentWidth(),
-               collapsedDrawable.getIntrinsicWidth());
+         indentWidth = Math.max(getIndentWidth(), collapsedDrawable.getIntrinsicWidth());
       }
    }
 
@@ -164,12 +150,12 @@ public class TreeViewList extends ListView {
       if (handleTrackballPress) {
          setOnItemClickListener(new OnItemClickListener() {
             @Override
-            public void onItemClick(final AdapterView< ? > parent,
-                  final View view, final int position, final long id) {
+            public void onItemClick(final AdapterView<?> parent, final View view, final int position, final long id) {
                treeAdapter.handleItemClick(parent, view, position, view.getTag());
             }
          });
-      } else {
+      }
+      else {
          setOnClickListener(null);
       }
 
@@ -193,8 +179,7 @@ public class TreeViewList extends ListView {
       treeAdapter.refresh();
    }
 
-   public void setIndicatorBackgroundDrawable(
-         final Drawable indicatorBackgroundDrawable) {
+   public void setIndicatorBackgroundDrawable(final Drawable indicatorBackgroundDrawable) {
       this.indicatorBackgroundDrawable = indicatorBackgroundDrawable;
       syncAdapter();
       treeAdapter.refresh();
@@ -260,7 +245,7 @@ public class TreeViewList extends ListView {
       return drawLine;
    }
 
-   public void setDrawLine(boolean  drawLine) {
+   public void setDrawLine(boolean drawLine) {
       this.drawLine = drawLine;
       invalidate();
    }
@@ -287,9 +272,10 @@ public class TreeViewList extends ListView {
    protected void onMeasure(int widthMeasureSpec, int heightMeasureSpec) {
       int heightMode = MeasureSpec.getMode(heightMeasureSpec);
       //get big in ScrollView
-      if(heightMode == MeasureSpec.UNSPECIFIED) {
+      if (heightMode == MeasureSpec.UNSPECIFIED) {
          super.onMeasure(widthMeasureSpec, MeasureSpec.makeMeasureSpec(99999, MeasureSpec.AT_MOST));
-      } else {
+      }
+      else {
          super.onMeasure(widthMeasureSpec, heightMeasureSpec);
       }
    }
@@ -310,39 +296,29 @@ public class TreeViewList extends ListView {
       //       |     -----|      | |  frame    |
       //       |  space   | indicator | |           |
       //        ----------------------   -----------
-      if(drawLine) {
+      if (drawLine) {
          //y coordinate of previous sibling's horizontal centerline
-         int []prevHorizLineByLevel = new int[20];
+         int[] prevHorizLineByLevel = new int[20];
          //x coordinate of previous sibling's vertical centerline
-         int []prevVertLineByLevel = new int[20];
+         int[] prevVertLineByLevel = new int[20];
          for (int i = 0; i < getChildCount(); i++) {
             View child = getChildAt(i);
 
             int treeLevel = treeAdapter.getTreeNodeInfo(i + getFirstPosition()).getLevel();
 
-            View indicatorLayout = (View)child.getTag(R.id.treeview_list_item_frame_layout);
-            View indicator = (View)child.getTag(R.id.treeview_list_item_toggle);
+            View indicatorLayout = (View) child.getTag(R.id.treeview_list_item_frame_layout);
+            View indicator = (View) child.getTag(R.id.treeview_list_item_toggle);
 
-            int toggleLeft = child.getLeft()
-                  + indicatorLayout.getLeft()
-                  + indicatorLayout.getPaddingLeft();
-            int toggleCenter = child.getLeft()
-               + indicatorLayout.getLeft()
-               + indicatorLayout.getPaddingLeft()
-               + (indicator.getRight()-indicator.getLeft())/2;
+            int toggleLeft = child.getLeft() + indicatorLayout.getLeft() + indicatorLayout.getPaddingLeft();
+            int toggleCenter = child.getLeft() + indicatorLayout.getLeft() + indicatorLayout.getPaddingLeft() + (indicator.getRight() - indicator.getLeft()) / 2;
 
-            int toggleBottom = child.getTop()
-               + indicatorLayout.getBottom()
-               - indicatorLayout.getPaddingBottom();
+            int toggleBottom = child.getTop() + indicatorLayout.getBottom() - indicatorLayout.getPaddingBottom();
 
-            mTempRect.set(prevVertLineByLevel[treeLevel],
-                  prevHorizLineByLevel[treeLevel],
-                  toggleLeft,
-                  (child.getBottom()-child.getTop())/2+child.getTop());
+            mTempRect.set(prevVertLineByLevel[treeLevel], prevHorizLineByLevel[treeLevel], toggleLeft, (child.getBottom() - child.getTop()) / 2 + child.getTop());
 
-            prevHorizLineByLevel[treeLevel+1] = toggleBottom;
-            prevVertLineByLevel[treeLevel+1] = toggleCenter;
-            if(treeLevel>0) {
+            prevHorizLineByLevel[treeLevel + 1] = toggleBottom;
+            prevVertLineByLevel[treeLevel + 1] = toggleCenter;
+            if (treeLevel > 0) {
                canvas.drawLine(mTempRect.left, mTempRect.top, mTempRect.left, mTempRect.bottom, linePaint);
                canvas.drawLine(mTempRect.left, mTempRect.bottom, mTempRect.right, mTempRect.bottom, linePaint);
             }

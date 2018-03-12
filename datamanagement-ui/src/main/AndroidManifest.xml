@@ -1,21 +1,60 @@
 <?xml version="1.0" encoding="utf-8"?>
-<manifest xmlns:android="http://schemas.android.com/apk/res/android" android:versionCode="6059001" android:versionName="6.59.1.2-SNAPSHOT" package="com.cnh.pf.android.data.management">
+<manifest xmlns:android="http://schemas.android.com/apk/res/android" android:versionCode="9078009" android:versionName="9.78.0-rc9-SNAPSHOT" package="com.cnh.pf.android.data.management">
    <uses-sdk android:minSdkVersion="18" android:targetSdkVersion="18"/>
 
+   <uses-permission android:name="com.cnh.android.permission.ACCESS_SETTINGS"/>
+   <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE"/>
    <uses-permission android:name="android.permission.INTERNET"/>
    <uses-permission android:name="android.permission.CHANGE_WIFI_MULTICAST_STATE"/>
    <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE"/>
+   <uses-permission android:name="android.permission.RECEIVE_BOOT_COMPLETED"/>
 
-   <application android:allowBackup="true" android:debuggable="true" android:icon="@drawable/ic_launcher" android:label="@string/app_name" android:theme="@style/AppTheme">
+   <application android:allowBackup="true" android:largeHeap="true" android:icon="@drawable/ic_app_icon" android:label="@string/app_name" android:theme="@style/DmAppTheme">
       <meta-data android:name="roboguice.modules" android:value="com.cnh.pf.android.data.management.RoboModule, com.cnh.pf.jgroups.ChannelModule"/>
       <meta-data android:name="roboguice.annotations.packages" android:value="com.cnh.pf.android.data.management,com.cnh.pf.jgroups"/>
-      <activity android:label="@string/app_name" android:name=".DataManagementActivity">
+      <activity android:label="@string/app_name" android:name=".DataManagementActivity" android:windowSoftInputMode="adjustPan">
          <intent-filter>
             <action android:name="android.intent.action.MAIN"/>
 
             <category android:name="android.intent.category.LAUNCHER"/>
          </intent-filter>
       </activity>
-      <service android:name=".service.DataManagementService"/>
+      <service android:name=".service.DataManagementService">
+         <intent-filter>
+            <action android:name="com.cnh.pf.data.management.CANCEL"/>
+         </intent-filter>
+         <intent-filter>
+            <action android:name="android.intent.action.MEDIA_MOUNTED"/>
+            <action android:name="android.intent.action.MEDIA_UNMOUNTED"/>
+            <action android:name="android.intent.action.MEDIA_EJECT"/>
+            <action android:name="android.intent.action.MEDIA_BAD_REMOVAL"/>
+            <action android:name="android.intent.action.MEDIA_REMOVED"/>
+            <data android:scheme="file"/>
+         </intent-filter>
+      </service>
+
+      <receiver android:enabled="true" android:exported="true" android:name=".service.BootReceiver">
+         <intent-filter>
+            <action android:name="com.cnh.android.intent.action.BOOT_COMPLETED_PRI_2"/>
+            <action android:name="com.cnh.pf.data.INTERNAL_DATA"/>
+         </intent-filter>
+      </receiver>
+
+      <receiver android:enabled="true" android:name=".service.MountStatusReceiver">
+         <intent-filter>
+            <action android:name="android.intent.action.MEDIA_MOUNTED"/>
+            <action android:name="android.intent.action.MEDIA_UNMOUNTED"/>
+            <action android:name="android.intent.action.MEDIA_EJECT"/>
+            <action android:name="android.intent.action.MEDIA_BAD_REMOVAL"/>
+            <action android:name="android.intent.action.MEDIA_REMOVED"/>
+            <data android:scheme="file"/>
+         </intent-filter>
+      </receiver>
+
+      <service android:name=".service.MulticastRouteService"/>
+
+      <provider android:name="com.cnh.pf.android.data.management.service.DatasourceContentProvider"
+         android:authorities="com.cnh.pf.android.data.management.datasourceprovider"
+         android:exported="true" />
    </application>
 </manifest>

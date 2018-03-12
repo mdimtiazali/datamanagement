@@ -1,0 +1,451 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  ~ Copyright (C) 2014 CNH Industrial NV. All rights reserved.
+  ~
+  ~ This software contains proprietary information of CNH Industrial NV. Neither
+  ~ receipt nor possession thereof confers any right to reproduce, use, or
+  ~ disclose in whole or in part any such information without written
+  ~ authorization from CNH Industrial NV.
+  -->
+
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+        android:id="@+id/product_item_child_details"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content">
+
+    <LinearLayout
+            android:orientation="vertical"
+            android:id="@+id/left_container"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_alignParentStart="true"
+            android:layout_marginEnd="@dimen/product_item_small_widget_margin"
+            android:layout_marginStart="20dp"
+            android:layout_marginTop="@dimen/product_item_small_widget_margin"
+            android:layout_marginBottom="20dp">
+
+        <LinearLayout
+                android:orientation="horizontal"
+                android:id="@+id/app_rate1_container"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content">
+
+            <TextView
+                    android:id="@+id/app_rate1_label"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:padding="@dimen/product_dialog_expand_small_top_margin"
+                    android:gravity="start"
+                    android:text="@string/product_text_rate_one_label"
+                    android:textSize="@dimen/product_item_small_text_size"
+                    android:textStyle="bold"
+                    android:textColor="@android:color/black"/>
+
+            <TextView
+                    android:id="@+id/app_rate1_text"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:gravity="end"
+                    android:padding="@dimen/product_dialog_expand_small_top_margin"
+                    android:text="@string/product_text_empty"
+                    android:textSize="@dimen/product_item_small_text_size"
+                    android:textColor="@android:color/black"/>
+
+        </LinearLayout>
+
+        <LinearLayout
+                android:orientation="horizontal"
+                android:id="@+id/app_rate2_container"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content">
+
+            <TextView
+                    android:id="@+id/app_rate2_label"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:padding="@dimen/product_dialog_expand_small_top_margin"
+                    android:text="@string/product_text_rate_two_label"
+                    android:textSize="@dimen/product_item_small_text_size"
+                    android:textStyle="bold"
+                    android:textColor="@android:color/black"/>
+
+            <TextView
+                    android:id="@+id/app_rate2_text"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:gravity="end"
+                    android:padding="@dimen/product_dialog_expand_small_top_margin"
+                    android:text="@string/product_text_empty"
+                    android:textSize="@dimen/product_item_small_text_size"
+                    android:textColor="@android:color/black"/>
+
+        </LinearLayout>
+
+        <LinearLayout
+                android:orientation="horizontal"
+                android:id="@+id/delta_rate_container"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content">
+
+            <TextView
+                    android:id="@+id/delta_rate_label"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:padding="@dimen/product_dialog_expand_small_top_margin"
+                    android:text="@string/product_text_rate_delta_label"
+                    android:textSize="@dimen/product_item_small_text_size"
+                    android:textStyle="bold"
+                    android:textColor="@android:color/black"/>
+
+            <TextView
+                    android:id="@+id/delta_rate_text"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:gravity="end"
+                    android:padding="@dimen/product_dialog_expand_small_top_margin"
+                    android:text="@string/product_text_empty"
+                    android:textSize="@dimen/product_item_small_text_size"
+                    android:textColor="@android:color/black"/>
+
+        </LinearLayout>
+
+        <LinearLayout
+                android:orientation="horizontal"
+                android:id="@+id/package_container"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content">
+
+            <TextView
+                    android:id="@+id/package_label"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:padding="@dimen/product_dialog_expand_small_top_margin"
+                    android:text="@string/product_text_package_label"
+                    android:textSize="@dimen/product_item_small_text_size"
+                    android:textStyle="bold"
+                    android:textColor="@android:color/black"/>
+
+            <TextView
+                    android:id="@+id/package_text"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:gravity="end"
+                    android:padding="@dimen/product_dialog_expand_small_top_margin"
+                    android:text="@string/product_text_empty"
+                    android:textSize="@dimen/product_item_small_text_size"
+                    android:textColor="@android:color/black"/>
+        </LinearLayout>
+
+        <LinearLayout
+                android:orientation="horizontal"
+                android:id="@+id/vacuum_fan_rate_container"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:visibility="visible">
+
+            <TextView
+                    android:id="@+id/vacuum_fan_rate_label"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:padding="@dimen/product_dialog_expand_small_top_margin"
+                    android:text="@string/product_text_vacuum_fan_rate_label"
+                    android:textSize="@dimen/product_item_small_text_size"
+                    android:textStyle="bold"
+                    android:textColor="@android:color/black"/>
+
+            <TextView
+                    android:id="@+id/vacuum_fan_rate_text"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:gravity="end"
+                    android:padding="@dimen/product_dialog_expand_small_top_margin"
+                    android:text="@string/product_text_empty"
+                    android:textSize="@dimen/product_item_small_text_size"
+                    android:textColor="@android:color/black"/>
+
+        </LinearLayout>
+
+        <LinearLayout
+                android:orientation="horizontal"
+                android:id="@+id/bulk_fill_fan_rate_container"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:visibility="visible">
+
+            <TextView
+                    android:id="@+id/bulk_fill_fan_rate_label"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:padding="@dimen/product_dialog_expand_small_top_margin"
+                    android:text="@string/product_text_bulk_fill_fan_rate_label"
+                    android:textSize="@dimen/product_item_small_text_size"
+                    android:textStyle="bold"
+                    android:textColor="@android:color/black"/>
+
+            <TextView
+                    android:id="@+id/bulk_fill_fan_rate_text"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:gravity="end"
+                    android:padding="@dimen/product_dialog_expand_small_top_margin"
+                    android:text="@string/product_text_empty"
+                    android:textSize="@dimen/product_item_small_text_size"
+                    android:textColor="@android:color/black"/>
+
+        </LinearLayout>
+
+    </LinearLayout>
+
+
+    <LinearLayout
+            android:orientation="vertical"
+            android:id="@+id/center_container"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginEnd="@dimen/product_item_container_margin"
+            android:layout_marginTop="@dimen/product_item_small_widget_margin"
+            android:layout_marginBottom="@dimen/product_item_container_margin"
+            android:layout_toStartOf="@+id/right_container">
+
+        <LinearLayout
+                android:orientation="horizontal"
+                android:id="@+id/min_rate_container"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content">
+
+            <TextView
+                    android:id="@+id/min_rate_label"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:padding="@dimen/product_dialog_expand_small_top_margin"
+                    android:text="@string/product_text_rate_min_label"
+                    android:textSize="@dimen/product_item_small_text_size"
+                    android:textStyle="bold"
+                    android:textColor="@android:color/black"/>
+
+            <TextView
+                    android:id="@+id/min_rate_text"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:gravity="end"
+                    android:padding="@dimen/product_dialog_expand_small_top_margin"
+                    android:text="@string/product_text_empty"
+                    android:textSize="@dimen/product_item_small_text_size"
+                    android:textColor="@android:color/black"/>
+
+        </LinearLayout>
+
+        <LinearLayout
+                android:orientation="horizontal"
+                android:id="@+id/max_rate_container"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content">
+
+            <TextView
+                    android:id="@+id/max_rate_label"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:padding="@dimen/product_dialog_expand_small_top_margin"
+                    android:text="@string/product_text_rate_max_label"
+                    android:textSize="@dimen/product_item_small_text_size"
+                    android:textStyle="bold"
+                    android:textColor="@android:color/black"/>
+
+            <TextView
+                    android:id="@+id/max_rate_text"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:gravity="end"
+                    android:padding="@dimen/product_dialog_expand_small_top_margin"
+                    android:text="@string/product_text_empty"
+                    android:textSize="@dimen/product_item_small_text_size"
+                    android:textColor="@android:color/black"/>
+
+        </LinearLayout>
+
+        <LinearLayout
+                android:orientation="horizontal"
+                android:id="@+id/density_container"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content">
+
+            <TextView
+                    android:id="@+id/density_label"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:padding="@dimen/product_dialog_expand_small_top_margin"
+                    android:text="@string/product_text_density_label"
+                    android:textSize="@dimen/product_item_small_text_size"
+                    android:textStyle="bold"
+                    android:textColor="@android:color/black"/>
+
+            <TextView
+                    android:id="@+id/density_text"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:gravity="end"
+                    android:padding="@dimen/product_dialog_expand_small_top_margin"
+                    android:text="@string/product_text_empty"
+                    android:textSize="@dimen/product_item_small_text_size"
+                    android:textColor="@android:color/black"/>
+
+        </LinearLayout>
+
+        <LinearLayout
+                android:orientation="horizontal"
+                android:id="@+id/unit_density_container"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content">
+
+            <TextView
+                    android:id="@+id/unit_density_label"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:padding="@dimen/product_dialog_expand_small_top_margin"
+                    android:text="@string/product_text_density_units_label"
+                    android:textSize="@dimen/product_item_small_text_size"
+                    android:textStyle="bold"
+                    android:textColor="@android:color/black"/>
+
+            <TextView
+                    android:id="@+id/unit_density_text"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:gravity="end"
+                    android:padding="@dimen/product_dialog_expand_small_top_margin"
+                    android:text="@string/product_text_empty"
+                    android:textSize="@dimen/product_item_small_text_size"
+                    android:textColor="@android:color/black"/>
+
+        </LinearLayout>
+
+        <LinearLayout
+                android:orientation="horizontal"
+                android:id="@+id/vacuum_fan_delta_container"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:visibility="visible">
+
+            <TextView
+                    android:id="@+id/vacuum_fan_delta_label"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:padding="@dimen/product_dialog_expand_small_top_margin"
+                    android:text="@string/product_text_vacuum_fan_delta_label"
+                    android:textSize="@dimen/product_item_small_text_size"
+                    android:textStyle="bold"
+                    android:textColor="@android:color/black"/>
+
+            <TextView
+                    android:id="@+id/vacuum_fan_delta_text"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:gravity="end"
+                    android:padding="@dimen/product_dialog_expand_small_top_margin"
+                    android:text="@string/product_text_empty"
+                    android:textSize="@dimen/product_item_small_text_size"
+                    android:textColor="@android:color/black"/>
+
+        </LinearLayout>
+
+        <LinearLayout
+                android:orientation="horizontal"
+                android:id="@+id/bulk_fill_fan_delta_container"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:visibility="visible">
+
+            <TextView
+                    android:id="@+id/bulk_fill_fan_delta_label"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:padding="@dimen/product_dialog_expand_small_top_margin"
+                    android:text="@string/product_text_bulk_fill_fan_delta_label"
+                    android:textSize="@dimen/product_item_small_text_size"
+                    android:textStyle="bold"
+                    android:textColor="@android:color/black"/>
+
+            <TextView
+                    android:id="@+id/bulk_fill_fan_delta_text"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:gravity="end"
+                    android:padding="@dimen/product_dialog_expand_small_top_margin"
+                    android:text="@string/product_text_empty"
+                    android:textSize="@dimen/product_item_small_text_size"
+                    android:textColor="@android:color/black"/>
+        </LinearLayout>
+    </LinearLayout>
+
+
+    <LinearLayout
+            android:layout_width="200dp"
+            android:layout_height="match_parent"
+            android:id="@+id/right_container"
+            android:layout_marginEnd="@dimen/product_item_small_widget_margin"
+            android:gravity="center"
+            android:layout_centerVertical="true"
+            android:layout_alignParentEnd="true">
+
+        <TextView
+                android:layout_width="1.25dp"
+                android:layout_height="150dp"
+                android:background="@color/divider_line"
+                android:layout_marginTop="15dp"
+                android:layout_marginLeft="30dp"
+                android:layout_marginBottom="15dp" />
+
+        <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="vertical">
+
+            <ImageButton
+                    android:id="@+id/alert_icon"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:src="@drawable/ic_needs_checking"
+                    android:background="@null"
+                    android:layout_alignParentEnd="true"
+                    android:layout_marginBottom="7dp"
+                    android:layout_gravity="end"
+                    android:layout_above="@+id/linear_layout_image_row" />
+
+            <LinearLayout
+                    android:orientation="horizontal"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:gravity="center"
+                    android:id="@+id/linear_layout_image_row"
+                    android:layout_centerVertical="true"
+                    android:layout_alignParentStart="true">
+
+                <ImageButton
+                        android:id="@+id/edit_button"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:src="@drawable/edit_list_item_states"
+                        android:background="@null" />
+
+                <ImageButton
+                        android:id="@+id/copy_button"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:src="@drawable/copy_list_item_states"
+                        android:layout_marginStart="@dimen/product_item_image_margin"
+                        android:layout_marginEnd="@dimen/product_item_image_margin"
+                        android:background="@null" />
+
+                <ImageButton
+                        android:id="@+id/delete_button"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:src="@drawable/delete_list_item_states"
+                        android:background="@null" />
+            </LinearLayout>
+
+        </LinearLayout>
+    </LinearLayout>
+
+
+</RelativeLayout>

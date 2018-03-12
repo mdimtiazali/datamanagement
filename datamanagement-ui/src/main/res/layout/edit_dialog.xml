@@ -1,0 +1,43 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  ~ Copyright (C) 2016 CNH Industrial NV. All rights reserved.
+  ~
+  ~ This software contains proprietary information of CNH Industrial NV. Neither
+  ~ receipt nor possession thereof confers any right to reproduce, use, or
+  ~ disclose in whole or in part any such information without written
+  ~ authorization from CNH Industrial NV.
+  -->
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+                xmlns:cnh="http://schemas.android.com/apk/res-auto"
+                android:orientation="vertical"
+                android:layout_gravity="center"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content">
+    <com.cnh.android.widget.control.InputField
+            android:id="@+id/edit_dialog_name_input_field"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:imeOptions="actionDone"
+            cnh:searchIcon="false"
+            cnh:clearIcon="false"
+            android:singleLine="true"
+            android:inputType="textCapWords"
+            cnh:headerText="@string/edit_field_name">
+    </com.cnh.android.widget.control.InputField>
+    <TextView
+            android:id="@+id/edit_name_warning"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:background="@drawable/bubble"
+            android:layout_marginTop="-10dp"
+            android:layout_below="@id/edit_dialog_name_input_field"
+            android:layout_alignRight="@id/edit_dialog_name_input_field"
+            android:text="@string/edit_name_warning"
+            android:lines="2"
+            android:layout_alignLeft="@id/edit_dialog_name_input_field"
+            android:layout_marginRight="16dp"
+            android:layout_marginLeft="2dp"
+            android:alpha="0.6"
+            android:visibility="invisible"
+    />
+</RelativeLayout>

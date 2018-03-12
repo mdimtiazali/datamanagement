@@ -9,5 +9,10 @@
   -->
 
 <resources>
-   <item name="usb_string" type="id">USB</item>
+    <item name="usb_string" type="id">USB</item>
+
+    <item name="add_product_mix_dialog" type="id"/>
+    <item name="copy_product_mix_dialog" type="id"/>
+    <item name="edit_product_mix_dialog" type="id"/>
+
 </resources>

@@ -1,0 +1,72 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  ~ Copyright (C) 2015 CNH Industrial NV. All rights reserved.
+  ~
+  ~ This software contains proprietary information of CNH Industrial NV. Neither
+  ~ receipt nor possession thereof confers any right to reproduce, use, or
+  ~ disclose in whole or in part any such information without written
+  ~ authorization from CNH Industrial NV.
+  -->
+
+<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
+        xmlns:cnh="http://schemas.android.com/apk/res-auto"
+        android:orientation="vertical"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:id="@+id/product_mix_dialog_frame_layout">
+
+    <ScrollView
+            android:id="@+id/product_mix_dialog_scroll_view"
+            android:layout_width="match_parent"
+            android:layout_height="fill_parent">
+
+        <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:paddingTop="20dp"
+                android:isScrollContainer="true"
+                android:fillViewport="true"
+                android:orientation="vertical">
+
+
+            <LinearLayout
+                    android:id="@+id/product_mix_dialog_layout_for_name_and_form"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="horizontal"
+                    android:layout_marginBottom="10dp">
+
+                <com.cnh.android.widget.control.InputField
+                        android:id="@+id/product_mix_name_input_field"
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_weight="1"
+                        android:layout_marginEnd="10dp"
+                        android:imeOptions="actionDone|flagNoExtractUi"
+                        cnh:searchIcon="false"
+                        cnh:clearIcon="false"
+                        android:singleLine="true"
+                        android:inputType="textCapWords"
+                        cnh:headerText="@string/product_mix_title_name"/>
+
+                <com.cnh.android.widget.control.PickList
+                        android:id="@+id/product_mix_picklist_product_form"
+                        android:layout_marginStart="10dp"
+                        android:layout_weight="1"
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        cnh:defaultPickListTextId="@string/product_mix_title_picklist_default_select"
+                        cnh:headerText="@string/product_mix_title_product_mix_form"/>
+            </LinearLayout>
+            <include layout="@layout/product_mix_dialog_mix_products_view"/>
+            <include layout="@layout/product_mix_dialog_application_rates_view" />
+            <include layout="@layout/product_mix_dialog_advanced_view" />
+        </LinearLayout>
+    </ScrollView>
+
+    <com.cnh.android.pf.widget.view.DisabledOverlay
+            android:id="@+id/disabled_overlay"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:layout_gravity="center" />
+</FrameLayout>

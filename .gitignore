@@ -1,4 +1,7 @@
 target
 *.iml
 .idea
+datamanagement-ui/velocity.*
 gen-external-apklibs
+**/.DS_Store
+datamanagement-ui/src/main/assets/logback.xml

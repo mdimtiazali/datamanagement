@@ -1,64 +1,239 @@
 <?xml version="1.0" encoding="utf-8"?>
+<!--
+  ~ Copyright (C) 2016 CNH Industrial NV. All rights reserved.
+  ~
+  ~ This software contains proprietary information of CNH Industrial NV. Neither
+  ~ receipt nor possession thereof confers any right to reproduce, use, or
+  ~ disclose in whole or in part any such information without written
+  ~ authorization from CNH Industrial NV.
+  -->
 <resources>
-   <string name="app_name">Data Management</string>
-   <string name="tab_import">Import</string>
-   <string name="tab_import_test">Import test</string>
-   <string name="import_source">Import Source</string>
-   <string name="destination">Destination</string>
-   <string name="collapse_button_content_description">Collapse Button</string>
-   <string name="import_selected">Import Selected</string>
-   <string name="export_selected">Export Selected</string>
-   <string name="done">Done</string>
-   <string name="type">Type:</string>
-   <string name="name">Name:</string>
-   <string name="target">Target</string>
-   <string name="select_target">Select Target</string>
-   <string name="copy_and_replace">Replace</string>
-   <string name="dont_copy">Don\'t Copy</string>
-   <string name="keep_both">Keep Both</string>
-   <string name="conflict">Conflict</string>
-   <string name="newName">New Filename:</string>
-   <string name="calculating_targets">Calculating Targets</string>
-   <string name="checking_targets">Checking Potential Targets...</string>
-   <string name="checking_conflicts">Checking Conflicts...</string>
-   <string name="importing">Importing...</string>
-   <string name="select_path">Select Path...</string>
-   <string name="continue_string">Continue</string>
+    <string name="app_name">Data Management</string>
+    <string name="tab_import">Import</string>
+    <string name="tab_import_test">Import test</string>
+    <string name="import_source">Import Source</string>
+    <string name="destination">Destination</string>
+    <string name="collapse_button_content_description">Collapse Button</string>
+    <string name="import_selected">Import Selected</string>
+    <string name="export_selected">Export Selected</string>
+    <string name="done">Done</string>
+    <string name="type">Type:</string>
+    <string name="name">Name:</string>
+    <string name="target">Target</string>
+    <string name="select_target">Select Target</string>
+    <string name="copy_and_replace">Replace</string>
+    <string name="dont_copy">Don\'t Copy</string>
+    <string name="keep_both">Keep Both</string>
+    <string name="conflict">Conflict</string>
+    <string name="new_id_title">Enter New Identifier</string>
+    <string name="new_id_label">New identifier:</string>
+    <string name="calculating_targets">Calculating Targets</string>
+    <string name="checking_targets">Checking Potential Targets...</string>
+    <string name="checking_conflicts">Checking Conflicts...</string>
+    <string name="importing">Importing...</string>
+    <string name="select_path">Select Path...</string>
+    <string name="continue_string">Continue</string>
+    <string name="next">Next</string>
 
     <string name="pfds">Grower / Farm / Field</string>
+    <string name="vehicles">Vehicles</string>
+    <string name="imps">Implements</string>
     <string name="prescriptions">Prescriptions</string>
     <string name="tasks">Tasks</string>
     <string name="boundaries">Boundaries</string>
-   <string name="select_source">Select Import Source</string>
-   <string name="import_drag_and_drop"><![CDATA[Drag & Drop \nto Import \nto PCM/Display]]></string>
-   <string name="export_drag_and_drop"><![CDATA[Drag & Drop \nto Export]]></string>
-   <string name="select_all">Select All</string>
-   <string name="usb_string">USB</string>
-   <string name="display_string">Display</string>
-   <string name="select_string">Select</string>
-   <string name="export_to">Export To:</string>
-   <string name="export_format">Export Format:</string>
-   <string name="tab_export">Export</string>
-   <string name="percent_complete">% Complete</string>
-   <string name="exporting_string">Exporting</string>
-   <string name="exporting_data">Exporting Data</string>
-   <string name="importing_data">Importing Data</string>
-   <string name="select_source_first">To get started \nfirst select your \nImport Source</string>
-   <string name="no_import_source">No import source device is detected. \nPlease check the device connection.</string>
-   <string name="deselect_all">Deselect All</string>
-   <string formatted="false" name="duplicate_file">A %s named \"%s\" already exists</string>
-   <string name="existing_file">Existing File</string>
-   <string name="new_file">New File</string>
-   <string name="data_conflict">Data Conflict</string>
-   <string name="rename_file">Rename File</string>
-   <string name="file_name">File Name</string>
-   <string name="empty_discovery">No data found</string>
+    <string name="obstacles">Obstacles</string>
+    <string name="guidance_groups">Swaths</string>
+    <string name="guidance_patterns">Guidance Patterns</string>
+    <string name="notes">Notes</string>
 
-   <string name="format_description">ISOXML:
+    <string name="products">Products</string>
+    <string name="product_mixes">Product Mixes</string>
+    <string name="select_source">Select Import Source</string>
+    <string name="import_drag_and_drop"><![CDATA[Drag & Drop \nto Import \nto PCM/Display]]></string>
+    <string name="export_drag_and_drop"><![CDATA[Drag & Drop \nto Export]]></string>
+    <string name="select_all">Select All</string>
+    <string formatted="false" name="x_of_y_format">%d of %d</string>
+    <string name="usb_string">USB</string>
+    <string name="display_string">Display</string>
+    <string name="display_numbered">Display %d</string>
+    <string name="display_named">Display %s</string>
+    <string name="select_string">Select</string>
+    <string name="export_to">Destination:</string>
+    <string name="export_format">Export Format:</string>
+    <string name="tab_export">Export</string>
+    <string name="percent_complete">% Complete</string>
+    <string name="loading_string">Loading</string>
+    <string name="exporting_string">Exporting</string>
+    <string name="importing_string">Importing</string>
+    <string name="exporting_data">Exporting Data</string>
+    <string name="importing_data">Importing Data</string>
+    <string name="select_source_first">To get started \nfirst select your \nImport Source</string>
+    <string name="no_import_source">No import source device is detected. \nPlease check the device connection.</string>
+    <string name="deselect_all">Deselect All</string>
+    <string formatted="false" name="duplicate_file">A %s named \"%s\" already exists</string>
+    <string name="existing_file">Existing</string>
+    <string name="existing_file_typed">Existing %s</string>
+    <string name="new_file">New</string>
+    <string name="new_file_typed">New %s</string>
+    <string name="data_conflict">Data Conflict</string>
+    <string name="rename_file">Rename %s</string>
+    <string name="file_name">File Name</string>
+    <string name="empty_discovery">No data found</string>
+    <string name="export_cancel_confirmation">This will cancel current export.\nDo you want to proceed?</string>
+
+    <string name="format_description">ISOXML:
       \nAll files can be exported in ISOXML.
       \n
       \nShapefile:
       \nPrescriptions.
    </string>
 
+    <string name="error_no_data">No Data</string>
+    <string name="error_no_source">No Source Datasource</string>
+    <string name="error_no_target">No Target Datasource</string>
+    <string name="error_perform_ops">Perform Operations Error</string>
+    <string name="error_calculate_conflicts">Calculate Conflicts Error</string>
+    <string name="error_calculate_operations">Calculate Targets Error</string>
+    <string name="error_discovery">Discovery Error</string>
+    <string name="status_cancelled">Cancelled</string>
+    <string name="status_cancelling">Cancelling...</string>
+    <string name="status_successful">Successful</string>
+    <string name="status_starting">Starting...</string>
+    <string name="import_complete">Import Completed</string>
+    <string name="import_cancel">Import Cancelled</string>
+    <string name="export_complete">Export Completed</string>
+    <string name="export_cancel">Export Cancelled</string>
+
+    <string name="usb_data_available">USB Data Available</string>
+    <string name="usb_no_data_available">No USB Data Available</string>
+    <string name="usb_scanning">Scanning USB Stick...</string>
+
+    <string name="stop">Stop</string>
+    <string name="status_progress">%1$s %2$d/%3$d</string>
+
+    <!-- starting here everything is used by the productlibrary-package -->
+    <string name="product_default_rate">Default Rate</string>
+    <string name="product_form">Form</string>
+    <string name="product_name">Name</string>
+
+    <!-- Product Mix -->
+    <string name="product_mix_add_button_title">Add</string>
+    <string name="product_mix_default_text_edittext">Product Name</string>
+    <string name="product_mix_default_text_picklist">Product Form</string>
+    <string name="product_mix_search_hint">Product Mix, form, rate</string>
+    <string name="product_mix_subheader_total_mix">Total: 0 product mixes</string>
+    <plurals name="product_mix_subheader_total_mix_format">
+        <item quantity="zero">Total: 0 product mixes</item>
+        <item quantity="one">Total: 1 product mix</item>
+        <item quantity="other">Total: %1$d product mixes</item>
+    </plurals>
+    <string name="product_mix_title">Product Mix</string>
+    <string name="product_mix_text_button_add_product_mix">Add Product Mix +</string>
+    <string name="product_mix_title_dialog_add_product_mix">Add Product Mix</string>
+    <string name="product_mix_title_dialog_edit_product_mix">Edit Product Mix</string>
+    <string name="product_mix_title_dialog_copy_product_mix">Copy Product Mix</string>
+    <string name="product_mix_title_add_new_product">Add New Product</string>
+    <string name="product_mix_title_add_new_carrier">Add New Carrier</string>
+    <string name="product_mix_text_button_remove">Remove x</string>
+    <string name="product_mix_text_button_add_more">Add More +</string>
+    <string name="product_mix_title_category_button_title_mix_products">Mix Products</string>
+    <string name="product_mix_title_name">Product Mix Name</string>
+    <string name="product_mix_title_carrier">Carrier</string>
+    <string name="product_mix_title_total_mix_amount">Total Mix Amount</string>
+    <string name="product_mix_title_carrier_amount">Carrier Amount</string>
+    <string name="product_mix_title_mix_products">Mix Products</string>
+    <string name="product_mix_title_product">Product %1$d</string>
+    <string name="product_mix_title_product_amount">Amount</string>
+    <string name="product_mix_title_units">Units</string>
+    <string name="product_mix_title_application_rates">Application Rates</string>
+    <string name="product_mix_title_application_rate_1">Application Rate 1 (Default)</string>
+    <string name="product_mix_title_application_rate_2">Application Rate 2</string>
+    <string name="product_mix_title_application_rate_1_short">App Rate 1</string>
+    <string name="product_mix_title_application_rate_2_short">App Rate 2</string>
+    <string name="product_mix_title_application_rate_1_short_point">App Rate 1:</string>
+    <string name="product_mix_title_application_rate_2_short_point">App Rate 2:</string>
+    <string name="product_mix_title_min_application_rate">Min Application Rate</string>
+    <string name="product_mix_title_max_application_rate">Max Application Rate</string>
+    <string name="product_mix_title_delta_application_rate">Delta Application Rate</string>
+    <string name="product_mix_title_application_rates_per_product">Application Rates per Product</string>
+    <string name="product_mix_title_products">Products</string>
+    <string name="product_mix_title_advanced">Advanced</string>
+    <string name="product_mix_title_usage">Usage</string>
+    <string name="product_mix_title_package_size">Package Size</string>
+    <string name="product_mix_title_package_size_units">Package Size Units</string>
+    <string name="product_mix_title_density">Density</string>
+    <string name="product_mix_title_density_unit">Density Units</string>
+    <string name="product_mix_title_picklist_default_select">Select</string>
+    <string name="product_mix_title_product_mix_form">Product Mix Form</string>
+    <string name="product_mix_unittext_default_text">--.-</string>
+
+    <string name="product_text_bulk_fill_fan_delta_label">Bulk Step:</string>
+    <string name="product_text_bulk_fill_fan_rate_label">Bulk Rate:</string>
+    <string name="product_text_density_label">Density:</string>
+    <string name="product_text_density_units_label">Density Units:</string>
+    <string name="product_text_package_label">Package Size:</string>
+    <string name="product_text_rate_delta_label">Delta Rate:</string>
+    <string name="product_text_rate_min_label">Min App Rate:</string>
+    <string name="product_text_rate_max_label">Max App Rate:</string>
+    <string name="product_text_rate_one_label">App Rate 1:</string>
+    <string name="product_text_rate_two_label">App Rate 2:</string>
+    <string name="product_text_vacuum_fan_delta_label">Vac. Step:</string>
+    <string name="product_text_vacuum_fan_rate_label">Vac. Rate:</string>
+
+    <string name="product_section_header">Products</string>
+    <string name="product_section_subheader">Total: 0 products</string>
+    <plurals name="product_section_subheader_format">
+        <item quantity="zero">Total: 0 products</item>
+        <item quantity="one">Total: 1 product</item>
+        <item quantity="other">Total: %1$d products</item>
+    </plurals>
+    <string name="product_search_hint">Product, form, rate</string>
+
+    <string name="tab_product_library">Product Library</string>
+    <string name="create_product_button">Add Product +</string>
+    <string name="no_available_products">You have no products added.</string>
+    <string name="add_product_instructions">Add a product using the \"Add Product\" button above.</string>
+    <string name="add_product_mix_instructions">Add a productmix using the \"Add Product Mix\" button above.</string>
+
+    <string name="unit_gal_per_acre">gal/ac</string>
+
+    <string name="delete_dialog_confirm_button_text">Delete</string>
+    <string name="delete_product_dialog_body_text">This will permanently delete this product and its settings.</string>
+
+    <string name="alert_title">Alert</string>
+    <string name="alert_dismiss">Dismiss</string>
+    <string name="alert_in_use">This product is currently in use by a controller.</string>
+
+    <string name="variety_title">Varieties</string>
+    <string name="variety_section_subheader">Total: 0 varieties</string>
+    <plurals name="variety_section_subheader_format">
+        <item quantity="zero">Total: 0 varieties</item>
+        <item quantity="one">Total: 1 variety</item>
+        <item quantity="other">Total: %1$d varieties</item>
+    </plurals>
+    <string name="variety_button_add_text">Add Variety +</string>
+    <string name="variety_add_dialog_title_text">Add Variety</string>
+    <string name="variety_add_or_edit_dialog_crop_type_header_text">Crop Type</string>
+    <string name="variety_add_or_edit_dialog_name_header_text">Name</string>
+    <string name="variety_delete_dialog_delete_title_text">Delete Variety</string>
+    <string name="variety_delete_dialog_body_text_delete_allowed">This will permanently delete this variety and its settings.</string>
+    <string name="variety_dialog_cancel_button_text">Cancel</string>
+    <string name="variety_dialog_save_button_text">Save</string>
+    <string name="variety_edit_dialog_title">Edit Variety</string>
+    <string name="variety_instruction_add">Add a variety using the \"Add Variety\" button above.</string>
+    <string name="variety_list_header_crop_type_text">CROP TYPE</string>
+    <string name="variety_list_header_color">COLOR</string>
+    <string name="variety_list_header_name_text">NAME</string>
+    <string name="variety_not_available">You have no varieties added.</string>
+    <string name="variety_search_hint">Variety, crop type</string>
+    <string name="tab_management">Management</string>
+    <string name="edit_field_name">Name</string>
+    <string name="edit_dialog_header">Edit Name</string>
+    <string name="edit_dialog_save">Save</string>
+    <string name="edit_dialog_cancel">Cancel</string>
+    <string name="tab_mng_none_header">Select item(s) to edit, copy, or delete</string>
+    <string name="tab_mng_items_header">%1$d Item(s) Selected</string>
+    <!-- end of productlibrary-package usage -->
+    <string name="edit_name_warning">The item with this name already exists. Please choose a different name</string>
+    <string name="edit_update_title">Updating item</string>
 </resources>

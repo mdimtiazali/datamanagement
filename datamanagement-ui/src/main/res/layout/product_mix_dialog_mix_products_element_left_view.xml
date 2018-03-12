@@ -1,0 +1,113 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  ~ Copyright (C) 2015 CNH Industrial NV. All rights reserved.
+  ~
+  ~ This software contains proprietary information of CNH Industrial NV. Neither
+  ~ receipt nor possession thereof confers any right to reproduce, use, or
+  ~ disclose in whole or in part any such information without written
+  ~ authorization from CNH Industrial NV.
+  -->
+
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+        xmlns:cnh="http://schemas.android.com/apk/res-auto"
+        android:orientation="vertical"
+        android:layout_width="0dp"
+        android:layout_height="@dimen/product_mix_dialog_product_background_height"
+        android:layout_marginStart="5dp"
+        android:layout_weight="1">
+
+    <LinearLayout
+            android:id="@+id/product_mix_product_left_select_product"
+            android:layout_width="match_parent"
+            android:layout_height="@dimen/product_mix_dialog_product_background_height"
+            android:background="@drawable/expand_container_left"
+            android:paddingTop="10dp"
+            android:orientation="vertical">
+
+        <com.cnh.android.widget.control.PickListEditable
+                android:id="@+id/product_mix_product_left_picklist_product"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:imeOptions="actionDone|flagNoExtractUi"
+                android:layout_marginTop="10dp"
+                android:layout_marginStart="5dp"
+                cnh:allowItemManagement="false"
+                cnh:allowItemCopying="false"
+                cnh:allowItemCreation="true"
+                cnh:allowItemDeletion="false"
+                cnh:allowItemEditing="false"
+                cnh:defaultPickListTextId="@string/product_mix_title_picklist_default_select"
+                style="@style/PickList" />
+
+        <Button
+                android:id="@+id/product_mix_button_remove_product"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_gravity="bottom|end"
+                android:layout_marginTop="75dp"
+                style="@style/Button"
+                android:text="@string/product_mix_text_button_remove"
+                android:visibility="gone" />
+    </LinearLayout>
+
+    <LinearLayout
+            android:id="@+id/product_mix_product_left_new_product"
+            android:layout_width="match_parent"
+            android:layout_height="@dimen/product_mix_dialog_product_background_height"
+            android:orientation="vertical"
+            android:paddingEnd="30dp"
+            android:paddingStart="10dp"
+            android:background="@drawable/probuct_mix_dialog_mix_products_element_left_view"
+            android:visibility="gone">
+
+        <TextView
+                android:id="@+id/product_mix_new_product_title"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="15dp"
+                style="@style/TextAppearance.Widget.Header"
+                android:text="@string/product_mix_title_add_new_product" />
+
+        <EditText
+                android:id="@+id/product_mix_product_edittext_add_new_product"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="5dp"
+                style="@style/EditText"
+                android:hint="@string/product_mix_default_text_edittext"
+                android:imeOptions="actionDone|flagNoExtractUi"
+                android:singleLine="true" />
+
+        <com.cnh.android.widget.control.PickList
+                android:id="@+id/product_mix_product_picklist_product_type"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="20dp"
+                cnh:defaultPickListTextId="@string/product_mix_default_text_picklist" />
+
+        <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:gravity="end|bottom"
+                android:layout_marginBottom="10dp"
+                android:orientation="horizontal">
+
+            <Button
+                    android:id="@+id/product_mix_product_left_button_cancel"
+                    android:layout_width="@dimen/product_mix_button_width"
+                    android:layout_height="wrap_content"
+                    android:layout_marginEnd="@dimen/product_mix_button_margin_end"
+                    style="@style/ButtonSmall"
+                    android:text="@string/cancel" />
+
+            <Button
+                    android:id="@+id/product_mix_product_left_button_add"
+                    android:layout_width="@dimen/product_mix_button_add_width"
+                    android:layout_height="wrap_content"
+                    android:layout_marginStart="@dimen/product_mix_button_margin_end"
+                    style="@style/ButtonSmall"
+                    android:text="@string/product_mix_add_button_title" />
+        </LinearLayout>
+    </LinearLayout>
+
+</LinearLayout>

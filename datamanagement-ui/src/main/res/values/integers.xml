@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  ~ Copyright (C) 2016 CNH Industrial NV. All rights reserved.
+  ~
+  ~ This software contains proprietary information of CNH Industrial NV. Neither
+  ~ receipt nor possession thereof confers any right to reproduce, use, or
+  ~ disclose in whole or in part any such information without written
+  ~ authorization from CNH Industrial NV.
+  -->
+<resources>
+    <integer name="application_rate_max">10000</integer>
+    <integer name="application_rate_min">0</integer>
+
+    <integer name="variety_list_item_name_weight">7</integer>
+    <integer name="variety_list_item_crop_type_weight">6</integer>
+    <integer name="variety_list_item_color_weight">5</integer>
+</resources>

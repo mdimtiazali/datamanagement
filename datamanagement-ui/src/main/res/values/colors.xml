@@ -9,24 +9,46 @@
   -->
 
 <resources>
-   <color name="tree_line">#ffd9d9d9</color>
-   <color name="tree_dotted_line">#ff6bc4cb</color>
+    <color name="tree_line">#ffd9d9d9</color>
+    <color name="tree_dotted_line">#ff6bc4cb</color>
 
-   <color name="bg_selected">#ff25a9ce</color>
-   <color name="bg_implicit_stroke">#ff83b8db</color>
-   <color name="bg_implicit_fill">#ffe0f3f8</color>
-   <color name="bg_notsupported_fill">#f9f6aa</color>
+    <color name="bg_selected">#ff25a9ce</color>
+    <color name="bg_implicit_stroke">#ff83b8db</color>
+    <color name="bg_implicit_fill">#ffe0f3f8</color>
+    <color name="bg_notsupported_fill">#f9f6aa</color>
 
-   <dimen name="selected_corner_radius">4dp</dimen>
+    <dimen name="selected_corner_radius">4dp</dimen>
 
-   <!-- Dashed border -->
-   <color name="dash_border">#1277bd</color>
-   <dimen name="dash_gap">18dp</dimen>
-   <dimen name="dash_length">18dp</dimen>
-   <dimen name="dash_width">2dp</dimen>
+    <!-- Dashed border -->
+    <color name="dash_border">#1277bd</color>
+    <dimen name="dash_gap">18dp</dimen>
+    <dimen name="dash_length">18dp</dimen>
+    <dimen name="dash_width">2dp</dimen>
 
-   <!-- Panel border -->
-   <color name="data_panel_border">#80bee9</color>
-   <color name="data_header_background">#e8e8e8</color>
+    <!-- Panel border -->
+    <color name="data_panel_border">#80bee9</color>
+    <color name="data_header_background">#e8e8e8</color>
+
+    <color name="drag_accept">#FFFF00</color>
+    <color name="drag_reject">#FF0000</color>
+    <color name="drag_enter">#00FF00</color>
+
+    <!-- starting here everything is used by the productlibrary-package -->
+    <color name="product_mix_dialog_table_border_color">#ff97c3e1</color>
+    <color name="product_mix_dialog_table_dark_cell_color">#ffeeeded</color>
+    <color name="product_mix_dialog_table_default_cell_color">#fffcfcfc</color>
+
+    <color name="product_library_empty_table_text">#7d333333</color>
+
+    <color name="odd_rows">#16525252</color>
+    <color name="even_rows">#ffffff</color>
+
+    <color name="e_sort_header_text">#ffc6c6c6</color>
+
+    <color name="divider_line">#ffa6a5a5</color>
+    <!-- end of productlibrary-package usage -->
+
+    <color name="list_item_text_color">#505050</color>
+
 
 </resources>

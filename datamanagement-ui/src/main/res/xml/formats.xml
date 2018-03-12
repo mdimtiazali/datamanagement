@@ -10,12 +10,31 @@
 
 <formats>
 
-   <format name="ISOXML">
-      <type>com.cnh.pf.model.pfds.Customer</type>
-      <type>com.cnh.pf.model.pfds.Farm</type>
-      <type>com.cnh.pf.model.pfds.Field</type>
-      <type>com.cnh.pf.model.pfds.RxPlan</type>
-      <type>com.cnh.pf.model.pfds.Prescription</type>
+   <format name="ISOXML" pcm="true" standalone="false" path="TASKDATA">
+      <type>GROWER</type>
+      <type>FARM</type>
+      <type>FIELD</type>
+      <type>TASK</type>
+      <type>RX_PLAN</type>
+      <type>RX</type>
+      <type>RX_ZONE</type>
+      <type>PRODUCT</type>
+      <type>PRODUCT_MIX</type>
+      <type>GUIDANCE_GROUP</type>
+      <type>GUIDANCE_PATTERN</type>
+      <type>BOUNDARY</type>
+      <type>LANDMARK</type>
+   </format>
+
+   <format name="PF Database" pcm="true" standalone="true" path="PFDATABASE">
+      <type>!RX_PLAN</type>
+      <type>!RX</type>
+      <type>!RX_ZONE</type>
+      <!--TEMPORARY: Do not support these four data types-->
+      <type>!IMPLEMENT</type>
+      <type>!VEHICLE_IMPLEMENT</type>
+      <type>!VEHICLE_IMPLEMENT_CONFIG</type>
+      <type>!IMPLEMENT_PRODUCT_CONFIG</type>
    </format>
 
 </formats>

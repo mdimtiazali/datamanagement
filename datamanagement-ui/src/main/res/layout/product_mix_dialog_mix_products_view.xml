@@ -1,0 +1,41 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  ~ Copyright (C) 2015 CNH Industrial NV. All rights reserved.
+  ~
+  ~ This software contains proprietary information of CNH Industrial NV. Neither
+  ~ receipt nor possession thereof confers any right to reproduce, use, or
+  ~ disclose in whole or in part any such information without written
+  ~ authorization from CNH Industrial NV.
+  -->
+
+<com.cnh.android.widget.control.CategoryButtons
+        xmlns:android="http://schemas.android.com/apk/res/android"
+        xmlns:cnh="http://schemas.android.com/apk/res-auto"
+        android:id="@+id/product_mix_categorybuttons_mix_product_view"
+        android:layout_height="wrap_content"
+        android:layout_width="match_parent"
+        cnh:title="@string/product_mix_title_category_button_title_mix_products">
+
+    <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical">
+
+        <LinearLayout
+                android:id="@+id/product_mix_product_list_view"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="vertical"></LinearLayout>
+
+        <Button
+                android:id="@+id/product_mix_dialog_mix_product_add_more"
+                android:layout_width="150dp"
+                android:layout_height="50dp"
+                android:layout_gravity="end"
+                android:layout_marginTop="20dp"
+                android:layout_marginBottom="10dp"
+                android:paddingBottom="10dp"
+                style="@style/Button"
+                android:text="@string/product_mix_text_button_add_more"/>
+    </LinearLayout>
+</com.cnh.android.widget.control.CategoryButtons>

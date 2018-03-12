@@ -1,0 +1,54 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  ~ Copyright (C) 2014 CNH Industrial NV. All rights reserved.
+  ~
+  ~ This software contains proprietary information of CNH Industrial NV. Neither
+  ~ receipt nor possession thereof confers any right to reproduce, use, or
+  ~ disclose in whole or in part any such information without written
+  ~ authorization from CNH Industrial NV.
+  -->
+
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+        android:id="@+id/product_item"
+        android:layout_width="match_parent"
+        android:layout_height="@dimen/list_item_height"
+        android:padding="@dimen/list_item_padding">
+
+    <TextView
+            android:id="@+id/name_text"
+            android:layout_width="200dp"
+            android:layout_height="wrap_content"
+            android:layout_centerVertical="true"
+            style="@style/TextAppearance.ItemList"
+            android:layout_marginLeft="13.25dp"
+            android:layout_marginRight="40.5dp"
+            android:singleLine="true"
+            android:ellipsize="end"/>
+
+    <TextView
+            android:id="@+id/form_text"
+            android:layout_width="150dp"
+            android:layout_height="wrap_content"
+            android:layout_toRightOf="@id/name_text"
+            android:layout_marginTop="@dimen/product_item_small_widget_margin"
+            style="@style/TextAppearance.ItemList"
+            android:layout_marginRight="5dp" />
+
+    <TextView
+            android:id="@+id/rate_text"
+            android:layout_width="400dp"
+            android:layout_height="wrap_content"
+            android:layout_toRightOf="@id/form_text"
+            android:layout_marginTop="@dimen/product_item_small_widget_margin"
+            style="@style/TextAppearance.ItemList" />
+
+    <ImageView
+            android:id="@+id/group_indicator"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginRight="14dp"
+            android:src="@drawable/arrow_up_expanded_productlist"
+            android:layout_alignParentRight="true"
+            android:layout_centerVertical="true" />
+
+</RelativeLayout>

@@ -7,16 +7,8 @@
   ~ disclose in whole or in part any such information without written
   ~ authorization from CNH Industrial NV.
   -->
-
-<LinearLayout
-   xmlns:android="http://schemas.android.com/apk/res/android"
-   android:orientation="vertical"
-   android:layout_width="match_parent"
-   android:layout_height="match_parent">
-
-   <TextView
-      android:id="@+id/error_string"
-      android:layout_width="wrap_content"
-      android:layout_height="wrap_content"
-      style="@style/TextAppearance.CnhDialog.Big.Title"/>
-</LinearLayout>
+<TextView xmlns:android="http://schemas.android.com/apk/res/android"
+        android:id="@+id/error_string"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        style="@style/TextAppearance.CnhDialog.Big.InsideText" />

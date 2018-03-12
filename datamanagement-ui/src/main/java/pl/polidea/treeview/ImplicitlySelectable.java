@@ -14,6 +14,11 @@ package pl.polidea.treeview;
  */
 public interface ImplicitlySelectable {
 
-      void setImplicitlySelected(boolean selected);
-      boolean isImplicitlySelected();
+   void setImplicitlySelected(boolean selected);
+
+   boolean isImplicitlySelected();
+
+   void setSupported(boolean supported);
+
+   boolean isSupported();
 }

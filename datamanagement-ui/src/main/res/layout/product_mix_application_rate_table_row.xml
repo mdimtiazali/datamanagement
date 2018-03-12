@@ -1,0 +1,42 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  ~ Copyright (C) 2017 CNH Industrial NV. All rights reserved.
+  ~
+  ~ This software contains proprietary information of CNH Industrial NV. Neither
+  ~ receipt nor possession thereof confers any right to reproduce, use, or
+  ~ disclose in whole or in part any such information without written
+  ~ authorization from CNH Industrial NV.
+  -->
+<TableRow xmlns:android="http://schemas.android.com/apk/res/android"
+          android:gravity="center">
+    <TextView
+            android:id="@+id/product_name_text_view"
+            android:textSize="@dimen/product_mix_overview_application_rate_text_size"
+            android:textColor="@color/defaultTextColor"
+            android:textStyle="bold"
+            android:background="@drawable/product_mix_dialog_application_rates_table_background_cell"
+            android:maxWidth="@dimen/product_library_application_rate_table_product_name_max_width"
+            android:singleLine="true"
+            android:ellipsize="end"
+            android:paddingStart="10dp"
+            android:paddingEnd="10dp"
+    />
+    <TextView
+            android:id="@+id/application_rate1_text_view"
+            android:textSize="@dimen/product_mix_overview_application_rate_text_size"
+            android:textColor="@color/defaultTextColor"
+            android:textStyle="bold"
+            android:background="@drawable/product_mix_dialog_application_rates_table_background_cell"
+            android:gravity="center"
+            android:paddingStart="@dimen/minimum_padding"
+    />
+    <TextView
+            android:id="@+id/application_rate2_text_view"
+            android:textSize="@dimen/product_mix_overview_application_rate_text_size"
+            android:textColor="@color/defaultTextColor"
+            android:textStyle="bold"
+            android:background="@drawable/product_mix_dialog_application_rates_table_background_cell"
+            android:gravity="center"
+            android:paddingStart="@dimen/minimum_padding"
+    />
+</TableRow>

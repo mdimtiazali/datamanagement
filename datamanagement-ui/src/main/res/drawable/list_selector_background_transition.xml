@@ -1,5 +1,4 @@
-<?xml version="1.0" encoding="utf-8"?>
-<!-- Copyright (C) 2008 The Android Open Source Project
+<?xml version="1.0" encoding="utf-8"?><!-- Copyright (C) 2008 The Android Open Source Project
 
      Licensed under the Apache License, Version 2.0 (the "License");
      you may not use this file except in compliance with the License.
@@ -16,10 +15,14 @@
 
 <transition xmlns:android="http://schemas.android.com/apk/res/android">
     <item android:drawable="@drawable/list_selector_background_pressed">
-    <shape android:shape="rectangle">
-        <corners android:radius="0dp"/>
-        <stroke android:dashGap="4dp" android:dashWidth="8dp" android:width="4dp" android:color="@color/e_blue_pressed_bkg_light"/>
-    </shape>
+        <shape android:shape="rectangle">
+            <corners android:radius="0dp" />
+            <stroke
+                    android:dashGap="4dp"
+                    android:dashWidth="8dp"
+                    android:width="4dp"
+                    android:color="@color/e_blue_pressed_bkg_light" />
+        </shape>
     </item>
-    <item android:drawable="@drawable/list_selector_background_longpress"  />
+    <item android:drawable="@drawable/list_selector_background_longpress" />
 </transition>

@@ -8,26 +8,26 @@
   ~ authorization from CNH Industrial NV.
   -->
 
-<LinearLayout
-   xmlns:android="http://schemas.android.com/apk/res/android"
-   android:orientation="vertical"
-   android:layout_width="match_parent"
-   android:layout_height="match_parent">
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+        android:orientation="vertical"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent">
 
-   <TextView
-      android:layout_width="wrap_content"
-      android:layout_height="wrap_content"
-      style="@style/TextAppearance.Data.File.Header"
-      android:text="@string/file_name"/>
+    <TextView
+            android:id="@+id/label"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            style="@style/TextAppearance.Data.File.Header"
+            android:text="@string/new_id_label" />
 
-   <EditText
-      android:id="@+id/file_name"
-      android:layout_width="wrap_content"
-      android:layout_height="wrap_content"
-      style="@style/EditText"
-      android:inputType="textCapSentences"
-      android:imeOptions="actionDone"
-      android:lines="1"
-      android:textSize="24dp"/>
+    <EditText
+            android:id="@+id/file_name"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            style="@style/EditText"
+            android:inputType="textCapSentences"
+            android:imeOptions="actionDone|flagNoFullscreen"
+            android:lines="1"
+            android:textSize="24dp" />
 
 </LinearLayout>

@@ -17,10 +17,11 @@ import android.widget.TextView;
 import com.cnh.android.dialog.DialogView;
 import com.cnh.pf.android.data.management.R;
 import com.cnh.pf.android.data.management.connection.DataServiceConnectionImpl;
+import com.google.common.base.Strings;
+import com.google.inject.Inject;
 
 import butterknife.Bind;
 import butterknife.ButterKnife;
-import com.google.inject.Inject;
 import roboguice.RoboGuice;
 
 /**
@@ -29,8 +30,10 @@ import roboguice.RoboGuice;
  */
 public class ErrorDialog extends DialogView {
 
-   @Inject LayoutInflater layoutInflater;
-   @Bind(R.id.error_string) TextView errorString;
+   @Inject
+   LayoutInflater layoutInflater;
+   @Bind(R.id.error_string)
+   TextView errorString;
 
    public ErrorDialog(Context context, DataServiceConnectionImpl.ErrorEvent event) {
       super(context);
@@ -38,10 +41,10 @@ public class ErrorDialog extends DialogView {
       View view = layoutInflater.inflate(R.layout.error_layout, null);
       ButterKnife.bind(this, view);
 
-      this.setTitle(event.getType().toString());
-      errorString.setText(event.getError());
+      this.setTitle(context.getString(event.getType().resource()));
+      errorString.setText(Strings.isNullOrEmpty(event.getError()) ? "No Details" : event.getError());
       setBodyView(view);
-      setFirstButtonText(getResources().getString(R.string.cancel));
+      setFirstButtonText(getResources().getString(R.string.done));
       showFirstButton(true);
       showSecondButton(false);
       showThirdButton(false);
