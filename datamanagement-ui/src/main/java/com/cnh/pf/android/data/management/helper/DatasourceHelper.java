@@ -14,7 +14,6 @@ import android.os.Environment;
 import com.cnh.jgroups.Datasource;
 import com.cnh.jgroups.Mediator;
 import com.cnh.pf.android.data.management.connection.DataServiceConnectionImpl;
-import com.cnh.pf.data.management.MediumImpl;
 import com.cnh.pf.data.management.aidl.MediumDevice;
 import com.cnh.pf.datamng.DataUtils;
 import com.cnh.pf.datamng.HostnameAddressGenerator;
@@ -48,11 +47,11 @@ import roboguice.event.EventManager;
  * @author oscar.salazar@cnhind.com
  */
 @Singleton
-public class DatasourceHelper implements MediumImpl {
+public class DatasourceHelper {
    private static final Logger logger = LoggerFactory.getLogger(DatasourceHelper.class);
 
    private Mediator mediator;
-   private ConcurrentHashMap<Datasource.Source, Map<Address, List<String>>> sourceMap = new ConcurrentHashMap<Datasource.Source, Map<Address, List<String>>>();;
+   private ConcurrentHashMap<Datasource.LocationType, Map<Address, List<String>>> sourceMap = new ConcurrentHashMap<Datasource.LocationType, Map<Address, List<String>>>();;
    private volatile View currentView;
    private EventManager eventManager;
 
@@ -81,8 +80,8 @@ public class DatasourceHelper implements MediumImpl {
       //remove all left members from map
       for (Address left : diff[1]) {
          logger.trace("Removing address: {}", left);
-         for (Iterator<Map.Entry<Datasource.Source, Map<Address, List<String>>>> sourceIt = sourceMap.entrySet().iterator(); sourceIt.hasNext();) {
-            Map.Entry<Datasource.Source, Map<Address, List<String>>> entry = sourceIt.next();
+         for (Iterator<Map.Entry<Datasource.LocationType, Map<Address, List<String>>>> sourceIt = sourceMap.entrySet().iterator(); sourceIt.hasNext();) {
+            Map.Entry<Datasource.LocationType, Map<Address, List<String>>> entry = sourceIt.next();
             entry.getValue().remove(left);
             if (entry.getValue().isEmpty()) {
                sourceIt.remove();
@@ -94,11 +93,11 @@ public class DatasourceHelper implements MediumImpl {
          for (Address joined : diff[0]) {
             if (joined.equals(mediator.getAddress())) continue;
             String[] types = mediator.getDatatypes(joined);
-            Datasource.Source[] sources = mediator.getSources(joined);
+            Datasource.LocationType[] sources = mediator.getSources(joined);
             if (types != null && sources != null) {
                logger.info("addr: {} is valid datasource", joined.toString());
                List<String> dataTypes = Arrays.asList(types);
-               for (Datasource.Source source : sources) {
+               for (Datasource.LocationType source : sources) {
                   HashMap<Address, List<String>> typeMap = (HashMap<Address, List<String>>) sourceMap.get(source);
                   if (typeMap == null) {
                      typeMap = new HashMap<Address, List<String>>();
@@ -121,10 +120,10 @@ public class DatasourceHelper implements MediumImpl {
 
    /**
     * Return list of address of this source type {INTERNAL, USB, EXTERNAL}
-    * @param sourceType {@link Datasource.Source }
+    * @param sourceType {@link Datasource.LocationType }
     * @return
     */
-   public synchronized Address[] getAddressForSourceType(Datasource.Source sourceType) {
+   public synchronized Address[] getAddressForSourceType(Datasource.LocationType sourceType) {
       if (sourceMap.containsKey(sourceType)) {
          return sourceMap.get(sourceType).keySet().toArray(new Address[0]);
       }
@@ -133,16 +132,16 @@ public class DatasourceHelper implements MediumImpl {
 
    /**
     * Return list of address of these source types {INTERNAL, USB, DISPLAY} ONLY on this host.
-    * @param sourceTypes {@link Datasource.Source }
+    * @param sourceTypes {@link Datasource.LocationType }
     * @return
     */
-   public synchronized List<MediumDevice> getLocalDatasources(Datasource.Source... sourceTypes) {
+   public synchronized List<MediumDevice> getLocalDatasources(Datasource.LocationType... sourceTypes) {
       List<MediumDevice> devices = new ArrayList<MediumDevice>();
       final String myHostname = getHostname(mediator.getAddress());
-      for (Datasource.Source source : sourceTypes) {
+      for (Datasource.LocationType source : sourceTypes) {
          if (!sourceMap.containsKey(source)) continue;
          for (Address addr : sourceMap.get(source).keySet()) {
-            if (!source.equals(Datasource.Source.DISPLAY) || myHostname.equals(getHostname(addr))) {
+            if (!source.equals(Datasource.LocationType.DISPLAY) || myHostname.equals(getHostname(addr))) {
                devices.add(new MediumDevice(source, addr, UUID.get(addr)));
             }
          }
@@ -156,7 +155,7 @@ public class DatasourceHelper implements MediumImpl {
     * @param type {PFDS, VIP, User Layout}
     * @return Address of responsible datasource
     */
-   public synchronized Address[] getDestinationAddresses(Datasource.Source sourceType, String type) throws Exception {
+   public synchronized Address[] getDestinationAddresses(Datasource.LocationType sourceType, String type) throws Exception {
       Set<Address> addresses = new HashSet<Address>();
       for (Map.Entry<Address, List<String>> map : sourceMap.get(sourceType).entrySet()) {
          if (map.getValue().contains(type)) {
@@ -164,31 +163,6 @@ public class DatasourceHelper implements MediumImpl {
          }
       }
       return addresses.toArray(new Address[addresses.size()]);
-   }
-
-   @Override
-   public synchronized List<MediumDevice> getTargetDevices() {
-      List<MediumDevice> devs = new ArrayList<MediumDevice>();
-      //temporarily always add usb for testing
-      logger.debug("getDevices external storage state = {}", Environment.getExternalStorageState());
-      if (Environment.getExternalStorageState().equals(Environment.MEDIA_MOUNTED)) {
-         devs.add(new MediumDevice(Datasource.Source.USB, Environment.getExternalStorageDirectory(), "USB"));
-      }
-      String myHostname = getHostname(mediator.getAddress());
-      logger.trace("My HOSTNAME {}", myHostname);
-      if (!Strings.isNullOrEmpty(myHostname)) {
-         for (Address addr : getAddressForSourceType(Datasource.Source.DISPLAY)) {
-            String name = getHostname(addr);
-            if (Strings.isNullOrEmpty(name) && !myHostname.equals(name)) {
-               logger.trace("Display hostname {}", name);
-               devs.add(new MediumDevice(Datasource.Source.DISPLAY, addr, name));
-            }
-         }
-      }
-      else{
-         logger.warn("No hostname for mediator connection");
-      }
-      return devs;
    }
 
    public static String getHostname(Address addr) {

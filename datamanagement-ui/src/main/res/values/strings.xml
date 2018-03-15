@@ -80,7 +80,6 @@
     <string name="file_name">File Name</string>
     <string name="empty_discovery">No data found</string>
     <string name="export_cancel_confirmation">This will cancel current export.\nDo you want to proceed?</string>
-
     <string name="format_description">ISOXML:
       \nAll files can be exported in ISOXML.
       \n
@@ -236,4 +235,44 @@
     <!-- end of productlibrary-package usage -->
     <string name="edit_name_warning">The item with this name already exists. Please choose a different name</string>
     <string name="edit_update_title">Updating item</string>
+    <string name="unknown_vehicle">Unknown Vehicle</string>
+
+    <!-- Destination / Format Combinations -->
+    <string name="connect_source_string">Connect Source</string>
+    <string name="case_pro1200_usb">Pro 1200 / USB</string>
+    <string name="case_pro800_usb">Pro 800 / USB</string>
+    <string name="case_pro700_usb">Pro 700 / USB</string>
+    <string name="case_desktopsw_usb">Desktop Software / USB</string>
+    <string name="case_cloud_connect_outbox">AFS Connect / OUTBOX</string>
+    <string name="case_cloud_connect_inbox">AFS Connect / INBOX</string>
+    <string name="case_display">Display</string>
+    <string name="case_internal">Internal</string>
+
+    <string name="new_holland_intelli12_usb">Intelliview 12 / USB</string>
+    <string name="new_holland_intelli8_usb">Intelliview 8 / USB</string>
+    <string name="new_holland_intelli4_usb">Intelliview IV / USB</string>
+    <string name="new_holland_desktopsw_usb">Desktop Software / USB</string>
+    <string name="new_holland_cloud_connect_outbox">MyPLMConnect / OUTBOX</string>
+    <string name="new_holland_cloud_connect_inbox">AFS Connect / INBOX</string>
+    <string name="new_holland_display">Display</string>
+    <string name="new_holland_internal">Internal</string>
+
+    <string name="steyr_12_usb">Steyr 12 / USB</string>
+    <string name="steyr_8_usb">Steyr 8 / USB</string>
+    <string name="steyr_4_usb">Steyr 7 / USB</string>
+    <string name="steyr_desktopsw_usb">Desktop Software / USB</string>
+    <string name="steyr_cloud_connect_outbox">Cloud Connect / OUTBOX</string>
+    <string name="steyr_cloud_connect_inbox">AFS Connect / INBOX</string>
+    <string name="steyr_display">Display</string>
+    <string name="steyr_internal">Internal</string>
+
+    <string name="generic_tractor_12_usb">Pro 1200 / USB</string>
+    <string name="generic_tractor_8_usb">Pro 800 / USB</string>
+    <string name="generic_tractor_4_usb">Pro 700 / USB</string>
+    <string name="generic_tractor_desktopsw_usb">Desktop Software / USB</string>
+    <string name="generic_tractor_cloud_connect_outbox">Cloud Connect / OUTBOX</string>
+    <string name="generic_tractor_cloud_connect_inbox">AFS Connect / INBOX</string>
+    <string name="generic_tractor_display">Display</string>
+    <string name="generic_tractor_internal">Internal</string>
+
 </resources>

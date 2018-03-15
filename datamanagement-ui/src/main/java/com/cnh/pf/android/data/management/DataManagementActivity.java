@@ -32,6 +32,7 @@ import com.cnh.android.vip.constants.VIPConstants;
 import com.cnh.android.widget.activity.TabActivity;
 import com.cnh.android.widget.control.TabActivityListeners;
 import com.cnh.android.widget.control.TabActivityTab;
+import com.cnh.pf.android.data.management.helper.VIPDataHandler;
 import com.cnh.pf.android.data.management.productlibrary.ProductLibraryFragment;
 import com.cnh.pf.data.management.service.ServiceConstants;
 import com.cnh.pf.jgroups.ChannelModule;
@@ -40,6 +41,7 @@ import com.cnh.pf.model.vip.vehimp.Vehicle;
 import com.cnh.pf.model.vip.vehimp.VehicleCurrent;
 import com.cnh.pf.model.vip.vehimp.VehicleDeviceClass;
 import com.cnh.pf.model.vip.vehimp.VehicleModel;
+import com.cnh.pf.model.vip.vehimp.VehicleMake;
 import com.cnh.pf.model.vip.vehimp.VehicleType;
 import com.google.inject.Key;
 
@@ -72,9 +74,14 @@ public class DataManagementActivity extends TabActivity implements RoboContext, 
    protected HashMap<Key<?>, Object> scopedObjects = new HashMap<Key<?>, Object>();
    protected EventManager eventManager;
    private IVIPServiceAIDL vipService;
+   private VIPDataHandler vipDataHandler;
    private WeakReference<ProductLibraryFragment> productLibraryFragmentWeakReference;
    private TabActivityTab productLibraryTab = null;
    private boolean calledProductLibraryViaShortcut = false;
+
+   public DataManagementActivity() {
+      vipDataHandler = new VIPDataHandler();
+   }
 
    private class DataManagementTabListener implements TabActivityListeners.TabListener {
       private final Activity a;
@@ -191,7 +198,7 @@ public class DataManagementActivity extends TabActivity implements RoboContext, 
       }
 
       @Override
-      public void deliverVehicleCurrent(VehicleCurrent vehicleCurrent) throws RemoteException {
+      public void deliverVehicleCurrent(final VehicleCurrent vehicleCurrent) throws RemoteException {
          // Take care if you change something here - the vehicle current may have only parts of the data from database inside.
          // look inside this: GetLightWeightVehicleCurrentAsynTask for detailed information.
          if (hasPCM() && (vehicleCurrent == null || !vehicleIsCombine(vehicleCurrent.getVehicle()))) {
@@ -199,15 +206,7 @@ public class DataManagementActivity extends TabActivity implements RoboContext, 
             runOnUiThread(new Runnable() {
                @Override
                public void run() {
-                  if (productLibraryTab == null) {
-                     ProductLibraryFragment productLibraryFragment = new ProductLibraryFragment();
-                     productLibraryFragmentWeakReference = new WeakReference<ProductLibraryFragment>(productLibraryFragment);
-                     productLibraryTab = new TabActivityTab(R.string.tab_product_library, R.drawable.tab_product_library_selector, PRODUCT_LIBRARY_TAB,
-                           new DataManagementTabListener(productLibraryFragmentWeakReference.get(), DataManagementActivity.this));
-                     addTab(productLibraryTab);
-                     productLibraryFragment.setVipService(vipService);
-                  }
-                  if (productLibraryTab.isHidden()) {
+                  if (null != productLibraryTab && productLibraryTab.isHidden()) {
                      logger.debug("Showing productLibraryTab");
                      // TabActivity is not handling that for an already shown tab nothing should happen during the call of the method.
                      // Also it deselects the tab always which leads to a bug here. So only call showTab if it is hidden.
@@ -219,18 +218,25 @@ public class DataManagementActivity extends TabActivity implements RoboContext, 
                      setSelectedTab(productLibraryTab);
                      calledProductLibraryViaShortcut = false; // we don't need this value anymore during the life of this activity.
                   }
+                  if (null != vipDataHandler) {
+                     logger.debug("onServerConnect gets current vehicle");
+
+                     if (null != vehicleCurrent) {
+                        vipDataHandler.updateCurrentVehicle(vehicleCurrent);
+                     }
+                  }
                }
             });
          }
          else {
             //remove tab, if it is set
-            if (productLibraryTab != null) {
+            if (null != productLibraryTab) {
                runOnUiThread(new Runnable() {
                   @Override
                   public void run() {
                      //check, if ProductLibraryFragment is shown / Tab is selected
                      ProductLibraryFragment productLibraryFragment = productLibraryFragmentWeakReference.get();
-                     if (productLibraryFragment != null && productLibraryFragment.isVisible()) {
+                     if (null != productLibraryFragment && productLibraryFragment.isVisible()) {
                         //select different fragment
                         selectTabAtPosition(0);
                      }
@@ -244,9 +250,27 @@ public class DataManagementActivity extends TabActivity implements RoboContext, 
 
       @Override
       public void onServerConnect() throws RemoteException {
-         if (vipService != null) {
+         if (null != vipService) {
             GetLightWeightVehicleCurrentAsynTask getLightWeightVehicleCurrentAsynTask = new GetLightWeightVehicleCurrentAsynTask();
             getLightWeightVehicleCurrentAsynTask.execute();
+            if (null != vipDataHandler) {
+               logger.debug("onServerConnect gets current vehicle");
+               vipDataHandler.setVipService(vipService);
+            }
+            if (null != productLibraryFragmentWeakReference) {
+               ProductLibraryFragment productLibraryFragment = productLibraryFragmentWeakReference.get();
+               if (null != productLibraryFragment) {
+                  logger.debug("onServiceConnected called - productLibraryFragment != null");
+                  productLibraryFragment.setVipService(vipService); //TODO: - Use VipDataHandler instead of vipService
+               }
+            }
+         }
+      }
+
+      @Override
+      public void onServerDisconnect() throws RemoteException {
+         if(null != vipDataHandler) {
+            vipDataHandler.setVipService(null);
          }
       }
 
@@ -263,19 +287,23 @@ public class DataManagementActivity extends TabActivity implements RoboContext, 
    };
 
    /**
-    * AsyncTask to get a light weight vehicle current which includes only {@link VehicleDeviceClass} data.
-    */
+   * AsyncTask to get a light weight vehicle current which includes only {@link VehicleDeviceClass} data.
+   */
    private class GetLightWeightVehicleCurrentAsynTask extends AsyncTask<Void, Void, List> {
 
       // Remark: must be Vehicle_full instead of Vehicle because there is a entity defined in hbm.xml
       // and so HQL uses the entity name instead of the class name.
-      private final String CURRENT_VEHICLE_DEVICE_CLASS_QUERY = "SELECT type.name FROM Vehicle_full v " + "LEFT OUTER JOIN v.vehicleModel AS model "
-            + "LEFT OUTER JOIN model.vehicleType AS type " + "WHERE v.id = (SELECT vehicle.id FROM VehicleCurrent vc WHERE vc.id = 1)";
+      private final String CURRENT_VEHICLE_DEVICE_CLASS_QUERY = "SELECT type.name, theMake.make FROM Vehicle_full v "
+              + "LEFT OUTER JOIN v.vehicleModel AS model "
+              + "LEFT OUTER JOIN model.vehicleType AS type "
+              + "LEFT OUTER JOIN model.vehicleMake AS theMake "
+              + "WHERE v.id = (SELECT vehicle.id FROM VehicleCurrent vc WHERE vc.id = 1)";
 
       @Override
       protected List doInBackground(Void... nothing) {
          try {
-            return vipService.genericQuery(CURRENT_VEHICLE_DEVICE_CLASS_QUERY);
+            List vehicleList = vipService.genericQuery(CURRENT_VEHICLE_DEVICE_CLASS_QUERY);
+            return vehicleList;
          }
          catch (RemoteException e) {
             logger.error("failed to load vehicle current", e);
@@ -291,10 +319,12 @@ public class DataManagementActivity extends TabActivity implements RoboContext, 
                logger.warn("got more data then expected");
             }
             if (list.size() >= 1) {
-               VehicleDeviceClass vehicleDeviceClass = (VehicleDeviceClass) list.get(0);
+               Object[] singleDatabaseLine = (Object[]) list.get(0);
+               VehicleDeviceClass vehicleDeviceClass = (VehicleDeviceClass) singleDatabaseLine[0];
+               String vehMake = (String) singleDatabaseLine[1];
                logger.debug("got vehicle with device class: {}", vehicleDeviceClass);
                try {
-                  vipListener.deliverVehicleCurrent(createVehicleCurrent(vehicleDeviceClass));
+                  vipListener.deliverVehicleCurrent(createVehicleCurrent(vehicleDeviceClass, vehMake));
                }
                catch (RemoteException e) {
                   logger.error("this should never happen because method was called locally");
@@ -308,15 +338,18 @@ public class DataManagementActivity extends TabActivity implements RoboContext, 
        * @param vehicleDeviceClass
        * @return the vehicle current
        */
-      private VehicleCurrent createVehicleCurrent(VehicleDeviceClass vehicleDeviceClass) {
+      private VehicleCurrent createVehicleCurrent(VehicleDeviceClass vehicleDeviceClass, String vehMake) {
          VehicleCurrent vehicleCurrent = new VehicleCurrent();
          Vehicle vehicle = new Vehicle();
          VehicleModel vehicleModel = new VehicleModel();
+         VehicleMake vehicleMake = new VehicleMake();
          VehicleType vehicleType = new VehicleType();
          vehicleCurrent.setVehicle(vehicle);
          vehicle.setVehicleModel(vehicleModel);
+         vehicleModel.setVehicleMake(vehicleMake);
          vehicleModel.setVehicleType(vehicleType);
          vehicleType.setName(vehicleDeviceClass);
+         vehicleMake.setMake(vehMake);
          return vehicleCurrent;
       }
    }
@@ -357,18 +390,25 @@ public class DataManagementActivity extends TabActivity implements RoboContext, 
       super.onCreate(savedInstanceState);
 
       eventManager = RoboGuice.getInjector(this).getInstance(EventManager.class);
-
-      // Create Management tab
-      TabActivityTab managementTab = createActivityTab(new ManageFragment(), R.string.tab_management, R.drawable.tab_management_selector, getResources().getString(R.string.tab_management));
+      TabActivityTab managementTab = new TabActivityTab(R.string.tab_management, R.drawable.tab_management_selector, getResources().getString(R.string.tab_management),
+            new DataManagementTabListener(new ManageFragment(), this));
       addTab(managementTab);
 
-      // Create Import tab
-      TabActivityTab importTab = createActivityTab(new ImportFragment(), R.string.tab_import, R.drawable.tab_import_selector, getResources().getString(R.string.tab_import));
+      TabActivityTab importTab = new TabActivityTab(R.string.tab_import, R.drawable.tab_import_selector, getResources().getString(R.string.tab_import),
+            new DataManagementTabListener(new ImportFragment(), this));
       addTab(importTab);
 
-      // Create Export tab
-      TabActivityTab exportTab = createActivityTab(new ExportFragment(), R.string.tab_export, R.drawable.tab_export_selector, getResources().getString(R.string.tab_export));
+      ExportFragment exportFragment = new ExportFragment();
+      exportFragment.setVipDataHandler(vipDataHandler);
+      TabActivityTab exportTab = new TabActivityTab(R.string.tab_export, R.drawable.tab_export_selector, getResources().getString(R.string.tab_export),
+            new DataManagementTabListener(exportFragment, this));
       addTab(exportTab);
+
+      productLibraryFragmentWeakReference = new WeakReference<ProductLibraryFragment>(new ProductLibraryFragment());
+      productLibraryTab = new TabActivityTab(R.string.tab_product_library, R.drawable.tab_product_library_selector, getResources().getString(R.string.tab_product_library),
+            new DataManagementTabListener(productLibraryFragmentWeakReference.get(), this));
+      addTab(productLibraryTab);
+      hideTab(productLibraryTab);
 
       setTabActivityTitle(getString(R.string.app_name));
       selectTabAtPosition(0);
@@ -464,6 +504,22 @@ public class DataManagementActivity extends TabActivity implements RoboContext, 
       super.onPause();
       eventManager.fire(new OnPauseEvent(this));
       getApplicationContext().unbindService(this);
+
+      if(null != vipService) {
+         vipService = null;
+      }
+   }
+
+   @Override
+   protected void onDestroy() {
+      logger.debug("onDestroy called");
+      super.onDestroy();
+      vipDataHandler = null;
+      scopedObjects = null;
+      eventManager = null;
+      vipService = null;
+      productLibraryFragmentWeakReference = null;
+      productLibraryTab = null;
    }
 
    @Override
@@ -473,13 +529,6 @@ public class DataManagementActivity extends TabActivity implements RoboContext, 
       if (vipService != null) {
          logger.debug("onServiceConnected called - vipService != null");
          registerVIPListener();
-         if (productLibraryFragmentWeakReference != null) {
-            ProductLibraryFragment productLibraryFragment = productLibraryFragmentWeakReference.get();
-            if (productLibraryFragment != null) {
-               logger.debug("onServiceConnected called - productLibraryFragment != null");
-               productLibraryFragment.setVipService(this.vipService);
-            }
-         }
       }
    }
 

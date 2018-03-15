@@ -159,11 +159,11 @@ public class ManageFragment extends BaseDataFragment {
          disabled.setMode(DisabledOverlay.MODE.DISCONNECTED);
          return null;
       }
-      DataManagementSession session = new DataManagementSession(new Datasource.Source[] { Datasource.Source.INTERNAL, Datasource.Source.DISPLAY }, null, null, null);
+      DataManagementSession session = new DataManagementSession(new Datasource.LocationType[] { Datasource.LocationType.PCM, Datasource.LocationType.DISPLAY }, null, null, null, null, null);
       sessionInit(session);
       if (oldSession != null) {
          session.setFormat(oldSession.getFormat());
-         session.setTargets(oldSession.getTargets());
+         session.setDestinations(oldSession.getDestinations());
       }
       return session;
    }
@@ -175,10 +175,10 @@ public class ManageFragment extends BaseDataFragment {
 
    private DataManagementSession sessionInit(DataManagementSession session) {
       if (session != null) {
-         session.setSourceTypes(new Datasource.Source[] { Datasource.Source.INTERNAL, Datasource.Source.DISPLAY });
+         session.setSourceTypes(new Datasource.LocationType[] { Datasource.LocationType.PCM, Datasource.LocationType.DISPLAY });
          session.setSources(null);
          session.setDestinationTypes(null);
-         session.setTargets(null);
+         session.setDestinations(null);
       }
       return session;
    }

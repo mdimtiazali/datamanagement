@@ -230,8 +230,8 @@ public class ImportFragment extends BaseDataFragment {
       }
       //this is a stub Medium device, when user select source, it will be updated
       List stubDevices = new ArrayList<MediumDevice>();
-      stubDevices.add(new MediumDevice(Datasource.Source.USB));
-      return new DataManagementSession(null, new Datasource.Source[] { Datasource.Source.INTERNAL, Datasource.Source.DISPLAY }, stubDevices, null);
+      stubDevices.add(new MediumDevice(Datasource.LocationType.USB_PHOENIX));
+      return new DataManagementSession(null, new Datasource.LocationType[] { Datasource.LocationType.PCM, Datasource.LocationType.DISPLAY }, stubDevices, null, null, null);
    }
    /** we have to override here since two cases to consider, when import fragment was created with session from savedInstanceState,
     *  resumed with previous session will include the previous datasource address
@@ -242,7 +242,7 @@ public class ImportFragment extends BaseDataFragment {
    public void configSession(DataManagementSession session) {
       if(previousDevices != null){
          logger.debug("previous devices are {}",previousDevices);
-         session.setTargets(null);
+         session.setDestinations(null);
          session.setSources(previousDevices);
       }
       else {
@@ -270,10 +270,10 @@ public class ImportFragment extends BaseDataFragment {
       if(session != null) {
          session.setSourceTypes(null);
          session.setSources(new ArrayList<MediumDevice>() {{
-            add(new MediumDevice(Datasource.Source.USB));
+            add(new MediumDevice(Datasource.LocationType.USB_PHOENIX));
          }});
-         session.setDestinationTypes(new Datasource.Source[]{Datasource.Source.INTERNAL, Datasource.Source.DISPLAY});
-         session.setTargets(null);
+         session.setDestinationTypes(new Datasource.LocationType[]{Datasource.LocationType.PCM, Datasource.LocationType.DISPLAY});
+         session.setDestinations(null);
       }
       return session;
    }
@@ -304,7 +304,7 @@ public class ImportFragment extends BaseDataFragment {
          if (getSession().getSessionOperation().equals(SessionOperation.DISCOVERY)){
             if(previousDevices != null){
 
-               if(previousDevices.get(0).getType().equals(Datasource.Source.USB)){
+               if(previousDevices.get(0).getType().equals(Datasource.LocationType.USB_PHOENIX)){
                   pathText.setText(previousDevices.get(0).getPath() == null ? "" : previousDevices.get(0).getPath().getPath());
                }
                else {
@@ -512,7 +512,11 @@ public class ImportFragment extends BaseDataFragment {
       boolean usbFound = false;
 
       for (MediumDevice medium : mediums) {
-         if (medium.getType() == Datasource.Source.USB) {
+         Datasource.LocationType itemType = medium.getType();
+         if (itemType.equals(Datasource.LocationType.USB_PHOENIX)
+                 || itemType.equals(Datasource.LocationType.USB_HAWK)
+                 || itemType.equals(Datasource.LocationType.USB_FRED)
+                 || itemType.equals(Datasource.LocationType.USB_DESKTOP_SW)) {
             usbFound = true;
             break;
          }

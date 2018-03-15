@@ -26,7 +26,6 @@ import com.cnh.android.util.prefs.GlobalPreferences;
 import com.cnh.android.util.prefs.GlobalPreferencesNotAvailableException;
 import com.cnh.android.widget.activity.TabActivity;
 import com.cnh.android.widget.control.PickList;
-import com.cnh.android.widget.control.PickListEditable;
 import com.cnh.jgroups.DataTypes;
 import com.cnh.jgroups.Datasource;
 import com.cnh.jgroups.Mediator;
@@ -97,7 +96,7 @@ public class DataManagementUITest {
       controller = Robolectric.buildActivity(DataManagementActivity.class);
       activity = controller.get();
       when(binder.getService()).thenReturn(service);
-      when(service.getMediums()).thenReturn(Arrays.asList(new MediumDevice(Datasource.Source.USB, RuntimeEnvironment.application.getFilesDir())));
+      when(service.getMediums()).thenReturn(Arrays.asList(new MediumDevice(Datasource.LocationType.USB_PHOENIX, RuntimeEnvironment.application.getFilesDir())));
       when(service.processOperation(Matchers.any(DataManagementSession.class), Matchers.any(DataManagementSession.SessionOperation.class)))
             .then(new Answer<DataManagementSession>() {
                @Override
@@ -140,8 +139,8 @@ public class DataManagementUITest {
       ExportFragment fragment = (ExportFragment) ((TabActivity) activity).getFragmentManager().findFragmentByTag("Export");
       assertTrue("export fragment is visible", fragment != null);
       //Start new discovery
-      DataManagementSession session = new DataManagementSession(new Datasource.Source[] { Datasource.Source.INTERNAL }, new Datasource.Source[] { Datasource.Source.INTERNAL },
-            null, null);
+      DataManagementSession session = new DataManagementSession(new Datasource.LocationType[] { Datasource.LocationType.PCM }, new Datasource.LocationType[] { Datasource.LocationType.PCM },
+            null, null, null, null);
       session.setSessionOperation(DataManagementSession.SessionOperation.DISCOVERY);
       session.setObjectData(getTestObjectData());
       session.setFormat("ISOXML");
@@ -166,8 +165,8 @@ public class DataManagementUITest {
       activateTab(2); //0 - Import 1 - Export
       //Mock picklist, select ISOXML as export format$
       ExportFragment fragment = (ExportFragment) ((TabActivity) activity).getFragmentManager().findFragmentByTag("Export");
-      DataManagementSession session = new DataManagementSession(new Datasource.Source[] { Datasource.Source.INTERNAL }, new Datasource.Source[] { Datasource.Source.INTERNAL },
-            null, null);
+      DataManagementSession session = new DataManagementSession(new Datasource.LocationType[] { Datasource.LocationType.PCM }, new Datasource.LocationType[] { Datasource.LocationType.PCM },
+            null, null, null, null);
       session.setSessionOperation(DataManagementSession.SessionOperation.DISCOVERY);
       session.setObjectData(getTestObjectData());
       session.setFormat("ISOXML");

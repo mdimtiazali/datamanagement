@@ -45,6 +45,7 @@ import com.cnh.pf.android.data.management.service.DataManagementService;
 import com.cnh.pf.data.management.DataManagementSession;
 import com.cnh.pf.data.management.DataManagementSession.SessionOperation;
 import com.cnh.pf.data.management.aidl.IDataManagementListenerAIDL;
+import com.cnh.pf.data.management.aidl.MediumDevice;
 import com.google.inject.Inject;
 import com.google.inject.name.Named;
 
@@ -357,29 +358,37 @@ public abstract class BaseDataFragment extends RoboFragment implements IDataMana
          getActivity().runOnUiThread(new Runnable() {
             @Override
             public void run() {
-               if (isCurrentOperation(event.getSession())) {
+               DataManagementSession eventSession = event.getSession();
+               if (isCurrentOperation(eventSession)) {
                   onErrorOperation(); // should sub-class to provide reset left panel or else operations
                   //maybe we should show a dialog with two buttons, cancel and ok, cancel to stop discovery, ok will trigger a new one
                   //   sessionOperate(getSession(),SessionOperation.DISCOVERY);//trigger a new discovery
                }
                else {
-                  onOtherSessionUpdate(event.getSession());
+                  onOtherSessionUpdate(eventSession);
                }
                if(updatingProg != null){
                   updatingProg.dismiss();
                }
-               //suppress error message of need data path at import.
-               if(event.getSession().getSource() != null && event.getSession().getSource().getType().equals(Datasource.Source.USB)
-                     && (event.getType() != DataServiceConnectionImpl.ErrorEvent.DataError.NEED_DATA_PATH)) {
-                  DialogView errorDialog = new ErrorDialog(getActivity(), event);
-                  errorDialog.setOnButtonClickListener(new DialogViewInterface.OnButtonClickListener() {
-                     @Override
-                     public void onButtonClick(DialogViewInterface dialog, int which) {
-                        if (which == DialogViewInterface.BUTTON_FIRST) {
+               //if it is import discovery, won't popup the dialog
+               MediumDevice sessionSource = eventSession.getSource();
+               if (null != sessionSource) {
+                  Datasource.LocationType itemType = sessionSource.getType();
+                  if ((itemType.equals(Datasource.LocationType.USB_PHOENIX)
+                          || itemType.equals(Datasource.LocationType.USB_HAWK)
+                          || itemType.equals(Datasource.LocationType.USB_FRED)
+                          || itemType.equals(Datasource.LocationType.USB_DESKTOP_SW))
+                          && !eventSession.getSessionOperation().equals(SessionOperation.DISCOVERY)) {
+                     DialogView errorDialog = new ErrorDialog(getActivity(), event);
+                     errorDialog.setOnButtonClickListener(new DialogViewInterface.OnButtonClickListener() {
+                        @Override
+                        public void onButtonClick(DialogViewInterface dialog, int which) {
+                           if (which == DialogViewInterface.BUTTON_FIRST) {
+                           }
                         }
-                     }
-                  });
-                  ((TabActivity) getActivity()).showPopup(errorDialog, true);
+                     });
+                     ((TabActivity) getActivity()).showPopup(errorDialog, true);
+                  }
                }
             }
          });

@@ -34,11 +34,15 @@ import com.cnh.android.widget.control.PickListItem;
 import com.cnh.android.widget.control.ProgressBarView;
 import com.cnh.jgroups.Datasource;
 import com.cnh.jgroups.ObjectGraph;
+import com.cnh.pf.android.data.management.helper.IVIPDataHelper;
+import com.cnh.pf.android.data.management.helper.VIPDataHandler;
 import com.cnh.pf.android.data.management.parser.FormatManager;
 import com.cnh.pf.android.data.management.service.DataManagementService;
+import com.cnh.pf.android.data.management.utility.UtilityHelper;
 import com.cnh.pf.data.management.DataManagementSession;
 import com.cnh.pf.data.management.DataManagementSession.SessionOperation;
 import com.cnh.pf.data.management.aidl.MediumDevice;
+import com.cnh.pf.model.vip.vehimp.VehicleCurrent;
 import com.cnh.pf.datamng.Process;
 import com.google.inject.Inject;
 
@@ -49,8 +53,12 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.List;
+import java.util.Map;
+import java.util.Comparator;
 
 import roboguice.inject.InjectView;
+
+import static com.cnh.pf.android.data.management.utility.UtilityHelper.NEGATIVE_BINARY_ERROR;
 
 /**
  * Export Tab Fragment, handles export to external mediums {USB, External Display}.
@@ -87,6 +95,17 @@ public class ExportFragment extends BaseDataFragment {
    private int dragRejectColor;
    private int dragEnterColor;
    private int transparentColor;
+   private VIPDataHandler vipDataHandler;
+   private VipDataHelperListener vipDataHelperListener;
+   private Map<Datasource.LocationType, String> displayStringMap;
+
+   /**
+    * Sets the VIP Data Handler
+    * @param vipDataHandler
+    */
+   public void setVipDataHandler(VIPDataHandler vipDataHandler) {
+      this.vipDataHandler = vipDataHandler;
+   }
 
    private int progressCurrentValue = 0;
    private int progressMaxValue = 0;
@@ -115,6 +134,7 @@ public class ExportFragment extends BaseDataFragment {
       transparentColor = resources.getColor(android.R.color.transparent);
       loading_string = resources.getString(R.string.loading_string);
       x_of_y_format = resources.getString(R.string.x_of_y_format);
+      vipDataHelperListener = new VipDataHelperListener();
    }
 
    @Override
@@ -220,6 +240,28 @@ public class ExportFragment extends BaseDataFragment {
          }
       }
       super.onResume();
+
+      if (vipDataHandler != null) {
+         vipDataHandler.addOnVehicleChangedListener(vipDataHelperListener);
+         logger.debug("addOnVehicleChangedListener");
+      }
+   }
+
+   @Override
+   public void onPause() {
+      super.onPause();
+      if (vipDataHandler != null) {
+         vipDataHandler.removeOnVehicleChangedListener(vipDataHelperListener);
+         logger.debug("removeOnVehicleChangedListener");
+      }
+   }
+
+   private class VipDataHelperListener implements IVIPDataHelper.OnVehicleChangedListener {
+
+      @Override
+      public void onCurrentVehicleChanged(VehicleCurrent vehicleCurrent) {
+         logger.debug("VipDataHelperListener onCurrentVehicleChanged {}", vehicleCurrent);
+      }
    }
 
    /**
@@ -228,15 +270,26 @@ public class ExportFragment extends BaseDataFragment {
     */
    private void restoreFormatSelection() {
       if (getArguments() != null && getArguments().getString(SAVED_FORMAT) != null) {
+         boolean found = false;
          String selectedFormat = getArguments().getString(SAVED_FORMAT);
 
          for (int i = 0; i < exportFormatPicklist.getAdapter().getCount(); i++) {
             PickListItem item = exportFormatPicklist.getAdapter().getItem(i);
             if (item.getValue().equals(selectedFormat)) {
                exportFormatPicklist.setSelectionByPosition(i);
+               found = true;
                break;
             }
          }
+
+         if (!found) {
+            // Reset the selection if the previous selection cannot be found.
+            resetFormatSelection();
+            exportFormatPicklist.setDisplayText(R.string.select_string);
+         }
+      }
+      else if (exportFormatPicklist.getAdapter().getCount() > 0) {
+         exportFormatPicklist.setDisplayText(R.string.select_string); //Set to "Select" if no saved item selected
       }
    }
 
@@ -283,7 +336,11 @@ public class ExportFragment extends BaseDataFragment {
          if (!found) {
             // Reset the selection if the previous selection cannot be found.
             resetMediumSelection();
+            exportMediumPicklist.setDisplayText(R.string.select_string); //Set to "Select" if no saved item selected
          }
+      }
+      else if (exportMediumPicklist.getAdapter().getCount() > 0) {
+         exportMediumPicklist.setDisplayText(R.string.select_string); //Set to "Select" if no saved item selected
       }
    }
 
@@ -336,6 +393,7 @@ public class ExportFragment extends BaseDataFragment {
          public void onNothingSelected(AdapterView<?> adapterView) {
             resetFormatSelection();
             getSession().setFormat(null);
+            exportFormatPicklist.setDisplayText(R.string.select_string);
          }
       });
    }
@@ -346,11 +404,14 @@ public class ExportFragment extends BaseDataFragment {
          @Override
          public void onItemSelected(AdapterView<?> parent, View view, int position, long id, boolean b) {
             if (getSession() != null) {
-               ObjectPickListItem<MediumDevice> item = (ObjectPickListItem<MediumDevice>) exportMediumPicklist.findItemById(id);
-               getSession().setTargets(item != null ? Arrays.asList(item.getObject()) : null);
-               if (item != null) {
-                  saveMediumSelection(item.getObject());
+               MediumDevice itemObject = ((ObjectPickListItem<MediumDevice>) exportMediumPicklist.findItemById(id)).getObject();
+               getSession().setDestinations(null != itemObject ? Arrays.asList(itemObject) : null);
+               getSession().setDestination(null != itemObject ? itemObject : null);
+               getSession().setDestinationTypes(null != itemObject ? itemObject.getType() : null);
+               if (null != itemObject) {
+                  saveMediumSelection(itemObject);
                }
+               forceMediumDeviceFormat();
             }
             checkExportButton();
          }
@@ -358,7 +419,7 @@ public class ExportFragment extends BaseDataFragment {
          @Override
          public void onNothingSelected(AdapterView<?> parent) {
             resetMediumSelection();
-            getSession().setTargets(null);
+            getSession().setDestinations(null);
             checkExportButton();
          }
       });
@@ -367,37 +428,106 @@ public class ExportFragment extends BaseDataFragment {
 
    private boolean isExportProcessActive() {
       DataManagementSession currentDataManagementSession = getSession();
-
       return (null != currentDataManagementSession && (getSession().getSessionOperation() == SessionOperation.PERFORM_OPERATIONS) && getSession().isProgress());
    }
 
+   /**
+   While Medium Device is set to CLOUD, force to CNH format and disable user selection of format.
+   While Medium Device is set to Fred/USB or DesktopSW/USB, force to ISOXML and disable user selection of format.
+   */
+   private void forceMediumDeviceFormat() {
+      Boolean isReadOnly = false;
+      Datasource.LocationType itemType = ((ObjectPickListItem<MediumDevice>) exportMediumPicklist.getSelectedItem()).getObject().getType();
+      if (null != itemType) {
+         if (itemType.equals(Datasource.LocationType.CLOUD_OUTBOX)) { //Cloud export is only done in PF Database format
+            isReadOnly = true;
+            // "PF Database" is format type in formats.xml file
+            exportFormatPicklist.setSelectionById(exportFormatPicklist.findItemPositionByValue("PF Database", true));
+            logger.debug("Force format to PF Database");
+         }
+         else if (itemType.equals(Datasource.LocationType.USB_DESKTOP_SW) ||
+                 itemType.equals(Datasource.LocationType.USB_FRED)) {
+            isReadOnly = true;
+            // "ISOXML" is format type in formats.xml file
+            exportFormatPicklist.setSelectionById(exportFormatPicklist.findItemPositionByValue("ISOXML", true));
+            logger.debug("Force format to ISOXML");
+         }
+         else if (itemType.equals(Datasource.LocationType.USB_PHOENIX) ||
+                 itemType.equals(Datasource.LocationType.USB_HAWK)) {
+            exportFormatPicklist.setSelectionById(exportFormatPicklist.findItemPositionByValue("PF Database", true));
+            logger.debug("Force format to PF Database as default");
+         }
+      }
+      exportFormatPicklist.setReadOnly(isReadOnly);
+   }
+
+   /**
+    * Adds devices to the destination export list based on the vehicle make and devices available
+    */
    private void addMediumExportToPickList() {
       DataManagementService service = getDataManagementService();
       if (service == null) return;
-      if (exportMediumPicklist.findItemPositionById(0) != -1) {
+      if (exportMediumPicklist.findItemPositionById(0) != NEGATIVE_BINARY_ERROR) {
          exportMediumPicklist.clearList();
       }
 
       boolean resetTarget = true;
+      List<MediumDevice> devices = service.getMediums();  //Determine how many devices should be in the new list
 
-      List<MediumDevice> devices = service.getMediums();
       if (!isEmpty(devices)) {
-         int deviceId = 0;
-         for (MediumDevice device : devices) {
-            exportMediumPicklist.addItem(new ObjectPickListItem<MediumDevice>(deviceId++, device.getType().toString(), device));
-
-            if (getSession() != null && getSession().getTarget() != null && getSession().getTarget().getType() == device.getType()) {
-               resetTarget = false;
+         displayStringMap = UtilityHelper.getListOfDestinations(vipDataHandler.getMakeOfVehicle(), devices, getResources());  //Creates map of strings based on vehicle brand and devices available
+         if (!displayStringMap.isEmpty()) {
+            // Delete items from the picklist that don't appear in device list
+            exportMediumPicklist.setAllowItemsDeletion(true);  //To delete items, globalAllowItemDeletion needs to be set to true first.
+            int count = exportMediumPicklist.getAdapter().getCount();
+            long thisID = 0;
+            for (int i = count; i >= 0; i--) {
+               thisID = exportMediumPicklist.getAdapter().getItemId(i);
+               if (!displayStringMap.containsKey(Datasource.LocationType.getLocationType((int)thisID))) {
+                  exportMediumPicklist.deleteItem(thisID); //Delete item from picklist if it's not in new list of devices
+               }
             }
+            exportMediumPicklist.setAllowItemsDeletion(false); //Set delete back to false
+
+            // Add items to list TODO: - Combine delete and add functionality
+            for (Map.Entry<Datasource.LocationType, String> s : displayStringMap.entrySet()) {
+               for (MediumDevice d : devices) {
+                  if (d.getType() == s.getKey() && null == exportMediumPicklist.findItemById(s.getKey().getValue())) {
+                     exportMediumPicklist.addItem(new ObjectPickListItem<MediumDevice>(s.getKey().getValue(), s.getValue(), devices.get(devices.indexOf(d)))); //Add item if not in the list
+                     break;
+                  }
+                  if (getSession() != null && getSession().getDestination() != null && getSession().getDestination().getType() == d.getType()) {
+                     resetTarget = false;
+                  }
+               }
+            }
+            exportMediumPicklist.sortAdapterData(new IDPicklistComparator()); //Sort based on the devices ID value
          }
          restoreMediumSelection();
       }
       else {
          resetMediumSelection();
+         if (exportMediumPicklist.getAdapter().getCount() > 0) { //There are no medium devices, but picklist is still populated
+            exportMediumPicklist.getAdapter().clear();
+         }
+         exportFormatPicklist.setReadOnly(false);
+         exportMediumPicklist.setDisplayText(R.string.connect_source_string); //Set to "Connect Source" since no medium are present
       }
 
       if (getSession() != null && resetTarget) {
-         getSession().setTargets(null);
+         getSession().setDestinations(null);
+      }
+   }
+
+   /**
+   * Comparator class used to order position of Encryption Key Picklist so that "None" value is always top position
+   *
+   * @author mreece
+   */
+   private class IDPicklistComparator implements Comparator<PickListItem> {
+      @Override
+      public int compare(PickListItem lhs, PickListItem rhs) {
+         return (int) lhs.getId() - (int) rhs.getId();
       }
    }
 
@@ -416,11 +546,11 @@ public class ExportFragment extends BaseDataFragment {
          disabled.setMode(DisabledOverlay.MODE.DISCONNECTED);
          return null;
       }
-      DataManagementSession session = new DataManagementSession(null, null, null, null);
+      DataManagementSession session = new DataManagementSession(null, null, null, null, null, null);
       sessionInit(session);
       if (oldSession != null) {
          session.setFormat(oldSession.getFormat());
-         session.setTargets(oldSession.getTargets());
+         session.setDestinations(oldSession.getDestinations());
       }
       return session;
    }
@@ -431,15 +561,15 @@ public class ExportFragment extends BaseDataFragment {
    }
 
    private DataManagementSession sessionInit(DataManagementSession session) {
-      if (session != null) {
-         session.setSourceTypes(new Datasource.Source[] { Datasource.Source.INTERNAL, Datasource.Source.DISPLAY });
+      if(session != null) {
+         session.setSourceTypes(new Datasource.LocationType[]{Datasource.LocationType.PCM, Datasource.LocationType.DISPLAY});
          session.setSources(null);
          session.setDestinationTypes(null);
-         session.setTargets(null);
-         session.setFormat(exportFormatPicklist.getSelectedItem() != null ? exportFormatPicklist.getSelectedItem().getValue() : null);
+         session.setDestinations(null);
+         session.setFormat(exportFormatPicklist.getSelectedItem() != null ? exportFormatPicklist.getSelectedItem().getValue() : formatManager.getFormats().iterator().next());
          if (exportMediumPicklist.getAdapter().getCount() > 0) {
             ObjectPickListItem<MediumDevice> item = (ObjectPickListItem<MediumDevice>) exportMediumPicklist.getSelectedItem();
-            session.setTargets(item != null ? Arrays.asList(item.getObject()) : null);
+            session.setDestinations(item != null ? Arrays.asList(item.getObject()) : null);
          }
       }
       return session;
@@ -459,28 +589,24 @@ public class ExportFragment extends BaseDataFragment {
       if (session != null) {
          logger.debug("setSession format: {}", session.getFormat());
          if (session.getFormat() == null) {
-            exportFormatPicklist.setSelectionById(-1);
+            exportFormatPicklist.setDisplayText(R.string.select_string);
          }
          else {
             exportFormatPicklist.setSelectionByPosition(new ArrayList<String>(formatManager.getFormats()).indexOf(session.getFormat()));
          }
 
-         boolean found = false;
-         for (int i = 0; i < exportMediumPicklist.getAdapter().getCount(); i++) {
-            ObjectPickListItem<MediumDevice> item = (ObjectPickListItem<MediumDevice>) exportMediumPicklist.getAdapter().getItem(i);
-            if (!isEmpty(session.getTargets()) && item.getObject().equals(session.getTargets().get(0))) {
-               exportMediumPicklist.setSelectionById(item.getId());
-               found = true;
-               break;
-            }
+         if (!isEmpty(session.getDestinations())) {
+            ObjectPickListItem<MediumDevice> item = (ObjectPickListItem<MediumDevice>) exportMediumPicklist.getAdapter().getItem(exportMediumPicklist.getSelectedItemPosition());
+            session.setDestination(item.getObject());
          }
-         if (!found) {
-            exportMediumPicklist.setSelectionById(-1);
+         else {
+            session.setDestinations(null);
+            exportMediumPicklist.setDisplayText(R.string.connect_source_string);
          }
       }
       else {
-         exportFormatPicklist.setSelectionById(-1);
-         exportMediumPicklist.setSelectionById(-1);
+         exportFormatPicklist.setDisplayText(R.string.select_string);
+         exportMediumPicklist.setDisplayText(R.string.connect_source_string);
       }
       checkExportButton();
    }
@@ -577,7 +703,17 @@ public class ExportFragment extends BaseDataFragment {
     */
    private void setExportPicklistsReadOnly(boolean readOnly) {
       exportMediumPicklist.setReadOnly(readOnly);
-      exportFormatPicklist.setReadOnly(readOnly);
+
+      //Only change state of Format Picklist if it isn't one of the three data sources below
+      Datasource.LocationType itemType = ((ObjectPickListItem<MediumDevice>) exportMediumPicklist.getSelectedItem()).getObject().getType();
+      if (itemType.equals(Datasource.LocationType.CLOUD_OUTBOX) ||
+              itemType.equals(Datasource.LocationType.USB_DESKTOP_SW) ||
+              itemType.equals(Datasource.LocationType.USB_FRED)) {
+         exportFormatPicklist.setReadOnly(true);
+      }
+      else {
+         exportFormatPicklist.setReadOnly(readOnly);
+      }
    }
 
    @Override
@@ -589,11 +725,12 @@ public class ExportFragment extends BaseDataFragment {
       }
    }
 
-   void exportSelected() {
+   private void exportSelected() {
       progressCurrentValue = 0;
       progressMaxValue = 0;
       getSession().setData(null);
       getSession().setObjectData(new ArrayList<ObjectGraph>(getTreeAdapter().getSelected()));
+      getSession().setDestination(((ObjectPickListItem<MediumDevice>) exportMediumPicklist.getSelectedItem()).getObject());
       if (!getSession().getObjectData().isEmpty()) {
          setSession(getDataManagementService().processOperation(getSession(), SessionOperation.PERFORM_OPERATIONS));
          showProgressPanel();
@@ -670,9 +807,14 @@ public class ExportFragment extends BaseDataFragment {
          }
       }
       if (defaultButtonText == true) {
-         exportSelectedBtn.setText(getResources().getString(R.string.export_selected));
+         exportSelectedBtn .setText(getResources().getString(R.string.export_selected));
       }
-      boolean hasSelection = getTreeAdapter() != null && s != null && s.getTarget() != null && s.getFormat() != null && getTreeAdapter().hasSelection();
+      boolean hasSelection = getTreeAdapter() != null
+              && s != null
+              && s.getDestinations() != null
+              && exportMediumPicklist.findItemPositionByItem(exportMediumPicklist.getSelectedItem()) >= 0
+              && s.getFormat() != null
+              && getTreeAdapter().hasSelection();
 
       exportSelectedBtn.setEnabled(hasSelection && !isActiveOperation);
    }
@@ -686,6 +828,7 @@ public class ExportFragment extends BaseDataFragment {
          public void run() {
             //refresh the export to list
             addMediumExportToPickList();
+            checkExportButton();
          }
       });
    }

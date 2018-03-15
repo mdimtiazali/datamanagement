@@ -21,7 +21,7 @@ import com.cnh.android.widget.control.PickListAdapter;
 import com.cnh.android.widget.control.PickListEditable;
 import com.cnh.android.widget.control.SegmentedToggleButtonGroup;
 import com.cnh.jgroups.Datasource;
-import com.cnh.jgroups.Datasource.Source;
+import com.cnh.jgroups.Datasource.LocationType;
 import com.cnh.pf.android.data.management.ExportFragment.ObjectPickListItem;
 import com.cnh.pf.android.data.management.R;
 import com.cnh.pf.android.data.management.adapter.PathTreeViewAdapter;
@@ -115,11 +115,11 @@ public class ImportSourceDialog extends DialogView {
          int buttonId = 0;
          Set<String> hosts = new HashSet<String>();
          for (MediumDevice device : mediums) {
-            if (device.getType().equals(Datasource.Source.USB)) {
+            if (device.getType().equals(LocationType.USB_PHOENIX)) {
                importGroup.addButton(getContext().getResources().getString(R.string.usb_string), buttonId);
                devices.put(buttonId, device);
             }
-            else if (device.getType().equals(Datasource.Source.DISPLAY)) {
+            else if (device.getType().equals(Datasource.LocationType.DISPLAY)) {
                if (hosts.add(device.getName())) { //one button per host
                   importGroup.addButton(getContext().getResources().getString(R.string.display_named, device.getName()), buttonId);
                }
@@ -144,7 +144,7 @@ public class ImportSourceDialog extends DialogView {
                if (which == DialogViewInterface.BUTTON_FIRST) {
                   //Select
                   List<MediumDevice> hostDevices = new ArrayList<MediumDevice>();
-                  if (currentDevice.getType().equals(Source.DISPLAY)) {
+                  if (currentDevice.getType().equals(LocationType.DISPLAY)) {
                      String currentHostname = DataUtils.getHostnameOrIp(currentDevice.getAddress());
                      for (MediumDevice md : devices.values()) {
                         if (currentHostname.equals(DataUtils.getHostnameOrIp(md.getAddress()))) {
@@ -213,7 +213,7 @@ public class ImportSourceDialog extends DialogView {
 
       showFirstButton(true);
 
-      if (currentDevice.getType().equals(Datasource.Source.USB) && currentDevice.getPath() != null) {
+      if (currentDevice.getType().equals(LocationType.USB_PHOENIX) && currentDevice.getPath() != null) {
          //Do this after usb, display selection
          manager = new InMemoryTreeStateManager<File>();
          treeBuilder = new TreeBuilder<File>(manager);
@@ -235,7 +235,7 @@ public class ImportSourceDialog extends DialogView {
             }
          });
       }
-      else if (currentDevice.getType().equals(Datasource.Source.DISPLAY)) {
+      else if (currentDevice.getType().equals(Datasource.LocationType.DISPLAY)) {
          sourcePathTreeView.setVisibility(GONE);
          displayPicklist.setAdapter(new PickListAdapter(displayPicklist, getContext()));
          String currentHost = currentDevice.getName();
