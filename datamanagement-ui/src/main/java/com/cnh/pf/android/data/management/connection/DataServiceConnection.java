@@ -75,12 +75,7 @@ public class DataServiceConnection implements DataServiceConnectionImpl {
 
    private void disconnect(@Observes OnPauseEvent event) {
       logger.debug("disconnect");
-      new Thread(new Runnable() {
-         @Override
-         public void run() {
-            context.unbindService(serviceConnection);
-         }
-      });
+      context.unbindService(serviceConnection);
    }
 
    public boolean isConnected() {

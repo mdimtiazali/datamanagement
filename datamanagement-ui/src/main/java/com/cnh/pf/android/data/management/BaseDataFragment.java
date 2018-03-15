@@ -39,7 +39,6 @@ import com.cnh.pf.android.data.management.connection.DataServiceConnection;
 import com.cnh.pf.android.data.management.connection.DataServiceConnectionImpl;
 import com.cnh.pf.android.data.management.connection.DataServiceConnectionImpl.ConnectionEvent;
 import com.cnh.pf.android.data.management.dialog.ErrorDialog;
-import com.cnh.pf.android.data.management.faults.DMFaultHandler;
 import com.cnh.pf.android.data.management.graph.GroupObjectGraph;
 import com.cnh.pf.android.data.management.helper.TreeDragShadowBuilder;
 import com.cnh.pf.android.data.management.service.DataManagementService;
@@ -89,7 +88,7 @@ public abstract class BaseDataFragment extends RoboFragment implements IDataMana
    @Inject
    EventManager globalEventManager;
    @InjectView(R.id.path_tv)
-   TextView pathTv;
+   TextView pathText;
    @InjectView(R.id.select_all_btn)
    Button selectAllBtn;
    @InjectView(R.id.tree_view_list)
@@ -112,8 +111,6 @@ public abstract class BaseDataFragment extends RoboFragment implements IDataMana
    protected boolean cancelled;
    protected boolean hasLocalSource = false;
    protected ProgressDialog updatingProg;
-
-   protected DMFaultHandler faultHandler = null;
 
    /** Current session */
    protected volatile DataManagementSession session = null;
@@ -496,7 +493,7 @@ public abstract class BaseDataFragment extends RoboFragment implements IDataMana
     */
    public void sessionUpdated(DataManagementSession session){
       DataManagementSession.SessionOperation op = session.getSessionOperation();
-      logger.trace("sessionUpdated() by ", op);
+      logger.debug("sessionUpdated() by {}", op.name());
       if (op.equals(DataManagementSession.SessionOperation.DISCOVERY) && !session.isProgress()) {
          initializeTree();
          postTreeUI();
@@ -507,7 +504,6 @@ public abstract class BaseDataFragment extends RoboFragment implements IDataMana
          getSession().setData(processPartialImports(getSession().getData()));
       }
       processOperations();
-
    }
 
    private List<Operation> processPartialImports(List<Operation> operations) {
@@ -648,13 +644,5 @@ public abstract class BaseDataFragment extends RoboFragment implements IDataMana
 
    protected void setCancelled(boolean cancelled) {
       this.cancelled = cancelled;
-   }
-
-   /**
-    * Sets a new fault handler.
-    * @param faultHandler The new fault handler. Can be null to unset the fault handler.
-    */
-   public void setFaultHandler(DMFaultHandler faultHandler) {
-      this.faultHandler = faultHandler;
    }
 }
