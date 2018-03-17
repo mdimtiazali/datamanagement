@@ -31,6 +31,11 @@
       <type>!RX_PLAN</type>
       <type>!RX</type>
       <type>!RX_ZONE</type>
+      <!--TEMPORARY: Do not support these four data types-->
+      <type>!IMPLEMENT</type>
+      <type>!VEHICLE_IMPLEMENT</type>
+      <type>!VEHICLE_IMPLEMENT_CONFIG</type>
+      <type>!IMPLEMENT_PRODUCT_CONFIG</type>
    </format>
 
 </formats>
