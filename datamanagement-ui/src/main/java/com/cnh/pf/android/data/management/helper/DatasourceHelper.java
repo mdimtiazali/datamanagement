@@ -176,18 +176,17 @@ public class DatasourceHelper implements MediumImpl {
       }
       String myHostname = getHostname(mediator.getAddress());
       logger.trace("My HOSTNAME {}", myHostname);
-      if (Strings.isNullOrEmpty(myHostname)) {
-         throw new IllegalStateException("No hostname for mediator connection");
-      }
-      for (Address addr : getAddressForSourceType(Datasource.Source.DISPLAY)) {
-         String name = getHostname(addr);
-         if (Strings.isNullOrEmpty(name)) {
-            logger.warn("Datasource without machine name");
-            continue;
+      if (!Strings.isNullOrEmpty(myHostname)) {
+         for (Address addr : getAddressForSourceType(Datasource.Source.DISPLAY)) {
+            String name = getHostname(addr);
+            if (Strings.isNullOrEmpty(name) && !myHostname.equals(name)) {
+               logger.trace("Display hostname {}", name);
+               devs.add(new MediumDevice(Datasource.Source.DISPLAY, addr, name));
+            }
          }
-         logger.trace("Display hostname {}", name);
-         if (myHostname.equals(name)) continue;
-         devs.add(new MediumDevice(Datasource.Source.DISPLAY, addr, name));
+      }
+      else{
+         logger.warn("No hostname for mediator connection");
       }
       return devs;
    }

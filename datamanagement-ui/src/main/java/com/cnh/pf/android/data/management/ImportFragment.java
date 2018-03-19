@@ -10,6 +10,7 @@
 package com.cnh.pf.android.data.management;
 
 import android.os.Bundle;
+import android.os.Environment;
 import android.os.RemoteException;
 import android.view.DragEvent;
 import android.view.LayoutInflater;
@@ -41,7 +42,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 import java.util.Set;
 
@@ -50,6 +50,7 @@ import roboguice.event.Observes;
 import roboguice.inject.InjectResource;
 import roboguice.inject.InjectView;
 
+import static android.os.Environment.MEDIA_BAD_REMOVAL;
 
 
 /**
@@ -69,11 +70,7 @@ public class ImportFragment extends BaseDataFragment {
    ImageButton stopBtn;
    @InjectView(R.id.progress_bar)
    ProgressBarView progressBar;
-   @InjectView(R.id.operation_name)
-   TextView operationName;
-   @InjectView(R.id.percent_tv)
-   TextView percentTv;
-   @InjectView(R.id.left_status)
+   @InjectView(R.id.left_status_panel)
    LinearLayout leftStatus;
    ProcessDialog processDialog;
    //store original data in case cancel is pressed.  so we can restore it.
@@ -90,7 +87,21 @@ public class ImportFragment extends BaseDataFragment {
    String selectTargetStr;
    @InjectResource(R.string.next)
    String nextStr;
+   @InjectView(R.id.operation_name)
+   TextView operationName;
 
+   private String importing_data;
+   private String loading_string;
+   private String x_of_y_format;
+
+   @Override
+   public void onCreate(Bundle savedInstanceState) {
+      super.onCreate(savedInstanceState);
+
+      importing_data = getResources().getString(R.string.importing_data);
+      loading_string = getResources().getString(R.string.loading_string);
+      x_of_y_format = getResources().getString(R.string.x_of_y_format);
+   }
 
    @Override
    public void inflateViews(LayoutInflater inflater, View leftPanel) {
@@ -144,6 +155,7 @@ public class ImportFragment extends BaseDataFragment {
       });
       processDialog = new ProcessDialog(getActivity());
       startText.setVisibility(View.GONE);
+      operationName.setText(R.string.importing_string);
       checkImportButton();
    }
 
@@ -155,7 +167,7 @@ public class ImportFragment extends BaseDataFragment {
 
    @Override
    protected void onOtherSessionUpdate(DataManagementSession session) {
-      logger.debug("Other session has been updated");
+      logger.debug("Other session has been updated: {}", session.getSessionOperation().name());
       if (session.getSessionOperation().equals(SessionOperation.PERFORM_OPERATIONS)) {
          logger.trace("Other operation completed. Enabling UI.");
          checkImportButton();
@@ -168,8 +180,18 @@ public class ImportFragment extends BaseDataFragment {
             && (s.getSessionOperation().equals(SessionOperation.CALCULATE_CONFLICTS) || s.getSessionOperation().equals(SessionOperation.CALCULATE_OPERATIONS)
                   || (s.getSessionOperation().equals(SessionOperation.PERFORM_OPERATIONS) && s.getResult() == null));
       boolean connected = getDataManagementService() != null;
-      isActiveOperation |= connected && getDataManagementService().hasActiveSession();
       boolean hasSelection = getTreeAdapter() != null && getTreeAdapter().hasSelection();
+      boolean defaultButtonText = true;
+      if (getTreeAdapter() != null && getTreeAdapter().getSelectionMap() != null) {
+         int selectedItemCount = getTreeAdapter().getSelectionMap().size();
+         if (selectedItemCount > 0) {
+            defaultButtonText = false;
+            importSelectedBtn.setText(getResources().getString(R.string.import_selected) + " (" + treeAdapter.getSelectionMap().size() + ")");
+         }
+      }
+      if (defaultButtonText == true) {
+         importSelectedBtn.setText(getResources().getString(R.string.import_selected));
+      }
       importSourceBtn.setEnabled(connected && !isActiveOperation);
       importSelectedBtn.setEnabled(connected && hasSelection && !isActiveOperation && s != null);
    }
@@ -184,6 +206,7 @@ public class ImportFragment extends BaseDataFragment {
       if(getSession() == null){
          setSession(createSession());
       }
+      setCancelled(false);
       configSession(getSession());
       getSession().setSources(event.getDevices());
       getDataManagementService().processOperation(getSession(), SessionOperation.DISCOVERY);
@@ -232,7 +255,7 @@ public class ImportFragment extends BaseDataFragment {
       if(getSession().getSessionOperation().equals(SessionOperation.DISCOVERY)){
          previousDevices = null;//clean to null
          idleUI();
-         pathTv.setText("");
+         pathText.setText("");
          startText.setVisibility(View.VISIBLE);
       }
       else {
@@ -259,10 +282,10 @@ public class ImportFragment extends BaseDataFragment {
    @Override
    public void processOperations() {
       // need to take care of error case in here
+      logger.debug("processOperations()-SessionOperation:{}, Result:{}", getSession().getSessionOperation().name(), getSession().getResult().name());
       if(getSession().getResult().equals(Process.Result.NO_DATASOURCE) && getSession().getSessionOperation().equals(SessionOperation.DISCOVERY)){
          removeProgressPanel();
          startText.setVisibility(View.VISIBLE);
-
       }
       else if(getSession().getResult().equals(Process.Result.ERROR)) {
          if(getSession().getSessionOperation().equals(SessionOperation.DISCOVERY)){
@@ -273,22 +296,26 @@ public class ImportFragment extends BaseDataFragment {
             postTreeUI();
          }
       }
+      else if (getSession().getResult().equals(Process.Result.CANCEL)) {
+         getSession().setSessionOperation(SessionOperation.DISCOVERY);
+         checkImportButton();
+      }
       else {
          if (getSession().getSessionOperation().equals(SessionOperation.DISCOVERY)){
             if(previousDevices != null){
 
                if(previousDevices.get(0).getType().equals(Datasource.Source.USB)){
-                  pathTv.setText(previousDevices.get(0).getPath() == null ? "" : previousDevices.get(0).getPath().getPath());
+                  pathText.setText(previousDevices.get(0).getPath() == null ? "" : previousDevices.get(0).getPath().getPath());
                }
                else {
-                  pathTv.setText(getString(R.string.display_named, previousDevices.get(0).getName()));
+                  pathText.setText(getString(R.string.display_named, previousDevices.get(0).getName()));
                }
             }
 
          }
          else if (getSession().getSessionOperation().equals(SessionOperation.CALCULATE_OPERATIONS) && !isCancelled()) {
             logger.debug("Calculate Targets");
-            if (getSession().getData() == null) {
+            if (getSession().getData() == null || getSession().getData().isEmpty()) {
                Toast.makeText(getActivity(), "No operations came back from server.  Check connectivity", Toast.LENGTH_SHORT).show();
                cancel();
                return;
@@ -340,8 +367,9 @@ public class ImportFragment extends BaseDataFragment {
                processDialog.setTitle(dataConflictStr);
                processDialog.showFirstButton(true);
                processDialog.setFirstButtonText(keepBothStr);
-               processDialog.showSecondButton(true);
-               processDialog.setSecondButtonText(replaceStr);
+               // TEMPORARY: Do now show the second button (Replace button)
+               processDialog.showSecondButton(false);
+//               processDialog.setSecondButtonText(replaceStr);
                processDialog.clearLoading();
                adapter.setOnTargetsSelectedListener(new DataManagementBaseAdapter.OnTargetsSelectedListener() {
                   @Override
@@ -410,12 +438,10 @@ public class ImportFragment extends BaseDataFragment {
 
    /** Inflates left panel progress view */
    private void showProgressPanel() {
-      leftStatus.setVisibility(View.VISIBLE);
       importDropZone.setVisibility(View.GONE);
-      operationName.setText(getResources().getString(R.string.importing_data));
-      progressBar.setTitle(getResources().getString(R.string.importing_string));
+      progressBar.setSecondText(true, loading_string, null, true);
       progressBar.setProgress(0);
-      percentTv.setText("0");
+      leftStatus.setVisibility(View.VISIBLE);
    }
 
    /** Removes left panel progress view and replaces with operation view */
@@ -427,6 +453,7 @@ public class ImportFragment extends BaseDataFragment {
    /** Check if session returned by service is an import operation*/
    @Override
    public boolean isCurrentOperation(DataManagementSession session) {
+      logger.trace("isCurrentOperation( {} == {})", session.getUuid(), getSession().getUuid());
       return session.equals(getSession());
    }
 
@@ -439,17 +466,17 @@ public class ImportFragment extends BaseDataFragment {
    @Override
    public void onProgressPublished(String operation, int progress, int max) {
       final Double percent = ((progress * 1.0) / max) * 100;
-      if (processDialog.isShown()) {
-         processDialog.setProgress(percent.intValue());
-      }
-      else {
-         progressBar.setProgress(percent.intValue());
-         percentTv.setText(Integer.toString(percent.intValue()));
-      }
+      progressBar.setProgress(percent.intValue());
+      progressBar.setSecondText(true, loading_string, String.format(x_of_y_format, progress, max), true);
    }
 
    @Override
    public boolean supportedByFormat(ObjectGraph node) {
+      // TEMPORARY: Do not import the four data types
+      if (node.getType().equals("IMPLEMENT") || node.getType().equals("VEHICLE_IMPLEMENT") ||
+              node.getType().equals("VEHICLE_IMPLEMENT_CONFIG") || node.getType().equals("IMPLEMENT_PRODUCT_CONFIG")) {
+         return false;
+      }
       //For import, all formats supported
       return true;
    }
@@ -482,5 +509,28 @@ public class ImportFragment extends BaseDataFragment {
    @Override
    public void onMediumsUpdated(List<MediumDevice> mediums) throws RemoteException {
       logger.info("onMediumsUpdated {}", mediums);
+      boolean usbFound = false;
+
+      for (MediumDevice medium : mediums) {
+         if (medium.getType() == Datasource.Source.USB) {
+            usbFound = true;
+            break;
+         }
+      }
+
+      // No USB plugged in. Reset the screen to initial state and reset session state as well.
+      if (!usbFound && !isCancelled() && Environment.getExternalStorageState().equals(MEDIA_BAD_REMOVAL)) {
+         logger.debug("Reset the import screen and session state.");
+         if (getTreeAdapter() != null) getTreeAdapter().selectAll(treeViewList, false);
+         processDialog.hide();
+         setCancelled(true);
+         checkImportButton();
+         sessionInit(getSession());
+         removeProgressPanel();
+         getSession().setObjectData(null);
+         pathText.setText("");
+         startText.setVisibility(View.VISIBLE);
+         updateSelectAllState();
+      }
    }
 }

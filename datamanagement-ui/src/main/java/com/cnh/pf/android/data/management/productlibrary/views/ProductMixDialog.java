@@ -34,6 +34,7 @@ import com.cnh.android.pf.widget.utilities.EnumValueToUiStringUtility;
 import com.cnh.android.pf.widget.utilities.ProductHelperMethods;
 import com.cnh.android.pf.widget.utilities.ProductMixHelper;
 import com.cnh.android.pf.widget.utilities.ProductMixRecipeHelper;
+import com.cnh.android.pf.widget.utilities.ProductNameValidator;
 import com.cnh.android.pf.widget.utilities.UnitsToggleHolder;
 import com.cnh.android.pf.widget.utilities.commands.ProductCommandParams;
 import com.cnh.android.pf.widget.utilities.commands.ProductMixCommandParams;
@@ -270,6 +271,8 @@ public class ProductMixDialog extends DialogView implements DialogHandlerListene
          catch (RemoteException e) {
             log.error("can not register vipListener", e);
          }
+         //update product name validator once
+         ProductNameValidator.getInstance().update(this.vipService);
       }
       initEventListener();
    }
@@ -865,7 +868,6 @@ public class ProductMixDialog extends DialogView implements DialogHandlerListene
          }
          segmentedToggleButtonGroup.setTag(holder);
          segmentedToggleButtonGroup.setSelectionById((long) 0);
-         segmentedToggleButtonGroup.setVisibility(holder.unitChoices.size() == 1 ? INVISIBLE : VISIBLE);
       }
    }
 
@@ -1466,24 +1468,25 @@ public class ProductMixDialog extends DialogView implements DialogHandlerListene
       log.debug("update updateSaveButtonState called");
       String productMixName = productMixNameInputField.getText().toString().trim();
       if (productMixName.isEmpty()) {
+         //disallow empty names (no indicator)
          this.setFirstButtonEnabled(false);
          productMixNameInputField.setErrorIndicator(Widget.ErrorIndicator.NONE);
          return;
       }
       else {
-         for (ProductMix productMix : productMixes) {
-            if (this.actionType.equals(DialogActionType.EDIT)) {
-               if (productMix.getId() == this.productMix.getId()) {
-                  continue;
-               }
-            }
-            if (productMixName.equals(productMix.getProductMixParameters().getName())) {
-               this.setFirstButtonEnabled(false);
-               productMixNameInputField.setErrorIndicator(Widget.ErrorIndicator.NEEDS_CHECKING);
-               return;
-            }
+         Integer productId = null;
+         if (this.productMix != null && this.productMix.getProductMixParameters() != null) {
+            productId = this.productMix.getProductMixParameters().getId();
          }
-         productMixNameInputField.setErrorIndicator(Widget.ErrorIndicator.NONE);
+         if (!ProductNameValidator.getInstance().productNameIsUsable(productMixName, productId)) {
+            //disallow non unique names
+            this.setFirstButtonEnabled(false);
+            productMixNameInputField.setErrorIndicator(Widget.ErrorIndicator.NEEDS_CHECKING);
+            return;
+         }
+         else {
+            productMixNameInputField.setErrorIndicator(Widget.ErrorIndicator.NONE);
+         }
       }
       if (!dialogUsageAndCropTypeHandler.isValidItemSelected()) {
          this.setFirstButtonEnabled(false);
