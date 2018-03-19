@@ -25,6 +25,7 @@ import android.view.View;
 import com.cnh.android.util.prefs.GlobalPreferences;
 import com.cnh.android.util.prefs.GlobalPreferencesNotAvailableException;
 import com.cnh.android.widget.activity.TabActivity;
+import com.cnh.android.widget.control.PickList;
 import com.cnh.android.widget.control.PickListEditable;
 import com.cnh.jgroups.DataTypes;
 import com.cnh.jgroups.Datasource;
@@ -36,6 +37,7 @@ import com.cnh.pf.android.data.management.parser.FormatManager;
 import com.cnh.pf.android.data.management.service.DataManagementService;
 import com.cnh.pf.data.management.DataManagementSession;
 import com.cnh.pf.data.management.aidl.MediumDevice;
+import com.google.common.net.HostAndPort;
 import com.google.inject.AbstractModule;
 import com.google.inject.Key;
 import com.google.inject.Provides;
@@ -148,7 +150,7 @@ public class DataManagementUITest {
       //Assert tree view shows results of discovery
       assertEquals("Object Tree View is visible", View.VISIBLE, fragment.getView().findViewById(R.id.tree_view_list).getVisibility());
       //Mock picklist, select ISOXML as export format$
-      fragment.exportFormatPicklist = mock(PickListEditable.class);
+      fragment.exportFormatPicklist = mock(PickList.class);
       when(fragment.exportFormatPicklist.getSelectedItemValue()).thenReturn("ISOXML");
       //Select non-supported format from tree to export, check to make sure its supported state is false
       ObjectTreeViewAdapter adapter = (ObjectTreeViewAdapter) fragment.treeViewList.getAdapter();
@@ -171,7 +173,7 @@ public class DataManagementUITest {
       session.setFormat("ISOXML");
       fragment.setSession(session);
       fireDiscoveryEvent(fragment, session);
-      fragment.exportFormatPicklist = mock(PickListEditable.class);
+      fragment.exportFormatPicklist = mock(PickList.class);
       when(fragment.exportFormatPicklist.getSelectedItemValue()).thenReturn("ISOXML");
       //Set selected item to top of tree, will import everything recursive
       ObjectTreeViewAdapter adapter = (ObjectTreeViewAdapter) fragment.treeViewList.getAdapter();
@@ -238,6 +240,13 @@ public class DataManagementUITest {
          GlobalPreferences prefs = mock(GlobalPreferences.class);
          when(prefs.hasPCM()).thenReturn(true);
          return prefs;
+      }
+
+      @Provides
+      @Singleton
+      @Named("daemon")
+      public HostAndPort getDaemon() {
+         return HostAndPort.fromParts("127.0.0.1", 14000);
       }
    }
 }
