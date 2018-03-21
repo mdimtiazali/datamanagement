@@ -83,6 +83,7 @@ import org.slf4j.LoggerFactory;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import javax.annotation.Nullable;
 
@@ -96,7 +97,9 @@ import roboguice.fragment.provided.RoboFragment;
  */
 public class ProductLibraryFragment extends RoboFragment implements ProductMixCallBack, MeasurementSystemCache.MeasurementSystemListener {
    private static final Logger log = LoggerFactory.getLogger(ProductLibraryFragment.class);
-   private final String identifier = ProductLibraryFragment.class.getSimpleName() + System.identityHashCode(this);
+   private static final String PRODUCT_LIST_SIZE_QUERY = "SELECT COUNT(*) FROM Product WHERE productMixId = 0";
+   private static final String PRODUCT_MIX_LIST_SIZE_QUERY = "SELECT COUNT(*) FROM Product WHERE productMixId != 0";
+   private static final String VARIETY_LIST_SIZE_QUERY = "SELECT COUNT(*) FROM Variety";
    private static final String PRODUCT_LIST = "product list";
    private static final String PRODUCT_UNITS_LIST = "product units list";
    private static final String CURRENT_PRODUCT = "current product";
@@ -104,9 +107,10 @@ public class ProductLibraryFragment extends RoboFragment implements ProductMixCa
    public static final int TOP_BOTTOM_MARGIN = 1;
    public static final int DIALOG_WIDTH = 817;
    public static final int DIALOG_HEIGHT = 400;
-   private boolean isProductMixListDelivered = false;
-   private boolean isProductListDelivered = false;
-   private boolean isVarietyListDelivered = false;
+   private final String identifier = ProductLibraryFragment.class.getSimpleName() + System.identityHashCode(this);
+   private boolean isProductMixListSizeDelivered = false;
+   private boolean isProductListSizeDelivered = false;
+   private boolean isVarietyListSizeDelivered = false;
    private View productLibraryLayout;
    protected DisabledOverlay disabledOverlay;
    private SearchInput productSearch;
@@ -114,6 +118,8 @@ public class ProductLibraryFragment extends RoboFragment implements ProductMixCa
    private RelativeLayout productEmptyView;
    private RelativeLayout productMixEmptyView;
    private ProgressiveDisclosureView productsPanel;
+   private DisabledOverlay productListDisabledOverlay;
+   private DisabledOverlay productMixListDisabledOverlay;
 
    // Varieties
    private List<Variety> varietyList;
@@ -125,6 +131,7 @@ public class ProductLibraryFragment extends RoboFragment implements ProductMixCa
    private boolean varietySortAscending;
    private AddOrEditVarietyDialog addVarietyDialog;
    private RelativeLayout varietiesListEmptyView;
+   private DisabledOverlay varietiesListDisabledOverlay;
 
    //Product Mixes
    private ProgressiveDisclosureView productMixesPanel;
@@ -144,6 +151,7 @@ public class ProductLibraryFragment extends RoboFragment implements ProductMixCa
    private boolean productSortAscending;
    private boolean productMixSortAscending;
    private volatile boolean pcmConnected = false;
+   private static final int WHAT_LOAD_PRODUCT_LIST_SIZE = 1;
    private static final int WHAT_LOAD_PRODUCT_LIST = 2;
    private static final int WHAT_LIST = 3;
    private static final int WHAT_CONFIG = 4;
@@ -152,6 +160,9 @@ public class ProductLibraryFragment extends RoboFragment implements ProductMixCa
    private static final int WHAT_LOAD_PRODUCT_MIX_LIST = 7;
    private static final int WHAT_LOAD_UNIT_LIST = 8;
    private static final int WHAT_GET_VARIETY_LIST = 9;
+   private static final int WHAT_LOAD_PRODUCT_MIX_LIST_SIZE = 10;
+   private static final int WHAT_LOAD_VARIETY_LIST_SIZE = 11;
+
    private IVIPServiceAIDL vipService;
    private IVIPListenerAIDL vipListener = new SimpleVIPListener() {
 
@@ -163,17 +174,20 @@ public class ProductLibraryFragment extends RoboFragment implements ProductMixCa
       @Override
       public void onTableChange(TableChangeEvent action, String tableName, String id) throws RemoteException {
          log.debug("OnTableChange - Action:{}, tableName:{}, id:{}", action, tableName, id);
-         if (tableName.equals("com.cnh.pf.model.product.library.Product")) {
-            vipCommunicationHandler.obtainMessage(WHAT_LOAD_PRODUCT_LIST).sendToTarget();
-         }
       }
 
       @Override
       public void onServerConnect() throws RemoteException {
          log.debug("onServerConnect called");
          pcmConnected = true;
-         vipCommunicationHandler.obtainMessage(WHAT_LOAD_PRODUCT_LIST).sendToTarget();
+         // get only some small amount of data to show something
+         vipCommunicationHandler.obtainMessage(WHAT_LOAD_PRODUCT_LIST_SIZE).sendToTarget();
+         vipCommunicationHandler.obtainMessage(WHAT_LOAD_PRODUCT_MIX_LIST_SIZE).sendToTarget();
+         vipCommunicationHandler.obtainMessage(WHAT_LOAD_VARIETY_LIST_SIZE).sendToTarget();
+
+         // get the bigger amounts of data
          vipCommunicationHandler.obtainMessage(WHAT_LOAD_UNIT_LIST).sendToTarget();
+         vipCommunicationHandler.obtainMessage(WHAT_LOAD_PRODUCT_LIST).sendToTarget();
          vipCommunicationHandler.obtainMessage(WHAT_LOAD_PRODUCT_MIX_LIST).sendToTarget();
          vipCommunicationHandler.obtainMessage(WHAT_GET_VARIETY_LIST).sendToTarget();
          vipService.requestImplementProductConfigCurrent();
@@ -190,7 +204,7 @@ public class ProductLibraryFragment extends RoboFragment implements ProductMixCa
          log.debug("deliverImplementCurrent");
          ProductLibraryFragment.this.currentImplement = newImplement.getImplement();
          vipCommunicationHandler.obtainMessage(WHAT_IMPLEMENT, 1, 0, null).sendToTarget();
-         if (productAdapter != null && newImplement != null){
+         if (productAdapter != null && newImplement != null) {
             productAdapter.setCurrentImplement(ProductLibraryFragment.this.currentImplement);
          }
       }
@@ -198,7 +212,7 @@ public class ProductLibraryFragment extends RoboFragment implements ProductMixCa
       @Override
       public void deliverProductUnitsList(final List<ProductUnits> productUnits) {
          productUnitsList = productUnits;
-         if (productAdapter != null && productUnits != null){
+         if (productAdapter != null && productUnits != null) {
             productAdapter.setProductUnits(productUnits);
          }
          //TODO: partition units list out into pieces here.
@@ -207,18 +221,25 @@ public class ProductLibraryFragment extends RoboFragment implements ProductMixCa
       @Override
       public void deliverProductList(final List<Product> products) {
          log.debug("deliverProductList");
-         getActivity().runOnUiThread(new Runnable() {
+         new AsyncTask<Void, Void, List<Product>>() {
+
             @Override
-            public void run() {
+            protected List<Product> doInBackground(Void... voids) {
                List<Product> tempProductList = new ArrayList<Product>();
                for (Product product : products) {
                   if (product != null && product.getProductMixId() == 0) {
                      tempProductList.add(product);
                   }
                }
-               populateProducts(tempProductList);
+               return tempProductList;
             }
-         });
+
+            @Override
+            protected void onPostExecute(List<Product> products) {
+               super.onPostExecute(products);
+               populateProducts(products);
+            }
+         }.execute();
       }
 
       @Override
@@ -254,7 +275,7 @@ public class ProductLibraryFragment extends RoboFragment implements ProductMixCa
    };
 
    private void checkMode() {
-      if (isProductMixListDelivered && isProductListDelivered && isVarietyListDelivered) {
+      if (isProductMixListSizeDelivered && isProductListSizeDelivered && isVarietyListSizeDelivered) {
          disabledOverlay.setMode(DisabledOverlay.MODE.HIDDEN);
          disabledOverlay.setVisibility(View.GONE);
       }
@@ -316,6 +337,51 @@ public class ProductLibraryFragment extends RoboFragment implements ProductMixCa
                }
             }).execute(new GetVarietyListCommand());
             break;
+         case WHAT_LOAD_PRODUCT_LIST_SIZE:
+            log.debug("loading size of product list");
+            new LoadListSizeAsyncTask(PRODUCT_LIST_SIZE_QUERY, Product.class.getName()) {
+
+               @Override
+               protected void onPostExecute(Long size) {
+                  super.onPostExecute(size);
+                  if (size > Integer.MAX_VALUE) {
+                     log.error("number of products exceed the maximum this view can handle");
+                     return;
+                  }
+                  populateProducts(size.intValue());
+               }
+            }.execute();
+            break;
+         case WHAT_LOAD_PRODUCT_MIX_LIST_SIZE:
+            log.debug("loading size of product mix list");
+            new LoadListSizeAsyncTask(PRODUCT_MIX_LIST_SIZE_QUERY, ProductMix.class.getName()) {
+
+               @Override
+               protected void onPostExecute(Long size) {
+                  super.onPostExecute(size);
+                  if (size > Integer.MAX_VALUE) {
+                     log.error("number of products mixes exceed the maximum this view can handle");
+                     return;
+                  }
+                  populateProductMixes(size.intValue());
+               }
+            }.execute();
+            break;
+         case WHAT_LOAD_VARIETY_LIST_SIZE:
+            log.debug("loading size of variety list");
+            new LoadListSizeAsyncTask(VARIETY_LIST_SIZE_QUERY, Variety.class.getName()) {
+
+               @Override
+               protected void onPostExecute(Long size) {
+                  super.onPostExecute(size);
+                  if (size > Integer.MAX_VALUE) {
+                     log.error("number of varieties exceed the maximum this view can handle");
+                     return;
+                  }
+                  populateVarieties(size.intValue());
+               }
+            }.execute();
+            break;
          default:
             log.info("Unexpected default case in vip handler");
             break;
@@ -324,33 +390,8 @@ public class ProductLibraryFragment extends RoboFragment implements ProductMixCa
    };
 
    /**
-    * Convert string to Title Case
-    * @param input
-    * @return string
-    */
-   private static String toTitleCase(String input) {
-      StringBuilder titleCase = new StringBuilder();
-      boolean nextTitleCase = true;
-
-      for (char c : input.toCharArray()) {
-         if (Character.isSpaceChar(c)) {
-            nextTitleCase = true;
-         }
-         else if (nextTitleCase) {
-            c = Character.toTitleCase(c);
-            nextTitleCase = false;
-         }
-         else {
-            c = Character.toLowerCase(c);
-         }
-         titleCase.append(c);
-      }
-
-      return titleCase.toString();
-   }
-
-   /**
     * Inflate and return the default product library view
+    *
     * @param inflater
     * @param container
     * @param savedInstanceState
@@ -369,6 +410,8 @@ public class ProductLibraryFragment extends RoboFragment implements ProductMixCa
       productSearch.setTextSize(getResources().getDimension(R.dimen.search_text_size));
       productEmptyView = (RelativeLayout) productsPanel.findViewById(R.id.product_empty);
       productListView = (NestedExpandableListView) productsPanel.findViewById(R.id.product_list);
+      productListDisabledOverlay = (DisabledOverlay) productsPanel.findViewById(R.id.products_overlay);
+      productListDisabledOverlay.setMode(DisabledOverlay.MODE.LOADING);
 
       productMixesPanel = (ProgressiveDisclosureView) productLibraryLayout.findViewById(R.id.product_mix_panel);
       productMixesPanel.setAutoResizable(true);
@@ -376,6 +419,8 @@ public class ProductLibraryFragment extends RoboFragment implements ProductMixCa
       productMixSearch.setTextSize(getResources().getDimension(R.dimen.search_text_size));
       productMixEmptyView = (RelativeLayout) productMixesPanel.findViewById(R.id.product_mix_empty);
       productMixListView = (ExpandableListView) productMixesPanel.findViewById(R.id.product_mix_list);
+      productMixListDisabledOverlay = (DisabledOverlay) productMixesPanel.findViewById(R.id.products_mixes_overlay);
+      productMixListDisabledOverlay.setMode(DisabledOverlay.MODE.LOADING);
 
       varietiesPanel = (ProgressiveDisclosureView) productLibraryLayout.findViewById(R.id.variety_panel);
       varietiesPanel.setAutoResizable(true);
@@ -383,6 +428,8 @@ public class ProductLibraryFragment extends RoboFragment implements ProductMixCa
       varietiesSearch.setTextSize(getResources().getDimension(R.dimen.search_text_size));
       varietiesListEmptyView = (RelativeLayout) varietiesPanel.findViewById(R.id.no_available_varieties);
       varietiesListView = (ListView) varietiesPanel.findViewById(R.id.varieties_list);
+      varietiesListDisabledOverlay = (DisabledOverlay) varietiesPanel.findViewById(R.id.varieties_overlay);
+      varietiesListDisabledOverlay.setMode(DisabledOverlay.MODE.HIDDEN);
 
       Button btnAddProduct = (Button) productsPanel.findViewById(R.id.add_product_button);
       btnAddProduct.setOnClickListener(new OnClickListener() {
@@ -393,7 +440,8 @@ public class ProductLibraryFragment extends RoboFragment implements ProductMixCa
                @Override
                public void productList(Product product) {
                   productList.add(product);
-                  vipCommunicationHandler.obtainMessage(WHAT_LOAD_PRODUCT_LIST).sendToTarget();
+                  // TODO: directly before the save we need to change to loading - but currently this method gets called after the save.
+                  // If we do this we can wait for the next deliver. We need to care about the deliverProductList which may disable loading too early ...
                }
             }, ProductLibraryFragment.this.currentImplement, productList);
 
@@ -432,16 +480,16 @@ public class ProductLibraryFragment extends RoboFragment implements ProductMixCa
          public void onClick(View view) {
             addVarietyDialog = new AddOrEditVarietyDialog(getActivity().getApplicationContext());
             addVarietyDialog.setFirstButtonText(getResources().getString(R.string.variety_dialog_save_button_text))
-                  .setSecondButtonText(getResources().getString(R.string.variety_dialog_cancel_button_text)).setTitle(getResources().getString(R.string.variety_add_dialog_title_text))
+                  .setSecondButtonText(getResources().getString(R.string.variety_dialog_cancel_button_text))
+                  .setTitle(getResources().getString(R.string.variety_add_dialog_title_text))
                   .setOnDismissListener(new DialogViewInterface.OnDismissListener() {
                      @Override
                      public void onDismiss(DialogViewInterface dialogViewInterface) {
                         ProductLibraryFragment.this.addVarietyDialog = null;
                      }
                   });
-
             addVarietyDialog.setActionType(AddOrEditVarietyDialog.VarietyDialogActionType.ADD);
-            if (varietyList != null){
+            if (varietyList != null) {
                addVarietyDialog.setVarietyList(varietyList);
             }
             final TabActivity useModal = (DataManagementActivity) getActivity();
@@ -454,37 +502,16 @@ public class ProductLibraryFragment extends RoboFragment implements ProductMixCa
       return productLibraryLayout;
    }
 
-   private void setProductPanelSubheading(){
-      if (this.productList != null) {
-         productsPanel.setSubheading(getResources().getQuantityString(
-               R.plurals.product_section_subheader_format, this.productList.size(), this.productList.size())
-         );
-      }
-      else {
-         productsPanel.setSubheading(getResources().getQuantityString(R.plurals.product_section_subheader_format, 0));
-      }
+   private void setProductPanelSubheading(int size) {
+      productsPanel.setSubheading(getResources().getQuantityString(R.plurals.product_section_subheader_format, size, size));
    }
 
-   private void setProductMixPanelSubheading() {
-      if (this.productMixList != null) {
-         productMixesPanel.setSubheading(getResources().getQuantityString(
-               R.plurals.product_mix_subheader_total_mix_format, this.productMixList.size(), this.productMixList.size())
-         );
-      }
-      else {
-         productMixesPanel.setSubheading(getResources().getQuantityString(R.plurals.product_mix_subheader_total_mix_format, 0));
-      }
+   private void setProductMixPanelSubheading(int size) {
+      productMixesPanel.setSubheading(getResources().getQuantityString(R.plurals.product_mix_subheader_total_mix_format, size, size));
    }
 
-   private void setVarietyPanelSubheading(){
-      if (this.varietyList != null) {
-         varietiesPanel.setSubheading(getResources().getQuantityString(
-               R.plurals.variety_section_subheader_format, this.varietyList.size(), this.varietyList.size())
-         );
-      }
-      else {
-         varietiesPanel.setSubheading(getResources().getQuantityString(R.plurals.variety_section_subheader_format, 0));
-      }
+   private void setVarietyPanelSubheading(int size) {
+      varietiesPanel.setSubheading(getResources().getQuantityString(R.plurals.variety_section_subheader_format, size, size));
    }
 
    //TODO: Current Validate only Product not Product mixes
@@ -510,7 +537,7 @@ public class ProductLibraryFragment extends RoboFragment implements ProductMixCa
    }
 
    private void initProductMixSortHeader() {
-      final HashMap<Class, ListHeaderSortView> sortButtons = new HashMap<Class, ListHeaderSortView>();
+      final Map<Class, ListHeaderSortView> sortButtons = new HashMap<Class, ListHeaderSortView>();
       sortButtons.put(ProductMixNameSortComparator.class, (ListHeaderSortView) productLibraryLayout.findViewById(R.id.product_mix_header_product_name_sort));
       sortButtons.put(ProductMixFormSortComparator.class, (ListHeaderSortView) productLibraryLayout.findViewById(R.id.product_mix_header_product_form_sort));
       sortButtons.put(ProductMixDefaultRateSortComparator.class, (ListHeaderSortView) productLibraryLayout.findViewById(R.id.product_mix_header_product_default_rate_sort));
@@ -561,7 +588,7 @@ public class ProductLibraryFragment extends RoboFragment implements ProductMixCa
    }
 
    private void initProductSortHeader() {
-      final HashMap<Class, ListHeaderSortView> sortButtons = new HashMap<Class, ListHeaderSortView>();
+      final Map<Class, ListHeaderSortView> sortButtons = new HashMap<Class, ListHeaderSortView>();
       sortButtons.put(NameSortComparator.class, (ListHeaderSortView) productLibraryLayout.findViewById(R.id.header_name));
       sortButtons.put(FormSortComparator.class, (ListHeaderSortView) productLibraryLayout.findViewById(R.id.header_form));
       sortButtons.put(DefaultRateSortComparator.class, (ListHeaderSortView) productLibraryLayout.findViewById(R.id.header_default_rate));
@@ -609,8 +636,8 @@ public class ProductLibraryFragment extends RoboFragment implements ProductMixCa
       currentSortButton.setState(ListHeaderSortView.STATE_SORT_ASC);
    }
 
-   private void initVarietySortHeader(){
-      final HashMap<Class, ListHeaderSortView> sortButtons = new HashMap<Class, ListHeaderSortView>();
+   private void initVarietySortHeader() {
+      final Map<Class, ListHeaderSortView> sortButtons = new HashMap<Class, ListHeaderSortView>();
       sortButtons.put(VarietyByNameComparator.class, (ListHeaderSortView) varietiesPanel.findViewById(R.id.varieties_list_header_name));
       sortButtons.put(VarietyByCropTypeComparator.class, (ListHeaderSortView) varietiesPanel.findViewById(R.id.varieties_list_header_crop_type));
       OnClickListener sortClickHandler = new OnClickListener() {
@@ -624,15 +651,15 @@ public class ProductLibraryFragment extends RoboFragment implements ProductMixCa
             ListHeaderSortView button = (ListHeaderSortView) v;
 
             switch (v.getId()) {
-               case R.id.varieties_list_header_name:
-                  varietyComparator = new VarietyByNameComparator(getActivity().getApplicationContext());
-                  break;
-               case R.id.varieties_list_header_crop_type:
-                  varietyComparator = new VarietyByCropTypeComparator(getActivity().getApplicationContext());
-                  break;
-               default:
-                  varietyComparator = new VarietyByNameComparator(getActivity().getApplicationContext());
-                  break;
+            case R.id.varieties_list_header_name:
+               varietyComparator = new VarietyByNameComparator(getActivity().getApplicationContext());
+               break;
+            case R.id.varieties_list_header_crop_type:
+               varietyComparator = new VarietyByCropTypeComparator(getActivity().getApplicationContext());
+               break;
+            default:
+               varietyComparator = new VarietyByNameComparator(getActivity().getApplicationContext());
+               break;
             }
             varietySortAscending = (button.getState() == ListHeaderSortView.STATE_SORT_ASC);
             if (varietyAdapter != null) {
@@ -656,6 +683,7 @@ public class ProductLibraryFragment extends RoboFragment implements ProductMixCa
 
    /**
     * Set initial state of product library view with overlays and empty messages as needed.
+    *
     * @param view
     * @param savedInstanceState
     */
@@ -669,20 +697,29 @@ public class ProductLibraryFragment extends RoboFragment implements ProductMixCa
       productMixEmptyView.setVisibility(View.GONE);
       varietiesListView.setEmptyView(varietiesListEmptyView);
       varietiesListEmptyView.setVisibility(View.GONE);
-      setProductPanelSubheading();
+      setProductPanelSubheading(productList == null ? 0 : productList.size());
       initProductSortHeader();
-      setProductMixPanelSubheading();
+      setProductMixPanelSubheading(productMixList == null ? 0 : productMixList.size());
       initProductMixSortHeader();
-      setVarietyPanelSubheading();
+      setVarietyPanelSubheading(varietyList == null ? 0 : varietyList.size());
       initVarietySortHeader();
    }
 
-   private synchronized void populateVarieties(List<Variety> varietyList){
-      if (varietyList != null){
+   private void populateVarieties(int size) {
+      isVarietyListSizeDelivered = true;
+      checkMode();
+      setVarietyPanelSubheading(size);
+   }
+
+   /**
+    * Populates the varieties to UI. Must be called from UI-Thread.
+    *
+    * @param varietyList the list of varieties to populate
+    */
+   private void populateVarieties(List<Variety> varietyList) {
+      if (varietyList != null) {
          this.varietyList = new ArrayList<Variety>(varietyList);
-         isVarietyListDelivered = true;
-         checkMode();
-         setVarietyPanelSubheading();
+         populateVarieties(varietyList.size());
          if (varietyAdapter == null) {
             varietyAdapter = new VarietyAdapter(getActivity().getApplicationContext(), varietyList, (TabActivity) getActivity(), vipService);
             varietiesSearch.setFilterable(varietyAdapter);
@@ -701,15 +738,20 @@ public class ProductLibraryFragment extends RoboFragment implements ProductMixCa
          if (varietiesPanel.isExpanded()) {
             varietiesPanel.resizeContent(false);
          }
+         varietiesListDisabledOverlay.setMode(DisabledOverlay.MODE.HIDDEN);
       }
    }
 
-   private synchronized void populateProductMixes(List<ProductMix> incomingProductMixList) {
+   private void populateProductMixes(int size) {
+      isProductMixListSizeDelivered = true;
+      checkMode();
+      setProductMixPanelSubheading(size);
+   }
+
+   private void populateProductMixes(List<ProductMix> incomingProductMixList) {
       if (incomingProductMixList != null) {
          this.productMixList = new ArrayList<ProductMix>(incomingProductMixList);
-         isProductMixListDelivered = true;
-         checkMode();
-         setProductMixPanelSubheading();
+         populateProductMixes(productMixList.size());
          if (productMixAdapter == null) {
             productMixAdapter = new ProductMixAdapter(getActivity().getApplicationContext(), incomingProductMixList, (TabActivity) getActivity(), vipService,
                   this, measurementSystemCache);
@@ -729,18 +771,25 @@ public class ProductLibraryFragment extends RoboFragment implements ProductMixCa
          if (productMixesPanel.isExpanded()) {
             productMixesPanel.resizeContent(false);
          }
+         if (productList != null) { // this is needed for the product mix dialog - no extra check will be done to enable the edit + add button
+            productMixListDisabledOverlay.setMode(DisabledOverlay.MODE.HIDDEN);
+         }
       }
+   }
+
+   private void populateProducts(int size) {
+      isProductListSizeDelivered = true;
+      checkMode();
+      setProductPanelSubheading(size);
    }
 
    /**
     * Populate current product list
     */
-   private synchronized void populateProducts(List<Product> incomingProductList) {
+   private void populateProducts(List<Product> incomingProductList) {
       if (incomingProductList != null) {
          productList = incomingProductList;
-         isProductListDelivered = true;
-         checkMode();
-         setProductPanelSubheading();
+         populateProducts(productList.size());
          if (productListView != null && currentProduct != null && productListView.getSelectedItemId() != currentProduct.getId() && productListView.getSelectedId() > -1) {
             log.debug("Changing selection id. old: {}  new: {}", productListView.getSelectedItemId(), currentProduct.getId());
             currentProduct = productList.get((int) productListView.getSelectedId());
@@ -766,13 +815,17 @@ public class ProductLibraryFragment extends RoboFragment implements ProductMixCa
          if (currentProduct == null && productList.size() > 0) {
             currentProduct = productList.get(0);
          }
+         productListDisabledOverlay.setMode(DisabledOverlay.MODE.HIDDEN);
+         if (productMixList != null) { // if product mix list was completed before but product list was missing product mix overlay needs to be hidden.
+            productMixListDisabledOverlay.setMode(DisabledOverlay.MODE.HIDDEN);
+         }
       }
    }
 
    /**
-    * Populate current implement
+    * Populate current implement. Must be called from UI-Thread
     */
-   private synchronized void populateImplement() {
+   private void populateImplement() {
       if (getActivity() != null && getActivity() instanceof DataManagementActivity && currentImplement != null && currentImplement.getName() != null) {
          ((DataManagementActivity) getActivity()).setTabActivitySubheaderRight(currentImplement.getName());
       }
@@ -780,6 +833,7 @@ public class ProductLibraryFragment extends RoboFragment implements ProductMixCa
 
    /**
     * Restore UI from saved state
+    *
     * @param savedInstanceState
     */
    @Override
@@ -790,6 +844,7 @@ public class ProductLibraryFragment extends RoboFragment implements ProductMixCa
 
    /**
     * Initialize adapters
+    *
     * @param savedInstanceState
     */
    @Override
@@ -855,7 +910,8 @@ public class ProductLibraryFragment extends RoboFragment implements ProductMixCa
       if (vipService != null && isResumed()) {
          GetLightWeightImplementCurrentAsyncTask getLightWeightImplementCurrentAsyncTask = new GetLightWeightImplementCurrentAsyncTask();
          getLightWeightImplementCurrentAsyncTask.execute();
-      } else {
+      }
+      else {
          log.debug("cannot register vipListener - vipService == {}", vipService);
       }
    }
@@ -904,7 +960,7 @@ public class ProductLibraryFragment extends RoboFragment implements ProductMixCa
       protected void onPostExecute(List list) {
          super.onPostExecute(list);
          if (list != null) {
-            if (list.size() > 1){
+            if (list.size() > 1) {
                log.warn("got more data then expected");
             }
             if (list.size() >= 1) {
@@ -915,7 +971,8 @@ public class ProductLibraryFragment extends RoboFragment implements ProductMixCa
                log.debug("got implement id: {}, name: {},  and type: {} from pcm", implementId, implementName, implementTypeOperation);
                try {
                   vipListener.deliverImplementCurrent(createCurrentImplement(implementId, implementName, implementTypeOperation));
-               } catch (RemoteException e) {
+               }
+               catch (RemoteException e) {
                   log.error("this should never happen because method was called locally");
                }
             }
@@ -924,12 +981,13 @@ public class ProductLibraryFragment extends RoboFragment implements ProductMixCa
 
       /**
        * Factory method to create the current implement with everything we need inside (so this objects contain only the given values)
+       *
        * @param implementId
        * @param implementName
        * @param implementTypeOperation
        * @return the new implementCurrent with only the values gives as parameters
        */
-      private ImplementCurrent createCurrentImplement(int implementId, String implementName, Operation implementTypeOperation){
+      private ImplementCurrent createCurrentImplement(int implementId, String implementName, Operation implementTypeOperation) {
          Implement implement = new Implement();
          implement.setName(implementName);
          implement.setId(implementId);
@@ -942,7 +1000,9 @@ public class ProductLibraryFragment extends RoboFragment implements ProductMixCa
          implementCurrent.setImplement(implement);
          return implementCurrent;
       }
-   };
+   }
+
+   ;
 
    @Override
    public void onPause() {
@@ -976,11 +1036,11 @@ public class ProductLibraryFragment extends RoboFragment implements ProductMixCa
       productSearch.setText("");
       productSearch.setClearIconEnabled(false);
       super.onStop();
-
    }
 
    /**
     * Set VIPService to listen to. Can be null if you want to unregister the current referenced service.
+    *
     * @param vipService the vipService
     */
    public void setVipService(@Nullable IVIPServiceAIDL vipService) {
@@ -989,23 +1049,26 @@ public class ProductLibraryFragment extends RoboFragment implements ProductMixCa
       unregisterVIPService();
       this.vipService = vipService;
       registerVIPService();
-      if (varietyAdapter != null){
+      if (varietyAdapter != null) {
          varietyAdapter.setVIPService(vipService);
       }
-      if(addVarietyDialog != null){
+      if (addVarietyDialog != null) {
          addVarietyDialog.setVIPService(vipService);
       }
-      if (productAdapter != null){
+      if (productAdapter != null) {
          productAdapter.setVIPService(vipService);
       }
-      if (productMixAdapter != null){
+      if (productMixAdapter != null) {
          productMixAdapter.setVIPService(vipService);
       }
    }
 
    @Override
    public void loadProductMix(ProductMix productMix) {
-      vipCommunicationHandler.obtainMessage(WHAT_LOAD_PRODUCT_MIX_LIST).sendToTarget();
+      // TODO: directly before the save we need to change to loading - but currently this method gets called after the save.
+      // if we do this we can wait for the next deliver
+      // we need to care about the deliverProductList which may disable loading too early ...
+      // productMixListDisabledOverlay.setMode(DisabledOverlay.MODE.LOADING);;
    }
 
    /**
@@ -1015,15 +1078,17 @@ public class ProductLibraryFragment extends RoboFragment implements ProductMixCa
 
       private final SearchInput searchInput;
 
-      SearchInputTextWatcher(SearchInput searchInput){
+      SearchInputTextWatcher(SearchInput searchInput) {
          this.searchInput = searchInput;
       }
 
       @Override
-      public void beforeTextChanged(CharSequence s, int start, int count, int after) {}
+      public void beforeTextChanged(CharSequence s, int start, int count, int after) {
+      }
 
       @Override
-      public void onTextChanged(CharSequence s, int start, int before, int count) {}
+      public void onTextChanged(CharSequence s, int start, int before, int count) {
+      }
 
       @Override
       public void afterTextChanged(Editable s) {
@@ -1038,6 +1103,7 @@ public class ProductLibraryFragment extends RoboFragment implements ProductMixCa
 
    /**
     * Getter for the product mixes panel
+    *
     * @return the products mixes panel
     */
    public ProgressiveDisclosureView getProductMixesPanel() {
@@ -1046,9 +1112,42 @@ public class ProductLibraryFragment extends RoboFragment implements ProductMixCa
 
    /**
     * Getter for the products panel
+    *
     * @return the product panel
     */
    public ProgressiveDisclosureView getProductsPanel() {
       return productsPanel;
+   }
+
+   private class LoadListSizeAsyncTask extends AsyncTask<Void, Void, Long> {
+
+      private String listSizeQuery;
+      private String type;
+
+      LoadListSizeAsyncTask(String listSizeQuery, String type) {
+         this.listSizeQuery = listSizeQuery;
+         this.type = type;
+      }
+
+      @Override
+      protected Long doInBackground(Void... params) {
+         Long size = 0l;
+         try {
+            List list = vipService.genericQuery(listSizeQuery);
+            if (list != null) {
+               if (list.size() > 1) {
+                  log.warn("got more data then expected");
+               }
+               if (list.size() >= 1) {
+                  size = (Long) list.get(0);
+                  log.debug("got {} {}s", size, type);
+               }
+            }
+         }
+         catch (RemoteException e) {
+            log.error("failed to load number of {}s", type, e);
+         }
+         return size;
+      }
    }
 }

@@ -7,7 +7,8 @@
   ~ disclose in whole or in part any such information without written
   ~ authorization from CNH Industrial NV.
   -->
-<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<FrameLayout
+        xmlns:android="http://schemas.android.com/apk/res/android"
         xmlns:cnh="http://schemas.android.com/apk/res-auto"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
@@ -24,7 +25,6 @@
                 android:orientation="vertical"
                 android:layout_margin="@dimen/product_library_grow_margin_medium">
 
-
             <com.cnh.android.widget.control.ProgressiveDisclosureView
                     android:id="@+id/products_panel"
                     cnh:heading="@string/product_section_header"
@@ -33,140 +33,158 @@
                     cnh:headerIcon="@drawable/ic_library_products"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:paddingBottom="25dp">
+                    android:paddingBottom="@dimen/product_library_progressive_disclosure_view_padding_bottom">
 
-                <RelativeLayout
+                <FrameLayout
                         android:layout_width="match_parent"
-                        android:layout_height="wrap_content"
-                        android:layout_marginBottom="@dimen/product_library_search_and_button_margin_bottom">
+                        android:layout_height="wrap_content">
 
-                    <Button
-                            style="@style/Button"
-                            android:id="@+id/add_product_button"
-                            android:layout_width="wrap_content"
-                            android:layout_height="wrap_content"
-                            android:text="@string/create_product_button"
-                            android:layout_marginLeft="@dimen/product_library_add_button_left_margin"
-                            android:layout_alignParentLeft="true"/>
-
-                    <com.cnh.android.pf.widget.controls.SearchInput
-                            android:id="@+id/product_search"
-                            android:layout_width="400dp"
-                            android:layout_height="wrap_content"
-                            android:layout_gravity="right"
-                            android:singleLine="true"
-                            android:hint="@string/product_search_hint"
-                            android:gravity="center_vertical"
-                            android:layout_marginRight="@dimen/product_library_search_field_right_margin"
-                            android:imeOptions="actionDone"
-                            android:layout_alignParentRight="true"/>
-
-                </RelativeLayout>
-
-                <LinearLayout
-                        android:orientation="horizontal"
-                        android:id="@+id/header"
-                        android:background="@color/bar_grey"
-                        android:paddingTop="@dimen/product_library_empty"
-                        android:paddingRight="@dimen/product_library_empty"
-                        android:paddingBottom="@dimen/product_library_empty"
-                        android:layout_width="match_parent"
-                        android:layout_height="wrap_content"
-                        android:layout_alignParentTop="true">
-
-                    <com.cnh.pf.android.data.management.productlibrary.views.ListHeaderSortView
-                            android:textSize="@dimen/product_item_small_text_size"
-                            android:textStyle="bold"
-                            android:textColor="@color/e_sort_header_text"
-                            android:gravity="start|center_vertical"
-                            android:layout_gravity="left"
-                            android:id="@+id/header_name"
-                            android:background="@drawable/fault_chk_btn_bkg"
-                            android:paddingLeft="@dimen/product_library_sort_header_left_padding"
-                            android:paddingRight="@dimen/product_library_sort_header_right_padding"
-                            android:layout_width="@dimen/product_library_empty"
-                            android:layout_height="48dp"
-                            android:button="@null"
-                            android:text="@string/product_name"
-                            android:textAllCaps="true"
-                            android:layout_weight="14.0" />
-
-                    <com.cnh.pf.android.data.management.productlibrary.views.ListHeaderSortView
-                            android:textSize="@dimen/product_item_small_text_size"
-                            android:textStyle="bold"
-                            android:textColor="@color/e_sort_header_text"
-                            android:gravity="start|center_vertical"
-                            android:id="@+id/header_form"
-                            android:background="@drawable/fault_chk_btn_bkg"
-                            android:paddingLeft="@dimen/product_library_sort_header_left_padding"
-                            android:layout_width="@dimen/product_library_empty"
-                            android:layout_height="match_parent"
-                            android:button="@null"
-                            android:text="@string/product_form"
-                            android:textAllCaps="true"
-                            android:layout_weight="10.0" />
-
-
-                    <com.cnh.pf.android.data.management.productlibrary.views.ListHeaderSortView
-                            android:textSize="@dimen/product_item_small_text_size"
-                            android:textStyle="bold"
-                            android:textColor="@color/e_sort_header_text"
-                            android:gravity="start|center_vertical"
-                            android:id="@+id/header_default_rate"
-                            android:background="@drawable/fault_chk_btn_bkg"
-                            android:paddingLeft="@dimen/product_library_sort_header_left_padding"
-                            android:paddingRight="@dimen/product_library_sort_header_right_padding"
-                            android:layout_width="@dimen/product_library_empty"
-                            android:layout_height="match_parent"
-                            android:button="@null"
-                            android:text="@string/product_default_rate"
-                            android:textAllCaps="true"
-                            android:layout_weight="24.0"
-                            android:layout_marginRight="-5dp" />
-                </LinearLayout>
-
-
-                <RelativeLayout
-                        android:id="@+id/product_empty"
-                        android:layout_width="match_parent"
-                        android:layout_height="match_parent"
-                        android:visibility="gone">
-
-                    <TextView
-                            android:id="@+id/no_available_products"
-                            style="@style/TextAppearance.Roboto.Bold"
+                    <LinearLayout
                             android:layout_width="match_parent"
-                            android:layout_height="130dp"
-                            android:background="@drawable/box_no_available_controllers"
-                            android:gravity="center"
-                            android:text="@string/no_available_products"
-                            android:textColor="@color/product_library_empty_table_text"
-                            android:textSize="28sp" />
+                            android:layout_height="wrap_content"
+                            android:orientation="vertical">
 
-                    <TextView
-                            android:id="@+id/add_product_instructions"
-                            style="@style/TextAppearance.Roboto.Bold"
+                        <RelativeLayout
+                                android:layout_width="match_parent"
+                                android:layout_height="wrap_content"
+                                android:layout_marginBottom="@dimen/product_library_search_and_button_margin_bottom">
+
+                            <Button
+                                    style="@style/Button"
+                                    android:id="@+id/add_product_button"
+                                    android:layout_width="wrap_content"
+                                    android:layout_height="wrap_content"
+                                    android:text="@string/create_product_button"
+                                    android:layout_marginLeft="@dimen/product_library_add_button_left_margin"
+                                    android:layout_alignParentLeft="true"/>
+
+                            <com.cnh.android.pf.widget.controls.SearchInput
+                                    android:id="@+id/product_search"
+                                    android:layout_width="@dimen/product_library_search_input_width"
+                                    android:layout_height="wrap_content"
+                                    android:layout_gravity="right"
+                                    android:singleLine="true"
+                                    android:hint="@string/product_search_hint"
+                                    android:gravity="center_vertical"
+                                    android:layout_marginRight="@dimen/product_library_search_field_right_margin"
+                                    android:imeOptions="actionDone"
+                                    android:layout_alignParentRight="true"/>
+
+                        </RelativeLayout>
+
+                        <LinearLayout
+                                android:orientation="horizontal"
+                                android:id="@+id/header"
+                                android:background="@color/bar_grey"
+                                android:paddingTop="@dimen/product_library_empty"
+                                android:paddingRight="@dimen/product_library_empty"
+                                android:paddingBottom="@dimen/product_library_empty"
+                                android:layout_width="match_parent"
+                                android:layout_height="wrap_content"
+                                android:layout_alignParentTop="true">
+
+                            <com.cnh.pf.android.data.management.productlibrary.views.ListHeaderSortView
+                                    android:textSize="@dimen/product_item_small_text_size"
+                                    android:textStyle="bold"
+                                    android:textColor="@color/e_sort_header_text"
+                                    android:gravity="start|center_vertical"
+                                    android:layout_gravity="left"
+                                    android:id="@+id/header_name"
+                                    android:background="@drawable/fault_chk_btn_bkg"
+                                    android:paddingLeft="@dimen/product_library_list_header_left_padding"
+                                    android:paddingRight="@dimen/product_library_list_header_right_padding"
+                                    android:layout_width="@dimen/product_library_empty"
+                                    android:layout_height="@dimen/product_library_list_header_height"
+                                    android:button="@null"
+                                    android:text="@string/product_name"
+                                    android:textAllCaps="true"
+                                    android:layout_weight="14.0"/>
+
+                            <com.cnh.pf.android.data.management.productlibrary.views.ListHeaderSortView
+                                    android:textSize="@dimen/product_item_small_text_size"
+                                    android:textStyle="bold"
+                                    android:textColor="@color/e_sort_header_text"
+                                    android:gravity="start|center_vertical"
+                                    android:id="@+id/header_form"
+                                    android:background="@drawable/fault_chk_btn_bkg"
+                                    android:paddingLeft="@dimen/product_library_list_header_left_padding"
+                                    android:layout_width="@dimen/product_library_empty"
+                                    android:layout_height="@dimen/product_library_list_header_height"
+                                    android:button="@null"
+                                    android:text="@string/product_form"
+                                    android:textAllCaps="true"
+                                    android:layout_weight="10.0"/>
+
+
+                            <com.cnh.pf.android.data.management.productlibrary.views.ListHeaderSortView
+                                    android:textSize="@dimen/product_item_small_text_size"
+                                    android:textStyle="bold"
+                                    android:textColor="@color/e_sort_header_text"
+                                    android:gravity="start|center_vertical"
+                                    android:id="@+id/header_default_rate"
+                                    android:background="@drawable/fault_chk_btn_bkg"
+                                    android:paddingLeft="@dimen/product_library_list_header_left_padding"
+                                    android:paddingRight="@dimen/product_library_list_header_right_padding"
+                                    android:layout_width="@dimen/product_library_empty"
+                                    android:layout_height="@dimen/product_library_list_header_height"
+                                    android:button="@null"
+                                    android:text="@string/product_default_rate"
+                                    android:textAllCaps="true"
+                                    android:layout_weight="24.0"
+                                    android:layout_marginRight="@dimen/product_library_list_header_right_elem_margin_end"/>
+                        </LinearLayout>
+
+
+                        <RelativeLayout
+                                android:id="@+id/product_empty"
+                                android:layout_width="match_parent"
+                                android:layout_height="match_parent"
+                                android:visibility="gone">
+
+                            <TextView
+                                    android:id="@+id/no_available_products"
+                                    style="@style/TextAppearance.Roboto.Bold"
+                                    android:layout_width="match_parent"
+                                    android:layout_height="@dimen/product_library_empty_table_header_height"
+                                    android:background="@drawable/box_no_available_controllers"
+                                    android:gravity="center"
+                                    android:text="@string/no_available_products"
+                                    android:textColor="@color/product_library_empty_table_text_color"
+                                    android:textSize="@dimen/product_library_empty_table_header_text_size"/>
+
+                            <TextView
+                                    android:id="@+id/add_product_instructions"
+                                    style="@style/TextAppearance.Roboto.Bold"
+                                    android:layout_width="match_parent"
+                                    android:layout_height="@dimen/product_library_empty_table_subheader_height"
+                                    android:layout_below="@id/no_available_products"
+                                    android:background="@drawable/box_no_available_controllers"
+                                    android:gravity="center"
+                                    android:text="@string/add_product_instructions"
+                                    android:textColor="@color/product_library_empty_table_text_color"
+                                    android:textSize="@dimen/product_library_empty_table_subheader_text_size"/>
+
+                        </RelativeLayout>
+
+                        <com.cnh.pf.android.data.management.productlibrary.views.NestedExpandableListView
+                                android:id="@+id/product_list"
+                                android:layout_width="match_parent"
+                                android:layout_height="wrap_content"
+                                android:transcriptMode="alwaysScroll"
+                                android:divider="@drawable/divider_line_controllers"
+                                android:footerDividersEnabled="true"
+                                android:headerDividersEnabled="true"
+                                android:groupIndicator="@android:color/transparent"
+                                android:indicatorLeft="@dimen/product_library_list_header_right_padding"/>
+                    </LinearLayout>
+
+                    <com.cnh.android.pf.widget.view.DisabledOverlay
+                            android:id="@+id/products_overlay"
                             android:layout_width="match_parent"
-                            android:layout_height="84dp"
-                            android:layout_below="@id/no_available_products"
-                            android:background="@drawable/box_no_available_controllers"
-                            android:gravity="center"
-                            android:text="@string/add_product_instructions"
-                            android:textColor="@color/product_library_empty_table_text"
-                            android:textSize="24sp" />
+                            android:layout_height="match_parent"
+                            android:layout_gravity="center"/>
 
-                </RelativeLayout>
-
-                <com.cnh.pf.android.data.management.productlibrary.views.NestedExpandableListView
-                        android:id="@+id/product_list"
-                        android:layout_width="match_parent"
-                        android:layout_height="wrap_content"
-                        android:transcriptMode="alwaysScroll"
-                        android:divider="@drawable/divider_line_controllers"
-                        android:footerDividersEnabled="true"
-                        android:headerDividersEnabled="true"
-                        android:groupIndicator="@android:color/transparent"
-                        android:indicatorLeft="@dimen/product_library_sort_header_right_padding" />
+                </FrameLayout>
 
             </com.cnh.android.widget.control.ProgressiveDisclosureView>
 
@@ -178,141 +196,161 @@
                     cnh:headerIcon="@drawable/ic_product_mix"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:paddingBottom="25dp">
+                    android:paddingBottom="@dimen/product_library_progressive_disclosure_view_padding_bottom">
 
-                <RelativeLayout
+                <FrameLayout
                         android:layout_width="match_parent"
-                        android:layout_height="wrap_content"
-                        android:layout_marginBottom="@dimen/product_library_search_and_button_margin_bottom">
+                        android:layout_height="wrap_content">
 
-                    <Button
-                            style="@style/Button"
-                            android:id="@+id/add_mix_button"
-                            android:layout_width="wrap_content"
-                            android:layout_height="wrap_content"
-                            android:layout_marginLeft="@dimen/product_library_add_button_left_margin"
-                            android:text="@string/product_mix_text_button_add_product_mix"
-                            android:layout_alignParentLeft="true"/>
-
-                    <com.cnh.android.pf.widget.controls.SearchInput
-
-                            android:id="@+id/product_mix_search"
-                            android:layout_width="400dp"
-                            android:layout_height="wrap_content"
-                            android:layout_gravity="right"
-                            android:singleLine="true"
-                            android:hint="@string/product_mix_search_hint"
-                            android:gravity="center_vertical"
-                            android:layout_marginRight="@dimen/product_library_search_field_right_margin"
-                            android:imeOptions="actionDone"
-                            android:layout_alignParentRight="true"/>
-
-                </RelativeLayout>
-
-                <LinearLayout
-                        android:orientation="horizontal"
-                        android:id="@+id/product_mix_header"
-                        android:background="@drawable/tab_activity_header_bar"
-                        android:paddingLeft="@dimen/product_library_empty"
-                        android:paddingTop="@dimen/product_library_empty"
-                        android:paddingRight="@dimen/product_library_empty"
-                        android:paddingBottom="@dimen/product_library_empty"
-                        android:layout_width="match_parent"
-                        android:layout_height="wrap_content"
-                        android:layout_alignParentTop="true">
-
-                    <com.cnh.pf.android.data.management.productlibrary.views.ListHeaderSortView
-                            android:textSize="@dimen/product_item_small_text_size"
-                            android:textStyle="bold"
-                            android:textColor="@color/e_sort_header_text"
-                            android:gravity="start|center_vertical"
-                            android:layout_gravity="left"
-                            android:id="@+id/product_mix_header_product_name_sort"
-                            android:background="@drawable/fault_chk_btn_bkg"
-                            android:paddingStart="@dimen/product_library_sort_header_left_padding"
-                            android:paddingEnd="@dimen/product_library_sort_header_right_padding"
-                            android:layout_width="@dimen/product_library_empty"
-                            android:layout_height="48dp"
-                            android:button="@null"
-                            android:text="@string/product_name"
-                            android:textAllCaps="true"
-                            android:layout_weight="14.0" />
-
-                    <com.cnh.pf.android.data.management.productlibrary.views.ListHeaderSortView
-                            android:textSize="@dimen/product_item_small_text_size"
-                            android:textStyle="bold"
-                            android:textColor="@color/e_sort_header_text"
-                            android:gravity="start|center_vertical"
-                            android:id="@+id/product_mix_header_product_form_sort"
-                            android:background="@drawable/fault_chk_btn_bkg"
-                            android:paddingStart="@dimen/product_library_sort_header_left_padding"
-                            android:layout_width="@dimen/product_library_empty"
-                            android:layout_height="match_parent"
-                            android:button="@null"
-                            android:text="@string/product_form"
-                            android:textAllCaps="true"
-                            android:layout_weight="10.0" />
-
-
-                    <com.cnh.pf.android.data.management.productlibrary.views.ListHeaderSortView
-                            android:textSize="@dimen/product_item_small_text_size"
-                            android:textStyle="bold"
-                            android:textColor="@color/e_sort_header_text"
-                            android:gravity="start|center_vertical"
-                            android:id="@+id/product_mix_header_product_default_rate_sort"
-                            android:background="@drawable/fault_chk_btn_bkg"
-                            android:paddingStart="@dimen/product_library_sort_header_left_padding"
-                            android:paddingEnd="@dimen/product_library_sort_header_right_padding"
-                            android:layout_width="@dimen/product_library_empty"
-                            android:layout_height="match_parent"
-                            android:button="@null"
-                            android:text="@string/product_default_rate"
-                            android:textAllCaps="true"
-                            android:layout_weight="24.0"
-                            android:layout_marginEnd="-5dp" />
-                </LinearLayout>
-
-                <com.cnh.pf.android.data.management.productlibrary.views.NestedExpandableListView
-                        android:id="@+id/product_mix_list"
-                        android:layout_width="match_parent"
-                        android:layout_height="wrap_content"
-                        android:transcriptMode="alwaysScroll"
-                        android:divider="@drawable/divider_line_controllers"
-                        android:footerDividersEnabled="true"
-                        android:headerDividersEnabled="true"
-                        android:groupIndicator="@android:color/transparent"
-                        android:indicatorLeft="@dimen/product_library_sort_header_right_padding" />
-
-                <RelativeLayout
-                        android:id="@+id/product_mix_empty"
-                        android:layout_width="match_parent"
-                        android:layout_height="match_parent"
-                        android:visibility="gone">
-
-                    <TextView
-                            android:id="@+id/no_available_product_mix"
-                            style="@style/TextAppearance.Roboto.Bold"
+                    <LinearLayout
                             android:layout_width="match_parent"
-                            android:layout_height="130dp"
-                            android:background="@drawable/box_no_available_controllers"
-                            android:gravity="center"
-                            android:text="@string/no_available_products"
-                            android:textColor="@color/product_library_empty_table_text"
-                            android:textSize="28sp" />
+                            android:layout_height="wrap_content"
+                            android:orientation="vertical">
 
-                    <TextView
-                            android:id="@+id/add_product_mix_instructions"
-                            style="@style/TextAppearance.Roboto.Bold"
+                        <RelativeLayout
+                                android:layout_width="match_parent"
+                                android:layout_height="wrap_content"
+                                android:layout_marginBottom="@dimen/product_library_search_and_button_margin_bottom">
+
+                            <Button
+                                    style="@style/Button"
+                                    android:id="@+id/add_mix_button"
+                                    android:layout_width="wrap_content"
+                                    android:layout_height="wrap_content"
+                                    android:layout_marginLeft="@dimen/product_library_add_button_left_margin"
+                                    android:text="@string/product_mix_text_button_add_product_mix"
+                                    android:layout_alignParentLeft="true"/>
+
+                            <com.cnh.android.pf.widget.controls.SearchInput
+
+                                    android:id="@+id/product_mix_search"
+                                    android:layout_width="@dimen/product_library_search_input_width"
+                                    android:layout_height="wrap_content"
+                                    android:layout_gravity="right"
+                                    android:singleLine="true"
+                                    android:hint="@string/product_mix_search_hint"
+                                    android:gravity="center_vertical"
+                                    android:layout_marginRight="@dimen/product_library_search_field_right_margin"
+                                    android:imeOptions="actionDone"
+                                    android:layout_alignParentRight="true"/>
+
+                        </RelativeLayout>
+
+                        <LinearLayout
+                                android:orientation="horizontal"
+                                android:id="@+id/product_mix_header"
+                                android:background="@drawable/tab_activity_header_bar"
+                                android:paddingLeft="@dimen/product_library_empty"
+                                android:paddingTop="@dimen/product_library_empty"
+                                android:paddingRight="@dimen/product_library_empty"
+                                android:paddingBottom="@dimen/product_library_empty"
+                                android:layout_width="match_parent"
+                                android:layout_height="wrap_content"
+                                android:layout_alignParentTop="true">
+
+                            <com.cnh.pf.android.data.management.productlibrary.views.ListHeaderSortView
+                                    android:textSize="@dimen/product_item_small_text_size"
+                                    android:textStyle="bold"
+                                    android:textColor="@color/e_sort_header_text"
+                                    android:gravity="start|center_vertical"
+                                    android:layout_gravity="left"
+                                    android:id="@+id/product_mix_header_product_name_sort"
+                                    android:background="@drawable/fault_chk_btn_bkg"
+                                    android:paddingStart="@dimen/product_library_list_header_left_padding"
+                                    android:paddingEnd="@dimen/product_library_list_header_right_padding"
+                                    android:layout_width="@dimen/product_library_empty"
+                                    android:layout_height="@dimen/product_library_list_header_height"
+                                    android:button="@null"
+                                    android:text="@string/product_name"
+                                    android:textAllCaps="true"
+                                    android:layout_weight="14.0"/>
+
+                            <com.cnh.pf.android.data.management.productlibrary.views.ListHeaderSortView
+                                    android:textSize="@dimen/product_item_small_text_size"
+                                    android:textStyle="bold"
+                                    android:textColor="@color/e_sort_header_text"
+                                    android:gravity="start|center_vertical"
+                                    android:id="@+id/product_mix_header_product_form_sort"
+                                    android:background="@drawable/fault_chk_btn_bkg"
+                                    android:paddingStart="@dimen/product_library_list_header_left_padding"
+                                    android:layout_width="@dimen/product_library_empty"
+                                    android:layout_height="@dimen/product_library_list_header_height"
+                                    android:button="@null"
+                                    android:text="@string/product_form"
+                                    android:textAllCaps="true"
+                                    android:layout_weight="10.0"/>
+
+
+                            <com.cnh.pf.android.data.management.productlibrary.views.ListHeaderSortView
+                                    android:textSize="@dimen/product_item_small_text_size"
+                                    android:textStyle="bold"
+                                    android:textColor="@color/e_sort_header_text"
+                                    android:gravity="start|center_vertical"
+                                    android:id="@+id/product_mix_header_product_default_rate_sort"
+                                    android:background="@drawable/fault_chk_btn_bkg"
+                                    android:paddingStart="@dimen/product_library_list_header_left_padding"
+                                    android:paddingEnd="@dimen/product_library_list_header_right_padding"
+                                    android:layout_width="@dimen/product_library_empty"
+                                    android:layout_height="@dimen/product_library_list_header_height"
+                                    android:button="@null"
+                                    android:text="@string/product_default_rate"
+                                    android:textAllCaps="true"
+                                    android:layout_weight="24.0"
+                                    android:layout_marginEnd="@dimen/product_library_list_header_right_elem_margin_end"/>
+                        </LinearLayout>
+
+                        <com.cnh.pf.android.data.management.productlibrary.views.NestedExpandableListView
+                                android:id="@+id/product_mix_list"
+                                android:layout_width="match_parent"
+                                android:layout_height="wrap_content"
+                                android:transcriptMode="alwaysScroll"
+                                android:divider="@drawable/divider_line_controllers"
+                                android:footerDividersEnabled="true"
+                                android:headerDividersEnabled="true"
+                                android:groupIndicator="@android:color/transparent"
+                                android:indicatorLeft="@dimen/product_library_list_header_right_padding"/>
+
+                        <RelativeLayout
+                                android:id="@+id/product_mix_empty"
+                                android:layout_width="match_parent"
+                                android:layout_height="match_parent"
+                                android:visibility="gone">
+
+                            <TextView
+                                    android:id="@+id/no_available_product_mix"
+                                    style="@style/TextAppearance.Roboto.Bold"
+                                    android:layout_width="match_parent"
+                                    android:layout_height="@dimen/product_library_empty_table_header_height"
+                                    android:background="@drawable/box_no_available_controllers"
+                                    android:gravity="center"
+                                    android:text="@string/no_available_products"
+                                    android:textColor="@color/product_library_empty_table_text_color"
+                                    android:textSize="@dimen/product_library_empty_table_header_text_size"/>
+
+                            <TextView
+                                    android:id="@+id/add_product_mix_instructions"
+                                    style="@style/TextAppearance.Roboto.Bold"
+                                    android:layout_width="match_parent"
+                                    android:layout_height="@dimen/product_library_empty_table_subheader_height"
+                                    android:layout_below="@id/no_available_product_mix"
+                                    android:background="@drawable/box_no_available_controllers"
+                                    android:gravity="center"
+                                    android:text="@string/add_product_mix_instructions"
+                                    android:textColor="@color/product_library_empty_table_text_color"
+                                    android:textSize="@dimen/product_library_empty_table_subheader_text_size"/>
+
+                        </RelativeLayout>
+
+                    </LinearLayout>
+
+                    <com.cnh.android.pf.widget.view.DisabledOverlay
+                            android:id="@+id/products_mixes_overlay"
                             android:layout_width="match_parent"
-                            android:layout_height="84dp"
-                            android:layout_below="@id/no_available_product_mix"
-                            android:background="@drawable/box_no_available_controllers"
-                            android:gravity="center"
-                            android:text="@string/add_product_mix_instructions"
-                            android:textColor="@color/product_library_empty_table_text"
-                            android:textSize="24sp" />
+                            android:layout_height="match_parent"
+                            android:layout_gravity="center"/>
 
-                </RelativeLayout>
+                </FrameLayout>
+
             </com.cnh.android.widget.control.ProgressiveDisclosureView>
 
             <com.cnh.android.widget.control.ProgressiveDisclosureView
@@ -323,131 +361,152 @@
                     cnh:headerIcon="@drawable/ic_data_management_varieties"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:paddingBottom="25dp">
-                <RelativeLayout
+                    android:paddingBottom="@dimen/product_library_progressive_disclosure_view_padding_bottom">
+
+                <FrameLayout
                         android:layout_width="match_parent"
-                        android:layout_height="wrap_content"
-                        android:layout_marginBottom="@dimen/product_library_search_and_button_margin_bottom">
+                        android:layout_height="wrap_content">
 
-                    <Button
-                            style="@style/Button"
-                            android:id="@+id/variety_button_add"
-                            android:layout_width="wrap_content"
-                            android:layout_height="wrap_content"
-                            android:text="@string/variety_button_add_text"
-                            android:layout_marginLeft="@dimen/product_library_add_button_left_margin"
-                            android:layout_alignParentLeft="true"/>
-
-                    <com.cnh.android.pf.widget.controls.SearchInput
-                            android:id="@+id/variety_search"
-                            android:layout_width="400dp"
-                            android:layout_height="wrap_content"
-                            android:singleLine="true"
-                            android:hint="@string/variety_search_hint"
-                            android:gravity="center_vertical"
-                            android:layout_marginRight="@dimen/product_library_search_field_right_margin"
-                            android:imeOptions="actionDone"
-                            android:layout_alignParentRight="true"/>
-                </RelativeLayout>
-
-                <LinearLayout
-                        android:orientation="horizontal"
-                        android:id="@+id/varieties_list_header"
-                        android:background="@color/bar_grey"
-                        android:paddingTop="@dimen/product_library_empty"
-                        android:paddingRight="@dimen/product_library_empty"
-                        android:paddingBottom="@dimen/product_library_empty"
-                        android:layout_width="match_parent"
-                        android:layout_height="wrap_content"
-                        android:layout_alignParentTop="true">
-
-                    <com.cnh.pf.android.data.management.productlibrary.views.ListHeaderSortView
-                            android:textSize="@dimen/product_item_small_text_size"
-                            android:textStyle="bold"
-                            android:textColor="@color/e_sort_header_text"
-                            android:gravity="start|center_vertical"
-                            android:layout_gravity="left"
-                            android:id="@+id/varieties_list_header_name"
-                            android:background="@drawable/fault_chk_btn_bkg"
-                            android:paddingLeft="@dimen/product_library_sort_header_left_padding"
-                            android:paddingRight="@dimen/product_library_sort_header_right_padding"
-                            android:layout_width="@dimen/product_library_empty"
-                            android:layout_height="48dp"
-                            android:button="@null"
-                            android:text="@string/variety_list_header_name_text"
-                            android:textAllCaps="true"
-                            android:layout_weight="@integer/variety_list_item_name_weight" />
-
-                    <com.cnh.pf.android.data.management.productlibrary.views.ListHeaderSortView
-                            android:textSize="@dimen/product_item_small_text_size"
-                            android:textStyle="bold"
-                            android:textColor="@color/e_sort_header_text"
-                            android:gravity="start|center_vertical"
-                            android:id="@+id/varieties_list_header_crop_type"
-                            android:background="@drawable/fault_chk_btn_bkg"
-                            android:paddingLeft="@dimen/product_library_sort_header_left_padding"
-                            android:layout_width="@dimen/product_library_empty"
-                            android:layout_height="match_parent"
-                            android:button="@null"
-                            android:text="@string/variety_list_header_crop_type_text"
-                            android:textAllCaps="true"
-                            android:layout_weight="@integer/variety_list_item_crop_type_weight" />
-
-                    <TextView
-                            android:textSize="@dimen/product_item_small_text_size"
-                            android:textStyle="bold"
-                            android:textColor="@color/e_sort_header_text"
-                            android:gravity="start|center_vertical"
-                            android:id="@+id/varieties_list_header_color"
-                            android:background="@drawable/fault_chk_btn_bkg"
-                            android:paddingLeft="@dimen/product_library_sort_header_left_padding"
-                            android:layout_width="@dimen/product_library_empty"
-                            android:layout_height="match_parent"
-                            android:button="@null"
-                            android:text="@string/variety_list_header_color"
-                            android:textAllCaps="true"
-                            android:layout_weight="@integer/variety_list_item_color_weight"
-                            android:clickable="false"/>
-                </LinearLayout>
-
-                <com.cnh.pf.android.data.management.productlibrary.views.MaximizedListView
-                        android:id="@+id/varieties_list"
-                        android:layout_width="match_parent"
-                        android:layout_height="match_parent"
-                        android:divider="@drawable/divider_line_controllers"
-                        android:footerDividersEnabled="true"
-                        android:headerDividersEnabled="true"/>
-
-                <RelativeLayout
-                        android:id="@+id/no_available_varieties"
-                        android:layout_width="match_parent"
-                        android:layout_height="match_parent"
-                        android:visibility="gone">
-
-                    <TextView
-                            android:id="@+id/no_available_varieties_text_view"
-                            style="@style/TextAppearance.Roboto.Bold"
+                    <LinearLayout
                             android:layout_width="match_parent"
-                            android:layout_height="130dp"
-                            android:background="@drawable/box_no_available_controllers"
-                            android:gravity="center"
-                            android:text="@string/variety_not_available"
-                            android:textColor="@color/product_library_empty_table_text"
-                            android:textSize="28sp" />
+                            android:layout_height="wrap_content"
+                            android:orientation="vertical">
 
-                    <TextView
-                            android:id="@+id/add_varieties_instructions"
-                            style="@style/TextAppearance.Roboto.Bold"
+                        <RelativeLayout
+                                android:layout_width="match_parent"
+                                android:layout_height="wrap_content"
+                                android:layout_marginBottom="@dimen/product_library_search_and_button_margin_bottom">
+
+                            <Button
+                                    style="@style/Button"
+                                    android:id="@+id/variety_button_add"
+                                    android:layout_width="wrap_content"
+                                    android:layout_height="wrap_content"
+                                    android:text="@string/variety_button_add_text"
+                                    android:layout_marginLeft="@dimen/product_library_add_button_left_margin"
+                                    android:layout_alignParentLeft="true"/>
+
+                            <com.cnh.android.pf.widget.controls.SearchInput
+                                    android:id="@+id/variety_search"
+                                    android:layout_width="@dimen/product_library_search_input_width"
+                                    android:layout_height="wrap_content"
+                                    android:singleLine="true"
+                                    android:hint="@string/variety_search_hint"
+                                    android:gravity="center_vertical"
+                                    android:layout_marginRight="@dimen/product_library_search_field_right_margin"
+                                    android:imeOptions="actionDone"
+                                    android:layout_alignParentRight="true"/>
+                        </RelativeLayout>
+
+                        <LinearLayout
+                                android:orientation="horizontal"
+                                android:id="@+id/varieties_list_header"
+                                android:background="@color/bar_grey"
+                                android:paddingTop="@dimen/product_library_empty"
+                                android:paddingRight="@dimen/product_library_empty"
+                                android:paddingBottom="@dimen/product_library_empty"
+                                android:layout_width="match_parent"
+                                android:layout_height="wrap_content"
+                                android:layout_alignParentTop="true">
+
+                            <com.cnh.pf.android.data.management.productlibrary.views.ListHeaderSortView
+                                    android:textSize="@dimen/product_item_small_text_size"
+                                    android:textStyle="bold"
+                                    android:textColor="@color/e_sort_header_text"
+                                    android:gravity="start|center_vertical"
+                                    android:layout_gravity="left"
+                                    android:id="@+id/varieties_list_header_name"
+                                    android:background="@drawable/fault_chk_btn_bkg"
+                                    android:paddingLeft="@dimen/product_library_list_header_left_padding"
+                                    android:paddingRight="@dimen/product_library_list_header_right_padding"
+                                    android:layout_width="@dimen/product_library_empty"
+                                    android:layout_height="@dimen/product_library_list_header_height"
+                                    android:button="@null"
+                                    android:text="@string/variety_list_header_name_text"
+                                    android:textAllCaps="true"
+                                    android:layout_weight="@integer/variety_list_item_name_weight"/>
+
+                            <com.cnh.pf.android.data.management.productlibrary.views.ListHeaderSortView
+                                    android:textSize="@dimen/product_item_small_text_size"
+                                    android:textStyle="bold"
+                                    android:textColor="@color/e_sort_header_text"
+                                    android:gravity="start|center_vertical"
+                                    android:id="@+id/varieties_list_header_crop_type"
+                                    android:background="@drawable/fault_chk_btn_bkg"
+                                    android:paddingLeft="@dimen/product_library_list_header_left_padding"
+                                    android:layout_width="@dimen/product_library_empty"
+                                    android:layout_height="@dimen/product_library_list_header_height"
+                                    android:button="@null"
+                                    android:text="@string/variety_list_header_crop_type_text"
+                                    android:textAllCaps="true"
+                                    android:layout_weight="@integer/variety_list_item_crop_type_weight"/>
+
+                            <TextView
+                                    android:textSize="@dimen/product_item_small_text_size"
+                                    android:textStyle="bold"
+                                    android:textColor="@color/e_sort_header_text"
+                                    android:gravity="start|center_vertical"
+                                    android:id="@+id/varieties_list_header_color"
+                                    android:background="@drawable/fault_chk_btn_bkg"
+                                    android:paddingLeft="@dimen/product_library_list_header_left_padding"
+                                    android:layout_width="@dimen/product_library_empty"
+                                    android:layout_height="@dimen/product_library_list_header_height"
+                                    android:button="@null"
+                                    android:text="@string/variety_list_header_color"
+                                    android:textAllCaps="true"
+                                    android:layout_weight="@integer/variety_list_item_color_weight"
+                                    android:clickable="false"/>
+                        </LinearLayout>
+
+                        <com.cnh.pf.android.data.management.productlibrary.views.MaximizedListView
+                                android:id="@+id/varieties_list"
+                                android:layout_width="match_parent"
+                                android:layout_height="match_parent"
+                                android:divider="@drawable/divider_line_controllers"
+                                android:footerDividersEnabled="true"
+                                android:headerDividersEnabled="true"/>
+
+                        <RelativeLayout
+                                android:id="@+id/no_available_varieties"
+                                android:layout_width="match_parent"
+                                android:layout_height="match_parent"
+                                android:visibility="gone">
+
+                            <TextView
+                                    android:id="@+id/no_available_varieties_text_view"
+                                    style="@style/TextAppearance.Roboto.Bold"
+                                    android:layout_width="match_parent"
+                                    android:layout_height="@dimen/product_library_empty_table_header_height"
+                                    android:background="@drawable/box_no_available_controllers"
+                                    android:gravity="center"
+                                    android:text="@string/variety_not_available"
+                                    android:textColor="@color/product_library_empty_table_text_color"
+                                    android:textSize="@dimen/product_library_empty_table_header_text_size"/>
+
+                            <TextView
+                                    android:id="@+id/add_varieties_instructions"
+                                    style="@style/TextAppearance.Roboto.Bold"
+                                    android:layout_width="match_parent"
+                                    android:layout_height="@dimen/product_library_empty_table_subheader_height"
+                                    android:layout_below="@id/no_available_varieties_text_view"
+                                    android:background="@drawable/box_no_available_controllers"
+                                    android:gravity="center"
+                                    android:text="@string/variety_instruction_add"
+                                    android:textColor="@color/product_library_empty_table_text_color"
+                                    android:textSize="@dimen/product_library_empty_table_subheader_text_size"/>
+
+                        </RelativeLayout>
+
+                    </LinearLayout>
+
+                    <com.cnh.android.pf.widget.view.DisabledOverlay
+                            android:id="@+id/varieties_overlay"
                             android:layout_width="match_parent"
-                            android:layout_height="84dp"
-                            android:layout_below="@id/no_available_varieties_text_view"
-                            android:background="@drawable/box_no_available_controllers"
-                            android:gravity="center"
-                            android:text="@string/variety_instruction_add"
-                            android:textColor="@color/product_library_empty_table_text"
-                            android:textSize="24sp" />
+                            android:layout_height="match_parent"
+                            android:layout_gravity="center"/>
 
-                </RelativeLayout>
+                </FrameLayout>
+
             </com.cnh.android.widget.control.ProgressiveDisclosureView>
         </LinearLayout>
 
@@ -457,5 +516,5 @@
             android:id="@+id/disabled_overlay"
             android:layout_width="match_parent"
             android:layout_height="match_parent"
-            android:layout_gravity="center" />
+            android:layout_gravity="center"/>
 </FrameLayout>

@@ -33,7 +33,6 @@ import com.cnh.android.widget.control.PickListItem;
 import com.cnh.android.widget.control.ProgressBarView;
 import com.cnh.jgroups.Datasource;
 import com.cnh.jgroups.ObjectGraph;
-import com.cnh.pf.android.data.management.faults.FaultCodes;
 import com.cnh.pf.android.data.management.parser.FormatManager;
 import com.cnh.pf.android.data.management.service.DataManagementService;
 import com.cnh.pf.data.management.DataManagementSession;
@@ -351,21 +350,6 @@ public class ExportFragment extends BaseDataFragment {
    }
 
    private void addMediumExportToPickList() {
-      if(isExportProcessActive()) {
-         // The export process is running, but the USB stick was removed.
-         if(null != faultHandler) {
-            faultHandler.setFault(FaultCodes.FAULT_CODE_USB_REMOVED_DURING_EXPORT);
-         }
-
-         // Cancel the export session and reset the UI.
-         getDataManagementService().cancel(session);
-      }
-      else {
-         if(null != faultHandler) {
-            faultHandler.clearFault(FaultCodes.FAULT_CODE_USB_REMOVED_DURING_EXPORT);
-         }
-      }
-
       DataManagementService service = getDataManagementService();
       if (service == null) return;
       if (exportMediumPicklist.findItemPositionById(0) != -1) {
@@ -486,7 +470,6 @@ public class ExportFragment extends BaseDataFragment {
          idleUI();
       } else {
          logger.debug("Other operations when error");
-         sessionInit(getSession());
          removeProgressPanel();
          setExportPicklistsReadOnly(false);
          postTreeUI();
