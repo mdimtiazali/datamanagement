@@ -37,6 +37,7 @@ import com.cnh.pf.android.data.management.parser.FormatManager;
 import com.cnh.pf.android.data.management.service.DataManagementService;
 import com.cnh.pf.data.management.DataManagementSession;
 import com.cnh.pf.data.management.aidl.MediumDevice;
+import com.google.common.net.HostAndPort;
 import com.google.inject.AbstractModule;
 import com.google.inject.Key;
 import com.google.inject.Provides;
@@ -239,6 +240,13 @@ public class DataManagementUITest {
          GlobalPreferences prefs = mock(GlobalPreferences.class);
          when(prefs.hasPCM()).thenReturn(true);
          return prefs;
+      }
+
+      @Provides
+      @Singleton
+      @Named("daemon")
+      public HostAndPort getDaemon() {
+         return HostAndPort.fromParts("127.0.0.1", 14000);
       }
    }
 }
