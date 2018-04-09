@@ -209,6 +209,7 @@ public class ImportFragment extends BaseDataFragment {
       setCancelled(false);
       configSession(getSession());
       getSession().setSources(event.getDevices());
+      getSession().setSource(event.getDevice());
       getDataManagementService().processOperation(getSession(), SessionOperation.DISCOVERY);
       previousDevices = event.getDevices();
    }

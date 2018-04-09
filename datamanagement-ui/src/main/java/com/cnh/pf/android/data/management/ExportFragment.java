@@ -406,7 +406,9 @@ public class ExportFragment extends BaseDataFragment {
             if (getSession() != null) {
                MediumDevice itemObject = ((ObjectPickListItem<MediumDevice>) exportMediumPicklist.findItemById(id)).getObject();
                getSession().setDestinations(null != itemObject ? Arrays.asList(itemObject) : null);
-               getSession().setDestination(null != itemObject ? itemObject : null);
+               if (null != itemObject) {
+                  getSession().setDestination(itemObject);
+               }
                getSession().setDestinationTypes(null != itemObject ? itemObject.getType() : null);
                if (null != itemObject) {
                   saveMediumSelection(itemObject);
@@ -547,7 +549,7 @@ public class ExportFragment extends BaseDataFragment {
          disabled.setMode(DisabledOverlay.MODE.DISCONNECTED);
          return null;
       }
-      DataManagementSession session = new DataManagementSession(null, null, null, null, null, null);
+      DataManagementSession session = new DataManagementSession(new Datasource.LocationType[] { Datasource.LocationType.PCM, Datasource.LocationType.DISPLAY }, null, null, null, null, null);
       sessionInit(session);
       if (oldSession != null) {
          session.setFormat(oldSession.getFormat());

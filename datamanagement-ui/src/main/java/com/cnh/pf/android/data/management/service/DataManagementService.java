@@ -476,14 +476,19 @@ public class DataManagementService extends RoboService implements SharedPreferen
     */
    public static boolean isUsbExport(DataManagementSession session) {
       Datasource.LocationType[] sourceTypes = session.getSourceTypes();
-      Datasource.LocationType itemType = session.getDestination().getType();
+      Datasource.LocationType destinationType = null;
+      if (session.getDestination() != null) {
+         destinationType = session.getDestination().getType();
+      }
+      else
+         return false;
+
       return sourceTypes != null
               && Arrays.binarySearch(sourceTypes, Datasource.LocationType.PCM) > NEGATIVE_BINARY_ERROR
-              && session.getDestination() != null
-              && (itemType.equals(Datasource.LocationType.USB_PHOENIX)
-              || itemType.equals(Datasource.LocationType.USB_FRED)
-              || itemType.equals(Datasource.LocationType.USB_HAWK)
-              || itemType.equals(Datasource.LocationType.USB_DESKTOP_SW));
+              && (destinationType.equals(Datasource.LocationType.USB_PHOENIX)
+              || destinationType.equals(Datasource.LocationType.USB_FRED)
+              || destinationType.equals(Datasource.LocationType.USB_HAWK)
+              || destinationType.equals(Datasource.LocationType.USB_DESKTOP_SW));
    }
 
    public static boolean isUsbImport(DataManagementSession session) {
@@ -640,18 +645,6 @@ public class DataManagementService extends RoboService implements SharedPreferen
                }
             }
          });
-         //dont update status
-//         if (hasActiveSession() && performCalled) {
-//            sendStatus(getActiveSession(), String.format("%s %d/%d", operation, progress, max));
-//
-//            if (SEND_NOTIFICATION) {
-//               notifyManager.notify(0,
-//                     new NotificationCompat.Builder(DataManagementService.this).setContentTitle("Data Operation").setContentText(operation)
-//                           .setSmallIcon(android.R.drawable.ic_dialog_info).setProgress(max, progress, false)
-//                           .setContentIntent(PendingIntent.getActivity(DataManagementService.this, 0, new Intent(DataManagementService.this, DataManagementActivity.class), 0))
-//                           .addAction(R.drawable.button_stop, "Stop", PendingIntent.getService(DataManagementService.this, 0, new Intent(ACTION_CANCEL), 0)).build());
-//            }
-//         }
       }
 
       @Override
@@ -756,11 +749,16 @@ public class DataManagementService extends RoboService implements SharedPreferen
    private boolean resolveSources(@NonNull DataManagementSession session) {
       if (session.getSources() == null && session.getSourceTypes() != null) { //export
          session.setSources(dsHelper.getLocalDatasources(session.getSourceTypes()));
-      } else if (session.getSource().getAddress() == null) { //if MediumDevice hasn't been resolved
-         session.setSources(dsHelper.getLocalDatasources(session.getSource().getType()));
-      } else if (session.getSource() == null) {
+      }
+      else if (isUsbImport(session)) {
+         if (session.getSource() == null) {  //This is needed for import, but causes export to fail.
          logger.debug("The source is null.");
          return false;
+         }
+         else if (session.getSource().getAddress() == null) { //This is needed for import, but causes export to fail.
+            session.setSources(dsHelper.getLocalDatasources(session.getSource().getType()));
+            session.getSource().setAddress(session.getFirstSource().getAddress());
+         }
       }
       return true;
    }
@@ -775,12 +773,27 @@ public class DataManagementService extends RoboService implements SharedPreferen
          logger.debug("session.getTargets() is null and type isn't null");
          session.setDestinations(dsHelper.getLocalDatasources(session.getDestinationTypes()));
       }
-      else if (session.getDestination() != null && session.getDestination().getAddress() == null) { //if MediumDevice hasn't been resolved
+      else if (session.getDestination() != null) { // if MediumDevice hasn't been resolved
          session.setDestinations(dsHelper.getLocalDatasources(session.getDestination().getType()));
+         session.getDestination().setAddress(session.getDestination(0).getAddress()); //At this point, there is only one item in destinations
       }
-      else if(session.getDestination() == null){
-         logger.debug("the Target is null");
-         return false;
+
+      List<MediumDevice> destinations = session.getDestinations();
+      List<MediumDevice> sources = session.getSources();
+      if (destinations != null && sources != null) {
+         if (destinations.size() > sources.size()) {
+            logger.debug("resolveTargets: Destinations are greater than sources - Import");
+            if (session.getDestination() == null) {
+               session.setDestination(session.getDestination(0));
+               session.setDestinations(dsHelper.getLocalDatasources(session.getDestination(0).getType()));
+            }
+         } else if (sources.size() > destinations.size()) {
+            logger.debug("resolveTargets: Sources are greater than destination - Export");
+            if(session.getDestination() == null){
+               logger.debug("the Target is null");
+               return false;
+            }
+         }
       }
       return true;
    }
@@ -848,7 +861,7 @@ public class DataManagementService extends RoboService implements SharedPreferen
          DataManagementSession session = params[0];
          session.setProgress(true);
          try {
-            if (!resolveTargets(session)) { //TODO: - Change !resolveSources(session) || to work for Import & Export
+            if (!resolveSources(session) || !resolveTargets(session)) {
                logger.debug("Unable to resolve source/target addresses");
                session.setResult(Result.CANCEL);
                session.setProgress(false);
