@@ -289,6 +289,7 @@ public abstract class BaseDataFragment extends RoboFragment implements IDataMana
       super.onPause();
       if (dataServiceConnection.isConnected()) {
          getDataManagementService().unregister(NAME);
+         getDataManagementService().setCurrentSession(null);
       }
       globalEventManager.unregisterObserver(ConnectionEvent.class, connectionListener);
       globalEventManager.unregisterObserver(DataServiceConnectionImpl.ErrorEvent.class, errorListener);
