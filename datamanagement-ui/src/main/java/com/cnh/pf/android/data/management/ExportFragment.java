@@ -475,7 +475,8 @@ public class ExportFragment extends BaseDataFragment {
       List<MediumDevice> devices = service.getMediums();  //Determine how many devices should be in the new list
 
       if (!isEmpty(devices)) {
-         displayStringMap = UtilityHelper.getListOfDestinations(vipDataHandler.getMakeOfVehicle(), devices, getResources());  //Creates map of strings based on vehicle brand and devices available
+         String defaultMakeString = getResources().getString(R.string.unknown_vehicle);
+         displayStringMap = UtilityHelper.getListOfDestinations(vipDataHandler.getMakeOfVehicle(defaultMakeString), devices, getResources()); //Creates map of strings based on vehicle brand and devices available
          if (!displayStringMap.isEmpty()) {
             // Delete items from the picklist that don't appear in device list
             exportMediumPicklist.setAllowItemsDeletion(true);  //To delete items, globalAllowItemDeletion needs to be set to true first.

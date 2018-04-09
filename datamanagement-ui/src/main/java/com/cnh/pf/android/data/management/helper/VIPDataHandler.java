@@ -10,18 +10,16 @@
 package com.cnh.pf.android.data.management.helper;
 
 import com.cnh.android.vip.aidl.IVIPServiceAIDL;
-import com.cnh.pf.android.data.management.R;
 import com.cnh.pf.model.vip.vehimp.Vehicle;
 import com.cnh.pf.model.vip.vehimp.VehicleCurrent;
 import com.cnh.pf.model.vip.vehimp.VehicleMake;
 import com.cnh.pf.model.vip.vehimp.VehicleModel;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.util.ArrayList;
 import java.util.List;
-
-import static javax.swing.UIManager.getString;
 
 /**
  * Class for handling needed vehicle information to be used across the DM project
@@ -37,27 +35,22 @@ public class VIPDataHandler implements IVIPDataHelper {
         listeners = new ArrayList<OnVehicleChangedListener>();
     }
 
-    /**
-     * Used to get make of the vehicle
-     *
-     * @return String make of vehicle or Unknown Vehicle if vehicle parameters are not set
-     */
-    @Override
-    public String getMakeOfVehicle() {
-        if (currentVehicle != null) {
-            Vehicle vehicle = currentVehicle.getVehicle();
-            if (vehicle != null) {
-                VehicleModel vehicleModel = vehicle.getVehicleModel();
-                if (vehicleModel != null) {
-                    VehicleMake vehicleMake = vehicleModel.getVehicleMake();
-                    if (vehicleMake != null) {
-                        return vehicleMake.getMake();
-                    }
-                }
+   @Override
+   public String getMakeOfVehicle(String defaultMakeString) {
+      if (currentVehicle != null) {
+         Vehicle vehicle = currentVehicle.getVehicle();
+         if (vehicle != null) {
+            VehicleModel vehicleModel = vehicle.getVehicleModel();
+            if (vehicleModel != null) {
+               VehicleMake vehicleMake = vehicleModel.getVehicleMake();
+               if (vehicleMake != null) {
+                  return vehicleMake.getMake();
+               }
             }
-        }
-        return getString(R.string.unknown_vehicle);
-    }
+         }
+      }
+      return defaultMakeString;
+   }
 
     @Override
     public synchronized void addOnVehicleChangedListener(OnVehicleChangedListener listener) {

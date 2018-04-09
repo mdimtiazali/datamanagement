@@ -31,12 +31,13 @@ public interface IVIPDataHelper {
         //onVehicleTypeChanged
     }
 
-    /**
-     * Used to get make of the vehicle the display is connected to
-     *
-     * @return String device name or Unknown Device if vehicle parameters are not set
-     */
-    String getMakeOfVehicle();
+   /**
+    * Used to get make of the vehicle the display is connected to
+    *
+    * @param defaultString String to be returned if no valid make could be found
+    * @return String device name or Unknown Device if vehicle parameters are not set
+    */
+   String getMakeOfVehicle(String defaultString);
 
     /**
      * Add listener for when vehicle changes occur
