@@ -134,7 +134,7 @@ public class DataManagementService extends RoboService implements SharedPreferen
    // This is to maintain reference to current active session.
    private AtomicReference<DataManagementSession> currentSession = new AtomicReference<DataManagementSession>();
 
-   private void setCurrentSession(final DataManagementSession session) {
+   public void setCurrentSession(final DataManagementSession session) {
       currentSession.set(session);
    }
 
