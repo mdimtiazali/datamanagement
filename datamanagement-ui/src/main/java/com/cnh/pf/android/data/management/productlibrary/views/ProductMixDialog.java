@@ -1532,6 +1532,10 @@ public class ProductMixDialog extends DialogView implements DialogHandlerListene
       calculateNewApplicationRatePerProduct(rate1value, rate2value, currentProductUnit);
    }
 
+   @Override
+   public void applicationDeltaRateChanged(final float deltaRatevalue, final ProductUnits productUnit) {
+   }
+
    /**
     * Calculates the application rates per product and updated the application rate table. The method is not made for setting booth parameters to false.
     * @param updateRate1 set true if rate1 values need to be updated
