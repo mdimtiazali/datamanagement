@@ -32,11 +32,12 @@ import com.cnh.android.vip.constants.VIPConstants;
 import com.cnh.android.widget.activity.TabActivity;
 import com.cnh.android.widget.control.TabActivityListeners;
 import com.cnh.android.widget.control.TabActivityTab;
-import com.cnh.pf.android.data.management.faults.DMFaultHandler;
 import com.cnh.pf.android.data.management.productlibrary.ProductLibraryFragment;
+import com.cnh.pf.api.pvip.IPVIPServiceAIDL;
 import com.cnh.pf.data.management.service.ServiceConstants;
 import com.cnh.pf.jgroups.ChannelModule;
 import com.cnh.pf.model.TableChangeEvent;
+import com.cnh.pf.model.pvip.PVIPConstants;
 import com.cnh.pf.model.vip.vehimp.Vehicle;
 import com.cnh.pf.model.vip.vehimp.VehicleCurrent;
 import com.cnh.pf.model.vip.vehimp.VehicleDeviceClass;
@@ -73,11 +74,10 @@ public class DataManagementActivity extends TabActivity implements RoboContext, 
    protected HashMap<Key<?>, Object> scopedObjects = new HashMap<Key<?>, Object>();
    protected EventManager eventManager;
    private IVIPServiceAIDL vipService;
+   private IPVIPServiceAIDL pvipService;
    private WeakReference<ProductLibraryFragment> productLibraryFragmentWeakReference;
    private TabActivityTab productLibraryTab = null;
    private boolean calledProductLibraryViaShortcut = false;
-
-   private DMFaultHandler dmFaultHandler;
 
    private class DataManagementTabListener implements TabActivityListeners.TabListener {
       private final Activity a;
@@ -209,6 +209,7 @@ public class DataManagementActivity extends TabActivity implements RoboContext, 
                            new DataManagementTabListener(productLibraryFragmentWeakReference.get(), DataManagementActivity.this));
                      addTab(productLibraryTab);
                      productLibraryFragment.setVipService(vipService);
+                     productLibraryFragment.setPvipService(pvipService);
                   }
                   if (productLibraryTab.isHidden()) {
                      logger.debug("Showing productLibraryTab");
@@ -347,14 +348,7 @@ public class DataManagementActivity extends TabActivity implements RoboContext, 
    }
 
    private TabActivityTab createActivityTab(BaseDataFragment fragment, int titleRes, int drawableRes, String tabId) {
-      if(null != fragment) {
-         fragment.setFaultHandler(dmFaultHandler);
-
-         return new TabActivityTab(titleRes, drawableRes, tabId, new DataManagementTabListener(fragment, this));
-      }
-      else {
-         return null;
-      }
+      return new TabActivityTab(titleRes, drawableRes, tabId, new DataManagementTabListener(fragment, this));
    }
 
    @Override
@@ -365,17 +359,6 @@ public class DataManagementActivity extends TabActivity implements RoboContext, 
       //Phoenix Workaround (phoenix sometimes cannot read the manifest)
       RoboGuiceHelper.help(app, new String[] { "com.cnh.pf.android.data.management", "com.cnh.pf.jgroups" }, new RoboModule(app), new ChannelModule(app));
       super.onCreate(savedInstanceState);
-
-      // Creation of the DM fault handler
-      try {
-         GlobalPreferences globalPreferences = new GlobalPreferences(this);
-         String pcmIpAddress = globalPreferences.getPCMIpAddress();
-
-         dmFaultHandler = new DMFaultHandler(pcmIpAddress);
-         dmFaultHandler.startHandler();   // TODO: Not sure how this is implemented in other UI apps. It could be moved into onResume() and stopped in onPause().
-      } catch (GlobalPreferencesNotAvailableException e) {
-         logger.error("", e);
-      }
 
       eventManager = RoboGuice.getInjector(this).getInstance(EventManager.class);
 
@@ -468,6 +451,30 @@ public class DataManagementActivity extends TabActivity implements RoboContext, 
          throw new RuntimeException(e);
       }
    }
+   ServiceConnection pvipServiceConnection = new ServiceConnection() {
+      @Override
+      public void onServiceConnected(ComponentName name, IBinder service) {
+         pvipService = IPVIPServiceAIDL.Stub.asInterface(service);
+         if(pvipService != null && productLibraryFragmentWeakReference != null) {
+            ProductLibraryFragment productLibraryFragment = productLibraryFragmentWeakReference.get();
+            if (productLibraryFragment != null) {
+               logger.debug("onServiceConnected called - productLibraryFragment != null, set Pvip service");
+               productLibraryFragment.setPvipService(pvipService);
+            }
+         }
+      }
+
+      @Override
+      public void onServiceDisconnected(ComponentName name) {
+         logger.debug("onServiceConnected for pvip service called");
+         if (pvipService != null && productLibraryFragmentWeakReference != null) {
+            ProductLibraryFragment productLibraryFragment = productLibraryFragmentWeakReference.get();
+            if (productLibraryFragment != null) {
+               productLibraryFragment.setPvipService(null);
+            }
+         }
+      }
+   };
 
    @Override
    public void onResume() {
@@ -477,6 +484,7 @@ public class DataManagementActivity extends TabActivity implements RoboContext, 
       logger.debug("Sending INTERNAL_DATA broadcast");
       sendBroadcast(new Intent(ServiceConstants.ACTION_INTERNAL_DATA).addFlags(Intent.FLAG_INCLUDE_STOPPED_PACKAGES));
       getApplicationContext().bindService(new Intent(VIPConstants.VIP_SERVICE_NAME), this, Context.BIND_AUTO_CREATE);
+      getApplicationContext().bindService(new Intent(PVIPConstants.VIP_SERVICE_NAME), pvipServiceConnection, Context.BIND_AUTO_CREATE);
    }
 
    @Override
