@@ -626,7 +626,8 @@ public class ExportFragment extends BaseDataFragment {
       }
       else {
          //error appeared
-         progressBar.setErrorProgress(true, getResources().getString(R.string.pb_error));
+         // TODO: update to the new CORE39 API
+         progressBar.setErrorProgress(0, getResources().getString(R.string.pb_error));
          stopButton.setVisibility(View.GONE);
       }
       //post cleanup to show drag and drop zone after time X
@@ -649,7 +650,8 @@ public class ExportFragment extends BaseDataFragment {
       logger.debug("showProgressPanel");
       //reset button and process
       stopButton.setVisibility(View.VISIBLE);
-      progressBar.setErrorProgress(false, getResources().getString(R.string.pb_error));
+      // TODO: update to the new CORE39 API
+      progressBar.setErrorProgress(0, getResources().getString(R.string.pb_error));
       progressBar.setSecondText(true, loading_string, null, true);
       progressBar.setProgress(0);
       //set visibility of sections
