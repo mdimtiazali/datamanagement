@@ -41,6 +41,7 @@ import com.cnh.pf.android.data.management.fault.DMFaultHandler;
 import com.cnh.pf.android.data.management.fault.FaultCode;
 import com.cnh.pf.android.data.management.helper.DatasourceHelper;
 import com.cnh.pf.android.data.management.parser.FormatManager;
+import com.cnh.pf.android.data.management.utility.UtilityHelper;
 import com.cnh.pf.data.management.DataManagementSession;
 import com.cnh.pf.data.management.aidl.IDataManagementListenerAIDL;
 import com.cnh.pf.data.management.aidl.MediumDevice;
@@ -445,12 +446,42 @@ public class DataManagementService extends RoboService implements SharedPreferen
       List<MediumDevice> devs = new ArrayList<MediumDevice>();
       //temporarily always add usb for testing
       logger.debug("getDevices external storage state = {}", Environment.getExternalStorageState());
-      if (Environment.getExternalStorageState().equals(Environment.MEDIA_MOUNTED)) {
-         devs.add(new MediumDevice(Datasource.LocationType.USB_PHOENIX, Environment.getExternalStorageDirectory(), "USB"));
-         devs.add(new MediumDevice(Datasource.LocationType.USB_HAWK, Environment.getExternalStorageDirectory(), "USB"));
-         devs.add(new MediumDevice(Datasource.LocationType.USB_FRED, Environment.getExternalStorageDirectory(), "USB"));
-         devs.add(new MediumDevice(Datasource.LocationType.USB_DESKTOP_SW, Environment.getExternalStorageDirectory(), "USB"));
+      boolean internalFileSystem = false;
+
+      // Checking if internal file system to be used for testing data management
+      try {
+         String fileStorage = UtilityHelper.getSharedPreferenceString(this, UtilityHelper.STORAGE_LOCATION_TYPE);
+         String fileStorageLocation = UtilityHelper.getSharedPreferenceString(this, UtilityHelper.STORAGE_LOCATION);
+
+         if ((fileStorage != null) && fileStorage.equals(UtilityHelper.STORAGE_LOCATION_INTERNAL)) {
+            if ((fileStorageLocation != null) && !fileStorageLocation.isEmpty()) {
+               File storageFolder = new File(fileStorageLocation);
+               if ( storageFolder.exists() && storageFolder.canRead() && storageFolder.canWrite() ){
+                  devs.add(new MediumDevice(Datasource.LocationType.USB_PHOENIX, storageFolder, UtilityHelper.STORAGE_LOCATION_USB));
+                  devs.add(new MediumDevice(Datasource.LocationType.USB_HAWK, storageFolder, UtilityHelper.STORAGE_LOCATION_USB));
+                  devs.add(new MediumDevice(Datasource.LocationType.USB_FRED, storageFolder, UtilityHelper.STORAGE_LOCATION_USB));
+                  devs.add(new MediumDevice(Datasource.LocationType.USB_DESKTOP_SW, storageFolder, UtilityHelper.STORAGE_LOCATION_USB));
+                  internalFileSystem = true;
+                  logger.debug("using internal storage = {}", storageFolder);
+               }
+            }
+         }
       }
+      catch(Exception ex){
+         logger.info("Unable to check if internal flash need to be used.", ex);
+      }
+
+      if ( (internalFileSystem == false) && (Environment.getExternalStorageState().equals(Environment.MEDIA_MOUNTED)) ){
+         devs.add(new MediumDevice(Datasource.LocationType.USB_PHOENIX, Environment.getExternalStorageDirectory(),
+            UtilityHelper.STORAGE_LOCATION_USB));
+         devs.add(new MediumDevice(Datasource.LocationType.USB_HAWK, Environment.getExternalStorageDirectory(),
+            UtilityHelper.STORAGE_LOCATION_USB));
+         devs.add(new MediumDevice(Datasource.LocationType.USB_FRED, Environment.getExternalStorageDirectory(),
+            UtilityHelper.STORAGE_LOCATION_USB));
+         devs.add(new MediumDevice(Datasource.LocationType.USB_DESKTOP_SW, Environment.getExternalStorageDirectory(),
+            UtilityHelper.STORAGE_LOCATION_USB));
+      }
+
       String myHostname = getHostname(mediator.getAddress());
       logger.trace("My HOSTNAME {}", myHostname);
       if (Strings.isNullOrEmpty(myHostname)) {

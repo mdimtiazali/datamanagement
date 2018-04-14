@@ -1,10 +1,18 @@
 package com.cnh.pf.android.data.management.utility;
 
 import android.app.Fragment;
+import android.content.Context;
+import android.content.SharedPreferences;
+import android.content.pm.PackageManager;
 import android.content.res.Resources;
+import android.preference.PreferenceManager;
 import com.cnh.jgroups.Datasource;
+import com.cnh.pf.android.data.management.DataManagementActivity;
 import com.cnh.pf.android.data.management.R;
 import com.cnh.pf.data.management.aidl.MediumDevice;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -20,6 +28,11 @@ import static com.cnh.pf.model.constants.stringsConstants.BRAND_STEYR;
  * Class for utility type public methods or constants to used across DM project
  */
 public class UtilityHelper {
+    private static final Logger logger = LoggerFactory.getLogger(UtilityHelper.class);
+    public static final String STORAGE_LOCATION_TYPE = "com.cnhi.datamanagement.storagelocationtype";
+    public static final String STORAGE_LOCATION = "com.cnhi.datamanagement.storagelocation";
+    public static final String STORAGE_LOCATION_USB = "USB";
+    public static final String STORAGE_LOCATION_INTERNAL = "INTERNAL_FLASH";
     public static final int NEGATIVE_BINARY_ERROR = -1;
     /**
      * Map for returning the correct strings based on the vehicle make and data sources available
@@ -169,4 +182,66 @@ public class UtilityHelper {
         }
         return destinationStrings;
     }
+
+    /**
+     * Set the build preference
+     * @param key - key where value is to be stored in shared pref
+     * @param value - value to be stored must bee bool, string or int or nothing will be stored.
+     * @param ctx - activity context
+     */
+    public static void setPreference(String key, Object value, Context ctx) {
+        try {
+            // get shared perference for saving datamanagement file storage
+            SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(ctx);
+            if (prefs != null && key != null) {
+                if (value instanceof Boolean) {
+                    prefs.edit().putBoolean(key, (Boolean) value).apply();
+                }
+                else if (value instanceof String) {
+                    prefs.edit().putString(key, (String) value).apply();
+                }
+                else if (value instanceof Integer) {
+                    prefs.edit().putInt(key, (Integer) value).apply();
+                }
+                else {
+                    logger.warn("cannot add key/value pair to prefs key {}", key);
+                }
+            }
+            else {
+                logger.warn("shared prefs null");
+            }
+        }
+        catch (NullPointerException ex) {
+            logger.error("NPE", ex);
+        }
+    }
+
+    /**
+     * Gets the shared preference string
+     * @param context the context of the preferences
+     * @param key the key
+     * @return the value
+     */
+    public static String getSharedPreferenceString(Context context, String key) {
+        String sharedStringValue = "";
+        if(context != null) {
+            SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(context);
+            if (prefs != null) {
+                try {
+                    sharedStringValue = prefs.getString(key, "");
+                }
+                catch(ClassCastException ex){
+                    logger.warn("ClassCastException", ex);
+                }
+            }
+            else {
+                logger.warn("shared prefs null");
+            }
+        }
+        else {
+            logger.warn("context is null");
+        }
+        return sharedStringValue;
+    }
+
 }

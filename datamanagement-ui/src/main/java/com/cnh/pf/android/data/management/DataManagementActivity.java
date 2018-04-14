@@ -23,6 +23,11 @@ import android.os.IBinder;
 import android.os.RemoteException;
 import android.util.AttributeSet;
 import android.view.View;
+import android.content.SharedPreferences;
+import android.preference.PreferenceManager;
+import android.content.pm.PackageManager;
+import android.content.pm.ApplicationInfo;
+import android.content.pm.PackageManager.NameNotFoundException;
 
 import com.cnh.android.util.prefs.GlobalPreferences;
 import com.cnh.android.util.prefs.GlobalPreferencesNotAvailableException;
@@ -34,6 +39,7 @@ import com.cnh.android.widget.control.TabActivityListeners;
 import com.cnh.android.widget.control.TabActivityTab;
 import com.cnh.pf.android.data.management.helper.VIPDataHandler;
 import com.cnh.pf.android.data.management.productlibrary.ProductLibraryFragment;
+import com.cnh.pf.android.data.management.utility.UtilityHelper;
 import com.cnh.pf.api.pvip.IPVIPServiceAIDL;
 import com.cnh.pf.data.management.service.ServiceConstants;
 import com.cnh.pf.jgroups.ChannelModule;
@@ -71,6 +77,8 @@ public class DataManagementActivity extends TabActivity implements RoboContext, 
    private static final Logger logger = LoggerFactory.getLogger(DataManagementActivity.class);
 
    private static final String TAG = DataManagementActivity.class.getName();
+   private static final String PACKAGE_FILE_SYSTEM = "FILE_SYSTEM";
+   private static final String PACKAGE_FILE_SYSTEM_LOCATION = "FILE_SYSTEM_LOCATION";
    public static final String PRODUCT_LIBRARY_TAB = "product_library_tab";
 
    protected HashMap<Key<?>, Object> scopedObjects = new HashMap<Key<?>, Object>();
@@ -395,6 +403,23 @@ public class DataManagementActivity extends TabActivity implements RoboContext, 
    @Override
    public void onCreate(Bundle savedInstanceState) {
       logger.debug("onCreate called");
+
+      try {
+         ApplicationInfo appInfo = getPackageManager().getApplicationInfo(this.getPackageName(), PackageManager.GET_META_DATA);
+         Bundle bundle = appInfo.metaData;
+         String storageType = bundle.getString(PACKAGE_FILE_SYSTEM);
+         String storageLocation = bundle.getString(PACKAGE_FILE_SYSTEM_LOCATION);
+         if( (storageType != null) && (storageLocation != null) ) {
+            UtilityHelper.setPreference(UtilityHelper.STORAGE_LOCATION_TYPE, storageType, this);
+            UtilityHelper.setPreference(UtilityHelper.STORAGE_LOCATION, storageLocation, this);
+         }
+      }
+      catch (NameNotFoundException e) {
+         logger.info("PackageManager namesNameNotFoundException ", e);
+      }
+      catch (Exception e) {
+         logger.info("Unable to read package data ", e);
+      }
 
       final Application app = getApplication();
       //Phoenix Workaround (phoenix sometimes cannot read the manifest)
