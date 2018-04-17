@@ -8,22 +8,28 @@
   ~ authorization from CNH Industrial NV.
   -->
 <RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
-                xmlns:cnh="http://schemas.android.com/apk/res-auto"
                 android:orientation="vertical"
                 android:layout_gravity="center"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content">
-    <com.cnh.android.widget.control.InputField
+    <TextView android:id="@+id/headline"
+              android:layout_width="match_parent"
+              android:layout_height="wrap_content"
+              android:text="@string/name"
+              android:layout_marginBottom="@dimen/edit_dialog_name_bottom_margin"
+    />
+    <EditText
             android:id="@+id/edit_dialog_name_input_field"
+            android:background="@drawable/input_field_bg"
             android:layout_width="match_parent"
-            android:layout_height="wrap_content"
+            android:layout_height="@dimen/edit_dialog_input_field_height"
+            android:paddingStart="@dimen/edit_input_padding"
+            android:paddingEnd="@dimen/edit_input_padding"
+            android:layout_below="@id/headline"
             android:imeOptions="actionDone"
-            cnh:searchIcon="false"
-            cnh:clearIcon="false"
-            android:singleLine="true"
+            android:maxLines="1"
             android:inputType="textCapWords"
-            cnh:headerText="@string/edit_field_name">
-    </com.cnh.android.widget.control.InputField>
+    />
     <TextView
             android:id="@+id/edit_name_warning"
             android:layout_width="wrap_content"
@@ -35,9 +41,9 @@
             android:text="@string/edit_name_warning"
             android:lines="2"
             android:layout_alignLeft="@id/edit_dialog_name_input_field"
-            android:layout_marginRight="16dp"
-            android:layout_marginLeft="2dp"
-            android:alpha="0.6"
+            android:layout_marginRight="@dimen/edit_dialog_warning_right_margin"
+            android:layout_marginLeft="@dimen/edit_dialog_warning_left_margin"
+            android:alpha="0.7"
             android:visibility="invisible"
     />
 </RelativeLayout>

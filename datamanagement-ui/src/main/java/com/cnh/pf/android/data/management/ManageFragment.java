@@ -7,6 +7,7 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.AdapterView;
+import android.widget.Button;
 import android.widget.ImageButton;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
@@ -48,7 +49,6 @@ public class ManageFragment extends BaseDataFragment {
    TextView header;
    Set<String> copySet;
    Set<String> editSet;
-   List<ObjectGraph> data;
    final View.OnClickListener optListener = new View.OnClickListener() {
       @Override
       public void onClick(View v) {
@@ -63,7 +63,7 @@ public class ManageFragment extends BaseDataFragment {
                }
             }
             else {//if there is no parent, get its entire type group
-               for (ObjectGraph obj : data) {
+               for (ObjectGraph obj : treeAdapter.getData()) {//if there is no parent, should be root object
                   if (obj.getType().equals(objectGraph.getType())) {
                      names.add(obj.getName());
                   }
@@ -85,7 +85,7 @@ public class ManageFragment extends BaseDataFragment {
                   getSession().setSessionOperation(DataManagementSession.SessionOperation.UPDATE);
                   getDataManagementService().processOperation(getSession(), DataManagementSession.SessionOperation.UPDATE);
                   if (updatingProg == null) {
-                     updatingProg = new ProgressDialog(getActivity());
+                     updatingProg = new ProgressDialog(getActivity(),ProgressDialog.THEME_HOLO_LIGHT);
                      updatingProg.setTitle(R.string.edit_update_title);
                   }
                   updatingProg.show();
@@ -292,7 +292,6 @@ public class ManageFragment extends BaseDataFragment {
             @Override
             public View getNewChildView(TreeNodeInfo<ObjectGraph> treeNodeInfo) {
                final View view = getActivity().getLayoutInflater().inflate(R.layout.tree_list_item_with_edit, null);
-               logger.debug("getNewChildView() {}", treeNodeInfo.getId());
                return updateView(view, treeNodeInfo);
             }
 
@@ -328,11 +327,29 @@ public class ManageFragment extends BaseDataFragment {
                   ind.setVisibility(View.INVISIBLE);
                }
             }
-
+            private void updateButtonVisible(ObjectGraph node, ImageButton copyButton, ImageButton editButton){
+               if (getSelectionMap().containsKey(node)) {
+                  if (isSupportedCopy(node)) {
+                     copyButton.setVisibility(View.VISIBLE);
+                  }
+                  else{
+                     copyButton.setVisibility(View.INVISIBLE);
+                  }
+                  if (isSupportedEdit(node)) {
+                     editButton.setVisibility(View.VISIBLE);
+                  }
+                  else {
+                     editButton.setVisibility(View.INVISIBLE);
+                  }
+               }
+               else {
+                  copyButton.setVisibility(View.INVISIBLE);
+                  editButton.setVisibility(View.INVISIBLE);
+               }
+            }
             @Override
             public View updateView(View view, TreeNodeInfo treeNodeInfo) {
                ObjectGraph graph = (ObjectGraph) treeNodeInfo.getId();
-               logger.trace("updateView(): Node is {}", graph.getName());
                final TextView nameView = (TextView) view.findViewById(R.id.tree_list_item_text);
                final ImageButton cpButton = (ImageButton) view.findViewById(R.id.mng_copy_button);
                cpButton.setTag(graph);
@@ -340,6 +357,7 @@ public class ManageFragment extends BaseDataFragment {
                final ImageButton editButton = (ImageButton) view.findViewById(R.id.mng_edit_button);
                editButton.setTag(graph);
                editButton.setOnClickListener(optListener);
+               updateButtonVisible(graph,cpButton,editButton);
                nameView.setText(graph.getName());
                nameView.setTextColor(getActivity().getResources().getColorStateList(R.color.tree_text_color));
                if (TreeEntityHelper.hasIcon(graph.getType()) && (graph instanceof GroupObjectGraph || !isGroupableEntity(graph))) {
@@ -348,39 +366,31 @@ public class ManageFragment extends BaseDataFragment {
                else {
                   nameView.setCompoundDrawablesWithIntrinsicBounds(0, 0, 0, 0);
                }
-               indicatorShown(view, treeNodeInfo);
                return view;
             }
 
             @Override
             public void updateViewSelection(final AdapterView<?> parent) {
-
                for (int i = 0; i < parent.getChildCount(); i++) {
                   View child = parent.getChildAt(i);
                   ObjectGraph node = (ObjectGraph) child.getTag(); //tree associates ObjectGraph with each view
-                  if (node == null) continue;
-                  ImplicitSelectLinearLayout layout = (ImplicitSelectLinearLayout) child;
-                  layout.setSupported(isSupportedEntitiy(node));
+                  if (node != null) {
+                     ImplicitSelectLinearLayout layout = (ImplicitSelectLinearLayout) child;
+                     layout.setSupported(isSupportedEntitiy(node));
 
-                  final ImageButton cpButton = (ImageButton) child.findViewById(R.id.mng_copy_button);
-                  final ImageButton editButton = (ImageButton) child.findViewById(R.id.mng_edit_button);
+                     final ImageButton cpButton = (ImageButton) child.findViewById(R.id.mng_copy_button);
+                     final ImageButton editButton = (ImageButton) child.findViewById(R.id.mng_edit_button);
 
-                  if (getSelectionMap().containsKey(node)) {
-                     SelectionType type = getSelectionMap().get(node);
-                     layout.setSelected(SelectionType.FULL.equals(type));
-                     layout.setImplicitlySelected(SelectionType.IMPLICIT.equals(type));
-                     if (isSupportedCopy(node)) {
-                        cpButton.setVisibility(View.VISIBLE);
+                     if (getSelectionMap().containsKey(node)) {
+                        SelectionType type = getSelectionMap().get(node);
+                        layout.setSelected(SelectionType.FULL.equals(type));
+                        layout.setImplicitlySelected(SelectionType.IMPLICIT.equals(type));
+                     } else {
+                        layout.setSelected(false);
+                        layout.setImplicitlySelected(false);
                      }
-                     if (isSupportedEdit(node)) {
-                        editButton.setVisibility(View.VISIBLE);
-                     }
-                  }
-                  else {
-                     layout.setSelected(false);
-                     layout.setImplicitlySelected(false);
-                     cpButton.setVisibility(View.INVISIBLE);
-                     editButton.setVisibility(View.INVISIBLE);
+                     updateButtonVisible(node, cpButton, editButton);
+                     indicatorShown(child, manager.getNodeInfo(node));
                   }
                }
             }
@@ -394,7 +404,6 @@ public class ManageFragment extends BaseDataFragment {
             @Override
             public void selectionImpl(Object id) {
                ObjectGraph start = (ObjectGraph) id;
-               logger.trace("selectionImpl({})", start.getName());
                if (getManager().getParent((ObjectGraph) id) != null && includeParent((ObjectGraph) id)) {
                   start = getManager().getParent((ObjectGraph) id);
                }
