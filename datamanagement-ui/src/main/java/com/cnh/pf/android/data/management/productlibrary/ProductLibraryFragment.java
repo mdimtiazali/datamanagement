@@ -62,6 +62,7 @@ import com.cnh.pf.android.data.management.productlibrary.views.ListHeaderSortVie
 import com.cnh.pf.android.data.management.productlibrary.views.NestedExpandableListView;
 import com.cnh.pf.android.data.management.productlibrary.views.ProductMixDialog;
 import com.cnh.pf.android.data.management.productlibrary.views.ProductMixDialog.ProductMixCallBack;
+import com.cnh.pf.api.pvip.IPVIPServiceAIDL;
 import com.cnh.pf.model.TableChangeEvent;
 import com.cnh.pf.model.product.configuration.ControllerProductConfiguration;
 import com.cnh.pf.model.product.configuration.DriveProductConfiguration;
@@ -164,6 +165,7 @@ public class ProductLibraryFragment extends RoboFragment implements ProductMixCa
    private static final int WHAT_LOAD_VARIETY_LIST_SIZE = 11;
 
    private IVIPServiceAIDL vipService;
+   private IPVIPServiceAIDL pvipService;
    private IVIPListenerAIDL vipListener = new SimpleVIPListener() {
 
       @Override
@@ -436,7 +438,7 @@ public class ProductLibraryFragment extends RoboFragment implements ProductMixCa
 
          @Override
          public void onClick(View view) {
-            ProductDialog addProductDialog = new ProductDialog(getActivity().getApplicationContext(), vipService, productUnitsList, new ProductDialog.productListCallback() {
+            ProductDialog addProductDialog = new ProductDialog(getActivity().getApplicationContext(), vipService, pvipService, productUnitsList, new ProductDialog.productListCallback() {
                @Override
                public void productList(Product product) {
                   productList.add(product);
@@ -460,7 +462,7 @@ public class ProductLibraryFragment extends RoboFragment implements ProductMixCa
       btnAddProductMix.setOnClickListener(new OnClickListener() {
          @Override
          public void onClick(View view) {
-            ProductMixDialog addProductMixDialog = new ProductMixDialog(getActivity().getApplicationContext(), vipService, ProductLibraryFragment.this, productMixList);
+            ProductMixDialog addProductMixDialog = new ProductMixDialog(getActivity().getApplicationContext(), vipService, pvipService, ProductLibraryFragment.this, productMixList);
             addProductMixDialog.setFirstButtonText(getResources().getString(R.string.product_dialog_add_button))
                   .setSecondButtonText(getResources().getString(R.string.product_dialog_cancel_button)).showThirdButton(false)
                   .setTitle(getResources().getString(R.string.product_mix_title_dialog_add_product_mix)).setBodyHeight(DIALOG_HEIGHT).setBodyView(R.layout.product_mix_dialog);
@@ -753,7 +755,7 @@ public class ProductLibraryFragment extends RoboFragment implements ProductMixCa
          this.productMixList = new ArrayList<ProductMix>(incomingProductMixList);
          populateProductMixes(productMixList.size());
          if (productMixAdapter == null) {
-            productMixAdapter = new ProductMixAdapter(getActivity().getApplicationContext(), incomingProductMixList, (TabActivity) getActivity(), vipService,
+            productMixAdapter = new ProductMixAdapter(getActivity().getApplicationContext(), incomingProductMixList, (TabActivity) getActivity(), vipService,pvipService,
                   this, measurementSystemCache);
             productMixSearch.setFilterable(productMixAdapter);
             if (productMixComparator != null) {
@@ -795,7 +797,7 @@ public class ProductLibraryFragment extends RoboFragment implements ProductMixCa
             currentProduct = productList.get((int) productListView.getSelectedId());
          }
          if (productAdapter == null) {
-            productAdapter = new ProductAdapter(getActivity().getApplicationContext(), incomingProductList, (TabActivity) getActivity(), vipService,
+            productAdapter = new ProductAdapter(getActivity().getApplicationContext(), incomingProductList, (TabActivity) getActivity(), vipService,pvipService,
                   this, productUnitsList, currentImplement, measurementSystemCache);
             productSearch.setFilterable(productAdapter);
             if (productComparator != null) {
@@ -1060,6 +1062,21 @@ public class ProductLibraryFragment extends RoboFragment implements ProductMixCa
       }
       if (productMixAdapter != null) {
          productMixAdapter.setVIPService(vipService);
+      }
+   }
+   /**
+    * Set pvipService to get pvip data. Can be null if you want to unregister the current referenced service.
+    * @param pvipService the vipService
+    */
+   public void setPvipService(@Nullable IPVIPServiceAIDL pvipService) {
+      log.debug("setPvipService called with {}", pvipService);
+      // unregister the old one
+      this.pvipService = pvipService;
+      if (productMixAdapter != null){
+         productMixAdapter.setPVIPService(pvipService);
+      }
+      if (productAdapter != null){
+         productAdapter.setPVIPService(pvipService);
       }
    }
 

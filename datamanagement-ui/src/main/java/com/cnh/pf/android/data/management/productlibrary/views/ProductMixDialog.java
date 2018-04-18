@@ -69,6 +69,7 @@ import com.cnh.android.widget.control.PickListEditable.OnPickListItemActionListe
 import com.cnh.android.widget.control.PickListItem;
 import com.cnh.android.widget.control.StepperView;
 import com.cnh.pf.android.data.management.R;
+import com.cnh.pf.api.pvip.IPVIPServiceAIDL;
 import com.cnh.pf.model.product.library.MeasurementSystem;
 import com.cnh.pf.model.product.library.MixType;
 import com.cnh.pf.model.product.library.Product;
@@ -107,6 +108,7 @@ public class ProductMixDialog extends DialogView implements DialogHandlerListene
 
    private final String identifier = ProductMixDialog.class.getSimpleName() + System.identityHashCode(this);
    private IVIPServiceAIDL vipService;
+   private IPVIPServiceAIDL pvipService;
    private ProductMix productMix;
    private List<ProductMix> productMixes;
    private DialogActionType actionType;
@@ -252,15 +254,18 @@ public class ProductMixDialog extends DialogView implements DialogHandlerListene
     * @param callback callbackMethod
     */
    public ProductMixDialog(Context context, IVIPServiceAIDL vipService, ProductMixCallBack callback, List<ProductMix> productMixes) {
-      this(context, DialogActionType.ADD, vipService, null, callback, productMixes);
+      this(context, DialogActionType.ADD, vipService, null, null, callback, productMixes);
    }
-
-   public ProductMixDialog(Context context, DialogActionType actionType, IVIPServiceAIDL vipService, ProductMix productMix, ProductMixCallBack callBack,
+   public ProductMixDialog(Context context, IVIPServiceAIDL vipService,IPVIPServiceAIDL pvipService, ProductMixCallBack callback, List<ProductMix> productMixes) {
+      this(context, DialogActionType.ADD, vipService, null, null, callback, productMixes);
+   }
+   public ProductMixDialog(Context context, DialogActionType actionType, IVIPServiceAIDL vipService, IPVIPServiceAIDL pvipService, ProductMix productMix, ProductMixCallBack callBack,
          List<ProductMix> productMixes) {
       super(context);
       this.actionType = actionType;
       this.productMix = productMix;
       this.vipService = vipService;
+      this.pvipService = pvipService;
       this.callback = callBack;
       this.productMixes = new ArrayList<ProductMix>(productMixes);
       if (vipService != null) {
@@ -334,7 +339,7 @@ public class ProductMixDialog extends DialogView implements DialogHandlerListene
    private void initializeGUI() {
       overlay = (DisabledOverlay) this.findViewById(R.id.disabled_overlay);
       addMoreButton = (Button) this.findViewById(R.id.product_mix_dialog_mix_product_add_more);
-      dialogUsageAndCropTypeHandler = new DialogUsageAndCropTypeHandler(this, this);
+      dialogUsageAndCropTypeHandler = new DialogUsageAndCropTypeHandler(this, this, pvipService);
       productDialogsApplicationRateHandler = new DialogApplicationRateHandler(this, this, actionType, this);
       dialogDensityHandler = new DialogDensityHandler(this, this);
       dialogPackageSizeHandler = new DialogPackageSizeHandler(this, this);

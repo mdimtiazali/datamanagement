@@ -88,7 +88,7 @@ public abstract class BaseDataFragment extends RoboFragment implements IDataMana
    @Inject
    EventManager globalEventManager;
    @InjectView(R.id.path_tv)
-   TextView pathTv;
+   TextView pathText;
    @InjectView(R.id.select_all_btn)
    Button selectAllBtn;
    @InjectView(R.id.tree_view_list)
@@ -122,6 +122,12 @@ public abstract class BaseDataFragment extends RoboFragment implements IDataMana
    private Comparator<InMemoryTreeNode<ObjectGraph>> comparator = new Comparator<InMemoryTreeNode<ObjectGraph>>() {
       @Override
       public int compare(InMemoryTreeNode<ObjectGraph> lhs, InMemoryTreeNode<ObjectGraph> rhs) {
+         // Do the case-insensitive check first
+         int comparison = lhs.getId().getName().compareToIgnoreCase(rhs.getId().getName());
+         if (comparison != 0) {
+            return comparison;
+         }
+         // If the case-insensitive check is same, do the case-sensitive check to make upper-case come first
          return lhs.getId().getName().compareTo(rhs.getId().getName());
       }
    };
@@ -493,7 +499,7 @@ public abstract class BaseDataFragment extends RoboFragment implements IDataMana
     */
    public void sessionUpdated(DataManagementSession session){
       DataManagementSession.SessionOperation op = session.getSessionOperation();
-      logger.trace("sessionUpdated() by ", op);
+      logger.debug("sessionUpdated() by {}", op.name());
       if (op.equals(DataManagementSession.SessionOperation.DISCOVERY) && !session.isProgress()) {
          initializeTree();
          postTreeUI();
@@ -504,7 +510,6 @@ public abstract class BaseDataFragment extends RoboFragment implements IDataMana
          getSession().setData(processPartialImports(getSession().getData()));
       }
       processOperations();
-
    }
 
    private List<Operation> processPartialImports(List<Operation> operations) {
