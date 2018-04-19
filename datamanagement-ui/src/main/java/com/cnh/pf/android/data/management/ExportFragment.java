@@ -766,7 +766,7 @@ public class ExportFragment extends BaseDataFragment {
       }
       else {
          //error appeared
-         progressBar.setErrorProgress(true, getResources().getString(R.string.pb_error));
+         progressBar.setErrorProgress(progressBar.getProgress(), getResources().getString(R.string.pb_error));
          stopButton.setVisibility(View.GONE);
       }
       //post cleanup to show drag and drop zone after time X
@@ -789,9 +789,8 @@ public class ExportFragment extends BaseDataFragment {
       logger.debug("showProgressPanel");
       //reset button and process
       stopButton.setVisibility(View.VISIBLE);
-      progressBar.setErrorProgress(false, getResources().getString(R.string.pb_error));
       progressBar.setSecondText(true, loading_string, null, true);
-      progressBar.setProgress(0);
+      progressBar.setProgress(0); //resets error if set
       //set visibility of sections
       exportFinishedStatePanel.setVisibility(View.GONE);
       exportDropZone.setVisibility(View.GONE);
