@@ -34,9 +34,11 @@ import com.cnh.android.widget.control.TabActivityListeners;
 import com.cnh.android.widget.control.TabActivityTab;
 import com.cnh.pf.android.data.management.helper.VIPDataHandler;
 import com.cnh.pf.android.data.management.productlibrary.ProductLibraryFragment;
+import com.cnh.pf.api.pvip.IPVIPServiceAIDL;
 import com.cnh.pf.data.management.service.ServiceConstants;
 import com.cnh.pf.jgroups.ChannelModule;
 import com.cnh.pf.model.TableChangeEvent;
+import com.cnh.pf.model.pvip.PVIPConstants;
 import com.cnh.pf.model.vip.vehimp.Vehicle;
 import com.cnh.pf.model.vip.vehimp.VehicleCurrent;
 import com.cnh.pf.model.vip.vehimp.VehicleDeviceClass;
@@ -74,6 +76,7 @@ public class DataManagementActivity extends TabActivity implements RoboContext, 
    protected HashMap<Key<?>, Object> scopedObjects = new HashMap<Key<?>, Object>();
    protected EventManager eventManager;
    private IVIPServiceAIDL vipService;
+   private IPVIPServiceAIDL pvipService;
    private VIPDataHandler vipDataHandler;
    private WeakReference<ProductLibraryFragment> productLibraryFragmentWeakReference;
    private TabActivityTab productLibraryTab = null;
@@ -206,6 +209,15 @@ public class DataManagementActivity extends TabActivity implements RoboContext, 
             runOnUiThread(new Runnable() {
                @Override
                public void run() {
+                  if (productLibraryTab == null) {
+                     ProductLibraryFragment productLibraryFragment = new ProductLibraryFragment();
+                     productLibraryFragmentWeakReference = new WeakReference<ProductLibraryFragment>(productLibraryFragment);
+                     productLibraryTab = new TabActivityTab(R.string.tab_product_library, R.drawable.tab_product_library_selector, PRODUCT_LIBRARY_TAB,
+                           new DataManagementTabListener(productLibraryFragmentWeakReference.get(), DataManagementActivity.this));
+                     addTab(productLibraryTab);
+                     productLibraryFragment.setVipService(vipService);
+                     productLibraryFragment.setPvipService(pvipService);
+                  }
                   if (null != productLibraryTab && productLibraryTab.isHidden()) {
                      logger.debug("Showing productLibraryTab");
                      // TabActivity is not handling that for an already shown tab nothing should happen during the call of the method.
@@ -487,6 +499,30 @@ public class DataManagementActivity extends TabActivity implements RoboContext, 
          throw new RuntimeException(e);
       }
    }
+   ServiceConnection pvipServiceConnection = new ServiceConnection() {
+      @Override
+      public void onServiceConnected(ComponentName name, IBinder service) {
+         pvipService = IPVIPServiceAIDL.Stub.asInterface(service);
+         if(pvipService != null && productLibraryFragmentWeakReference != null) {
+            ProductLibraryFragment productLibraryFragment = productLibraryFragmentWeakReference.get();
+            if (productLibraryFragment != null) {
+               logger.debug("onServiceConnected called - productLibraryFragment != null, set Pvip service");
+               productLibraryFragment.setPvipService(pvipService);
+            }
+         }
+      }
+
+      @Override
+      public void onServiceDisconnected(ComponentName name) {
+         logger.debug("onServiceConnected for pvip service called");
+         if (pvipService != null && productLibraryFragmentWeakReference != null) {
+            ProductLibraryFragment productLibraryFragment = productLibraryFragmentWeakReference.get();
+            if (productLibraryFragment != null) {
+               productLibraryFragment.setPvipService(null);
+            }
+         }
+      }
+   };
 
    @Override
    public void onResume() {
@@ -496,6 +532,7 @@ public class DataManagementActivity extends TabActivity implements RoboContext, 
       logger.debug("Sending INTERNAL_DATA broadcast");
       sendBroadcast(new Intent(ServiceConstants.ACTION_INTERNAL_DATA).addFlags(Intent.FLAG_INCLUDE_STOPPED_PACKAGES));
       getApplicationContext().bindService(new Intent(VIPConstants.VIP_SERVICE_NAME), this, Context.BIND_AUTO_CREATE);
+      getApplicationContext().bindService(new Intent(PVIPConstants.VIP_SERVICE_NAME), pvipServiceConnection, Context.BIND_AUTO_CREATE);
    }
 
    @Override

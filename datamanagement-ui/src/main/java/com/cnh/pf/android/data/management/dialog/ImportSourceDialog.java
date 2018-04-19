@@ -178,10 +178,7 @@ public class ImportSourceDialog extends DialogView {
                File[] fs = file.listFiles();
                if(fs != null){
                   for(File f: fs){
-                     if(f.isDirectory()){
-                        return isDirAccept(f);
-                     }
-                     else if(file2Support.contains(Files.getFileExtension(f.getName())) || file2Support.contains(f.getName())){
+                     if((f.isDirectory() && isDirAccept(f)) || (file2Support.contains(Files.getFileExtension(f.getName())) || file2Support.contains(f.getName()))){
                         return true;
                      }
                   }

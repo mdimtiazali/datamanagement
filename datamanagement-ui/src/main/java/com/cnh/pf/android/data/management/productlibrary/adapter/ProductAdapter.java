@@ -43,6 +43,7 @@ import com.cnh.android.widget.control.ProgressiveDisclosureView;
 import com.cnh.pf.android.data.management.R;
 import com.cnh.pf.android.data.management.productlibrary.ProductLibraryFragment;
 import com.cnh.pf.android.data.management.productlibrary.utility.UiHelper;
+import com.cnh.pf.api.pvip.IPVIPServiceAIDL;
 import com.cnh.pf.model.product.library.CNHPlanterFanData;
 import com.cnh.pf.model.product.library.MeasurementSystem;
 import com.cnh.pf.model.product.library.Product;
@@ -67,6 +68,7 @@ public final class ProductAdapter extends SearchableSortableExpandableListAdapte
    private final Context context;
    private final TabActivity activity;
    private IVIPServiceAIDL vipService;
+   private IPVIPServiceAIDL pvipService;
    private final Drawable arrowCloseDetails;
    private final Drawable arrowOpenDetails;
    private final String unitRpm;
@@ -78,13 +80,14 @@ public final class ProductAdapter extends SearchableSortableExpandableListAdapte
    private final ProductLibraryFragment productLibraryFragment;
    private final MeasurementSystemCache measurementSystemCache;
 
-   public ProductAdapter(final Context context, final List<Product> products, final TabActivity tabActivity, final IVIPServiceAIDL vipService,
+   public ProductAdapter(final Context context, final List<Product> products, final TabActivity tabActivity, final IVIPServiceAIDL vipService, final IPVIPServiceAIDL pvipService,
          final ProductLibraryFragment productLibraryFragment, final List<ProductUnits> productUnits, final Implement currentImplement,
          final MeasurementSystemCache measurementSystemCache) {
       super(products);
       this.context = context;
       this.activity = tabActivity;
       this.vipService = vipService;
+      this.pvipService = pvipService;
       arrowCloseDetails = context.getResources().getDrawable(R.drawable.arrow_down_expanded_productlist);
       arrowOpenDetails = context.getResources().getDrawable(R.drawable.arrow_up_expanded_productlist);
       this.unitInH2O = context.getString(R.string.unit_in_h2o);
@@ -101,6 +104,14 @@ public final class ProductAdapter extends SearchableSortableExpandableListAdapte
     */
    public void setVIPService(final IVIPServiceAIDL vipService) {
       this.vipService = vipService;
+   }
+
+   /**
+    * Setter for the pvipService.
+    * @param pvipService the pvipService
+    */
+   public void setPVIPService(final IPVIPServiceAIDL pvipService) {
+      this.pvipService = pvipService;
    }
 
    /**
