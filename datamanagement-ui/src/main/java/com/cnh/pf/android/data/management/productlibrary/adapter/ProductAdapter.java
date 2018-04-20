@@ -328,7 +328,7 @@ public final class ProductAdapter extends SearchableSortableExpandableListAdapte
       @Override
       public void onClick(View v) {
          final ProductDialog copyDialog;
-         copyDialog = new ProductDialog(context, vipService, null, DialogActionType.COPY, productChildHolder.product, ProductAdapter.this.productUnits,
+         copyDialog = new ProductDialog(context, vipService, pvipService, DialogActionType.COPY, productChildHolder.product, ProductAdapter.this.productUnits,
                // TODO: try to remove this callback stuff and replace it with updates after a deliver in ProductLibraryFragment
                new ProductDialog.productListCallback() {
                   @Override
@@ -353,7 +353,7 @@ public final class ProductAdapter extends SearchableSortableExpandableListAdapte
       @Override
       public void onClick(View v) {
          log.debug("Edit button pressed for product - name: {}, id: {}", productDetail.getName(), productDetail.getId());
-         ProductDialog editDialog = new ProductDialog(context, vipService, null, DialogActionType.EDIT, productDetail, ProductAdapter.this.productUnits,
+         ProductDialog editDialog = new ProductDialog(context, vipService, pvipService, DialogActionType.EDIT, productDetail, ProductAdapter.this.productUnits,
                new ProductDialog.productListCallback() {
                   // TODO: try to remove this callback stuff and replace it with updates after a deliver in ProductLibraryFragment
                   @Override
