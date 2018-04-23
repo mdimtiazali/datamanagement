@@ -9,6 +9,8 @@
 
 package com.cnh.pf.android.data.management;
 
+import static com.cnh.pf.android.data.management.utility.UtilityHelper.NEGATIVE_BINARY_ERROR;
+
 import android.content.res.Resources;
 import android.os.Bundle;
 import android.os.Handler;
@@ -42,8 +44,8 @@ import com.cnh.pf.android.data.management.utility.UtilityHelper;
 import com.cnh.pf.data.management.DataManagementSession;
 import com.cnh.pf.data.management.DataManagementSession.SessionOperation;
 import com.cnh.pf.data.management.aidl.MediumDevice;
-import com.cnh.pf.model.vip.vehimp.VehicleCurrent;
 import com.cnh.pf.datamng.Process;
+import com.cnh.pf.model.vip.vehimp.VehicleCurrent;
 import com.google.inject.Inject;
 
 import org.slf4j.Logger;
@@ -52,13 +54,11 @@ import org.slf4j.LoggerFactory;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
+import java.util.Comparator;
 import java.util.List;
 import java.util.Map;
-import java.util.Comparator;
 
 import roboguice.inject.InjectView;
-
-import static com.cnh.pf.android.data.management.utility.UtilityHelper.NEGATIVE_BINARY_ERROR;
 
 /**
  * Export Tab Fragment, handles export to external mediums {USB, External Display}.

@@ -172,19 +172,12 @@ public class ProductLibraryFragment extends RoboFragment implements ProductMixCa
 
       @Override
       public void onServerConnect() throws RemoteException {
-         log.debug("onServerConnect called");
-         pcmConnected = true;
-         vipCommunicationHandler.obtainMessage(WHAT_LOAD_PRODUCT_LIST).sendToTarget();
-         vipCommunicationHandler.obtainMessage(WHAT_LOAD_UNIT_LIST).sendToTarget();
-         vipCommunicationHandler.obtainMessage(WHAT_LOAD_PRODUCT_MIX_LIST).sendToTarget();
-         vipCommunicationHandler.obtainMessage(WHAT_GET_VARIETY_LIST).sendToTarget();
-         vipService.requestImplementProductConfigCurrent();
+         onPCMConnectionEstablished();
       }
 
       @Override
       public void onServerDisconnect() throws RemoteException {
-         pcmConnected = false;
-         vipCommunicationHandler.obtainMessage(WHAT_PING).sendToTarget();
+         onPCMConnectionLoss();
       }
 
       @Override
@@ -255,11 +248,61 @@ public class ProductLibraryFragment extends RoboFragment implements ProductMixCa
       }
    };
 
+   private void onPCMConnectionLoss() {
+      log.debug("onPCMConnectionLoss called");
+      if (pcmConnected) {
+         pcmConnected = false;
+         updateDisconnectedOverlay(pcmConnected);
+         vipCommunicationHandler.obtainMessage(WHAT_PING).sendToTarget();
+      }
+      else {
+         log.error("Invalid Connection lifecycle! Tried to invoke onServerDisconnect twice without connection!");
+      }
+   }
+
+   private void onPCMConnectionEstablished() {
+      log.debug("onPCMConnectionEstablished called");
+      if (!pcmConnected) {
+         pcmConnected = true;
+         updateDisconnectedOverlay(pcmConnected);
+         vipCommunicationHandler.obtainMessage(WHAT_LOAD_PRODUCT_LIST).sendToTarget();
+         vipCommunicationHandler.obtainMessage(WHAT_LOAD_UNIT_LIST).sendToTarget();
+         vipCommunicationHandler.obtainMessage(WHAT_LOAD_PRODUCT_MIX_LIST).sendToTarget();
+         vipCommunicationHandler.obtainMessage(WHAT_GET_VARIETY_LIST).sendToTarget();
+         try {
+            vipService.requestImplementProductConfigCurrent();
+         }
+         catch (RemoteException e) {
+            log.error("Could not request ImplementProductConfigCurrent: ", e);
+         }
+      }
+      else {
+         log.error("Invalid Connection lifecycle! Tried to invoke onServerConnect twice without disconnect!");
+      }
+   }
+
    private void checkMode() {
       if (isProductMixListDelivered && isProductListDelivered && isVarietyListDelivered) {
          disabledOverlay.setMode(DisabledOverlay.MODE.HIDDEN);
          disabledOverlay.setVisibility(View.GONE);
       }
+   }
+
+   private void updateDisconnectedOverlay(final boolean connected) {
+      getActivity().runOnUiThread(new Runnable() {
+         @Override
+         public void run() {
+            log.debug("updating Disconnected Overlay to {}", connected);
+            if (connected) {
+               //connected
+               disabledOverlay.setMode(DisabledOverlay.MODE.HIDDEN);
+            }
+            else {
+               //disconnected
+               disabledOverlay.setMode(DisabledOverlay.MODE.DISCONNECTED);
+            }
+         }
+      });
    }
 
    private Handler vipCommunicationHandler = new Handler(Looper.getMainLooper()) {
@@ -837,7 +880,7 @@ public class ProductLibraryFragment extends RoboFragment implements ProductMixCa
    @Override
    public void onResume() {
       log.debug("onResume called");
-
+      updateDisconnectedOverlay(pcmConnected);
       // super on resume must be called before registerVIPService because this checks isResumed()
       super.onResume();
       measurementSystemCache.registerContentObservers();
@@ -1002,6 +1045,14 @@ public class ProductLibraryFragment extends RoboFragment implements ProductMixCa
       }
       if (productMixAdapter != null){
          productMixAdapter.setVIPService(vipService);
+      }
+      if (this.vipService == null) {
+         //vipService is disconnected
+         if (pcmConnected) {
+            //invoke disconnect action
+            onPCMConnectionLoss();
+            log.debug("invoked onPCMConnectionLoss!");
+         }
       }
    }
    /**

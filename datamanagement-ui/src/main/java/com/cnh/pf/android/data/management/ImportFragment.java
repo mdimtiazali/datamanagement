@@ -9,6 +9,8 @@
 
 package com.cnh.pf.android.data.management;
 
+import static android.os.Environment.MEDIA_BAD_REMOVAL;
+
 import android.os.Bundle;
 import android.os.Environment;
 import android.os.RemoteException;
@@ -49,9 +51,6 @@ import roboguice.event.EventThread;
 import roboguice.event.Observes;
 import roboguice.inject.InjectResource;
 import roboguice.inject.InjectView;
-
-import static android.os.Environment.MEDIA_BAD_REMOVAL;
-
 
 /**
  * Import Tab Fragment, Handles import from external mediums {USB, External Display}.
@@ -234,6 +233,7 @@ public class ImportFragment extends BaseDataFragment {
       stubDevices.add(new MediumDevice(Datasource.LocationType.USB_PHOENIX));
       return new DataManagementSession(null, new Datasource.LocationType[] { Datasource.LocationType.PCM, Datasource.LocationType.DISPLAY }, stubDevices, null, null, null);
    }
+
    /** we have to override here since two cases to consider, when import fragment was created with session from savedInstanceState,
     *  resumed with previous session will include the previous datasource address
     * when import fragment was resume from onPause(), it also include previous datasource address
@@ -266,14 +266,17 @@ public class ImportFragment extends BaseDataFragment {
          postTreeUI();
       }
    }
+
    private DataManagementSession sessionInit(DataManagementSession session) {
       logger.debug("sessionInit() enter");
-      if(session != null) {
+      if (session != null) {
          session.setSourceTypes(null);
-         session.setSources(new ArrayList<MediumDevice>() {{
-            add(new MediumDevice(Datasource.LocationType.USB_PHOENIX));
-         }});
-         session.setDestinationTypes(new Datasource.LocationType[]{Datasource.LocationType.PCM, Datasource.LocationType.DISPLAY});
+         session.setSources(new ArrayList<MediumDevice>() {
+            {
+               add(new MediumDevice(Datasource.LocationType.USB_PHOENIX));
+            }
+         });
+         session.setDestinationTypes(new Datasource.LocationType[] { Datasource.LocationType.PCM, Datasource.LocationType.DISPLAY });
          session.setDestinations(null);
       }
       return session;
@@ -284,12 +287,12 @@ public class ImportFragment extends BaseDataFragment {
    public void processOperations() {
       // need to take care of error case in here
       logger.debug("processOperations()-SessionOperation:{}, Result:{}", getSession().getSessionOperation().name(), getSession().getResult().name());
-      if(getSession().getResult().equals(Process.Result.NO_DATASOURCE) && getSession().getSessionOperation().equals(SessionOperation.DISCOVERY)){
+      if (getSession().getResult().equals(Process.Result.NO_DATASOURCE) && getSession().getSessionOperation().equals(SessionOperation.DISCOVERY)) {
          removeProgressPanel();
          startText.setVisibility(View.VISIBLE);
       }
-      else if(getSession().getResult().equals(Process.Result.ERROR)) {
-         if(getSession().getSessionOperation().equals(SessionOperation.DISCOVERY)){
+      else if (getSession().getResult().equals(Process.Result.ERROR) || getSession().getResult().equals(Process.Result.NO_DATASOURCE)) {
+         if (getSession().getSessionOperation().equals(SessionOperation.DISCOVERY)) {
             idleUI();
          }
          else {
@@ -302,10 +305,10 @@ public class ImportFragment extends BaseDataFragment {
          checkImportButton();
       }
       else {
-         if (getSession().getSessionOperation().equals(SessionOperation.DISCOVERY)){
-            if(previousDevices != null){
+         if (getSession().getSessionOperation().equals(SessionOperation.DISCOVERY)) {
+            if (previousDevices != null) {
 
-               if(previousDevices.get(0).getType().equals(Datasource.LocationType.USB_PHOENIX)){
+               if (previousDevices.get(0).getType().equals(Datasource.LocationType.USB_PHOENIX)) {
                   pathText.setText(previousDevices.get(0).getPath() == null ? "" : previousDevices.get(0).getPath().getPath());
                }
                else {
@@ -350,12 +353,14 @@ public class ImportFragment extends BaseDataFragment {
                      setSession(getDataManagementService().processOperation(getSession(), SessionOperation.CALCULATE_CONFLICTS));
                   }
                });
-            } else {
+            }
+            else {
                logger.debug("Found no targets with no parents, skipping to Calculate Conflicts");
                showConflictDialog();
                setSession(getDataManagementService().processOperation(getSession(), SessionOperation.CALCULATE_CONFLICTS));
             }
-         } else if (getSession().getSessionOperation().equals(SessionOperation.CALCULATE_CONFLICTS) && !isCancelled()) {
+         }
+         else if (getSession().getSessionOperation().equals(SessionOperation.CALCULATE_CONFLICTS) && !isCancelled()) {
             logger.debug("Calculate Conflicts");
             //Check for conflicts
             boolean hasConflicts = false;
@@ -382,23 +387,27 @@ public class ImportFragment extends BaseDataFragment {
                      setSession(getDataManagementService().processOperation(getSession(), SessionOperation.PERFORM_OPERATIONS));
                   }
                });
-            } else {
+            }
+            else {
                logger.debug("No conflicts found");
                processDialog.hide();
                showProgressPanel();
                setSession(getDataManagementService().processOperation(getSession(), SessionOperation.PERFORM_OPERATIONS));
             }
-         } else if (getSession().getSessionOperation().equals(SessionOperation.PERFORM_OPERATIONS)) {
+         }
+         else if (getSession().getSessionOperation().equals(SessionOperation.PERFORM_OPERATIONS)) {
             logger.trace("resetting new session.  Operation completed.");
             if (getSession().getResult() != null) {
                getTreeAdapter().selectAll(treeViewList, false);
                removeProgressPanel();
                if (getSession().getResult().equals(Process.Result.SUCCESS)) {
                   Toast.makeText(getActivity(), getString(R.string.import_complete), Toast.LENGTH_LONG).show();
-               } else if (getSession().getResult().equals(Process.Result.CANCEL)) {
+               }
+               else if (getSession().getResult().equals(Process.Result.CANCEL)) {
                   Toast.makeText(getActivity(), getString(R.string.import_cancel), Toast.LENGTH_LONG).show();
                }
-            } else {
+            }
+            else {
                showProgressPanel();
             }
          }

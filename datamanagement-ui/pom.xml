@@ -98,6 +98,39 @@
             </exclusions>
         </dependency>
         <dependency>
+            <groupId>com.cnh.pf</groupId>
+            <artifactId>libwidgetutil</artifactId>
+            <version>${project.version}</version>
+            <type>aar</type>
+            <scope>compile</scope>
+            <exclusions>
+                <exclusion>
+                    <groupId>com.cnh.pf</groupId>
+                    <artifactId>widget</artifactId>
+                </exclusion>
+                <exclusion>
+                    <groupId>com.cnh.android</groupId>
+                    <artifactId>corelib</artifactId>
+                </exclusion>
+                <exclusion>
+                    <groupId>com.cnh.pf</groupId>
+                    <artifactId>persistence-api</artifactId>
+                </exclusion>
+                <exclusion>
+                    <groupId>org.slf4j</groupId>
+                    <artifactId>slf4j-android</artifactId>
+                </exclusion>
+                <exclusion>
+                    <groupId>junixsocket</groupId>
+                    <artifactId>junixsocket</artifactId>
+                </exclusion>
+                <exclusion>
+                    <groupId>junixsocket</groupId>
+                    <artifactId>junixsocket-native-linux</artifactId>
+                </exclusion>
+            </exclusions>
+        </dependency>
+        <dependency>
             <groupId>com.google.guava</groupId>
             <artifactId>guava</artifactId>
         </dependency>

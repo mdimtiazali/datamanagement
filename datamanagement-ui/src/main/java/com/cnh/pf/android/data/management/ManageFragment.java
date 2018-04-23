@@ -117,6 +117,7 @@ public class ManageFragment extends BaseDataFragment {
       LinearLayout leftPanel = (LinearLayout) layout.findViewById(R.id.left_panel_wrapper);
       inflateViews(inflater, leftPanel);
       disabled = (DisabledOverlay) layout.findViewById(R.id.disabled_overlay);
+      disconnected = (DisabledOverlay) layout.findViewById(R.id.disconnected_overlay);
       header = (TextView) layout.findViewById(R.id.path_tv);
       delBtn = (ImageButton) layout.findViewById(R.id.dm_delete_button);
       if (delBtn != null) delBtn.setEnabled(false);
@@ -186,7 +187,6 @@ public class ManageFragment extends BaseDataFragment {
    @Override
    public void setSession(DataManagementSession session) {
       super.setSession(session);
-
    }
 
    @Override

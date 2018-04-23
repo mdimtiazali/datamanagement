@@ -13,43 +13,37 @@ import android.app.Activity;
 import android.app.Application;
 import android.app.Fragment;
 import android.app.FragmentTransaction;
-import android.content.ComponentName;
 import android.content.Context;
 import android.content.Intent;
-import android.content.ServiceConnection;
+import android.content.pm.ApplicationInfo;
+import android.content.pm.PackageManager;
+import android.content.pm.PackageManager.NameNotFoundException;
 import android.os.AsyncTask;
 import android.os.Bundle;
-import android.os.IBinder;
 import android.os.RemoteException;
 import android.util.AttributeSet;
 import android.view.View;
-import android.content.SharedPreferences;
-import android.preference.PreferenceManager;
-import android.content.pm.PackageManager;
-import android.content.pm.ApplicationInfo;
-import android.content.pm.PackageManager.NameNotFoundException;
 
+import com.cnh.android.pf.libwidgetutil.listener.ConnectedVipListener;
 import com.cnh.android.util.prefs.GlobalPreferences;
 import com.cnh.android.util.prefs.GlobalPreferencesNotAvailableException;
 import com.cnh.android.vip.aidl.IVIPServiceAIDL;
-import com.cnh.android.vip.aidl.SimpleVIPListener;
-import com.cnh.android.vip.constants.VIPConstants;
 import com.cnh.android.widget.activity.TabActivity;
 import com.cnh.android.widget.control.TabActivityListeners;
 import com.cnh.android.widget.control.TabActivityTab;
 import com.cnh.pf.android.data.management.helper.VIPDataHandler;
 import com.cnh.pf.android.data.management.productlibrary.ProductLibraryFragment;
 import com.cnh.pf.android.data.management.utility.UtilityHelper;
+import com.cnh.pf.api.pvip.ConnectedPVIPListener;
 import com.cnh.pf.api.pvip.IPVIPServiceAIDL;
 import com.cnh.pf.data.management.service.ServiceConstants;
 import com.cnh.pf.jgroups.ChannelModule;
 import com.cnh.pf.model.TableChangeEvent;
-import com.cnh.pf.model.pvip.PVIPConstants;
 import com.cnh.pf.model.vip.vehimp.Vehicle;
 import com.cnh.pf.model.vip.vehimp.VehicleCurrent;
 import com.cnh.pf.model.vip.vehimp.VehicleDeviceClass;
-import com.cnh.pf.model.vip.vehimp.VehicleModel;
 import com.cnh.pf.model.vip.vehimp.VehicleMake;
+import com.cnh.pf.model.vip.vehimp.VehicleModel;
 import com.cnh.pf.model.vip.vehimp.VehicleType;
 import com.google.inject.Key;
 
@@ -73,7 +67,7 @@ import roboguice.util.RoboContext;
  * Data Management Tab Activity
  * Contains test UI, will later include Data Management, Data Sync, Import & Export
  */
-public class DataManagementActivity extends TabActivity implements RoboContext, ServiceConnection {
+public class DataManagementActivity extends TabActivity implements RoboContext {
    private static final Logger logger = LoggerFactory.getLogger(DataManagementActivity.class);
 
    private static final String TAG = DataManagementActivity.class.getName();
@@ -83,12 +77,16 @@ public class DataManagementActivity extends TabActivity implements RoboContext, 
 
    protected HashMap<Key<?>, Object> scopedObjects = new HashMap<Key<?>, Object>();
    protected EventManager eventManager;
-   private IVIPServiceAIDL vipService;
-   private IPVIPServiceAIDL pvipService;
    private VIPDataHandler vipDataHandler;
+   private WeakReference<ManageFragment> manageFragmentWeakReference;
+   private WeakReference<ImportFragment> importFragmentWeakReference;
+   private WeakReference<ExportFragment> exportFragmentWeakReference;
    private WeakReference<ProductLibraryFragment> productLibraryFragmentWeakReference;
    private TabActivityTab productLibraryTab = null;
    private boolean calledProductLibraryViaShortcut = false;
+
+   private DataManagementConnectedVipListener connectedVipListener;
+   private DataManagementConnectedPvipListener connectedPvipListener;
 
    public DataManagementActivity() {
       vipDataHandler = new VIPDataHandler();
@@ -176,7 +174,68 @@ public class DataManagementActivity extends TabActivity implements RoboContext, 
       }
    }
 
-   private SimpleVIPListener vipListener = new SimpleVIPListener() {
+   private <T> void updateConnectionStateInUI(WeakReference<T> weakReferenceFragment, boolean connected) {
+      if (weakReferenceFragment != null) {
+         T fragment = weakReferenceFragment.get();
+         if (fragment != null && fragment instanceof BaseDataFragment) {
+            BaseDataFragment baseDataFragment = (BaseDataFragment) fragment;
+            baseDataFragment.updateConnectionStateInUI(connected);
+         }
+      }
+   }
+
+   private class DataManagementConnectedVipListener extends ConnectedVipListener {
+
+      DataManagementConnectedVipListener(Context context) {
+         super(context);
+      }
+
+      @Override
+      public void onConnectionStatusChanged(boolean connected) {
+
+         //TODO: BaseDataFragment is not depending only on vip connection, more on mediator connection.
+         //As soon as defects pfhmi-dev-defects-10196 and pfhmi-dev-defects-8398 are solved, those lines + updateConnectionStateInUI
+         //can be removed!
+         BaseDataFragment.setIsConnectedToPcm(connected);
+         updateConnectionStateInUI(manageFragmentWeakReference, connected);
+         updateConnectionStateInUI(importFragmentWeakReference, connected);
+         updateConnectionStateInUI(exportFragmentWeakReference, connected);
+
+         if (connected) {
+            //VIP service is connected
+            logger.debug("DataManagementVIPListener is connected");
+            IVIPServiceAIDL vipService = this.getService();
+            if (null != vipService) {
+               GetLightWeightVehicleCurrentAsynTask getLightWeightVehicleCurrentAsynTask = new GetLightWeightVehicleCurrentAsynTask();
+               getLightWeightVehicleCurrentAsynTask.execute();
+               if (null != vipDataHandler) {
+                  logger.debug("onServerConnect gets current vehicle");
+                  vipDataHandler.setVipService(vipService);
+               }
+               if (null != productLibraryFragmentWeakReference) {
+                  ProductLibraryFragment productLibraryFragment = productLibraryFragmentWeakReference.get();
+                  if (null != productLibraryFragment) {
+                     logger.debug("onServiceConnected called - productLibraryFragment != null");
+                     productLibraryFragment.setVipService(vipService); //TODO: - Use VipDataHandler instead of vipService
+                  }
+               }
+
+            }
+         }
+         else {
+            //VIP service is disconnected
+            logger.debug("DataManagementVIPListener is disconnected");
+            if (productLibraryFragmentWeakReference != null) {
+               ProductLibraryFragment productLibraryFragment = productLibraryFragmentWeakReference.get();
+               if (productLibraryFragment != null) {
+                  productLibraryFragment.setVipService(null);
+               }
+            }
+            if (null != vipDataHandler) {
+               vipDataHandler.setVipService(null);
+            }
+         }
+      }
 
       /**
        * Check if the given vehicle is a combine
@@ -223,7 +282,16 @@ public class DataManagementActivity extends TabActivity implements RoboContext, 
                      productLibraryTab = new TabActivityTab(R.string.tab_product_library, R.drawable.tab_product_library_selector, PRODUCT_LIBRARY_TAB,
                            new DataManagementTabListener(productLibraryFragmentWeakReference.get(), DataManagementActivity.this));
                      addTab(productLibraryTab);
+                     IVIPServiceAIDL vipService = null;
+                     if (connectedVipListener != null) {
+                        vipService = connectedVipListener.getService();
+
+                     }
                      productLibraryFragment.setVipService(vipService);
+                     IPVIPServiceAIDL pvipService = null;
+                     if (connectedPvipListener != null) {
+                        pvipService = connectedPvipListener.getVipService();
+                     }
                      productLibraryFragment.setPvipService(pvipService);
                   }
                   if (null != productLibraryTab && productLibraryTab.isHidden()) {
@@ -252,6 +320,7 @@ public class DataManagementActivity extends TabActivity implements RoboContext, 
             //remove tab, if it is set
             if (null != productLibraryTab) {
                runOnUiThread(new Runnable() {
+
                   @Override
                   public void run() {
                      //check, if ProductLibraryFragment is shown / Tab is selected
@@ -264,33 +333,8 @@ public class DataManagementActivity extends TabActivity implements RoboContext, 
                      hideTab(productLibraryTab);
                   }
                });
-            }
-         }
-      }
 
-      @Override
-      public void onServerConnect() throws RemoteException {
-         if (null != vipService) {
-            GetLightWeightVehicleCurrentAsynTask getLightWeightVehicleCurrentAsynTask = new GetLightWeightVehicleCurrentAsynTask();
-            getLightWeightVehicleCurrentAsynTask.execute();
-            if (null != vipDataHandler) {
-               logger.debug("onServerConnect gets current vehicle");
-               vipDataHandler.setVipService(vipService);
             }
-            if (null != productLibraryFragmentWeakReference) {
-               ProductLibraryFragment productLibraryFragment = productLibraryFragmentWeakReference.get();
-               if (null != productLibraryFragment) {
-                  logger.debug("onServiceConnected called - productLibraryFragment != null");
-                  productLibraryFragment.setVipService(vipService); //TODO: - Use VipDataHandler instead of vipService
-               }
-            }
-         }
-      }
-
-      @Override
-      public void onServerDisconnect() throws RemoteException {
-         if(null != vipDataHandler) {
-            vipDataHandler.setVipService(null);
          }
       }
 
@@ -313,17 +357,20 @@ public class DataManagementActivity extends TabActivity implements RoboContext, 
 
       // Remark: must be Vehicle_full instead of Vehicle because there is a entity defined in hbm.xml
       // and so HQL uses the entity name instead of the class name.
-      private final String CURRENT_VEHICLE_DEVICE_CLASS_QUERY = "SELECT type.name, theMake.make FROM Vehicle_full v "
-              + "LEFT OUTER JOIN v.vehicleModel AS model "
-              + "LEFT OUTER JOIN model.vehicleType AS type "
-              + "LEFT OUTER JOIN model.vehicleMake AS theMake "
-              + "WHERE v.id = (SELECT vehicle.id FROM VehicleCurrent vc WHERE vc.id = 1)";
+      private final String CURRENT_VEHICLE_DEVICE_CLASS_QUERY = "SELECT type.name, theMake.make FROM Vehicle_full v " + "LEFT OUTER JOIN v.vehicleModel AS model "
+            + "LEFT OUTER JOIN model.vehicleType AS type " + "LEFT OUTER JOIN model.vehicleMake AS theMake "
+            + "WHERE v.id = (SELECT vehicle.id FROM VehicleCurrent vc WHERE vc.id = 1)";
 
       @Override
       protected List doInBackground(Void... nothing) {
          try {
-            List vehicleList = vipService.genericQuery(CURRENT_VEHICLE_DEVICE_CLASS_QUERY);
-            return vehicleList;
+            if (connectedVipListener != null && connectedVipListener.getService() != null) {
+               List vehicleList = connectedVipListener.getService().genericQuery(CURRENT_VEHICLE_DEVICE_CLASS_QUERY);
+               return vehicleList;
+            }
+            else {
+               logger.error("Could query for LightWeightVehicleCurrent in GetLightWeightVehicleCurrentAsynTask since vip listener is not running properly!");
+            }
          }
          catch (RemoteException e) {
             logger.error("failed to load vehicle current", e);
@@ -343,12 +390,18 @@ public class DataManagementActivity extends TabActivity implements RoboContext, 
                VehicleDeviceClass vehicleDeviceClass = (VehicleDeviceClass) singleDatabaseLine[0];
                String vehMake = (String) singleDatabaseLine[1];
                logger.debug("got vehicle with device class: {}", vehicleDeviceClass);
-               try {
-                  vipListener.deliverVehicleCurrent(createVehicleCurrent(vehicleDeviceClass, vehMake));
+               if (connectedVipListener != null) {
+                  try {
+                     connectedVipListener.deliverVehicleCurrent(createVehicleCurrent(vehicleDeviceClass, vehMake));
+                  }
+                  catch (RemoteException e) {
+                     logger.error("this should never happen because method was called locally");
+                  }
                }
-               catch (RemoteException e) {
-                  logger.error("this should never happen because method was called locally");
+               else {
+                  logger.error("Could not deliver vehicle current since vip listener is not running properly!");
                }
+
             }
          }
       }
@@ -372,28 +425,7 @@ public class DataManagementActivity extends TabActivity implements RoboContext, 
          vehicleMake.setMake(vehMake);
          return vehicleCurrent;
       }
-   }
 
-   private void registerVIPListener() {
-      if (this.vipService != null) {
-         try {
-            this.vipService.register(TAG, vipListener);
-         }
-         catch (RemoteException e) {
-            logger.error("VIPListener Register failed", e);
-         }
-      }
-   }
-
-   private void unregisterVIPListener() {
-      if (this.vipService != null) {
-         try {
-            this.vipService.unregister(TAG);
-         }
-         catch (RemoteException e) {
-            logger.error("VIPListener unregister failed", e);
-         }
-      }
    }
 
    private TabActivityTab createActivityTab(BaseDataFragment fragment, int titleRes, int drawableRes, String tabId) {
@@ -409,7 +441,7 @@ public class DataManagementActivity extends TabActivity implements RoboContext, 
          Bundle bundle = appInfo.metaData;
          String storageType = bundle.getString(PACKAGE_FILE_SYSTEM);
          String storageLocation = bundle.getString(PACKAGE_FILE_SYSTEM_LOCATION);
-         if( (storageType != null) && (storageLocation != null) ) {
+         if ((storageType != null) && (storageLocation != null)) {
             UtilityHelper.setPreference(UtilityHelper.STORAGE_LOCATION_TYPE, storageType, this);
             UtilityHelper.setPreference(UtilityHelper.STORAGE_LOCATION, storageLocation, this);
          }
@@ -426,16 +458,24 @@ public class DataManagementActivity extends TabActivity implements RoboContext, 
       RoboGuiceHelper.help(app, new String[] { "com.cnh.pf.android.data.management", "com.cnh.pf.jgroups" }, new RoboModule(app), new ChannelModule(app));
       super.onCreate(savedInstanceState);
 
+      connectedVipListener = new DataManagementConnectedVipListener(getApplicationContext());
+      connectedPvipListener = new DataManagementConnectedPvipListener(getApplicationContext());
+
       eventManager = RoboGuice.getInjector(this).getInstance(EventManager.class);
+      ManageFragment manageFragment = new ManageFragment();
+      manageFragmentWeakReference = new WeakReference<ManageFragment>(manageFragment);
       TabActivityTab managementTab = new TabActivityTab(R.string.tab_management, R.drawable.tab_management_selector, getResources().getString(R.string.tab_management),
-            new DataManagementTabListener(new ManageFragment(), this));
+            new DataManagementTabListener(manageFragment, this));
       addTab(managementTab);
 
+      ImportFragment importFragment = new ImportFragment();
+      importFragmentWeakReference = new WeakReference<ImportFragment>(importFragment);
       TabActivityTab importTab = new TabActivityTab(R.string.tab_import, R.drawable.tab_import_selector, getResources().getString(R.string.tab_import),
-            new DataManagementTabListener(new ImportFragment(), this));
+            new DataManagementTabListener(importFragment, this));
       addTab(importTab);
 
       ExportFragment exportFragment = new ExportFragment();
+      exportFragmentWeakReference = new WeakReference<ExportFragment>(exportFragment);
       exportFragment.setVipDataHandler(vipDataHandler);
       TabActivityTab exportTab = new TabActivityTab(R.string.tab_export, R.drawable.tab_export_selector, getResources().getString(R.string.tab_export),
             new DataManagementTabListener(exportFragment, this));
@@ -524,30 +564,36 @@ public class DataManagementActivity extends TabActivity implements RoboContext, 
          throw new RuntimeException(e);
       }
    }
-   ServiceConnection pvipServiceConnection = new ServiceConnection() {
-      @Override
-      public void onServiceConnected(ComponentName name, IBinder service) {
-         pvipService = IPVIPServiceAIDL.Stub.asInterface(service);
-         if(pvipService != null && productLibraryFragmentWeakReference != null) {
-            ProductLibraryFragment productLibraryFragment = productLibraryFragmentWeakReference.get();
-            if (productLibraryFragment != null) {
-               logger.debug("onServiceConnected called - productLibraryFragment != null, set Pvip service");
-               productLibraryFragment.setPvipService(pvipService);
-            }
-         }
+
+   private class DataManagementConnectedPvipListener extends ConnectedPVIPListener {
+
+      DataManagementConnectedPvipListener(Context context) {
+         super(context);
       }
 
       @Override
-      public void onServiceDisconnected(ComponentName name) {
-         logger.debug("onServiceConnected for pvip service called");
-         if (pvipService != null && productLibraryFragmentWeakReference != null) {
-            ProductLibraryFragment productLibraryFragment = productLibraryFragmentWeakReference.get();
-            if (productLibraryFragment != null) {
-               productLibraryFragment.setPvipService(null);
+      public void onConnectionChange(boolean connected) {
+         IPVIPServiceAIDL pvipService = this.getVipService();
+         if (connected) {
+            if (pvipService != null && productLibraryFragmentWeakReference != null) {
+               ProductLibraryFragment productLibraryFragment = productLibraryFragmentWeakReference.get();
+               if (productLibraryFragment != null) {
+                  logger.debug("onConnectionChange(connected) called - productLibraryFragment != null, set Pvip service");
+                  productLibraryFragment.setPvipService(pvipService);
+               }
+            }
+         }
+         else {
+            logger.debug("onConnectionChange(disconnected) for pvip service called");
+            if (pvipService != null && productLibraryFragmentWeakReference != null) {
+               ProductLibraryFragment productLibraryFragment = productLibraryFragmentWeakReference.get();
+               if (productLibraryFragment != null) {
+                  productLibraryFragment.setPvipService(null);
+               }
             }
          }
       }
-   };
+   }
 
    @Override
    public void onResume() {
@@ -556,8 +602,18 @@ public class DataManagementActivity extends TabActivity implements RoboContext, 
       eventManager.fire(new OnResumeEvent(this));
       logger.debug("Sending INTERNAL_DATA broadcast");
       sendBroadcast(new Intent(ServiceConstants.ACTION_INTERNAL_DATA).addFlags(Intent.FLAG_INCLUDE_STOPPED_PACKAGES));
-      getApplicationContext().bindService(new Intent(VIPConstants.VIP_SERVICE_NAME), this, Context.BIND_AUTO_CREATE);
-      getApplicationContext().bindService(new Intent(PVIPConstants.VIP_SERVICE_NAME), pvipServiceConnection, Context.BIND_AUTO_CREATE);
+      if (connectedVipListener != null) {
+         connectedVipListener.connect();
+      }
+      else {
+         logger.error("Could not connect connectedVipListener since it is not initialized!");
+      }
+      if (connectedPvipListener != null) {
+         connectedPvipListener.connect();
+      }
+      else {
+         logger.error("Could not connect connectedPvipListener since it is not initialized!");
+      }
    }
 
    @Override
@@ -565,10 +621,17 @@ public class DataManagementActivity extends TabActivity implements RoboContext, 
       logger.debug("onPause called");
       super.onPause();
       eventManager.fire(new OnPauseEvent(this));
-      getApplicationContext().unbindService(this);
-
-      if(null != vipService) {
-         vipService = null;
+      if (connectedVipListener != null) {
+         connectedVipListener.disconnect();
+      }
+      else {
+         logger.error("Could not disconnect connectedVipListener since it is not initialized!");
+      }
+      if (connectedPvipListener != null) {
+         connectedPvipListener.disconnect();
+      }
+      else {
+         logger.error("Could not disconnect connectedPvipListener since it is not initialized!");
       }
    }
 
@@ -579,32 +642,10 @@ public class DataManagementActivity extends TabActivity implements RoboContext, 
       vipDataHandler = null;
       scopedObjects = null;
       eventManager = null;
-      vipService = null;
       productLibraryFragmentWeakReference = null;
       productLibraryTab = null;
+      connectedVipListener = null;
+      connectedPvipListener = null;
    }
 
-   @Override
-   public void onServiceConnected(ComponentName name, IBinder service) {
-      logger.debug("onServiceConnected called - componentClassName: " + name.getClassName() + " service: " + service.toString());
-      this.vipService = IVIPServiceAIDL.Stub.asInterface(service);
-      if (vipService != null) {
-         logger.debug("onServiceConnected called - vipService != null");
-         registerVIPListener();
-      }
-   }
-
-   @Override
-   public void onServiceDisconnected(ComponentName name) {
-      logger.debug("onServiceDisconnected called - componentClassName: " + name.getClassName());
-      if (vipService != null) {
-         unregisterVIPListener();
-         if (productLibraryFragmentWeakReference != null) {
-            ProductLibraryFragment productLibraryFragment = productLibraryFragmentWeakReference.get();
-            if (productLibraryFragment != null) {
-               productLibraryFragment.setVipService(null);
-            }
-         }
-      }
-   }
 }
