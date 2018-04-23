@@ -122,6 +122,12 @@ public abstract class BaseDataFragment extends RoboFragment implements IDataMana
    private Comparator<InMemoryTreeNode<ObjectGraph>> comparator = new Comparator<InMemoryTreeNode<ObjectGraph>>() {
       @Override
       public int compare(InMemoryTreeNode<ObjectGraph> lhs, InMemoryTreeNode<ObjectGraph> rhs) {
+         // Do the case-insensitive check first
+         int comparison = lhs.getId().getName().compareToIgnoreCase(rhs.getId().getName());
+         if (comparison != 0) {
+            return comparison;
+         }
+         // If the case-insensitive check is same, do the case-sensitive check to make upper-case come first
          return lhs.getId().getName().compareTo(rhs.getId().getName());
       }
    };
