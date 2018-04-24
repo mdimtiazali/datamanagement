@@ -406,12 +406,10 @@ public class ExportFragment extends BaseDataFragment {
             if (getSession() != null) {
                MediumDevice itemObject = ((ObjectPickListItem<MediumDevice>) exportMediumPicklist.findItemById(id)).getObject();
                getSession().setDestinations(null != itemObject ? Arrays.asList(itemObject) : null);
-               if (null != itemObject) {
-                  getSession().setDestination(itemObject);
-               }
                getSession().setDestinationTypes(null != itemObject ? itemObject.getType() : null);
                if (null != itemObject) {
                   saveMediumSelection(itemObject);
+                  getSession().setDestination(itemObject);
                }
                forceMediumDeviceFormat();
             }
@@ -816,7 +814,7 @@ public class ExportFragment extends BaseDataFragment {
       boolean hasSelection = getTreeAdapter() != null
               && s != null
               && s.getDestinations() != null
-              && exportMediumPicklist.findItemPositionByItem(exportMediumPicklist.getSelectedItem()) >= 0
+              && s.getDestination() != null
               && s.getFormat() != null
               && getTreeAdapter().hasSelection();
 
