@@ -92,7 +92,7 @@ public class ImportSourceDialog extends DialogView {
 
    private void init(List<MediumDevice> mediums) {
       setTitle(getResources().getString(R.string.select_source));
-      if (mediums == null) {
+      if (mediums != null && mediums.isEmpty()) {
          View view = layoutInflater.inflate(R.layout.no_device_layout, null);
          setBodyView(view);
          setFirstButtonText(getResources().getString(R.string.ok));

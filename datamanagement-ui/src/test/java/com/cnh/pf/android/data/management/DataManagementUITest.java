@@ -20,6 +20,7 @@ import android.content.Context;
 import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
 import android.os.RemoteException;
+import android.view.LayoutInflater;
 import android.view.View;
 
 import com.cnh.android.util.prefs.GlobalPreferences;
@@ -87,6 +88,8 @@ public class DataManagementUITest {
    BaseDataFragment fragment;
    ObjectGraph customer;
    ObjectGraph testObject;
+   private static int IMPORT_SOURCE_TAB_POSITION = 1;
+   private static int EXPORT_SOURCE_TAB_POSITION = 2;
 
    @Before
    public void setUp() {
@@ -133,7 +136,7 @@ public class DataManagementUITest {
    @Test
    public void testISOSupport() throws RemoteException {
       //Initialize export fragment
-      activateTab(2);
+      activateTab(EXPORT_SOURCE_TAB_POSITION);
       //Check export fragment visible
       assertTrue("export drop zone is visible", activity.findViewById(R.id.export_drop_zone).getVisibility() == View.VISIBLE);
       ExportFragment fragment = (ExportFragment) ((TabActivity) activity).getFragmentManager().findFragmentByTag("Export");
@@ -162,7 +165,7 @@ public class DataManagementUITest {
    @Test
    public void testRecursiveFormatSupport() throws RemoteException {
       //Initialize export fragment
-      activateTab(2); //0 - Import 1 - Export
+      activateTab(EXPORT_SOURCE_TAB_POSITION); //0 - Import 1 - Export
       //Mock picklist, select ISOXML as export format$
       ExportFragment fragment = (ExportFragment) ((TabActivity) activity).getFragmentManager().findFragmentByTag("Export");
       DataManagementSession session = new DataManagementSession(new Datasource.LocationType[] { Datasource.LocationType.PCM }, new Datasource.LocationType[] { Datasource.LocationType.PCM },
@@ -247,5 +250,16 @@ public class DataManagementUITest {
       public HostAndPort getDaemon() {
          return HostAndPort.fromParts("127.0.0.1", 14000);
       }
+   }
+   @Test
+   public void testForNoImportSource() throws RemoteException {
+      activateTab(IMPORT_SOURCE_TAB_POSITION);
+      ArrayList<MediumDevice> mockMediumDeviceForTest = new ArrayList<MediumDevice>();
+      ImportFragment importFragment = (ImportFragment) ((TabActivity) activity).getFragmentManager().findFragmentByTag("Import");
+      LayoutInflater layoutInflater = (LayoutInflater) activity.getSystemService(Context.LAYOUT_INFLATER_SERVICE);
+      DataManagementSession session = new DataManagementSession(new Datasource.LocationType[]{Datasource.LocationType.PCM}, new Datasource.LocationType[]{Datasource.LocationType.PCM}, mockMediumDeviceForTest, null, null, null);
+      importFragment.setSession(session);
+      View view = layoutInflater.inflate(R.layout.no_device_layout, null);
+      assertEquals("No Import Source", View.VISIBLE, view.findViewById(R.id.no_import_source_view).getVisibility());
    }
 }
