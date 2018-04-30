@@ -67,5 +67,7 @@
     <dimen name="dataexchange_perform_box_import_height">380dp</dimen>
     <dimen name="dataexchange_perform_left_box_top_spacing_to_text">50dp</dimen>
     <dimen name="dataexchange_perform_left_box_spacing_from_top_image_to_text">50dp</dimen>
+    <dimen name="no_device_layout_image_view_margin_top">20dp</dimen>
+    <dimen name="no_device_layout_text_view_text_size">18dp</dimen>
 
 </resources>
