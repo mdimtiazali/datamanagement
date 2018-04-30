@@ -21,11 +21,20 @@
             android:layout_marginRight="16dp"
             android:orientation="vertical">
 
-        <TextView
+        <LinearLayout
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                style="@style/TextAppearance.Import.Entity"
-                android:text="@string/export_to" />
+                android:orientation="horizontal">
+
+            <TextView
+                    android:id="@+id/destination_text"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_gravity="center_vertical"
+                    style="@style/TextAppearance.Import.Entity"
+                    android:text="@string/export_to"/>
+
+        </LinearLayout>
 
         <com.cnh.android.widget.control.PickList
                 android:id="@+id/export_medium_picklist"
@@ -36,29 +45,30 @@
                 cnh:allowItemDeletion="false"
                 cnh:allowItemCreation="false"
                 cnh:allowItemEditing="false"
-                cnh:allowItemManagement="false" />
+                cnh:allowItemManagement="false"/>
 
-        <RelativeLayout
+        <LinearLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:orientation="horizontal">
 
             <TextView
+                    android:id="@+id/export_format_text"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:layout_centerVertical="true"
+                    android:layout_gravity="center_vertical"
                     style="@style/TextAppearance.Import.Entity"
-                    android:text="@string/export_format" />
+                    android:text="@string/export_format"/>
 
             <com.cnh.android.widget.control.InfoButton
                     android:id="@+id/format_info_btn"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:layout_alignParentRight="true"
-                    android:layout_centerVertical="true"
+                    android:layout_gravity="center_vertical"
                     cnh:popup_description="@string/format_description"
-                    cnh:popup_title="@string/export_format" />
-        </RelativeLayout>
+                    cnh:popover_style="light_info"/>
+
+        </LinearLayout>
 
         <com.cnh.android.widget.control.PickList
                 android:id="@+id/export_format_picklist"
@@ -92,7 +102,7 @@
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:layout_marginTop="@dimen/dataexchange_perform_left_box_top_spacing_to_text"
-                        android:background="@drawable/ic_dragdrop_export_usb"
+                        android:background="@drawable/export_icon"
                         android:layout_gravity="center"/>
 
                 <TextView
