@@ -10,6 +10,8 @@ package com.cnh.pf.android.data.management;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
@@ -23,6 +25,7 @@ import android.os.RemoteException;
 import android.view.LayoutInflater;
 import android.view.View;
 
+import android.widget.ImageButton;
 import com.cnh.android.util.prefs.GlobalPreferences;
 import com.cnh.android.util.prefs.GlobalPreferencesNotAvailableException;
 import com.cnh.android.widget.activity.TabActivity;
@@ -34,9 +37,13 @@ import com.cnh.jgroups.ObjectGraph;
 import com.cnh.pf.android.data.management.adapter.ObjectTreeViewAdapter;
 import com.cnh.pf.android.data.management.adapter.SelectionTreeViewAdapter;
 import com.cnh.pf.android.data.management.parser.FormatManager;
+import com.cnh.pf.android.data.management.productlibrary.views.AddOrEditVarietyDialog;
 import com.cnh.pf.android.data.management.service.DataManagementService;
 import com.cnh.pf.data.management.DataManagementSession;
 import com.cnh.pf.data.management.aidl.MediumDevice;
+import com.cnh.pf.model.product.configuration.Variety;
+import com.cnh.pf.model.product.configuration.VarietyColor;
+import com.cnh.pf.model.product.library.CropType;
 import com.google.common.net.HostAndPort;
 import com.google.inject.AbstractModule;
 import com.google.inject.Key;
@@ -51,6 +58,7 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.Matchers;
 import org.mockito.Mock;
+import org.mockito.Mockito;
 import org.mockito.MockitoAnnotations;
 import org.mockito.invocation.InvocationOnMock;
 import org.mockito.stubbing.Answer;
@@ -90,6 +98,7 @@ public class DataManagementUITest {
    ObjectGraph testObject;
    private static int IMPORT_SOURCE_TAB_POSITION = 1;
    private static int EXPORT_SOURCE_TAB_POSITION = 2;
+   private static int PRODUCT_LIBRARY_TAB_POSITION = 3;
 
    @Before
    public void setUp() {
@@ -165,7 +174,7 @@ public class DataManagementUITest {
    @Test
    public void testRecursiveFormatSupport() throws RemoteException {
       //Initialize export fragment
-      activateTab(EXPORT_SOURCE_TAB_POSITION); //0 - Import 1 - Export
+      activateTab(EXPORT_SOURCE_TAB_POSITION);
       //Mock picklist, select ISOXML as export format$
       ExportFragment fragment = (ExportFragment) ((TabActivity) activity).getFragmentManager().findFragmentByTag("Export");
       DataManagementSession session = new DataManagementSession(new Datasource.LocationType[] { Datasource.LocationType.PCM }, new Datasource.LocationType[] { Datasource.LocationType.PCM },
@@ -261,5 +270,20 @@ public class DataManagementUITest {
       importFragment.setSession(session);
       View view = layoutInflater.inflate(R.layout.no_device_layout, null);
       assertEquals("No Import Source", View.VISIBLE, view.findViewById(R.id.no_import_source_view).getVisibility());
+   }
+
+   @Test
+   public void testForVarietiesCropTypeWhenIsUsed() throws RemoteException {
+      activateTab(PRODUCT_LIBRARY_TAB_POSITION);
+      AddOrEditVarietyDialog addOrEditVarietyDialog = new AddOrEditVarietyDialog(activity);
+      LayoutInflater layoutInflater = (LayoutInflater) activity.getSystemService(Context.LAYOUT_INFLATER_SERVICE);
+      Variety TEST_VARIETY = new Variety();
+      TEST_VARIETY.setName("Mock Variety");
+      TEST_VARIETY.setCropType(CropType.CARROTS);
+      TEST_VARIETY.setUsed(true);
+      addOrEditVarietyDialog.setCurrentVariety(TEST_VARIETY);
+      View editView = layoutInflater.inflate(R.layout.variety_add_or_edit_dialog, null);
+      PickList pickList = (PickList) editView.findViewById(R.id.variety_dialog_crop_type_pick_list);
+      assertTrue(!pickList.isPickListEditable());
    }
 }
