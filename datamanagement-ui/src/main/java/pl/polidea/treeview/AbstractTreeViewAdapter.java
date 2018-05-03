@@ -163,12 +163,10 @@ public abstract class AbstractTreeViewAdapter<T> extends BaseAdapter implements 
       //                + " with position " + position);
       final TreeNodeInfo<T> nodeInfo = getTreeNodeInfo(position);
       if (convertView == null) {
-         //            Log.d("getview", "Creating the view a new");
          final LinearLayout layout = (LinearLayout) layoutInflater.inflate(getTreeListItemWrapperId(), null);
          return populateTreeItem(layout, getNewChildView(nodeInfo), nodeInfo, true);
       }
       else {
-         //            Log.d("getview", "Reusing the view");
          final LinearLayout linear = (LinearLayout) convertView;
          final FrameLayout frameLayout = (FrameLayout) linear.findViewById(R.id.treeview_list_item_frame);
          final View childView = frameLayout.getChildAt(0);

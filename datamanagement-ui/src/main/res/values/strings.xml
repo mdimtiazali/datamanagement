@@ -45,9 +45,12 @@
     <string name="guidance_groups">Swaths</string>
     <string name="guidance_patterns">Guidance Patterns</string>
     <string name="notes">Notes</string>
+    <string name="product_mix_variety">Crop and Product Library</string>
+    <string name="guidance_configurations">GuidanceConfigurations</string>
 
     <string name="products">Products</string>
     <string name="product_mixes">Product Mixes</string>
+    <string name="varieties">Varieties</string>
     <string name="select_source">Select Import Source</string>
     <string name="import_drag_and_drop"><![CDATA[Drag & Drop \nto Import \nto PCM/Display]]></string>
     <string name="export_drag_and_drop"><![CDATA[Drag & Drop \nto Export]]></string>
@@ -143,7 +146,16 @@
     <string name="import_cancel">Import Cancelled</string>
     <string name="export_complete">Export Completed</string>
     <string name="export_cancel">Export Cancelled</string>
-
+    <string name="error_delete">Fail to delete data</string>
+   <string name="delete_progress_title">In deleting data ...</string>
+    <plurals name="delete_confirm_dialog_title">
+        <item quantity="one">Delete Confirmation (%1$d Item)</item>
+        <item quantity="other">Delete Confirmation (%1$d Items)</item>
+    </plurals>
+    <plurals name="delete_confirm_dialog_content">
+        <item quantity="one">&lt;b>Are you sure you want to delete %1$d item? &lt;/b>\nThe item will be permanently deleted.</item>
+        <item quantity="other">&lt;b>Are you sure you want to delete %1$d items? &lt;/b>\nThe items will be permanently deleted.</item>
+    </plurals>
     <string name="usb_data_available">USB Data Available</string>
     <string name="usb_no_data_available">No USB Data Available</string>
     <string name="usb_scanning">Scanning USB Stick...</string>
@@ -273,9 +285,14 @@
     <string name="edit_dialog_cancel">Cancel</string>
     <string name="tab_mng_none_header">Select item(s) to edit, copy, or delete</string>
     <string name="tab_mng_items_header">%1$d Item(s) Selected</string>
+    <plurals name="tab_mng_selected_items_header">
+        <item quantity="one">%1$d Item Selected</item>
+        <item quantity="other">%1$d Items Selected</item>
+    </plurals>
     <!-- end of productlibrary-package usage -->
     <string name="edit_name_warning">The item with this name already exists. Please choose a different name</string>
     <string name="edit_update_title">Updating item</string>
+
     <string name="unknown_vehicle">Unknown Vehicle</string>
 
     <!-- Destination / Format Combinations -->
@@ -315,5 +332,9 @@
     <string name="generic_tractor_cloud_connect_inbox">Cloud Connect / INBOX</string>
     <string name="generic_tractor_display">Display</string>
     <string name="generic_tractor_internal">Internal</string>
+
+    <string name="no_data_for_delete">No selected data right for deletion</string>
+    <string name="update_error_notice">Error occur when updating the name</string>
+    <string name="delete_error_notice">Error occur when deleting the data</string>
 
 </resources>
