@@ -401,6 +401,9 @@ public class DataManagementService extends RoboService implements SharedPreferen
       else if (sessionOperation.equals(DataManagementSession.SessionOperation.UPDATE)) {
          updateOperations(session);
       }
+      else if(sessionOperation.equals(DataManagementSession.SessionOperation.DELETE)){
+         deleteOperations(session);
+      }
       else {
          logger.error("Couldn't find op");
       }
@@ -501,13 +504,16 @@ public class DataManagementService extends RoboService implements SharedPreferen
    private void updateOperations(final DataManagementSession session) {
       try {
          session.setResult(null);
-         performCalled = false;
-         Status status = new com.cnh.android.status.Status("", statusDrawable, getApplicationContext().getPackageName());
-         activeStatusUpdateSessions.put(session, status);
-         sendStatus(session, statusStarting);
-
-         performCalled = true;
          new UpdateOperationsTask().executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR, session);
+      }
+      catch (Exception e) {
+         logger.error("Could not find destination address for this type", e);
+      }
+   }
+   private void deleteOperations(final DataManagementSession session) {
+      try {
+         session.setResult(null);
+         new DeleteOperationsTask().executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR, session);
       }
       catch (Exception e) {
          logger.error("Could not find destination address for this type", e);
@@ -952,7 +958,43 @@ public class DataManagementService extends RoboService implements SharedPreferen
          session.setProgress(false);
       }
    }
+   
+   private class DeleteOperationsTask extends SessionOperationTask<Void>{
+      @Override
+      protected DataManagementSession doInBackground(DataManagementSession... params) {
+         logger.debug("Deleting Operations...");
+         DataManagementSession session = params[0];
+         session.setProgress(true);
+         try {
+            if (session.getData() == null && session.getObjectData() != null) {
+               session.setData(new ArrayList<Operation>());
+               for (ObjectGraph obj : session.getObjectData()) {
+                  Operation operation = new Operation(obj, null);
+                  operation.setStatus(Operation.Status.NOT_DONE);
+                  session.getData().add(operation);
+               }
+            }
 
+            session.setResults(mediator.deleteOperations(session.getData(), null));
+            boolean error = false;
+            for (Rsp<Process> ret : session.getResults()) {
+               if (ret.hasException() || !ret.getValue().getResult().equals(Result.SUCCESS)){
+                  if(ret.hasException()){
+                     logger.error("exception occur in PCM when deleting;{}",ret.getException());
+                  }
+                  error = true;
+                  break;
+               }
+            }
+            session.setResult(error ? Result.ERROR : Result.SUCCESS);
+         }
+         catch (Throwable e) {
+            logger.error("exception occur when deleting;{}",e);
+            session.setResult(Result.ERROR);
+         }
+         return session;
+      }
+   }
    private class UpdateOperationsTask extends SessionOperationTask<Void> {
       @Override
       protected DataManagementSession doInBackground(DataManagementSession... params) {

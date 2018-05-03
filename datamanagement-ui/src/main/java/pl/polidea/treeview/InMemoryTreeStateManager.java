@@ -180,6 +180,30 @@ public class InMemoryTreeStateManager<T> implements TreeStateManager<T>, Sortabl
    }
 
    @Override
+   public void removeNodesRecursively(List<T> ids) {
+      if(ids != null && !ids.isEmpty()){
+         boolean visibleNodeChanged = false;
+         for(T id: ids){
+            if(bRemoveNodeRecursively(id) && !visibleNodeChanged){
+               visibleNodeChanged = true;
+            }
+         }
+         if(visibleNodeChanged){
+            internalDataSetChanged();
+         }
+      }
+   }
+
+   private synchronized boolean bRemoveNodeRecursively(final T id) {
+      final InMemoryTreeNode<T> node = getNodeFromTreeOrThrowAllowRoot(id);
+      final boolean visibleNodeChanged = removeNodeRecursively(node);
+      final T parent = node.getParent();
+      final InMemoryTreeNode<T> parentNode = getNodeFromTreeOrThrowAllowRoot(parent);
+      parentNode.removeChild(id);
+      return visibleNodeChanged;
+   }
+
+   @Override
    public synchronized void removeNodeRecursively(final T id) {
       final InMemoryTreeNode<T> node = getNodeFromTreeOrThrowAllowRoot(id);
       final boolean visibleNodeChanged = removeNodeRecursively(node);
