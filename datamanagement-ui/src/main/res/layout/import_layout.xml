@@ -9,10 +9,16 @@
   -->
 
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
-        xmlns:cnh="http://schemas.android.com/apk/res/com.cnh.pf.android.data.management"
-        android:orientation="horizontal"
-        android:layout_width="match_parent"
-        android:layout_height="match_parent">
+              xmlns:cnh="http://schemas.android.com/apk/res/com.cnh.pf.android.data.management"
+              android:orientation="horizontal"
+              android:layout_width="match_parent"
+              android:layout_height="match_parent">
+
+    <com.cnh.android.pf.widget.view.DisabledOverlay
+            android:id="@+id/disconnected_overlay"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:layout_gravity="center"/>
 
     <LinearLayout
             android:id="@+id/left_panel_wrapper"
@@ -44,7 +50,7 @@
                     android:layout_marginLeft="@dimen/header_indent_width"
                     android:layout_weight="1"
                     android:gravity="center_vertical|left"
-                    style="@style/TextAppearance.Import.Entity" />
+                    style="@style/TextAppearance.Import.Entity"/>
             <Button
                     android:id="@+id/select_all_btn"
                     android:layout_width="wrap_content"
@@ -57,7 +63,7 @@
                     android:layout_marginBottom="@dimen/button_margin_bottom"
                     android:layout_marginRight="@dimen/button_margin_right"
                     android:text="@string/select_all"
-                    android:textSize="22dp" />
+                    android:textSize="22dp"/>
         </RelativeLayout>
 
         <TextView
@@ -66,7 +72,7 @@
                 android:layout_height="match_parent"
                 android:gravity="center"
                 style="@style/TextAppearance.Import.Entity"
-                android:text="@string/select_source_first" />
+                android:text="@string/select_source_first"/>
 
         <ProgressBar
                 android:id="@+id/tree_progress"
@@ -74,7 +80,7 @@
                 android:layout_height="wrap_content"
                 android:layout_gravity="center|center_vertical"
                 style="@style/IndeterminateProgressLargeBlue"
-                android:visibility="gone" />
+                android:visibility="gone"/>
         <ImageButton android:id="@+id/dm_refresh"
                      android:layout_height="wrap_content"
                      android:layout_width="wrap_content"
@@ -104,6 +110,6 @@
                 cnh:collapsible="true"
                 cnh:draw_line="true"
                 cnh:line_color="@color/tree_line"
-                cnh:line_width="2dp" />
+                cnh:line_width="2dp"/>
     </LinearLayout>
 </LinearLayout>

@@ -28,6 +28,7 @@ import android.widget.TextView;
 
 import com.cnh.android.dialog.DialogView;
 import com.cnh.android.dialog.DialogViewInterface;
+import com.cnh.android.persistence.PersistenceClient;
 import com.cnh.android.pf.widget.controls.SegmentedToggleButtonGroupPickList;
 import com.cnh.android.pf.widget.controls.SegmentedToggleButtonGroupPickList.SegmentedTogglePickListListener;
 import com.cnh.android.pf.widget.utilities.EnumValueToUiStringUtility;
@@ -105,6 +106,7 @@ public class ProductMixDialog extends DialogView implements DialogHandlerListene
    private static final int STEP_SIZE = 1;
    private static final int PRECISION = 2;
 
+   private final String identifier = ProductMixDialog.class.getSimpleName() + System.identityHashCode(this);
    private IVIPServiceAIDL vipService;
    private IPVIPServiceAIDL pvipService;
    private ProductMix productMix;
@@ -124,7 +126,6 @@ public class ProductMixDialog extends DialogView implements DialogHandlerListene
    private ProductMixElementHolder carrierProductHolder;
    private double totalAmount = 0;
    private final ArrayList<ProductMixElementHolder> productMixElementHolderList = new ArrayList<ProductMixElementHolder>();
-   private final ArrayList<ProductMixRecipe> recipeDeleteList = new ArrayList<ProductMixRecipe>();
    private TableLayout productMixTable;
    private Button addMoreButton;
    private InputField productMixNameInputField;
@@ -137,6 +138,7 @@ public class ProductMixDialog extends DialogView implements DialogHandlerListene
    private DialogDensityHandler dialogDensityHandler;
    private DialogPackageSizeHandler dialogPackageSizeHandler;
    private DialogUsageAndCropTypeHandler dialogUsageAndCropTypeHandler;
+   private Widget.ErrorIndicator productMixNameErrorIndicator = Widget.ErrorIndicator.NONE;
 
    private CategoryButtonsEventListener eventListener = new CategoryButtonsEventListener() {
       @Override
@@ -260,8 +262,8 @@ public class ProductMixDialog extends DialogView implements DialogHandlerListene
       this(context, DialogActionType.ADD, vipService, pvipService, null, callback, productMixes);
    }
 
-   public ProductMixDialog(Context context, DialogActionType actionType, IVIPServiceAIDL vipService, IPVIPServiceAIDL pvipService, ProductMix productMix, ProductMixCallBack callBack,
-         List<ProductMix> productMixes) {
+   public ProductMixDialog(Context context, DialogActionType actionType, IVIPServiceAIDL vipService, IPVIPServiceAIDL pvipService, ProductMix productMix,
+         ProductMixCallBack callBack, List<ProductMix> productMixes) {
       super(context);
       this.actionType = actionType;
       this.productMix = productMix;
@@ -271,7 +273,7 @@ public class ProductMixDialog extends DialogView implements DialogHandlerListene
       this.productMixes = new ArrayList<ProductMix>(productMixes);
       if (vipService != null) {
          try {
-            vipService.register(ProductMixDialog.class.getSimpleName(), vipListener);
+            vipService.register(identifier, vipListener);
             vipService.requestProductList();
             vipService.requestProductUnitsList(null, null, null, null);
          }
@@ -460,15 +462,20 @@ public class ProductMixDialog extends DialogView implements DialogHandlerListene
       }
       //Add Carrier Data to UI
       {
-         ProductMixRecipe productCarrier = productMix.getProductCarrier();
-         carrierProductHolder.currentRecipe = productCarrier;
+         carrierProductHolder.currentRecipe = new ProductMixRecipe(productMix.getProductCarrier());
+         if (actionType == DialogActionType.COPY) {
+            carrierProductHolder.currentRecipe.setId(PersistenceClient.NEW_OBJECT_ID);
+         }
          List<Product> filteredProduct = ProductHelperMethods.filterProductList(productList, productMixForm);
-         addDataToProductElement(productCarrier, carrierProductHolder, filteredProduct);
+         addDataToProductElement(carrierProductHolder.currentRecipe, carrierProductHolder, filteredProduct);
       }
 
       //Add Product Mix element Data to UI
       for (int i = 0; i < productMix.getRecipe().size(); i++) {
-         ProductMixRecipe recipeElement = productMix.getRecipe().get(i);
+         ProductMixRecipe recipeElement = new ProductMixRecipe(productMix.getRecipe().get(i));
+         if (actionType == DialogActionType.COPY) {
+            recipeElement.setId(PersistenceClient.NEW_OBJECT_ID);
+         }
          if (i > 0) {
             addProduct();
          }
@@ -621,11 +628,11 @@ public class ProductMixDialog extends DialogView implements DialogHandlerListene
                   if (productElement.productPickList.getItemByPosition(position) != null) {
                      Product product = getProductByName(productElement.productPickList.getItemByPosition(position).getValue());
                      if (product != null) {
-                        ProductMixRecipe recipe = new ProductMixRecipe();
-                        recipe.setProduct(product);
-                        productElement.currentRecipe = recipe;
+                        if (productElement.currentRecipe == null) {
+                           productElement.currentRecipe = new ProductMixRecipe();
+                        }
+                        productElement.currentRecipe.setProduct(product);
                         productElement.productPickList.setTag(product);
-                        recipeDeleteList.remove(productElement.currentRecipe);
 
                         setUnitToSegmentedToggleButtonGroup(productElement.productUnit, product.getForm(),
                               ProductHelperMethods.queryAmountMeasurementSystemForProductForm(product.getForm(), getContext()), ProductDisplayItem.AMOUNT);
@@ -892,9 +899,9 @@ public class ProductMixDialog extends DialogView implements DialogHandlerListene
          }
          else if (actionType == DialogActionType.COPY) {
             tempProductMix = new ProductMix(this.productMix);
-            tempProductMix.setId(0);
+            tempProductMix.setId(PersistenceClient.NEW_OBJECT_ID);
             productMixParameters = new Product(tempProductMix.getProductMixParameters());
-            productMixParameters.setId(0);
+            productMixParameters.setId(PersistenceClient.NEW_OBJECT_ID);
          }
          else {
             tempProductMix = this.productMix;
@@ -913,19 +920,10 @@ public class ProductMixDialog extends DialogView implements DialogHandlerListene
          }
 
          ProductMixHelper.bindMixTotalUnits(tempProductMix, carrierUnit, ProductHelperMethods.queryAmountMeasurementSystemForProductForm(productMixForm, getContext()));
-
-         ProductMixRecipe productCarrier;
-         if (actionType != DialogActionType.EDIT) {
-            productCarrier = new ProductMixRecipe();
-            productCarrier.setProduct(carrierProductHolder.currentRecipe.getProduct());
-         }
-         else {
-            productCarrier = carrierProductHolder.currentRecipe;
-         }
-         ProductMixRecipeHelper.setAmountAndUnitsToProductMixRecipe(productCarrier, ((UnitsToggleHolder) carrierProductHolder.productUnit.getTag()).currentChoice,
+         ProductMixRecipeHelper.setAmountAndUnitsToProductMixRecipe(carrierProductHolder.currentRecipe, ((UnitsToggleHolder) carrierProductHolder.productUnit.getTag()).currentChoice,
                carrierProductHolder.productAmountStepper.getValue(), getContext());
          tempProductMix.setMixType(MixType.FORMULA);
-         tempProductMix.setProductCarrier(productCarrier);
+         tempProductMix.setProductCarrier(carrierProductHolder.currentRecipe);
          tempProductMix.setRecipe(createProductRecipeList());
          // this is a bit nasty here - because the productMix object to save is created in this method, there is no place to save the trimmed string in the TextWatcher...
          // if the product object would be created earlier we could save the trimmed string there.
@@ -961,25 +959,13 @@ public class ProductMixDialog extends DialogView implements DialogHandlerListene
     * @return arrayList with all products for the product mix
     */
    private List<ProductMixRecipe> createProductRecipeList() {
-
       List<ProductMixRecipe> productMixRecipeList = new ArrayList<ProductMixRecipe>();
-      if (actionType == DialogActionType.EDIT) {
-         productMixRecipeList = productMix.getRecipe();
-      }
-      productMixRecipeList.removeAll(recipeDeleteList);
-
       for (ProductMixElementHolder productElementHolder : productMixElementHolderList) {
          if (productElementHolder.currentRecipe != null) {
             ProductMixRecipe recipe = productElementHolder.currentRecipe;
-            if (actionType != DialogActionType.EDIT) {
-               recipe = new ProductMixRecipe();
-               recipe.setProduct(productElementHolder.currentRecipe.getProduct());
-            }
             ProductMixRecipeHelper.setAmountAndUnitsToProductMixRecipe(recipe, ((UnitsToggleHolder) productElementHolder.productUnit.getTag()).currentChoice,
                   productElementHolder.productAmountStepper.getValue(), getContext());
-            if (!productMixRecipeList.contains(recipe)) {
-               productMixRecipeList.add(recipe);
-            }
+            productMixRecipeList.add(recipe);
          }
       }
       return productMixRecipeList;
@@ -996,7 +982,7 @@ public class ProductMixDialog extends DialogView implements DialogHandlerListene
       if (carrierProductHolder.productPickList != null) {
          carrierProductHolder.productPickList.setWidgetHandlesAddNewMode(false);
          carrierProductHolder.productPickList.setOnItemActionListener(new OnProductPickListItemActionListener(productElement));
-         carrierProductHolder.productPickList.setOnItemSelectedListener(new OnProductPickListItemSelectedListener());
+         carrierProductHolder.productPickList.setOnItemSelectedListener(new OnCarrierProductPickListItemSelectedListener());
       }
       if (actionType == DialogActionType.ADD) {
          setUnitToSegmentedToggleButtonGroup(carrierProductHolder.productUnit, productMixForm,
@@ -1006,7 +992,7 @@ public class ProductMixDialog extends DialogView implements DialogHandlerListene
       mixProductsLayout.addView(productElement);
    }
 
-   private class OnProductPickListItemSelectedListener implements PickListEditable.OnItemSelectedListener {
+   private class OnCarrierProductPickListItemSelectedListener implements PickListEditable.OnItemSelectedListener {
       @Override
       public void onItemSelected(AdapterView<?> adapterView, View view, int position, long id, boolean fromUser) {
          carrierProductHolder.productAmountStepper.setOnAdjustableBarChangedListener(new ExtendedOnAdjustableBarChangedListener() {
@@ -1023,9 +1009,10 @@ public class ProductMixDialog extends DialogView implements DialogHandlerListene
          if (position >= 0) {
             Product product = getProductByName(carrierProductHolder.productPickList.getItemByPosition(position).getValue());
             carrierProductHolder.productPickList.setTag(product);
-            ProductMixRecipe recipe = new ProductMixRecipe();
-            recipe.setProduct(product);
-            carrierProductHolder.currentRecipe = recipe;
+            if (carrierProductHolder.currentRecipe == null) {
+               carrierProductHolder.currentRecipe = new ProductMixRecipe();
+            }
+            carrierProductHolder.currentRecipe.setProduct(product);
             if (product != null) {
                setUnitToSegmentedToggleButtonGroup(carrierProductHolder.productUnit, product.getForm(),
                      ProductHelperMethods.queryAmountMeasurementSystemForProductForm(productMixForm, getContext()), ProductDisplayItem.AMOUNT);
@@ -1347,9 +1334,6 @@ public class ProductMixDialog extends DialogView implements DialogHandlerListene
                log.warn("Could not Remove " + productElement);
             }
             ProductMixRecipe recipe = productElement.currentRecipe;
-            if (recipe != null) {
-               recipeDeleteList.add(recipe);
-            }
             mixProductsLayout.removeView(productElement.elementView);
             updateProductViewList();
             if (recipe != null) {
@@ -1468,6 +1452,20 @@ public class ProductMixDialog extends DialogView implements DialogHandlerListene
    }
 
    /**
+    * This method prevents scrolling issues!
+    * Whenever setErrorIndicator is called and the view it is called for is in focus,
+    * it will be scrolled to the position of this view. Thus this method prevents
+    * assigning the errorIndicator having the same one already assigned.
+    * @param errorIndicator New error indicator state
+    */
+   private void setProductMixNameErrorIndicator(Widget.ErrorIndicator errorIndicator) {
+      if (productMixNameErrorIndicator != errorIndicator) {
+         productMixNameErrorIndicator = errorIndicator;
+         productMixNameInputField.setErrorIndicator(errorIndicator);
+      }
+   }
+
+   /**
     * If all required data will set, the "add" button will enable
     */
    @Override
@@ -1477,7 +1475,7 @@ public class ProductMixDialog extends DialogView implements DialogHandlerListene
       if (productMixName.isEmpty()) {
          //disallow empty names (no indicator)
          this.setFirstButtonEnabled(false);
-         productMixNameInputField.setErrorIndicator(Widget.ErrorIndicator.NONE);
+         setProductMixNameErrorIndicator(Widget.ErrorIndicator.INVALID);
          return;
       }
       else {
@@ -1488,11 +1486,11 @@ public class ProductMixDialog extends DialogView implements DialogHandlerListene
          if (!ProductNameValidator.getInstance().productNameIsUsable(productMixName, productId)) {
             //disallow non unique names
             this.setFirstButtonEnabled(false);
-            productMixNameInputField.setErrorIndicator(Widget.ErrorIndicator.NEEDS_CHECKING);
+            setProductMixNameErrorIndicator(Widget.ErrorIndicator.NEEDS_CHECKING);
             return;
          }
          else {
-            productMixNameInputField.setErrorIndicator(Widget.ErrorIndicator.NONE);
+            setProductMixNameErrorIndicator(Widget.ErrorIndicator.NONE);
          }
       }
       if (!dialogUsageAndCropTypeHandler.isValidItemSelected()) {
@@ -1652,7 +1650,7 @@ public class ProductMixDialog extends DialogView implements DialogHandlerListene
 
    private void unregisterListener() {
       try {
-         vipService.unregister(TAG);
+         vipService.unregister(identifier);
       }
       catch (RemoteException e) {
          log.error("failed");

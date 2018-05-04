@@ -27,7 +27,7 @@
         <item>FARM</item>
         <item>FIELD</item>
         <item>TASK</item>
-        <item>NOTE</item>
+        <!--item>NOTE</item-->
         <item>LANDMARK</item>
         <item>BOUNDARY</item>
         <item>RX</item>
@@ -37,7 +37,7 @@
         <item>GUIDANCE_PATTERN</item>
     </string-array>
     <string-array name="copy">
-        <item>VEHICLE</item>
+        <!--item>VEHICLE</item>
         <item>IMPLEMENT</item>
         <item>VEHICLE_IMPLEMENT</item>
         <item>VEHICLE_IMPLEMENT_CONFIG</item>
@@ -62,7 +62,7 @@
         <item>PRODUCT_MIX</item>
         <item>GUIDANCE_CONFIGURATION</item>
         <item>GUIDANCE_GROUP</item>
-        <item>GUIDANCE_PATTERN</item>
+        <item>GUIDANCE_PATTERN</item-->
     </string-array>
 
 </resources>

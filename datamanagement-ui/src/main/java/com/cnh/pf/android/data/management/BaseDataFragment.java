@@ -56,13 +56,13 @@ import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
 
+import pl.polidea.treeview.InMemoryTreeNode;
 import pl.polidea.treeview.InMemoryTreeStateManager;
 import pl.polidea.treeview.NodeAlreadyInTreeException;
+import pl.polidea.treeview.SortableChildrenTree;
 import pl.polidea.treeview.TreeBuilder;
 import pl.polidea.treeview.TreeStateManager;
 import pl.polidea.treeview.TreeViewList;
-import pl.polidea.treeview.InMemoryTreeNode;
-import pl.polidea.treeview.SortableChildrenTree;
 import roboguice.config.DefaultRoboModule;
 import roboguice.event.EventListener;
 import roboguice.event.EventManager;
@@ -104,6 +104,7 @@ public abstract class BaseDataFragment extends RoboFragment implements IDataMana
    protected ImageButton refreshBtn;
 
    protected DisabledOverlay disabled = null;
+   protected DisabledOverlay disconnected = null;
 
    protected TreeStateManager<ObjectGraph> manager;
    protected TreeBuilder<ObjectGraph> treeBuilder;
@@ -112,6 +113,9 @@ public abstract class BaseDataFragment extends RoboFragment implements IDataMana
    protected boolean cancelled;
    protected boolean hasLocalSource = false;
    protected ProgressDialog updatingProg;
+   protected ProgressDialog deletingProg;
+
+   protected static boolean isConnectedToPcm = false;
 
    /** Current session */
    protected volatile DataManagementSession session = null;
@@ -205,17 +209,17 @@ public abstract class BaseDataFragment extends RoboFragment implements IDataMana
          hasLocalSource = false;
       }
       // both case will trigger a discovery, if there is no session, create a new one
-      if(session == null){
-          session = createSession();
+      if (session == null) {
+         session = createSession();
       }
       //only in initial or discovery, will trigger a discovery. like perform will also trigger a new datasource start
-      if(session != null && (session.getSessionOperation().equals(SessionOperation.DISCOVERY)||session.getSessionOperation().equals(SessionOperation.INITIAL))) {
+      if (session != null && (session.getSessionOperation().equals(SessionOperation.DISCOVERY) || session.getSessionOperation().equals(SessionOperation.INITIAL))) {
          configSession(session);
          progressUI();
          // if operation is in progress, do nothing since when operation complete, it will trigger a discovery
          sessionOperate(session, SessionOperation.DISCOVERY);
       }
-
+      updateConnectionStateOverlay();
       return;
    }
 
@@ -245,7 +249,8 @@ public abstract class BaseDataFragment extends RoboFragment implements IDataMana
       View layout = inflater.inflate(R.layout.import_layout, container, false);
       LinearLayout leftPanel = (LinearLayout) layout.findViewById(R.id.left_panel_wrapper);
       inflateViews(inflater, leftPanel);
-      disabled = (DisabledOverlay)layout.findViewById(R.id.disabled_overlay);
+      disabled = (DisabledOverlay) layout.findViewById(R.id.disabled_overlay);
+      disconnected = (DisabledOverlay) layout.findViewById(R.id.disconnected_overlay);
       return layout;
    }
 
@@ -253,6 +258,8 @@ public abstract class BaseDataFragment extends RoboFragment implements IDataMana
    public void onViewCreated(View view, Bundle savedInstanceState) {
       super.onViewCreated(view, savedInstanceState);
       disabled.setMode(DisabledOverlay.MODE.LOADING);
+      disconnected.setMode(DisabledOverlay.MODE.DISCONNECTED);
+      disconnected.setVisibility(View.GONE);
       selectAllBtn.setOnClickListener(new View.OnClickListener() {
          @Override
          public void onClick(View v) {
@@ -262,7 +269,7 @@ public abstract class BaseDataFragment extends RoboFragment implements IDataMana
       refreshBtn.setOnClickListener(new View.OnClickListener() {
          @Override
          public void onClick(View v) {
-            if(session == null){
+            if (session == null) {
                session = createSession();
             }
             configSession(session);
@@ -302,17 +309,19 @@ public abstract class BaseDataFragment extends RoboFragment implements IDataMana
       globalEventManager.registerObserver(ConnectionEvent.class, connectionListener);
       globalEventManager.registerObserver(DataServiceConnectionImpl.ErrorEvent.class, errorListener);
       globalEventManager.registerObserver(DataServiceConnectionImpl.ViewChangeEvent.class, viewChangeListener);
+      updateConnectionStateOverlay();
       if (dataServiceConnection.isConnected()) {
          getDataManagementService().register(NAME, BaseDataFragment.this);
-         if (session == null){
-             session = createSession();
+         if (session == null) {
+            session = createSession();
          }
          configSession(session);
          treeViewList.setVisibility(View.GONE);
          if (hasLocalSource) {
             disabled.setVisibility(View.GONE);
             treeProgress.setVisibility(View.VISIBLE);
-         } else {
+         }
+         else {
             disabled.setVisibility(View.VISIBLE);
             disabled.setMode(DisabledOverlay.MODE.DISCONNECTED);
             return;
@@ -321,6 +330,19 @@ public abstract class BaseDataFragment extends RoboFragment implements IDataMana
 
       }
       ((DataManagementActivity) getActivity()).hideSubheader();
+   }
+
+   @Override
+   public void setMenuVisibility(boolean menuVisible) {
+      super.setMenuVisibility(menuVisible);
+      //Workaround for disconnected overlay:
+      //As onResume gets fired before the fragment is visible this method is required to be able to update
+      //the visibility of the overlay if the connection is established between onResume and the fragment
+      //getting visible. Without this lines the first shown fragment will always be disconnected!
+      //Toggling other fragments will show the proper connected overlay.
+      if (menuVisible == true) {
+         updateConnectionStateOverlay();
+      }
    }
 
    @Override
@@ -353,6 +375,9 @@ public abstract class BaseDataFragment extends RoboFragment implements IDataMana
       selectAllBtn.setEnabled(enable);
    }
 
+   /**
+    * Handler for error operation
+    */
    protected void onErrorOperation() {
 
    }
@@ -374,18 +399,19 @@ public abstract class BaseDataFragment extends RoboFragment implements IDataMana
                else {
                   onOtherSessionUpdate(eventSession);
                }
-               if(updatingProg != null){
+               if (updatingProg != null) {
                   updatingProg.dismiss();
+               }
+               if(deletingProg != null){
+                  deletingProg.dismiss();
                }
                //if it is import discovery, won't popup the dialog
                MediumDevice sessionSource = eventSession.getSource();
                if (null != sessionSource) {
                   Datasource.LocationType itemType = sessionSource.getType();
-                  if ((itemType.equals(Datasource.LocationType.USB_PHOENIX)
-                          || itemType.equals(Datasource.LocationType.USB_HAWK)
-                          || itemType.equals(Datasource.LocationType.USB_FRED)
-                          || itemType.equals(Datasource.LocationType.USB_DESKTOP_SW))
-                          && !eventSession.getSessionOperation().equals(SessionOperation.DISCOVERY)) {
+                  if ((itemType.equals(Datasource.LocationType.USB_PHOENIX) || itemType.equals(Datasource.LocationType.USB_HAWK)
+                        || itemType.equals(Datasource.LocationType.USB_FRED) || itemType.equals(Datasource.LocationType.USB_DESKTOP_SW))
+                        && !eventSession.getSessionOperation().equals(SessionOperation.DISCOVERY)) {
                      DialogView errorDialog = new ErrorDialog(getActivity(), event);
                      errorDialog.setOnButtonClickListener(new DialogViewInterface.OnButtonClickListener() {
                         @Override
@@ -402,27 +428,59 @@ public abstract class BaseDataFragment extends RoboFragment implements IDataMana
       }
    };
 
+   /**
+    * Resumes or stops UI
+    * @param connected New state of the connection
+    */
+   private void onConnectionChanged(boolean connected) {
+      if (connected) {
+         logger.debug("Register DM-Service");
+         getDataManagementService().register(NAME, BaseDataFragment.this);
+         // when connect to backend, start a new query, if session is null, create a new one
+         if (getSession() == null) {
+            progressUI();
+            setSession(createSession());
+         }
+         sessionOperate(getSession(), SessionOperation.DISCOVERY);
+      }
+      else {
+         logger.debug("Unregister DM-Service");
+         //Disable all buttons for now
+         enableButtons(false);
+         getDataManagementService().unregister(NAME);
+      }
+   }
+
    /** Called when a change in connection to backend happens */
    EventListener connectionListener = new EventListener<ConnectionEvent>() {
       @Override
       public void onEvent(ConnectionEvent event) {
-         logger.debug("onConnected");
-         if (event.isConnected()) {
-            getDataManagementService().register(NAME, BaseDataFragment.this);
-            // when connect to backend, start a new query, if session is null, create a new one
-            if(getSession() == null){
-               progressUI();
-               setSession(createSession());
-            }
-            sessionOperate(getSession(), SessionOperation.DISCOVERY);
-         }
-         else {
-            //Disable all buttons for now
-            enableButtons(false);
-            getDataManagementService().unregister(NAME);
-         }
+         boolean isConnected = event.isConnected();
+         logger.debug("onConnected: {}", isConnected);
+         onConnectionChanged(isConnected);
+         //TODO: As soon as mediator connection is reliable (defects pfhmi-dev-defects-10196 and pfhmi-dev-defects-8398 are solved)
+         //the following line is to be uncommented, and
+         //updateConnectionStateInUI(isConnected);
       }
    };
+
+   /**
+    * Updates UI of fragment to represent new connection state of pcm to display
+    * @param connected Connection state to be represented (true: connected, false: disconnected)
+    */
+   public void updateConnectionStateInUI(boolean connected) {
+      setIsConnectedToPcm(connected);
+      if (this.isVisible()) {
+         logger.debug("updateConnectionStateInUI to {}", connected);
+         getActivity().runOnUiThread(new Runnable() {
+            @Override
+            public void run() {
+               updateConnectionStateOverlay();
+               onConnectionChanged(isConnectedToPcm);
+            }
+         });
+      }
+   }
 
    /** Called when group membership changes */
    EventListener viewChangeListener = new EventListener<DataServiceConnectionImpl.ViewChangeEvent>() {
@@ -436,19 +494,24 @@ public abstract class BaseDataFragment extends RoboFragment implements IDataMana
          });
       }
    };
+
    /**reset UI*/
-   protected void idleUI(){
+   protected void idleUI() {
       if (hasLocalSource) {
          refreshBtn.setVisibility(View.VISIBLE);
          disabled.setVisibility(View.GONE);
          treeProgress.setVisibility(View.GONE);
-      } else {
+      }
+      else {
          disabled.setVisibility(View.VISIBLE);
          disabled.setMode(DisabledOverlay.MODE.DISCONNECTED);
       }
    }
 
-   protected void postTreeUI(){
+   /**
+    * Show Tree-UI
+    */
+   protected void postTreeUI() {
       logger.debug("postTreeUI()");
       if (hasLocalSource) {
          startText.setVisibility(View.GONE);
@@ -456,28 +519,50 @@ public abstract class BaseDataFragment extends RoboFragment implements IDataMana
          disabled.setVisibility(View.GONE);
          treeProgress.setVisibility(View.GONE);
          treeViewList.setVisibility(View.VISIBLE);
-      } else {
+      }
+      else {
          disabled.setVisibility(View.VISIBLE);
          disabled.setMode(DisabledOverlay.MODE.DISCONNECTED);
       }
    }
-   protected void progressUI(){
 
+   /**
+    * Show Progress-UI
+    */
+   protected void progressUI() {
       if (hasLocalSource) {
          refreshBtn.setVisibility(View.GONE);
          disabled.setVisibility(View.GONE);
          treeViewList.setVisibility(View.GONE);
          treeProgress.setVisibility(View.VISIBLE);
-      } else {
+      }
+      else {
          disabled.setVisibility(View.VISIBLE);
          disabled.setMode(DisabledOverlay.MODE.DISCONNECTED);
       }
    }
+
+   /**
+    * Update disconnected state overlay
+    */
+   protected void updateConnectionStateOverlay() {
+      if (isConnectedToPcm) {
+         //is online
+         logger.debug("Hiding Disconnected overlay!");
+         disconnected.setVisibility(View.GONE);
+      }
+      else {
+         //is offline
+         logger.debug("Showing Disconnected overlay!");
+         disconnected.setVisibility(View.VISIBLE);
+      }
+   }
+
    /**
     * Create an new Session for operation
     * @return DataManagementSession a new data session
     */
-   public DataManagementSession createSession(){
+   public DataManagementSession createSession() {
       return null;
    }
 
@@ -485,19 +570,20 @@ public abstract class BaseDataFragment extends RoboFragment implements IDataMana
     * Config an Session for operation
     *
     */
-   public void configSession(DataManagementSession session){
+   public void configSession(DataManagementSession session) {
 
    }
+
    /**
     * Operation over session
     * @param  session session to operate
     */
-   public void sessionOperate(DataManagementSession session, DataManagementSession.SessionOperation operation){
-      logger.trace("sessionOperate(): operation {} ",operation);
-      if(session != null && !session.isProgress()) {
+   public void sessionOperate(DataManagementSession session, DataManagementSession.SessionOperation operation) {
+      logger.trace("sessionOperate(): operation {} ", operation);
+      if (session != null && !session.isProgress()) {
          getDataManagementService().processOperation(session, operation);
       }
-      else{
+      else {
          logger.trace("sessionOperate(): just return");
       }
 
@@ -507,7 +593,7 @@ public abstract class BaseDataFragment extends RoboFragment implements IDataMana
     * session have a udpated status
     * @param  session session that have an update
     */
-   public void sessionUpdated(DataManagementSession session){
+   public void sessionUpdated(DataManagementSession session) {
       DataManagementSession.SessionOperation op = session.getSessionOperation();
       logger.debug("sessionUpdated() by {}", op.name());
       if (op.equals(DataManagementSession.SessionOperation.DISCOVERY) && !session.isProgress()) {
@@ -533,12 +619,15 @@ public abstract class BaseDataFragment extends RoboFragment implements IDataMana
       return operations;
    }
 
+   /**
+    * Create tree-adapter if no tree adapter is set
+    */
    protected void createTreeAdapter() {
-      if(treeAdapter == null) {
+      if (treeAdapter == null) {
          treeAdapter = new ObjectTreeViewAdapter(getActivity(), manager, 1) {
             @Override
             protected boolean isGroupableEntity(ObjectGraph node) {
-               return TreeEntityHelper.groupables.containsKey(node.getType()) || node.getParent() == null;
+               return TreeEntityHelper.obj2group.containsKey(node.getType()) || node.getParent() == null;
             }
 
             @Override
@@ -558,20 +647,23 @@ public abstract class BaseDataFragment extends RoboFragment implements IDataMana
       }
    }
 
+   /**
+    * Initialize tree
+    */
    protected void initializeTree() {
       logger.debug("initializeTree");
       //Discovery happened
       enableButtons(true);
-      if(manager == null) {
+      if (manager == null) {
          manager = new InMemoryTreeStateManager<ObjectGraph>();
       }
-      else{
+      else {
          manager.clear();
       }
-      if(treeBuilder == null) {
+      if (treeBuilder == null) {
          treeBuilder = new TreeBuilder<ObjectGraph>(manager);
       }
-      else{
+      else {
          treeBuilder.clear();
       }
       List<ObjectGraph> data = session != null && session.getObjectData() != null ? session.getObjectData() : new ArrayList<ObjectGraph>();
@@ -585,7 +677,7 @@ public abstract class BaseDataFragment extends RoboFragment implements IDataMana
       treeViewList.removeAllViewsInLayout();
       treeViewList.setVisibility(View.VISIBLE);//this is for UT
       treeViewList.setAdapter(treeAdapter);
-      treeAdapter.selectAll(treeViewList,false);//to clean all the previous selection
+      treeAdapter.selectAll(treeViewList, false);//to clean all the previous selection
       manager.collapseChildren(null);
       treeAdapter.setOnTreeItemSelectedListener(new SelectionTreeViewAdapter.OnTreeItemSelectedListener() {
          @Override
@@ -596,21 +688,47 @@ public abstract class BaseDataFragment extends RoboFragment implements IDataMana
       });
    }
 
+   protected void addToTreeByBatch(List<ObjectGraph> objectGraphs){
+      if(objectGraphs!=null && !objectGraphs.isEmpty()){
+         for(ObjectGraph o: objectGraphs){
+            addToTree(o.getParent(), o);
+         }
+      }
+   }
+
    protected void addToTree(ObjectGraph parent, ObjectGraph object) {
       try {
          //Check if entity can be grouped
-         if (TreeEntityHelper.groupables.containsKey(object.getType()) || object.getParent() == null) {
+         if (TreeEntityHelper.obj2group.containsKey(object.getType()) || object.getParent() == null) {
             GroupObjectGraph group = null;
             for (ObjectGraph child : manager.getChildren(parent)) { //find the group node
-               if (child instanceof GroupObjectGraph && child.getType().equals(object.getType())) {
-                  group = (GroupObjectGraph) child;
-                  break;
+               if (child instanceof GroupObjectGraph){
+                  if(TreeEntityHelper.obj2group.containsKey(object.getType()) && child.getType().equals(TreeEntityHelper.obj2group.get(object.getType()))){
+                     group = (GroupObjectGraph) child;
+                     break;
+                  }
+                  else if(TreeEntityHelper.group2group.containsKey(TreeEntityHelper.obj2group.get(object.getType()))){
+                     for(ObjectGraph cchild: manager.getChildren(child)){
+                        if(child instanceof GroupObjectGraph && child.getType().equals(TreeEntityHelper.group2group.get(TreeEntityHelper.obj2group.get(object.getType())))){
+                           group = (GroupObjectGraph)cchild;
+                           break;
+                        }
+                     }
+                  }
                }
             }
             if (group == null) { //if group node doesn't exist we gotta make it
-               String name = TreeEntityHelper.getGroupName(getActivity(), object.getType());
-               group = new GroupObjectGraph(null, object.getType(), name, null, parent);
-               treeBuilder.addRelation(parent, group);
+               if(TreeEntityHelper.group2group.containsKey(TreeEntityHelper.obj2group.get(object.getType()))){
+                  GroupObjectGraph ggroup = new GroupObjectGraph(null, TreeEntityHelper.group2group.get(TreeEntityHelper.obj2group.get(object.getType())), TreeEntityHelper.getGroupName(getActivity(), TreeEntityHelper.group2group.get(TreeEntityHelper.obj2group.get(object.getType()))),null, parent);
+                  group = new GroupObjectGraph(null, TreeEntityHelper.obj2group.get(object.getType()), TreeEntityHelper.getGroupName(getActivity(), TreeEntityHelper.obj2group.get(object.getType())), null, ggroup);
+                  treeBuilder.addRelation(parent,ggroup);
+                  treeBuilder.addRelation(ggroup, group);
+               }
+               else{
+                  group = new GroupObjectGraph(null, TreeEntityHelper.obj2group.get(object.getType()), TreeEntityHelper.getGroupName(getActivity(), TreeEntityHelper.obj2group.get(object.getType())), null, parent);
+                  treeBuilder.addRelation(parent,group);
+               }
+
             }
             treeBuilder.addRelation(group, object);
          }
@@ -621,7 +739,8 @@ public abstract class BaseDataFragment extends RoboFragment implements IDataMana
          for (ObjectGraph child : object.getChildren()) {
             addToTree(object, child);
          }
-      } catch(NodeAlreadyInTreeException e) {
+      }
+      catch (NodeAlreadyInTreeException e) {
          logger.warn("Caught NodeAlreadyInTree exception", e);
       }
    }
@@ -660,5 +779,13 @@ public abstract class BaseDataFragment extends RoboFragment implements IDataMana
 
    protected void setCancelled(boolean cancelled) {
       this.cancelled = cancelled;
+   }
+
+   /**
+    * Set connection state to BaseDataFragment classes
+    * @param isConnectedToPcm Connection state of pcm to display (true: connected, false: not connected)
+    */
+   protected static void setIsConnectedToPcm(boolean isConnectedToPcm) {
+      BaseDataFragment.isConnectedToPcm = isConnectedToPcm;
    }
 }
