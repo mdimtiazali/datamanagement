@@ -7,19 +7,20 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.AdapterView;
-import android.widget.Button;
 import android.widget.ImageButton;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import com.cnh.android.dialog.DialogViewInterface;
 import com.cnh.android.pf.widget.view.DisabledOverlay;
 import com.cnh.android.widget.activity.TabActivity;
 import com.cnh.jgroups.Datasource;
 import com.cnh.jgroups.ObjectGraph;
 import com.cnh.jgroups.Operation;
 import com.cnh.pf.android.data.management.adapter.ObjectTreeViewAdapter;
+import com.cnh.pf.android.data.management.dialog.DeleteDialog;
 import com.cnh.pf.android.data.management.dialog.EditDialog;
 import com.cnh.pf.android.data.management.graph.GroupObjectGraph;
 import com.cnh.pf.data.management.DataManagementSession;
@@ -30,14 +31,16 @@ import org.jgroups.util.RspList;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
-
 import pl.polidea.treeview.ImplicitSelectLinearLayout;
 import pl.polidea.treeview.TreeNodeInfo;
+
+import java.util.List;
+import java.util.Set;
+import java.util.ArrayList;
+import java.util.HashSet;
+
+import java.util.Arrays;
+
 
 /**
  * Provide data management Tab implementation
@@ -88,6 +91,7 @@ public class ManageFragment extends BaseDataFragment {
                      updatingProg = new ProgressDialog(getActivity(),ProgressDialog.THEME_HOLO_LIGHT);
                      updatingProg.setTitle(R.string.edit_update_title);
                   }
+                  setHeaderAndDeleteButton(false);
                   updatingProg.show();
                }
             });
@@ -119,7 +123,46 @@ public class ManageFragment extends BaseDataFragment {
       disabled = (DisabledOverlay) layout.findViewById(R.id.disabled_overlay);
       header = (TextView) layout.findViewById(R.id.path_tv);
       delBtn = (ImageButton) layout.findViewById(R.id.dm_delete_button);
-      if (delBtn != null) delBtn.setEnabled(false);
+      delBtn.setOnClickListener(new View.OnClickListener() {
+         @Override
+         public void onClick(View v) {
+            final DeleteDialog delDialog = new DeleteDialog(getActivity(),treeAdapter.getSelectionMap().size());
+            delDialog.setOnButtonClickListener(new DialogViewInterface.OnButtonClickListener() {
+               @Override
+               public void onButtonClick(DialogViewInterface dialogViewInterface, int i) {
+                  if(i == DeleteDialog.BUTTON_FIRST){
+                     getSession().setData(null);
+                     Set<ObjectGraph> set = getTreeAdapter().getSelectedRootNodes();
+                     List<ObjectGraph> filtedList = new ArrayList<ObjectGraph>(set.size());
+                     for(ObjectGraph o: set){
+                        if(!TreeEntityHelper.isGroupType(o.getType())){
+                           filtedList.add(o);
+                        }
+                     }
+                     if(!filtedList.isEmpty()){
+                        session.setObjectData(null);
+                        session.setData(new ArrayList<Operation>());
+                        for (ObjectGraph obj : filtedList) {
+                           Operation operation = new Operation(obj, null);
+                           operation.setStatus(Operation.Status.NOT_DONE);
+                           session.getData().add(operation);
+                        }
+                        setSession(getDataManagementService().processOperation(getSession(), DataManagementSession.SessionOperation.DELETE));
+                        if(deletingProg == null){
+                           deletingProg = new ProgressDialog(getActivity(),ProgressDialog.THEME_HOLO_LIGHT);
+                           deletingProg.setTitle(R.string.delete_progress_title);
+                        }
+                        deletingProg.show();
+                     }
+                     else {
+                        Toast.makeText(getActivity(), getResources().getString(R.string.no_data_for_delete), Toast.LENGTH_LONG).show();
+                     }
+                  }
+               }
+            });
+            ((TabActivity) getActivity()).showPopup(delDialog, true);
+         }
+      });
       return layout;
    }
 
@@ -207,6 +250,20 @@ public class ManageFragment extends BaseDataFragment {
          if (getSession().getSessionOperation().equals(DataManagementSession.SessionOperation.DISCOVERY)) {
             idleUI();
          }
+         else if(getSession().getSessionOperation().equals(DataManagementSession.SessionOperation.UPDATE)){
+            if (updatingProg != null) {
+               updatingProg.dismiss();
+            }
+            Toast.makeText(getActivity(), getString(R.string.update_error_notice), Toast.LENGTH_LONG).show();
+         }
+         else if(getSession().getSessionOperation().equals(DataManagementSession.SessionOperation.DELETE)){
+            if (deletingProg != null) {
+               deletingProg.dismiss();
+            }
+            setHeaderAndDeleteButton(false);
+            Toast.makeText(getActivity(), getString(R.string.delete_error_notice), Toast.LENGTH_LONG).show();
+            sessionOperate(session, DataManagementSession.SessionOperation.DISCOVERY);
+         }
          else {
             logger.debug("Other operations when error");
             sessionInit(getSession());
@@ -238,6 +295,35 @@ public class ManageFragment extends BaseDataFragment {
             }
          }
       }
+      else if (getSession().getSessionOperation().equals(DataManagementSession.SessionOperation.DELETE)) {
+         if (getSession().getResult() != null) {
+            if (deletingProg != null) {
+               deletingProg.dismiss();
+            }
+            RspList<Process> rsps = session.getResults();
+            List<ObjectGraph> objectGraphs = new ArrayList<ObjectGraph>(rsps.size());
+            List<ObjectGraph> unprocessedObjects = new ArrayList<ObjectGraph>(rsps.size());
+            for (Process process : rsps.getResults()) {
+               if(process.getOperations() != null) {
+                  for (Operation operation : process.getOperations()) {
+                     if (operation != null && operation.getStatus() == Operation.Status.DONE) {
+                        objectGraphs.add(operation.getData());
+                        if(operation.getUnprocessedData() != null){
+                           unprocessedObjects.add(operation.getUnprocessedData());
+                        }
+                     }
+                  }
+               }
+            }
+            manager.removeNodesRecursively(objectGraphs);
+            treeAdapter.removeObjectGraphs(objectGraphs);
+            if(!unprocessedObjects.isEmpty()){
+               addToTreeByBatch(unprocessedObjects);
+               treeAdapter.addObjectGraphs(unprocessedObjects);
+            }
+            setHeaderAndDeleteButton(false);
+         }
+      }
    }
 
    @Override
@@ -246,16 +332,25 @@ public class ManageFragment extends BaseDataFragment {
       return session.equals(getSession());
    }
 
+   private void setHeaderAndDeleteButton(boolean en){
+      if(en){
+         delBtn.setEnabled(true);
+         int count = treeAdapter.getSelectionMap().size();
+         header.setText(getResources().getQuantityString(R.plurals.tab_mng_selected_items_header, count, count));
+      }
+      else{
+         delBtn.setEnabled(false);
+         header.setText(getResources().getString(R.string.tab_mng_none_header));
+      }
+   }
    @Override
    public void onTreeItemSelected() {
       super.onTreeItemSelected();
       if (treeAdapter.getSelectionMap().size() > 0) {
-         delBtn.setEnabled(true);
-         header.setText(getResources().getString(R.string.tab_mng_items_header, treeAdapter.getSelectionMap().size()));
+         setHeaderAndDeleteButton(true);
       }
       else {
-         delBtn.setEnabled(false);
-         header.setText(getResources().getString(R.string.tab_mng_none_header));
+         setHeaderAndDeleteButton(false);
       }
    }
 
@@ -281,7 +376,7 @@ public class ManageFragment extends BaseDataFragment {
 
             @Override
             protected boolean isGroupableEntity(ObjectGraph node) {
-               return TreeEntityHelper.groupables.containsKey(node.getType()) || node.getParent() == null;
+               return TreeEntityHelper.obj2group.containsKey(node.getType()) || node.getParent() == null;
             }
 
             @Override

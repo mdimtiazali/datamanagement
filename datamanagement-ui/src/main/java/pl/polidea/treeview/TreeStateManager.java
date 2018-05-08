@@ -87,14 +87,21 @@ public interface TreeStateManager<T> extends Serializable {
    void addAfterChild(T parent, T newChild, T afterChild);
 
    /**
-    * Removes the node and all children from the tree.
+    * Removes a batch nodes and all their children from the tree.
     * 
+    * @param ids
+    *            ids the nodes to remove
+    */
+   void removeNodesRecursively(List<T> ids);
+
+   /**
+    * Removes the node and all children from the tree.
+    *
     * @param id
     *            id of the node to remove or null if all nodes are to be
     *            removed.
     */
    void removeNodeRecursively(T id);
-
    /**
     * Expands all children of the node.
     * 
