@@ -10,12 +10,13 @@
 package com.cnh.pf.android.data.management;
 
 import static com.cnh.pf.android.data.management.utility.UtilityHelper.NEGATIVE_BINARY_ERROR;
-
+import android.content.Context;
 import android.content.res.Resources;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.RemoteException;
 import android.view.DragEvent;
+import android.view.Gravity;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.widget.AdapterView;
@@ -28,11 +29,13 @@ import android.widget.Toast;
 import com.cnh.android.dialog.DialogViewInterface;
 import com.cnh.android.dialog.TextDialogView;
 import com.cnh.android.pf.widget.view.DisabledOverlay;
+import com.cnh.android.pf.widget.controls.PopoverWindowInfoView;
 import com.cnh.android.widget.activity.TabActivity;
 import com.cnh.android.widget.control.PickList;
 import com.cnh.android.widget.control.PickListAdapter;
 import com.cnh.android.widget.control.PickListEditable;
 import com.cnh.android.widget.control.PickListItem;
+import com.cnh.android.widget.control.Popover;
 import com.cnh.android.widget.control.ProgressBarView;
 import com.cnh.jgroups.Datasource;
 import com.cnh.jgroups.ObjectGraph;
@@ -63,6 +66,8 @@ import java.io.File;
 
 
 import roboguice.inject.InjectView;
+import static com.cnh.pf.model.constants.stringsConstants.BRAND_CASE_IH;
+import static com.cnh.pf.model.constants.stringsConstants.BRAND_NEW_HOLLAND;
 
 /**
  * Export Tab Fragment, handles export to external mediums {USB, External Display}.
@@ -94,6 +99,10 @@ public class ExportFragment extends BaseDataFragment {
    ProgressBarView progressBar;
    @InjectView(R.id.operation_name)
    TextView operationName;
+   @InjectView(R.id.dest_info_btn)
+   ImageButton destInfoButton;
+   @InjectView(R.id.format_info_btn)
+   ImageButton formatInfoButton;
 
    private int dragAcceptColor;
    private int dragRejectColor;
@@ -217,10 +226,48 @@ public class ExportFragment extends BaseDataFragment {
             return false;
          }
       });
+      destInfoButton.setOnClickListener(new View.OnClickListener() {
+         @Override
+         public void onClick(View v) {
+            destInfoButtonClicked();
+         }
+      });
+      formatInfoButton.setOnClickListener(new View.OnClickListener() {
+         @Override
+         public void onClick(View v) {
+            formatInfoButtonClicked();
+         }
+      });
 
       exportFinishedStatePanel.setVisibility(View.GONE);
       startText.setVisibility(View.GONE);
       operationName.setText(R.string.exporting_string);
+   }
+
+   private void destInfoButtonClicked() {
+      Context popoverContext = getActivity().getApplicationContext();
+      String destInfoString = null;
+      String defaultMakeString = getResources().getString(R.string.unknown_vehicle);
+      String vehicleBrand = vipDataHandler.getMakeOfVehicle(defaultMakeString);
+      if (vehicleBrand.equals(BRAND_CASE_IH)) {
+         destInfoString = getString(R.string.case_destination_info);
+      }
+      else if (vehicleBrand.equals(BRAND_NEW_HOLLAND)) {
+         destInfoString = getString(R.string.new_holland_destination_info);
+      }
+
+      PopoverWindowInfoView infoPopupWindow = new PopoverWindowInfoView(popoverContext, 550, 370, Popover.Style.LIGHT_INFO);
+      infoPopupWindow.setDescription(destInfoString);
+      infoPopupWindow.setTitle(getString(R.string.destination_title));
+      infoPopupWindow.showAt(destInfoButton, Gravity.END, Popover.ArrowPosition.LEFT_TOP);
+   }
+
+   private void formatInfoButtonClicked() {
+      Context popoverContext = getActivity().getApplicationContext();
+      PopoverWindowInfoView infoPopupWindow = new PopoverWindowInfoView(popoverContext, 550, 455, Popover.Style.LIGHT_INFO);
+      infoPopupWindow.setDescription(getString(R.string.format_description));
+      infoPopupWindow.setTitle(getString(R.string.format_description_title));
+      infoPopupWindow.showAt(formatInfoButton, Gravity.END, Popover.ArrowPosition.LEFT_TOP);
    }
 
    @Override
