@@ -90,10 +90,18 @@ public interface DataServiceConnectionImpl {
       private DataError type;
 
       public enum DataError {
-         NO_SOURCE_DATASOURCE(R.string.error_no_source, "No Source Datasource"), NO_DATA(R.string.error_no_source, "No DATA"), NO_TARGET_DATASOURCE(R.string.error_no_target,
-               "No Target Datasource"), CALCULATE_CONFLICT_ERROR(R.string.error_calculate_conflicts,
-                     "Calculate Conflict Error"), CALCULATE_TARGETS_ERROR(R.string.error_calculate_operations, "Calculate Targets Error"), DISCOVERY_ERROR(R.string.error_discovery,
-                           "Discovery Error"), PERFORM_ERROR(R.string.error_perform_ops, "Perform Operations Error"), NEED_DATA_PATH(R.string.error_no_source, "Please Specify A Valid Data Path To Start");
+         NO_SOURCE_DATASOURCE(R.string.error_no_source, "No Source Datasource"),
+         NO_DATA(R.string.error_no_source, "No DATA"),
+         NO_TARGET_DATASOURCE(R.string.error_no_target,
+               "No Target Datasource"),
+         CALCULATE_CONFLICT_ERROR(R.string.error_calculate_conflicts,
+                     "Calculate Conflict Error"),
+         CALCULATE_TARGETS_ERROR(R.string.error_calculate_operations, "Calculate Targets Error"),
+         DISCOVERY_ERROR(R.string.error_discovery,
+                           "Discovery Error"),
+         PERFORM_ERROR(R.string.error_perform_ops, "Perform Operations Error"),
+         NEED_DATA_PATH(R.string.error_no_source, "Please Specify A Valid Data Path To Start"),
+         DELETE_ERROR(R.string.error_delete, "Error happen when deleting the data");
 
          private String value;
          private int res;

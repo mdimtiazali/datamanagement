@@ -1,9 +1,12 @@
 package com.cnh.pf.android.data.management.dialog;
 
 import android.content.Context;
+import android.graphics.Rect;
+import android.graphics.drawable.Drawable;
 import android.text.Editable;
 import android.text.TextWatcher;
 import android.view.View;
+import android.widget.EditText;
 import android.widget.TextView;
 import com.cnh.android.dialog.DialogView;
 import com.cnh.android.widget.control.InputField;
@@ -25,8 +28,9 @@ public class EditDialog extends DialogView {
     public static final int DIALOG_WIDTH = 480;
     public static final int DIALOG_HEIGHT = 120;
     private String imply;
-    private InputField inputField;
+    private EditText inputField;
     private TextView warning;
+    private Drawable errorIndicator;
     private UserSelectCallback callback;
     private Set<String> names;
 
@@ -75,12 +79,15 @@ public class EditDialog extends DialogView {
 
     private void initInputField() {
         if (inputField == null) {
-            inputField = (InputField) findViewById(R.id.edit_dialog_name_input_field);
+            inputField = (EditText) findViewById(R.id.edit_dialog_name_input_field);
         }
         if(warning == null){
             warning = (TextView) findViewById(R.id.edit_name_warning);
         }
-
+        if(errorIndicator == null){
+            errorIndicator = getResources().getDrawable(R.drawable.invalid_input_field);
+            errorIndicator.setBounds(new Rect(0, 0, errorIndicator.getIntrinsicHeight(), errorIndicator.getIntrinsicWidth()));
+        }
         inputField.setText(imply);
 
         inputField.addTextChangedListener(new TextWatcher() {
@@ -98,11 +105,10 @@ public class EditDialog extends DialogView {
             public void afterTextChanged(Editable editable) {
                 if (editable != null && editable.length() > 0 && !editable.toString().equals(imply)) {
                     if (names.contains(editable.toString())) {
-                        inputField.setError(getResources().getString(R.string.edit_name_warning));
+                        inputField.setCompoundDrawables(null, null, errorIndicator,null);
                         warning.setVisibility(View.VISIBLE);
                         setFirstButtonEnabled(false);
                     } else {
-                        //this should be optimized bes input field don't provide hide the warning icon, so use this api to hide
                         inputField.setCompoundDrawables(null, null, null, null);
                         warning.setVisibility(View.INVISIBLE);
                         setFirstButtonEnabled(true);
