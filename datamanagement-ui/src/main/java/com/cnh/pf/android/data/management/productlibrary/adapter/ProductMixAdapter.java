@@ -43,6 +43,7 @@ import com.cnh.pf.android.data.management.productlibrary.ProductLibraryFragment;
 import com.cnh.pf.android.data.management.productlibrary.utility.UiHelper;
 import com.cnh.pf.android.data.management.productlibrary.views.ApplicationRateTableFactory;
 import com.cnh.pf.android.data.management.productlibrary.views.ProductMixDialog;
+import com.cnh.pf.api.pvip.IPVIPServiceAIDL;
 import com.cnh.pf.model.product.library.MeasurementSystem;
 import com.cnh.pf.model.product.library.Product;
 import com.cnh.pf.model.product.library.ProductForm;
@@ -66,6 +67,7 @@ public final class ProductMixAdapter extends SearchableSortableExpandableListAda
    private final Context context;
    private final TabActivity activity;
    private IVIPServiceAIDL vipService;
+   private IPVIPServiceAIDL pvipService;
    private final Drawable arrowCloseDetails;
    private final Drawable arrowOpenDetails;
 
@@ -81,12 +83,13 @@ public final class ProductMixAdapter extends SearchableSortableExpandableListAda
     * @param productLibraryFragment the productLibraryFragment this adapter is connected to
     * @param measurementSystemCache the cache used to get data about the current {@link MeasurementSystem}s
     */
-   public ProductMixAdapter(final Context context, final List<ProductMix> productMixes, final TabActivity tabActivity, final IVIPServiceAIDL vipService,
+   public ProductMixAdapter(final Context context, final List<ProductMix> productMixes, final TabActivity tabActivity, final IVIPServiceAIDL vipService, final IPVIPServiceAIDL pvipService,
          final ProductLibraryFragment productLibraryFragment, final MeasurementSystemCache measurementSystemCache) {
       super(productMixes);
       this.context = context;
       this.activity = tabActivity;
       this.vipService = vipService;
+      this.pvipService = pvipService;
       arrowCloseDetails = context.getResources().getDrawable(R.drawable.arrow_down_expanded_productlist);
       arrowOpenDetails = context.getResources().getDrawable(R.drawable.arrow_up_expanded_productlist);
       this.productLibraryFragment = productLibraryFragment;
@@ -100,7 +103,13 @@ public final class ProductMixAdapter extends SearchableSortableExpandableListAda
    public void setVIPService(final IVIPServiceAIDL vipService) {
       this.vipService = vipService;
    }
-
+   /**
+    * Setter for the pvipService.
+    * @param pvipService the pvipService
+    */
+   public void setPVIPService(final IPVIPServiceAIDL pvipService) {
+      this.pvipService = pvipService;
+   }
    @Override
    public Filter getFilter() {
       Filter filter = super.getFilter();
@@ -358,7 +367,7 @@ public final class ProductMixAdapter extends SearchableSortableExpandableListAda
 
       @Override
       public void onClick(View view) {
-         ProductMixDialog editProductMixDialog = new ProductMixDialog(context, DialogActionType.EDIT, vipService, productMixDetail,
+         ProductMixDialog editProductMixDialog = new ProductMixDialog(context, DialogActionType.EDIT, vipService,pvipService, productMixDetail,
                productLibraryFragment, getCopyOfUnfilteredItemList());
          editProductMixDialog.setFirstButtonText(activity.getResources().getString(R.string.save))
                .setSecondButtonText(activity.getResources().getString(R.string.product_dialog_cancel_button)).showThirdButton(false).showThirdButton(false)
@@ -384,7 +393,7 @@ public final class ProductMixAdapter extends SearchableSortableExpandableListAda
 
       @Override
       public void onClick(View view) {
-         ProductMixDialog copyProductMixDialog = new ProductMixDialog(context, DialogActionType.COPY, vipService, productMixDetail,
+         ProductMixDialog copyProductMixDialog = new ProductMixDialog(context, DialogActionType.COPY, vipService,pvipService, productMixDetail,
                productLibraryFragment, new ArrayList<ProductMix>(getCopyOfUnfilteredItemList()));
          copyProductMixDialog.setFirstButtonText(activity.getResources().getString(R.string.product_dialog_add_button))
                .setSecondButtonText(activity.getResources().getString(R.string.product_dialog_cancel_button)).showThirdButton(false).showThirdButton(false)
