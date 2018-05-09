@@ -166,6 +166,8 @@ public class DataManagementService extends RoboService implements SharedPreferen
 
    private boolean isScanningUsb;
 
+   private boolean useInternalFileSystem = false;
+
    @Override
    public int onStartCommand(Intent intent, int flags, int startId) {
       logger.debug("onStartCommand {}", intent);
@@ -366,7 +368,8 @@ public class DataManagementService extends RoboService implements SharedPreferen
       setCurrentSession(session);
       if (sessionOperation.equals(DataManagementSession.SessionOperation.DISCOVERY)) {
          if (isUsbImport(session)) {
-            if (session.getSource() != null && session.getSource().getPath() != null && Environment.getExternalStorageState().equals(Environment.MEDIA_MOUNTED)) {
+            if (session.getSource() != null && (session.getSource().getPath() != null) &&
+               ((useInternalFileSystem) || (Environment.getExternalStorageState().equals(Environment.MEDIA_MOUNTED)))) {
                logger.debug("Starting USB Datasource: getSource():{}", session.getSource());
                startUsbServices(new String[] { session.getSource().getPath().getPath() }, false, session.getFormat(), new Runnable() {
                   @Override
@@ -450,7 +453,6 @@ public class DataManagementService extends RoboService implements SharedPreferen
       List<MediumDevice> devs = new ArrayList<MediumDevice>();
       //temporarily always add usb for testing
       logger.debug("getDevices external storage state = {}", Environment.getExternalStorageState());
-      boolean internalFileSystem = false;
 
       // Checking if internal file system to be used for testing data management
       try {
@@ -465,7 +467,7 @@ public class DataManagementService extends RoboService implements SharedPreferen
                   devs.add(new MediumDevice(Datasource.LocationType.USB_HAWK, storageFolder, UtilityHelper.STORAGE_LOCATION_USB));
                   devs.add(new MediumDevice(Datasource.LocationType.USB_FRED, storageFolder, UtilityHelper.STORAGE_LOCATION_USB));
                   devs.add(new MediumDevice(Datasource.LocationType.USB_DESKTOP_SW, storageFolder, UtilityHelper.STORAGE_LOCATION_USB));
-                  internalFileSystem = true;
+                  useInternalFileSystem = true;
                   logger.debug("using internal storage = {}", storageFolder);
                }
             }
@@ -475,7 +477,7 @@ public class DataManagementService extends RoboService implements SharedPreferen
          logger.info("Unable to check if internal flash need to be used.", ex);
       }
 
-      if ( (internalFileSystem == false) && (Environment.getExternalStorageState().equals(Environment.MEDIA_MOUNTED)) ){
+      if ( (useInternalFileSystem == false) && (Environment.getExternalStorageState().equals(Environment.MEDIA_MOUNTED)) ){
          devs.add(new MediumDevice(Datasource.LocationType.USB_PHOENIX, Environment.getExternalStorageDirectory(),
             UtilityHelper.STORAGE_LOCATION_USB));
          devs.add(new MediumDevice(Datasource.LocationType.USB_HAWK, Environment.getExternalStorageDirectory(),
@@ -568,7 +570,8 @@ public class DataManagementService extends RoboService implements SharedPreferen
                }
             });
          }
-         else if (isUsbImport(session) && Environment.getExternalStorageState().equals(MEDIA_BAD_REMOVAL)) {
+         else if (isUsbImport(session) &&
+            ((useInternalFileSystem) || (Environment.getExternalStorageState().equals(Environment.MEDIA_MOUNTED))) ) {
             logger.debug("Unable to continue PerformOperation for USB import");
             session.setProgress(false);
             session.setResult(Process.Result.NO_DATASOURCE);
