@@ -626,7 +626,6 @@ public class ExportFragment extends BaseDataFragment {
       }
       else {
          //error appeared
-         // TODO: update to the new CORE39 API
          progressBar.setErrorProgress(0, getResources().getString(R.string.pb_error));
          stopButton.setVisibility(View.GONE);
       }
@@ -650,8 +649,7 @@ public class ExportFragment extends BaseDataFragment {
       logger.debug("showProgressPanel");
       //reset button and process
       stopButton.setVisibility(View.VISIBLE);
-      // TODO: update to the new CORE39 API
-      progressBar.setErrorProgress(0, getResources().getString(R.string.pb_error));
+      progressBar.setErrorProgress(progressBar.getProgress(), getResources().getString(R.string.pb_error));
       progressBar.setSecondText(true, loading_string, null, true);
       progressBar.setProgress(0);
       //set visibility of sections

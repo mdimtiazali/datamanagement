@@ -50,7 +50,6 @@
                 android:layout_height="@dimen/button_height"
                 android:src="@drawable/mng_del_button_states"
                 style="@style/Button"
-                android:enabled="false"
                 android:layout_marginRight ="16dp"
                 android:layout_marginBottom="@dimen/button_margin_bottom"
                 android:layout_marginTop="@dimen/button_margin_top"
