@@ -19,14 +19,11 @@ import com.cnh.android.dialog.DialogViewInterface;
 import com.cnh.android.widget.activity.TabActivity;
 import com.cnh.android.widget.control.PickListAdapter;
 import com.cnh.android.widget.control.PickListEditable;
+import com.cnh.android.widget.control.PickListItem;
 import com.cnh.android.widget.control.SegmentedToggleButtonGroup;
-import com.cnh.jgroups.Datasource;
-import com.cnh.jgroups.Datasource.LocationType;
-import com.cnh.pf.android.data.management.ExportFragment.ObjectPickListItem;
 import com.cnh.pf.android.data.management.R;
 import com.cnh.pf.android.data.management.adapter.PathTreeViewAdapter;
-import com.cnh.pf.data.management.aidl.MediumDevice;
-import com.cnh.pf.datamng.DataUtils;
+import com.cnh.pf.android.data.management.session.SessionExtra;
 import com.google.common.io.Files;
 import com.google.inject.Inject;
 
@@ -35,7 +32,6 @@ import org.slf4j.LoggerFactory;
 
 import java.io.File;
 import java.io.FileFilter;
-import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
@@ -70,9 +66,9 @@ public class ImportSourceDialog extends DialogView {
    private TreeStateManager<File> manager;
    private PathTreeViewAdapter treeAdapter;
    private TreeBuilder<File> treeBuilder;
-   private HashMap<Integer, MediumDevice> devices;
+   private HashMap<Integer, SessionExtra> extras;
    private PathTreeViewAdapter.OnPathSelectedListener listener = null;
-   private MediumDevice currentDevice;
+   private SessionExtra currentExtra;
    private Set<String> file2Support = new HashSet<String>(){{
       add("TASKDATA.XML");
       add("vip.xml");
@@ -84,15 +80,15 @@ public class ImportSourceDialog extends DialogView {
       add("DBF");
    }};
 
-   public ImportSourceDialog(Activity context, List<MediumDevice> mediums) {
+   public ImportSourceDialog(Activity context, List<SessionExtra> extras) {
       super(context);
       RoboGuice.getInjector(context).injectMembers(this);
-      init(mediums);
+      init(extras);
    }
 
-   private void init(List<MediumDevice> mediums) {
+   private void init(List<SessionExtra> extrasIn) {
       setTitle(getResources().getString(R.string.select_source));
-      if (mediums != null && mediums.isEmpty()) {
+      if (extrasIn == null) {
          View view = layoutInflater.inflate(R.layout.no_device_layout, null);
          setBodyView(view);
          setFirstButtonText(getResources().getString(R.string.ok));
@@ -111,19 +107,19 @@ public class ImportSourceDialog extends DialogView {
          View view = layoutInflater.inflate(R.layout.import_source_layout, null);
          ButterKnife.bind(this, view);
 
-         devices = new HashMap<Integer, MediumDevice>();
+         extras = new HashMap<Integer, SessionExtra>();
          int buttonId = 0;
          Set<String> hosts = new HashSet<String>();
-         for (MediumDevice device : mediums) {
-            if (device.getType().equals(LocationType.USB_PHOENIX)) {
+         for (SessionExtra extra : extrasIn) {
+            if (extra.isUsbExtra()) {
                importGroup.addButton(getContext().getResources().getString(R.string.usb_string), buttonId);
-               devices.put(buttonId, device);
+               extras.put(buttonId, extra);
             }
-            else if (device.getType().equals(Datasource.LocationType.DISPLAY)) {
-               if (hosts.add(device.getName())) { //one button per host
-                  importGroup.addButton(getContext().getResources().getString(R.string.display_named, device.getName()), buttonId);
+            else if (extra.isDisplayExtra()) {
+               if (hosts.add(extra.getDescription())) { //one button per host
+                  importGroup.addButton(getContext().getResources().getString(R.string.display_named, extra.getDescription()), buttonId);
                }
-               devices.put(buttonId, device);
+               extras.put(buttonId, extra);
             }
             buttonId++;
          }
@@ -142,20 +138,7 @@ public class ImportSourceDialog extends DialogView {
             @Override
             public void onButtonClick(DialogViewInterface dialog, int which) {
                if (which == DialogViewInterface.BUTTON_FIRST) {
-                  //Select
-                  List<MediumDevice> hostDevices = new ArrayList<MediumDevice>();
-                  if (currentDevice.getType().equals(LocationType.DISPLAY)) {
-                     String currentHostname = DataUtils.getHostnameOrIp(currentDevice.getAddress());
-                     for (MediumDevice md : devices.values()) {
-                        if (currentHostname.equals(DataUtils.getHostnameOrIp(md.getAddress()))) {
-                           hostDevices.add(md);
-                        }
-                     }
-                  }
-                  else {
-                     hostDevices.add(currentDevice);
-                  }
-                  eventManager.fire(new ImportSourceSelectedEvent(hostDevices));
+                  eventManager.fire(new ImportSourceSelectedEvent(currentExtra));
                }
                ((TabActivity) getContext()).dismissPopup(ImportSourceDialog.this);
             }
@@ -206,11 +189,11 @@ public class ImportSourceDialog extends DialogView {
    }
 
    private void onButtonSelectd(int buttonId) {
-      currentDevice = devices.get(buttonId);
+      currentExtra = extras.get(buttonId);
 
       showFirstButton(true);
 
-      if (currentDevice.getType().equals(LocationType.USB_PHOENIX) && currentDevice.getPath() != null) {
+      if (currentExtra.isUsbExtra() && currentExtra.getPath() != null) {
          //Do this after usb, display selection
          manager = new InMemoryTreeStateManager<File>();
          treeBuilder = new TreeBuilder<File>(manager);
@@ -218,38 +201,38 @@ public class ImportSourceDialog extends DialogView {
          sourcePathTreeView.setVisibility(VISIBLE);
          displayPicklist.setVisibility(GONE);
 
-         populateTree(null, currentDevice.getPath());
+         populateTree(null, new File(currentExtra.getPath()));
          treeAdapter = new PathTreeViewAdapter((Activity) getContext(), manager, 1);
          sourcePathTreeView.setAdapter(treeAdapter);
          manager.collapseChildren(null); //Collapse all children
-         manager.expandDirectChildren(currentDevice.getPath()); //expand top node only
+         manager.expandDirectChildren(new File(currentExtra.getPath())); //expand top node only
 
          treeAdapter.setOnPathSelectedListener(new PathTreeViewAdapter.OnPathSelectedListener() {
             @Override
             public void onPathSelected(File path) {
-               currentDevice.setPath(path);
+               currentExtra.setPath(path.getPath());
                setFirstButtonEnabled(true);
             }
          });
       }
-      else if (currentDevice.getType().equals(Datasource.LocationType.DISPLAY)) {
+      else if (currentExtra.isDisplayExtra()) {
          sourcePathTreeView.setVisibility(GONE);
          displayPicklist.setAdapter(new PickListAdapter(displayPicklist, getContext()));
-         String currentHost = currentDevice.getName();
+         String currentHost = currentExtra.getDescription();
          int id = 0;
          log.trace("current host {}", currentHost);
-         log.trace("Medium devices {}", devices);
-         for (MediumDevice md : devices.values()) {
-            if (currentHost.equals(md.getName())) {
-               log.trace("Adding device {}", md);
-               displayPicklist.addItem(new ObjectPickListItem<MediumDevice>(id++, md.getAddress().toString(), md));
+         log.trace("Medium devices {}", extras);
+         for (SessionExtra ex : extras.values()) {
+            if (currentHost.equals(ex.getDescription())) {
+               log.trace("Adding device {}", ex);
+//               displayPicklist.addItem(new ObjectPickListItem<MediumDevice>(id++, ex.getAddress().toString(), md));
             }
          }
          displayPicklist.setOnItemSelectedListener(new PickListEditable.OnItemSelectedListener() {
             @Override
             public void onItemSelected(AdapterView<?> parent, View view, int position, long id, boolean b) {
-               ObjectPickListItem<MediumDevice> item = (ObjectPickListItem<MediumDevice>) displayPicklist.findItemById(id);
-               currentDevice = item.getObject();
+               ObjectPickListItem<SessionExtra> item = (ObjectPickListItem<SessionExtra>) displayPicklist.findItemById(id);
+               currentExtra = item.getObject();
                setFirstButtonEnabled(true);
             }
 
@@ -261,27 +244,32 @@ public class ImportSourceDialog extends DialogView {
       }
    }
 
+   public static class ObjectPickListItem<T> extends PickListItem {
+      private T object;
+
+      public ObjectPickListItem(long id, String value, T object) {
+         super(id, value);
+         this.object = object;
+      }
+
+      public T getObject() {
+         return object;
+      }
+   }
+
    public class ImportSourceSelectedEvent {
-      private List<MediumDevice> device;
+      private SessionExtra extra;
 
-      public ImportSourceSelectedEvent(List<MediumDevice> device) {
-         this.device = device;
+      public ImportSourceSelectedEvent(SessionExtra extra) {
+         this.extra = extra;
       }
 
       /**
        * Returns the Device {USB/DISPLAY} selected by user
        * @return
        */
-      public List<MediumDevice> getDevices() {
-         return device;
-      }
-
-      /**
-       * Returns the Device {USB/DISPLAY} selected by user
-       * @return
-       */
-      public MediumDevice getDevice() {
-         return (device != null && device.size() > 0) ? device.get(0) : null;
+      public SessionExtra getExtra() {
+         return extra;
       }
    }
 }

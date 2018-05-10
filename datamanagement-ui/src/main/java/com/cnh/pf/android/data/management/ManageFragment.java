@@ -1,8 +1,15 @@
+/*
+ * Copyright (C) 2015 CNH Industrial NV. All rights reserved.
+ *
+ * This software contains proprietary information of CNH Industrial NV. Neither
+ * receipt nor possession thereof confers any right to reproduce, use, or
+ * disclose in whole or in part any such information without written
+ * authorization from CNH Industrial NV.
+ */
 package com.cnh.pf.android.data.management;
 
 import android.app.ProgressDialog;
 import android.os.Bundle;
-import android.os.RemoteException;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -10,21 +17,22 @@ import android.widget.AdapterView;
 import android.widget.ImageButton;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
+import android.widget.RelativeLayout;
 import android.widget.TextView;
 import android.widget.Toast;
 
 import com.cnh.android.dialog.DialogViewInterface;
 import com.cnh.android.pf.widget.view.DisabledOverlay;
 import com.cnh.android.widget.activity.TabActivity;
-import com.cnh.jgroups.Datasource;
 import com.cnh.jgroups.ObjectGraph;
 import com.cnh.jgroups.Operation;
 import com.cnh.pf.android.data.management.adapter.ObjectTreeViewAdapter;
 import com.cnh.pf.android.data.management.dialog.DeleteDialog;
 import com.cnh.pf.android.data.management.dialog.EditDialog;
 import com.cnh.pf.android.data.management.graph.GroupObjectGraph;
-import com.cnh.pf.data.management.DataManagementSession;
-import com.cnh.pf.data.management.aidl.MediumDevice;
+import com.cnh.pf.android.data.management.session.ErrorCode;
+import com.cnh.pf.android.data.management.session.Session;
+import com.cnh.pf.android.data.management.session.SessionUtil;
 import com.cnh.pf.datamng.Process;
 
 import org.jgroups.util.RspList;
@@ -41,6 +49,7 @@ import java.util.HashSet;
 
 import java.util.Arrays;
 
+import roboguice.inject.InjectView;
 
 /**
  * Provide data management Tab implementation
@@ -48,10 +57,15 @@ import java.util.Arrays;
  */
 public class ManageFragment extends BaseDataFragment {
    private static final Logger logger = LoggerFactory.getLogger(ManageFragment.class);
-   ImageButton delBtn;
-   TextView header;
-   Set<String> copySet;
-   Set<String> editSet;
+
+   @InjectView(R.id.dm_delete_button)
+   private ImageButton delBtn;
+   @InjectView(R.id.header)
+   private RelativeLayout headerLayout;
+
+   private Set<String> copySet;
+   private Set<String> editSet;
+
    final View.OnClickListener optListener = new View.OnClickListener() {
       @Override
       public void onClick(View v) {
@@ -83,27 +97,25 @@ public class ManageFragment extends BaseDataFragment {
                   Operation op = new Operation(objectGraph.copyUp(), null);
                   op.setNewName(name);
                   operations.add(op);
-                  getSession().setObjectData(null);//avoid data transfer
-                  getSession().setData(operations);
-                  getSession().setSessionOperation(DataManagementSession.SessionOperation.UPDATE);
-                  getDataManagementService().processOperation(getSession(), DataManagementSession.SessionOperation.UPDATE);
+                  update(operations);
+
                   if (updatingProg == null) {
                      updatingProg = new ProgressDialog(getActivity(),ProgressDialog.THEME_HOLO_LIGHT);
                      updatingProg.setTitle(R.string.edit_update_title);
                   }
                   setHeaderAndDeleteButton(false);
                   updatingProg.show();
-               }
-            });
-            final TabActivity useModal = (DataManagementActivity) getActivity();
-            useModal.showModalPopup(editDialog);
-            break;
-         }
-         case R.id.mng_copy_button: {
-            ObjectGraph nodeInfo = (ObjectGraph) v.getTag();
-            //Todo: need to support delete
-            Toast.makeText(getActivity(), "Copy click on node " + nodeInfo.toString(), Toast.LENGTH_LONG).show();
-         }
+                  }
+               });
+               final TabActivity useModal = (DataManagementActivity) getActivity();
+               useModal.showModalPopup(editDialog);
+               break;
+            }
+            case R.id.mng_copy_button: {
+               ObjectGraph nodeInfo = (ObjectGraph) v.getTag();
+               //Todo: need to support delete
+               Toast.makeText(getActivity(), "Copy click on node " + nodeInfo.toString(), Toast.LENGTH_LONG).show();
+            }
          }
       }
    };
@@ -120,9 +132,8 @@ public class ManageFragment extends BaseDataFragment {
       View layout = inflater.inflate(R.layout.manage_layout, container, false);
       LinearLayout leftPanel = (LinearLayout) layout.findViewById(R.id.left_panel_wrapper);
       inflateViews(inflater, leftPanel);
-      disabled = (DisabledOverlay) layout.findViewById(R.id.disabled_overlay);
-      disconnected = (DisabledOverlay) layout.findViewById(R.id.disconnected_overlay);
-      header = (TextView) layout.findViewById(R.id.path_tv);
+      disabledOverlay = (DisabledOverlay) layout.findViewById(R.id.disabled_overlay);
+
       delBtn = (ImageButton) layout.findViewById(R.id.dm_delete_button);
       delBtn.setOnClickListener(new View.OnClickListener() {
          @Override
@@ -132,24 +143,22 @@ public class ManageFragment extends BaseDataFragment {
                @Override
                public void onButtonClick(DialogViewInterface dialogViewInterface, int i) {
                   if(i == DeleteDialog.BUTTON_FIRST){
-                     getSession().setData(null);
                      Set<ObjectGraph> set = getTreeAdapter().getSelectedRootNodes();
-                     List<ObjectGraph> filtedList = new ArrayList<ObjectGraph>(set.size());
-                     for(ObjectGraph o: set){
-                        if(!TreeEntityHelper.isGroupType(o.getType())){
-                           filtedList.add(o);
+                     List<ObjectGraph> filteredList = new ArrayList<ObjectGraph>(set.size());
+                     for (ObjectGraph o: set){
+                        if (!TreeEntityHelper.isGroupType(o.getType())) {
+                           filteredList.add(o);
                         }
                      }
-                     if(!filtedList.isEmpty()){
-                        session.setObjectData(null);
-                        session.setData(new ArrayList<Operation>());
-                        for (ObjectGraph obj : filtedList) {
+                     if (!filteredList.isEmpty()){
+                        List<Operation> delOperations = new ArrayList<Operation>();
+                        for (ObjectGraph obj : filteredList) {
                            Operation operation = new Operation(obj, null);
                            operation.setStatus(Operation.Status.NOT_DONE);
-                           session.getData().add(operation);
+                           delOperations.add(operation);
                         }
-                        setSession(getDataManagementService().processOperation(getSession(), DataManagementSession.SessionOperation.DELETE));
-                        if(deletingProg == null){
+                        delete(delOperations);
+                        if (deletingProg == null){
                            deletingProg = new ProgressDialog(getActivity(),ProgressDialog.THEME_HOLO_LIGHT);
                            deletingProg.setTitle(R.string.delete_progress_title);
                         }
@@ -167,11 +176,16 @@ public class ManageFragment extends BaseDataFragment {
       return layout;
    }
 
-   void selectAll() {
-      logger.debug("selectAll()");
-      treeAdapter.selectAll(treeViewList, !getTreeAdapter().areAllSelected());
-      updateSelectAllState();
-      treeAdapter.refresh();
+   private void showHeader() {
+      if (headerLayout != null) {
+         headerLayout.setVisibility(View.VISIBLE);
+      }
+   }
+
+   private void hideHeader() {
+      if (headerLayout != null) {
+         headerLayout.setVisibility(View.GONE);
+      }
    }
 
    @Override
@@ -182,96 +196,59 @@ public class ManageFragment extends BaseDataFragment {
    @Override
    public void onViewCreated(View view, Bundle savedInstanceState) {
       super.onViewCreated(view, savedInstanceState);
-      startText.setVisibility(View.GONE);
+
+      delBtn.setEnabled(false);
+      showHeader();
    }
 
    @Override
-   public DataManagementSession createSession() {
-      logger.trace("createSession()");
-      super.onNewSession();
-      DataManagementSession oldSession = getSession();
-
-      treeViewList.setVisibility(View.GONE);
-
-      if (hasLocalSource) {
-         disabled.setVisibility(View.GONE);
-         treeProgress.setVisibility(View.VISIBLE);
-      }
-      else {
-         logger.trace("hasLocalSource is false, return null");
-         disabled.setVisibility(View.VISIBLE);
-         disabled.setMode(DisabledOverlay.MODE.DISCONNECTED);
-         return null;
-      }
-      DataManagementSession session = new DataManagementSession(new Datasource.LocationType[] { Datasource.LocationType.PCM, Datasource.LocationType.DISPLAY }, null, null, null, null, null);
-      sessionInit(session);
-      if (oldSession != null) {
-         session.setFormat(oldSession.getFormat());
-         session.setDestinations(oldSession.getDestinations());
-      }
-      return session;
+   public void onPCMDisconnected() {
+      logger.trace("PCM is not online.");
+      hideTreeList();
+      showDisconnectedOverlay();
+      updateSelectAllState();
+      setHeaderText("");
    }
 
    @Override
-   public void configSession(DataManagementSession session) {
-      sessionInit(session);//only consider one case
-   }
+   public void onResumeSession() {
+      logger.debug("onResumeSession()");
+      hideTreeList();
+      showLoadingOverlay();
 
-   private DataManagementSession sessionInit(DataManagementSession session) {
-      if (session != null) {
-         session.setSourceTypes(new Datasource.LocationType[] { Datasource.LocationType.PCM, Datasource.LocationType.DISPLAY });
-         session.setSources(null);
-         session.setDestinationTypes(null);
-         session.setDestinations(null);
-      }
-      return session;
+      discovery();
    }
 
    @Override
-   public void setSession(DataManagementSession session) {
-      super.setSession(session);
-   }
+   public void onChannelConnectionChange(boolean updateNeeded) {
+      logger.debug("onChannelConnectionChange");
 
-   @Override
-   protected void onErrorOperation() {
-      if (getSession().getSessionOperation().equals(DataManagementSession.SessionOperation.DISCOVERY)) {
-         idleUI();
-      }
-      else {
-         logger.debug("Other operations when error");
-         sessionInit(getSession());
-         //            postTreeUI();
+      if (updateNeeded) {
+         hideTreeList();
+         showLoadingOverlay();
+
+         discovery();
       }
    }
 
    @Override
-   public void processOperations() {
-      if (getSession().getResult() != null && getSession().getResult().equals(Process.Result.ERROR)) {
-         if (getSession().getSessionOperation().equals(DataManagementSession.SessionOperation.DISCOVERY)) {
-            idleUI();
-         }
-         else if(getSession().getSessionOperation().equals(DataManagementSession.SessionOperation.UPDATE)){
-            if (updatingProg != null) {
-               updatingProg.dismiss();
-            }
-            Toast.makeText(getActivity(), getString(R.string.update_error_notice), Toast.LENGTH_LONG).show();
-         }
-         else if(getSession().getSessionOperation().equals(DataManagementSession.SessionOperation.DELETE)){
-            if (deletingProg != null) {
-               deletingProg.dismiss();
-            }
-            setHeaderAndDeleteButton(false);
-            Toast.makeText(getActivity(), getString(R.string.delete_error_notice), Toast.LENGTH_LONG).show();
-            sessionOperate(session, DataManagementSession.SessionOperation.DISCOVERY);
-         }
-         else {
-            logger.debug("Other operations when error");
-            sessionInit(getSession());
-            postTreeUI();
-         }
+   public void onOtherSessionSuccess(Session session) {
+      logger.debug("onOtherSessionComplete(): {}", session.getType());
+   }
+
+   @Override
+   public void onMyselfSessionSuccess(Session session) {
+      logger.debug("onMyselfSessionComplete(): {}", session.getType());
+      if (SessionUtil.isDiscoveryTask(session)) {
+         initAndPouplateTree(session.getObjectData());
+
+         hideDisabledOverlay();
+         showTreeList();
+         updateSelectAllState();
+         setHeaderText(R.string.tab_mng_none_header);
       }
-      else if (getSession().getSessionOperation().equals(DataManagementSession.SessionOperation.UPDATE)) {
-         if (getSession().getResult() != null) {
+      else if (SessionUtil.isUpdateTask(session)) {
+         if (session.getResultCode() != null) {
             if (updatingProg != null) {
                updatingProg.dismiss();
             }
@@ -295,8 +272,8 @@ public class ManageFragment extends BaseDataFragment {
             }
          }
       }
-      else if (getSession().getSessionOperation().equals(DataManagementSession.SessionOperation.DELETE)) {
-         if (getSession().getResult() != null) {
+      else if (SessionUtil.isDeleteTask(session)) {
+         if (session.getResultCode() != null) {
             if (deletingProg != null) {
                deletingProg.dismiss();
             }
@@ -304,11 +281,11 @@ public class ManageFragment extends BaseDataFragment {
             List<ObjectGraph> objectGraphs = new ArrayList<ObjectGraph>(rsps.size());
             List<ObjectGraph> unprocessedObjects = new ArrayList<ObjectGraph>(rsps.size());
             for (Process process : rsps.getResults()) {
-               if(process.getOperations() != null) {
+               if (process.getOperations() != null) {
                   for (Operation operation : process.getOperations()) {
                      if (operation != null && operation.getStatus() == Operation.Status.DONE) {
                         objectGraphs.add(operation.getData());
-                        if(operation.getUnprocessedData() != null){
+                        if (operation.getUnprocessedData() != null){
                            unprocessedObjects.add(operation.getUnprocessedData());
                         }
                      }
@@ -317,7 +294,7 @@ public class ManageFragment extends BaseDataFragment {
             }
             manager.removeNodesRecursively(objectGraphs);
             treeAdapter.removeObjectGraphs(objectGraphs);
-            if(!unprocessedObjects.isEmpty()){
+            if (!unprocessedObjects.isEmpty()){
                addToTreeByBatch(unprocessedObjects);
                treeAdapter.addObjectGraphs(unprocessedObjects);
             }
@@ -327,22 +304,42 @@ public class ManageFragment extends BaseDataFragment {
    }
 
    @Override
-   public boolean isCurrentOperation(DataManagementSession session) {
-      logger.trace("isCurrentOperation( {} == {})", session, getSession());
-      return session.equals(getSession());
+   public void onOtherSessionError(Session session, ErrorCode errorCode) {
+      logger.debug("onOtherSessionError(): {}, {}", session.getType(), errorCode);
    }
 
-   private void setHeaderAndDeleteButton(boolean en){
-      if(en){
-         delBtn.setEnabled(true);
-         int count = treeAdapter.getSelectionMap().size();
-         header.setText(getResources().getQuantityString(R.plurals.tab_mng_selected_items_header, count, count));
+   @Override
+   public void onMyselfSessionError(Session session, ErrorCode errorCode) {
+      logger.debug("onMyselfSessionError(): {}, {}", session.getType(), errorCode);
+
+      if (SessionUtil.isDeleteTask(session)) {
+         if (deletingProg != null) {
+            deletingProg.dismiss();
+         }
+         setHeaderAndDeleteButton(false);
+         Toast.makeText(getActivity(), getString(R.string.delete_error_notice), Toast.LENGTH_LONG).show();
+         discovery();
       }
-      else{
-         delBtn.setEnabled(false);
-         header.setText(getResources().getString(R.string.tab_mng_none_header));
+      else if (SessionUtil.isUpdateTask(session)) {
+         if (updatingProg != null) {
+            updatingProg.dismiss();
+         }
+         Toast.makeText(getActivity(), getString(R.string.update_error_notice), Toast.LENGTH_LONG).show();
       }
    }
+
+   private void setHeaderAndDeleteButton(boolean enable){
+      if (enable) {
+         delBtn.setEnabled(true);
+         int count = treeAdapter.getSelectionMap().size();
+         setHeaderText(getResources().getQuantityString(R.plurals.tab_mng_selected_items_header, count, count));
+      }
+      else {
+         delBtn.setEnabled(false);
+         setHeaderText(R.string.tab_mng_none_header);
+      }
+   }
+
    @Override
    public void onTreeItemSelected() {
       super.onTreeItemSelected();
@@ -354,7 +351,8 @@ public class ManageFragment extends BaseDataFragment {
       }
    }
 
-   /** Since the tree list on Management tab requires different behaviors (edit,delete,...),
+   /**
+    * Since the tree list on Management tab requires different behaviors (edit,delete,...),
     * this fragment doesn't use tree adapter provided by the BaseDataFragment.
     */
    @Override
@@ -492,7 +490,6 @@ public class ManageFragment extends BaseDataFragment {
 
             @Override
             protected int getTreeListItemWrapperId() {
-               //   return super.getTreeListItemWrapperId();
                return R.layout.tree_list_item_wrapper_full_screen;
             }
 
@@ -548,32 +545,13 @@ public class ManageFragment extends BaseDataFragment {
    }
 
    @Override
-   protected void initializeTree() {
-      super.initializeTree();
-      // display header message when tree items get populated.
-      header.setText(getResources().getString(R.string.tab_mng_none_header));
-   }
-
-   @Override
-   public void onProgressPublished(String operation, int progress, int max) {
-      logger.debug("onProgressPublished: {}", progress);
-   }
-
-   @Override
    public boolean supportedByFormat(ObjectGraph node) {
       return true;
    }
 
-   @Override
-   protected void onOtherSessionUpdate(DataManagementSession session) {
-      logger.debug("Other session has been updated");
-      if (session.getSessionOperation().equals(DataManagementSession.SessionOperation.PERFORM_OPERATIONS)) {
-         logger.trace("Other operation completed.");
-      }
-   }
 
    @Override
-   public void onMediumsUpdated(List<MediumDevice> mediums) throws RemoteException {
-
+   public Session.Action getAction() {
+      return Session.Action.MANAGE;
    }
 }

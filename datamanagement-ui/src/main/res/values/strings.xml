@@ -133,8 +133,9 @@
 
     <string name="error_no_data">No Data</string>
     <string name="error_no_source">No Source Datasource</string>
-    <string name="error_no_target">No Target Datasource</string>
+    <string name="error_no_target">No Destination Datasource</string>
     <string name="error_perform_ops">Perform Operations Error</string>
+    <string name="error_update">Update Error</string>
     <string name="error_calculate_conflicts">Calculate Conflicts Error</string>
     <string name="error_calculate_operations">Calculate Targets Error</string>
     <string name="error_discovery">Discovery Error</string>

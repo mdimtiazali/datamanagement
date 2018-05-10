@@ -14,12 +14,6 @@
               android:layout_width="match_parent"
               android:layout_height="match_parent">
 
-    <com.cnh.android.pf.widget.view.DisabledOverlay
-            android:id="@+id/disconnected_overlay"
-            android:layout_width="match_parent"
-            android:layout_height="match_parent"
-            android:layout_gravity="center"/>
-
     <LinearLayout
             android:id="@+id/left_panel_wrapper"
             android:layout_width="0dp"
@@ -28,28 +22,23 @@
     </LinearLayout>
 
     <LinearLayout
-            android:layout_width="match_parent"
-            android:layout_height="match_parent"
-            android:orientation="vertical">
-        <com.cnh.android.pf.widget.view.DisabledOverlay
-                android:id="@+id/disabled_overlay"
-                android:layout_width="match_parent"
-                android:layout_height="match_parent"/>
-
-
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:orientation="vertical">
         <RelativeLayout
-                android:layout_width="match_parent"
-                android:layout_height="@dimen/header_height"
-                android:background="@color/data_header_background">
+            android:layout_width="match_parent"
+            android:layout_height="@dimen/header_height"
+            android:background="@color/data_header_background"
+            android:id="@+id/header">
 
             <TextView
-                    android:id="@+id/path_tv"
-                    android:layout_width="match_parent"
-                    android:layout_height="match_parent"
-                    android:layout_marginLeft="@dimen/header_indent_width"
-                    android:layout_weight="1"
-                    android:gravity="center_vertical|left"
-                    style="@style/TextAppearance.Import.Entity"/>
+                android:id="@+id/header_text"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:layout_marginLeft="@dimen/header_indent_width"
+                android:layout_weight="1"
+                android:gravity="center_vertical|left"
+                style="@style/TextAppearance.Import.Entity" />
             <ImageButton
                     android:id="@+id/dm_delete_button"
                     android:layout_width="@dimen/del_button_width"
@@ -75,22 +64,10 @@
                     android:text="@string/select_all"
                     android:textSize="22dp"/>
         </RelativeLayout>
-
-        <TextView
-                android:id="@+id/start_text"
+        <com.cnh.android.pf.widget.view.DisabledOverlay
+                android:id="@+id/disabled_overlay"
                 android:layout_width="match_parent"
-                android:layout_height="match_parent"
-                android:gravity="center"
-                style="@style/TextAppearance.Import.Entity"
-                android:text="@string/select_source_first"/>
-
-        <ProgressBar
-                android:id="@+id/tree_progress"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_gravity="center|center_vertical"
-                style="@style/IndeterminateProgressLargeBlue"
-                android:visibility="gone"/>
+                android:layout_height="fill_parent"/>
         <ImageButton android:id="@+id/dm_refresh"
                      android:layout_height="wrap_content"
                      android:layout_width="wrap_content"

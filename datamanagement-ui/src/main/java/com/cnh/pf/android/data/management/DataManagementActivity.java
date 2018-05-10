@@ -33,6 +33,8 @@ import com.cnh.android.widget.control.TabActivityListeners;
 import com.cnh.android.widget.control.TabActivityTab;
 import com.cnh.pf.android.data.management.helper.VIPDataHandler;
 import com.cnh.pf.android.data.management.productlibrary.ProductLibraryFragment;
+import com.cnh.pf.android.data.management.service.DataManagementService;
+import com.cnh.pf.android.data.management.session.SessionManager;
 import com.cnh.pf.android.data.management.utility.UtilityHelper;
 import com.cnh.pf.api.pvip.ConnectedPVIPListener;
 import com.cnh.pf.api.pvip.IPVIPServiceAIDL;
@@ -84,6 +86,7 @@ public class DataManagementActivity extends TabActivity implements RoboContext {
    private WeakReference<ProductLibraryFragment> productLibraryFragmentWeakReference;
    private TabActivityTab productLibraryTab = null;
    private boolean calledProductLibraryViaShortcut = false;
+   protected SessionManager sessionManager;
 
    private DataManagementConnectedVipListener connectedVipListener;
    private DataManagementConnectedPvipListener connectedPvipListener;
@@ -174,16 +177,6 @@ public class DataManagementActivity extends TabActivity implements RoboContext {
       }
    }
 
-   private <T> void updateConnectionStateInUI(WeakReference<T> weakReferenceFragment, boolean connected) {
-      if (weakReferenceFragment != null) {
-         T fragment = weakReferenceFragment.get();
-         if (fragment != null && fragment instanceof BaseDataFragment) {
-            BaseDataFragment baseDataFragment = (BaseDataFragment) fragment;
-            baseDataFragment.updateConnectionStateInUI(connected);
-         }
-      }
-   }
-
    private class DataManagementConnectedVipListener extends ConnectedVipListener {
 
       DataManagementConnectedVipListener(Context context) {
@@ -192,15 +185,6 @@ public class DataManagementActivity extends TabActivity implements RoboContext {
 
       @Override
       public void onConnectionStatusChanged(boolean connected) {
-
-         //TODO: BaseDataFragment is not depending only on vip connection, more on mediator connection.
-         //As soon as defects pfhmi-dev-defects-10196 and pfhmi-dev-defects-8398 are solved, those lines + updateConnectionStateInUI
-         //can be removed!
-         BaseDataFragment.setIsConnectedToPcm(connected);
-         updateConnectionStateInUI(manageFragmentWeakReference, connected);
-         updateConnectionStateInUI(importFragmentWeakReference, connected);
-         updateConnectionStateInUI(exportFragmentWeakReference, connected);
-
          if (connected) {
             //VIP service is connected
             logger.debug("DataManagementVIPListener is connected");
@@ -462,23 +446,28 @@ public class DataManagementActivity extends TabActivity implements RoboContext {
       connectedPvipListener = new DataManagementConnectedPvipListener(getApplicationContext());
 
       eventManager = RoboGuice.getInjector(this).getInstance(EventManager.class);
+      sessionManager = RoboGuice.getInjector(this).getInstance(SessionManager.class);
+
+      // Create Manage Tab
       ManageFragment manageFragment = new ManageFragment();
       manageFragmentWeakReference = new WeakReference<ManageFragment>(manageFragment);
-      TabActivityTab managementTab = new TabActivityTab(R.string.tab_management, R.drawable.tab_management_selector, getResources().getString(R.string.tab_management),
-            new DataManagementTabListener(manageFragment, this));
+      manageFragment.setSessionManager(sessionManager);
+      TabActivityTab managementTab = createActivityTab(manageFragment, R.string.tab_management, R.drawable.tab_management_selector, getResources().getString(R.string.tab_management));
       addTab(managementTab);
 
+      // Create Import tab
       ImportFragment importFragment = new ImportFragment();
       importFragmentWeakReference = new WeakReference<ImportFragment>(importFragment);
-      TabActivityTab importTab = new TabActivityTab(R.string.tab_import, R.drawable.tab_import_selector, getResources().getString(R.string.tab_import),
-            new DataManagementTabListener(importFragment, this));
+      importFragment.setSessionManager(sessionManager);
+      TabActivityTab importTab = createActivityTab(importFragment, R.string.tab_import, R.drawable.tab_import_selector, getResources().getString(R.string.tab_import));
       addTab(importTab);
 
+      // Create Export tab
       ExportFragment exportFragment = new ExportFragment();
       exportFragmentWeakReference = new WeakReference<ExportFragment>(exportFragment);
       exportFragment.setVipDataHandler(vipDataHandler);
-      TabActivityTab exportTab = new TabActivityTab(R.string.tab_export, R.drawable.tab_export_selector, getResources().getString(R.string.tab_export),
-            new DataManagementTabListener(exportFragment, this));
+      exportFragment.setSessionManager(sessionManager);
+      TabActivityTab exportTab = createActivityTab(exportFragment, R.string.tab_export, R.drawable.tab_export_selector, getResources().getString(R.string.tab_export));
       addTab(exportTab);
 
       productLibraryFragmentWeakReference = new WeakReference<ProductLibraryFragment>(new ProductLibraryFragment());
@@ -600,6 +589,7 @@ public class DataManagementActivity extends TabActivity implements RoboContext {
       logger.debug("onResume called");
       super.onResume();
       eventManager.fire(new OnResumeEvent(this));
+      sessionManager.connect();
       logger.debug("Sending INTERNAL_DATA broadcast");
       sendBroadcast(new Intent(ServiceConstants.ACTION_INTERNAL_DATA).addFlags(Intent.FLAG_INCLUDE_STOPPED_PACKAGES));
       if (connectedVipListener != null) {
@@ -620,7 +610,13 @@ public class DataManagementActivity extends TabActivity implements RoboContext {
    protected void onPause() {
       logger.debug("onPause called");
       super.onPause();
+      // Send Intent to DM service to reset cached data before closing the app
+      Intent intent = new Intent(this, DataManagementService.class);
+      intent.setAction(DataManagementService.ACTION_RESET_CACHE);
+      startService(intent);
+
       eventManager.fire(new OnPauseEvent(this));
+
       if (connectedVipListener != null) {
          connectedVipListener.disconnect();
       }
@@ -633,12 +629,15 @@ public class DataManagementActivity extends TabActivity implements RoboContext {
       else {
          logger.error("Could not disconnect connectedPvipListener since it is not initialized!");
       }
+
+      sessionManager.disconnect();
    }
 
    @Override
    protected void onDestroy() {
       logger.debug("onDestroy called");
       super.onDestroy();
+
       vipDataHandler = null;
       scopedObjects = null;
       eventManager = null;
@@ -647,5 +646,4 @@ public class DataManagementActivity extends TabActivity implements RoboContext {
       connectedVipListener = null;
       connectedPvipListener = null;
    }
-
 }
