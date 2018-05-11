@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="utf-8"?><!--
+  ~ Copyright (C) 2018 CNH Industrial NV. All rights reserved.
+  ~
+  ~ This software contains proprietary information of CNH Industrial NV. Neither
+  ~ receipt nor possession thereof confers any right to reproduce, use, or
+  ~ disclose in whole or in part any such information without written
+  ~ authorization from CNH Industrial NV.
+  -->
+
+<rotate xmlns:android="http://schemas.android.com/apk/res/android"
+        android:pivotX="50%" android:pivotY="50%" android:fromDegrees="0"
+        android:toDegrees="360">
+    <shape android:shape="ring" android:innerRadiusRatio="3"
+           android:thicknessRatio="8" android:useLevel="false">
+
+        <size android:width="@dimen/progress_circle_diameter" android:height="@dimen/progress_circle_diameter" />
+
+        <gradient android:type="sweep" android:useLevel="false"
+                  android:startColor="@android:color/transparent"
+                  android:endColor="@color/progress_circle"
+                  android:angle="0"
+        />
+
+    </shape>
+</rotate>
