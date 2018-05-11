@@ -570,8 +570,7 @@ public class DataManagementService extends RoboService implements SharedPreferen
                }
             });
          }
-         else if (isUsbImport(session) &&
-            ((useInternalFileSystem) || (Environment.getExternalStorageState().equals(Environment.MEDIA_MOUNTED))) ) {
+         else if (isUsbImport(session) && (Environment.getExternalStorageState().equals(Environment.MEDIA_BAD_REMOVAL))) {
             logger.debug("Unable to continue PerformOperation for USB import");
             session.setProgress(false);
             session.setResult(Process.Result.NO_DATASOURCE);
