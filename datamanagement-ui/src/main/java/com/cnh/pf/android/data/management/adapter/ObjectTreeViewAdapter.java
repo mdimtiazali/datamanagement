@@ -258,6 +258,7 @@ public abstract class ObjectTreeViewAdapter extends SelectionTreeViewAdapter<Obj
             removeObjectGraph(o);
          }
       }
+      resetSelectedMap();
    }
    /**
     * remove ObjectGraph from data
@@ -284,16 +285,6 @@ public abstract class ObjectTreeViewAdapter extends SelectionTreeViewAdapter<Obj
                }
             }
          }
-         // remove all the node from selected map
-         ObjectGraph.traverse(objectGraph, ObjectGraph.TRAVERSE_DOWN, new ObjectGraph.Visitor<ObjectGraph>() {
-            @Override
-            public boolean visit(ObjectGraph node) {
-               if (getSelectionMap().containsKey(node)) {
-                  getSelectionMap().remove(node);
-               }
-               return true;
-            }
-         });
       }
       if(!objs.isEmpty()){
          ObjectGraph parent = objs.get(0).getParent();
@@ -303,6 +294,11 @@ public abstract class ObjectTreeViewAdapter extends SelectionTreeViewAdapter<Obj
          else if(objectGraphs.contains(objectGraph)){
             objectGraphs.remove(objectGraph);
          }
+      }
+   }
+   private void resetSelectedMap(){
+      if(!getSelectionMap().isEmpty()){
+         getSelectionMap().clear();
       }
    }
    /**
