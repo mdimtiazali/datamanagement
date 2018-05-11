@@ -10,7 +10,7 @@
 <resources>
     <dimen name="row_height">48dp</dimen>
 
-    <style parent="@android:attr/listViewStyle" name="treeViewListStyle">
+    <style name="treeViewListStyle" parent="@android:style/Widget.ListView" >
         <item name="android:background">@android:color/white</item>
         <item name="android:divider">@drawable/divider</item>
     </style>
@@ -77,5 +77,8 @@
             <item name="Stepper">@style/Stepper</item>
             <item name="SpinnerStepper">@style/SpinnerStepper</item>
 
-        </style>
+    </style>
+    <style name="TextAppearance.deleteDialog.Big.InsideText" parent="@style/TextAppearance.CnhDialog.Big.InsideText">
+        <item name="android:textStyle">normal</item>
+    </style>
 </resources>

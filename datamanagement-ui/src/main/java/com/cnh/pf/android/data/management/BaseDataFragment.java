@@ -111,6 +111,7 @@ public abstract class BaseDataFragment extends RoboFragment implements IDataMana
    protected boolean cancelled;
    protected boolean hasLocalSource = false;
    protected ProgressDialog updatingProg;
+   protected ProgressDialog deletingProg;
 
    /** Current session */
    protected volatile DataManagementSession session = null;
@@ -374,6 +375,9 @@ public abstract class BaseDataFragment extends RoboFragment implements IDataMana
                if(updatingProg != null){
                   updatingProg.dismiss();
                }
+               if(deletingProg != null){
+                  deletingProg.dismiss();
+               }
                //suppress error message of need data path at import.
                if(event.getSession().getSource() != null && event.getSession().getSource().getType().equals(Datasource.Source.USB)
                      && (event.getType() != DataServiceConnectionImpl.ErrorEvent.DataError.NEED_DATA_PATH)) {
@@ -528,7 +532,7 @@ public abstract class BaseDataFragment extends RoboFragment implements IDataMana
          treeAdapter = new ObjectTreeViewAdapter(getActivity(), manager, 1) {
             @Override
             protected boolean isGroupableEntity(ObjectGraph node) {
-               return TreeEntityHelper.groupables.containsKey(node.getType()) || node.getParent() == null;
+               return TreeEntityHelper.obj2group.containsKey(node.getType()) || node.getParent() == null;
             }
 
             @Override
@@ -565,9 +569,7 @@ public abstract class BaseDataFragment extends RoboFragment implements IDataMana
          treeBuilder.clear();
       }
       List<ObjectGraph> data = session != null && session.getObjectData() != null ? session.getObjectData() : new ArrayList<ObjectGraph>();
-      for (ObjectGraph graph : data) {
-         addToTree(null, graph);
-      }
+      addToTree(data);
       sortTreeList();
       createTreeAdapter();
 
@@ -586,34 +588,89 @@ public abstract class BaseDataFragment extends RoboFragment implements IDataMana
       });
    }
 
-   protected void addToTree(ObjectGraph parent, ObjectGraph object) {
+   /**
+    * adding object(s) to treeview
+    * @param  objectGraphs objects to add
+    */
+   protected void addToTree(List<ObjectGraph> objectGraphs){
+      boolean bVisible = false;
+      if(objectGraphs!=null && !objectGraphs.isEmpty()){
+         for(ObjectGraph o: objectGraphs){
+            if(bAddToTree(o.getParent(), o) && !bVisible){
+               bVisible = true;
+            }
+         }
+         if(bVisible){
+            dataChangedRefresh();
+         }
+      }
+   }
+   //notify the treeview data change
+   private void dataChangedRefresh(){
+      manager.refresh();
+   }
+
+   //Put the object into tree item list and return true for it is visible and false for invisible
+   private boolean bAddToTree(ObjectGraph parent, ObjectGraph object) {
+      boolean bVisible = false;
       try {
          //Check if entity can be grouped
-         if (TreeEntityHelper.groupables.containsKey(object.getType()) || object.getParent() == null) {
+         if (TreeEntityHelper.obj2group.containsKey(object.getType()) || object.getParent() == null) {
             GroupObjectGraph group = null;
             for (ObjectGraph child : manager.getChildren(parent)) { //find the group node
-               if (child instanceof GroupObjectGraph && child.getType().equals(object.getType())) {
-                  group = (GroupObjectGraph) child;
-                  break;
+               if (child instanceof GroupObjectGraph){
+                  if(TreeEntityHelper.obj2group.containsKey(object.getType()) && child.getType().equals(TreeEntityHelper.obj2group.get(object.getType()))){
+                     group = (GroupObjectGraph) child;
+                     break;
+                  }
+                  else if(TreeEntityHelper.group2group.containsKey(TreeEntityHelper.obj2group.get(object.getType()))){
+                     for(ObjectGraph cchild: manager.getChildren(child)){
+                        if(child instanceof GroupObjectGraph && child.getType().equals(TreeEntityHelper.group2group.get(TreeEntityHelper.obj2group.get(object.getType())))){
+                           group = (GroupObjectGraph)cchild;
+                           break;
+                        }
+                     }
+                  }
                }
             }
             if (group == null) { //if group node doesn't exist we gotta make it
-               String name = TreeEntityHelper.getGroupName(getActivity(), object.getType());
-               group = new GroupObjectGraph(null, object.getType(), name, null, parent);
-               treeBuilder.addRelation(parent, group);
+               if(TreeEntityHelper.group2group.containsKey(TreeEntityHelper.obj2group.get(object.getType()))){
+                  GroupObjectGraph ggroup = new GroupObjectGraph(null, TreeEntityHelper.group2group.get(TreeEntityHelper.obj2group.get(object.getType())), TreeEntityHelper.getGroupName(getActivity(), TreeEntityHelper.group2group.get(TreeEntityHelper.obj2group.get(object.getType()))),null, parent);
+                  group = new GroupObjectGraph(null, TreeEntityHelper.obj2group.get(object.getType()), TreeEntityHelper.getGroupName(getActivity(), TreeEntityHelper.obj2group.get(object.getType())), null, ggroup);
+                  if(treeBuilder.bAddRelation(parent,ggroup) && !bVisible){
+                     bVisible = true;
+                  }
+                  if(treeBuilder.bAddRelation(ggroup, group) && !bVisible){
+                     bVisible = true;
+                  }
+               }
+               else{
+                  group = new GroupObjectGraph(null, TreeEntityHelper.obj2group.get(object.getType()), TreeEntityHelper.getGroupName(getActivity(), TreeEntityHelper.obj2group.get(object.getType())), null, parent);
+                  if(treeBuilder.bAddRelation(parent,group) && !bVisible){
+                     bVisible = true;
+                  }
+               }
+
             }
-            treeBuilder.addRelation(group, object);
+            if(treeBuilder.bAddRelation(group, object) && !bVisible){
+               bVisible = true;
+            }
          }
          //Else just add to parent
          else {
-            treeBuilder.addRelation(parent, object);
+            if(treeBuilder.bAddRelation(parent, object) && !bVisible){
+               bVisible = true;
+            }
          }
          for (ObjectGraph child : object.getChildren()) {
-            addToTree(object, child);
+            if(treeBuilder.bAddRelation(object, child) && !bVisible){
+               bVisible = true;
+            }
          }
       } catch(NodeAlreadyInTreeException e) {
          logger.warn("Caught NodeAlreadyInTree exception", e);
       }
+      return bVisible;
    }
 
    void updateSelectAllState() {

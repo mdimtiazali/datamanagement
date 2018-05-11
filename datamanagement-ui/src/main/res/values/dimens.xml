@@ -11,24 +11,32 @@
 
     <dimen name="minimum_padding">2dp</dimen>
 
-    <dimen name="list_item_height">50dp</dimen>
+    <dimen name="list_item_height">48dp</dimen>
     <dimen name="list_item_large_text_size">22sp</dimen>
-    <dimen name="list_item_padding">4dp</dimen>
+    <dimen name="list_item_padding">2dp</dimen>
 
     <dimen name="product_item_container_margin">20dp</dimen>
     <dimen name="product_item_image_margin">20dp</dimen>
     <dimen name="product_item_small_widget_margin">8dp</dimen>
     <dimen name="product_item_small_text_size">18sp</dimen>
 
+    <dimen name="product_library_add_button_left_margin">20dp</dimen>
     <dimen name="product_library_application_rate_table_product_name_max_width">100dp</dimen>
     <dimen name="product_library_empty">0dp</dimen>
-    <dimen name="product_library_sort_header_left_padding">16.25dp</dimen>
-    <dimen name="product_library_sort_header_right_padding">26dp</dimen>
-    <dimen name="product_library_shrink_margin_small">-5dp</dimen>
+    <dimen name="product_library_empty_table_header_height">130dp</dimen>
+    <dimen name="product_library_empty_table_header_text_size">28sp</dimen>
+    <dimen name="product_library_empty_table_subheader_height">84dp</dimen>
+    <dimen name="product_library_empty_table_subheader_text_size">24sp</dimen>
     <dimen name="product_library_grow_margin_medium">20dp</dimen>
-    <dimen name="product_library_add_button_left_margin">20dp</dimen>
+    <dimen name="product_library_list_header_height">48dp</dimen>
+    <dimen name="product_library_list_header_right_elem_margin_end">-5dp</dimen>
+    <dimen name="product_library_list_header_left_padding">16.25dp</dimen>
+    <dimen name="product_library_list_header_right_padding">26dp</dimen>
+    <dimen name="product_library_shrink_margin_small">-5dp</dimen>
     <dimen name="product_library_search_field_right_margin">20dp</dimen>
     <dimen name="product_library_search_and_button_margin_bottom">20dp</dimen>
+    <dimen name="product_library_search_input_width">400dp</dimen>
+    <dimen name="product_library_progressive_disclosure_view_padding_bottom">25dp</dimen>
 
     <!-- product mix -->
     <dimen name="product_mix_default_marging_top">15dp</dimen>
@@ -58,6 +66,13 @@
     <dimen name="button_height">48dp</dimen>
     <dimen name="header_height">56dp</dimen>
     <dimen name="button_margin_right">8dp</dimen>
+    <dimen name="edit_input_padding">4dp</dimen>
+    <dimen name="edit_dialog_input_field_height">48dp</dimen>
+    <dimen name="edit_item_button_padding">12dp</dimen>
+    <dimen name="edit_dialog_warning_right_margin">16dp</dimen>
+    <dimen name="edit_dialog_warning_left_margin">2dp</dimen>
+    <dimen name="edit_dialog_name_bottom_margin">2dp</dimen>
+    <dimen name="delete_confirm_dialog_text_linespace">12dp</dimen>
 
     <!-- Import/Export perform - left layout -->
     <dimen name="dataexchange_perform_box_top_margin">16dp</dimen>
@@ -67,5 +82,7 @@
     <dimen name="dataexchange_perform_box_import_height">380dp</dimen>
     <dimen name="dataexchange_perform_left_box_top_spacing_to_text">50dp</dimen>
     <dimen name="dataexchange_perform_left_box_spacing_from_top_image_to_text">50dp</dimen>
+
+    <dimen name="delete_dialog_width">592dp</dimen>
 
 </resources>

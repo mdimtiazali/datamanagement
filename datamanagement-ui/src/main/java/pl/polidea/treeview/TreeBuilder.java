@@ -42,6 +42,25 @@ public class TreeBuilder<T> {
       lastAddedId = child;
       lastLevel = manager.getLevel(child);
    }
+   /**
+    * Adds new relation to existing tree. Child is set as the last child of the
+    * parent node. Parent has to already exist in the tree, child cannot yet
+    * exist. This method is mostly useful in case you add entries layer by
+    * layer - i.e. first top level entries, then children for all parents, then
+    * grand-children and so on.
+    *
+    * @param parent
+    *            parent id
+    * @param child
+    *            child id
+    * @return true for adding child are visible, false for invisible
+    */
+   public synchronized boolean bAddRelation(final T parent, final T child) {
+      boolean v = manager.bAddAfterChild(parent, child, null);
+      lastAddedId = child;
+      lastLevel = manager.getLevel(child);
+      return v;
+   }
 
    /**
     * Adds sequentially new node. Using this method is the simplest way of
