@@ -164,6 +164,7 @@ public class ManageFragment extends BaseDataFragment {
             ((TabActivity) getActivity()).showPopup(delDialog, true);
          }
       });
+      delBtn.setEnabled(false);
       return layout;
    }
 
@@ -318,7 +319,7 @@ public class ManageFragment extends BaseDataFragment {
             manager.removeNodesRecursively(objectGraphs);
             treeAdapter.removeObjectGraphs(objectGraphs);
             if(!unprocessedObjects.isEmpty()){
-               addToTreeByBatch(unprocessedObjects);
+               addToTree(unprocessedObjects);
                treeAdapter.addObjectGraphs(unprocessedObjects);
             }
             setHeaderAndDeleteButton(false);
