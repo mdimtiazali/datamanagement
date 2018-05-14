@@ -21,6 +21,7 @@
       <type>RX_ZONE</type>
       <type>PRODUCT</type>
       <type>PRODUCT_MIX</type>
+      <type>VARIETY</type>
       <type>GUIDANCE_GROUP</type>
       <type>GUIDANCE_PATTERN</type>
       <type>BOUNDARY</type>
