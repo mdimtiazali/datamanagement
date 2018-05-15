@@ -36,6 +36,7 @@ import com.cnh.android.widget.control.PickListItem;
 import com.cnh.android.widget.control.ProgressBarView;
 import com.cnh.jgroups.Datasource;
 import com.cnh.jgroups.ObjectGraph;
+import com.cnh.pf.android.data.management.connection.DataServiceConnectionImpl;
 import com.cnh.pf.android.data.management.helper.IVIPDataHelper;
 import com.cnh.pf.android.data.management.helper.VIPDataHandler;
 import com.cnh.pf.android.data.management.parser.FormatManager;
@@ -57,6 +58,9 @@ import java.util.Collection;
 import java.util.Comparator;
 import java.util.List;
 import java.util.Map;
+
+import java.io.File;
+
 
 import roboguice.inject.InjectView;
 
@@ -589,6 +593,8 @@ public class ExportFragment extends BaseDataFragment {
       super.setSession(session);
       if (session != null) {
          logger.debug("setSession format: {}", session.getFormat());
+
+
          if (session.getFormat() == null) {
             exportFormatPicklist.setDisplayText(R.string.select_string);
          }
@@ -729,16 +735,37 @@ public class ExportFragment extends BaseDataFragment {
    private void exportSelected() {
       progressCurrentValue = 0;
       progressMaxValue = 0;
-      getSession().setData(null);
-      getSession().setObjectData(new ArrayList<ObjectGraph>(getTreeAdapter().getSelected()));
-      getSession().setDestination(((ObjectPickListItem<MediumDevice>) exportMediumPicklist.getSelectedItem()).getObject());
-      if (!getSession().getObjectData().isEmpty()) {
-         setSession(getDataManagementService().processOperation(getSession(), SessionOperation.PERFORM_OPERATIONS));
-         showProgressPanel();
-         setExportPicklistsReadOnly(true);
+
+      final String tempPath = UtilityHelper.CommonPaths.PATH_TMP.getPathString();
+      File tmpFolder = new File(tempPath);
+
+      boolean checkVal = true;
+
+      if (!tmpFolder.exists()) {
+         logger.info("creating temporary folder:{}", tmpFolder.getPath());
+         checkVal &= tmpFolder.mkdirs();
+         checkVal &= tmpFolder.setReadable(true, false);
+         checkVal &= tmpFolder.setExecutable(true, false);
+         checkVal &= tmpFolder.setWritable(true, false);
+      }
+
+      if (!checkVal) {
+         logger.error("unable to create temporary folder or set permissions to this");
+         getSession().setResult(Process.Result.ERROR);
+         globalEventManager.fire(new DataServiceConnectionImpl.ErrorEvent(session, DataServiceConnectionImpl.ErrorEvent.DataError.PERFORM_ERROR));
       }
       else {
-         Toast.makeText(getActivity(), "No data of selected format selected", Toast.LENGTH_LONG).show();
+         getSession().setData(null);
+         getSession().setObjectData(new ArrayList<ObjectGraph>(getTreeAdapter().getSelected()));
+         getSession().setDestination(((ObjectPickListItem<MediumDevice>) exportMediumPicklist.getSelectedItem()).getObject());
+         if (!getSession().getObjectData().isEmpty()) {
+            setSession(getDataManagementService().processOperation(getSession(), SessionOperation.PERFORM_OPERATIONS));
+            showProgressPanel();
+            setExportPicklistsReadOnly(true);
+         }
+         else {
+            Toast.makeText(getActivity(), "No data of selected format selected", Toast.LENGTH_LONG).show();
+         }
       }
    }
 

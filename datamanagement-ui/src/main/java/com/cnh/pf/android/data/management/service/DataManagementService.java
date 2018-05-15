@@ -12,6 +12,7 @@ import static android.os.Environment.MEDIA_BAD_REMOVAL;
 
 import static com.cnh.pf.android.data.management.helper.DatasourceHelper.getHostname;
 import static com.cnh.pf.android.data.management.utility.UtilityHelper.NEGATIVE_BINARY_ERROR;
+import static android.os.Environment.MEDIA_MOUNTED;
 import static com.cnh.pf.data.management.service.ServiceConstants.ACTION_STOP;
 
 import android.app.Application;
@@ -29,6 +30,7 @@ import android.os.IBinder;
 import android.os.ParcelUuid;
 import android.os.RemoteException;
 
+import android.os.StatFs;
 import com.android.annotations.NonNull;
 import com.cnh.android.status.Status;
 import com.cnh.jgroups.Datasource;
@@ -56,6 +58,7 @@ import com.google.common.base.Function;
 import com.google.common.base.Strings;
 import com.google.common.base.Throwables;
 import com.google.common.collect.Collections2;
+import com.google.common.io.Files;
 import com.google.inject.name.Named;
 
 import org.jgroups.Address;
@@ -68,8 +71,16 @@ import org.slf4j.LoggerFactory;
 
 import java.io.File;
 import java.io.FileFilter;
+import java.io.FileInputStream;
+import java.io.FileOutputStream;
+import java.nio.channels.FileChannel;
+
+import java.io.IOException;
+import java.text.SimpleDateFormat;
+import java.util.ArrayDeque;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -353,6 +364,9 @@ public class DataManagementService extends RoboService implements SharedPreferen
       });
    }
 
+   /**
+    * sets the USB status to ACTION_STATUS_REMOVE
+    */
    protected void removeUsbStatus() {
       if (dataStatus != null) {
          sendBroadcast(new Intent(Status.ACTION_STATUS_REMOVE).putExtra(Status.ID, ParcelUuid.fromString(dataStatus.getID().toString())));
@@ -360,6 +374,13 @@ public class DataManagementService extends RoboService implements SharedPreferen
       }
    }
 
+   /**
+    * triggers tasks and handles the requested operations
+    *
+    * @param session data management session
+    * @param sessionOperation operation to do
+    * @return returns the current session
+    */
    public DataManagementSession processOperation(final DataManagementSession session, DataManagementSession.SessionOperation sessionOperation) {
       logger.debug("service.processOperation: {}", sessionOperation);
       session.setSessionOperation(sessionOperation);
@@ -535,6 +556,7 @@ public class DataManagementService extends RoboService implements SharedPreferen
 
    /**
     * Return whether DISPLAY or INTERNAL data source is available
+    *
     * @return true if available, false otherwise;
     */
    public boolean hasLocalSources() {
@@ -741,6 +763,7 @@ public class DataManagementService extends RoboService implements SharedPreferen
 
    /**
     * Convert list of devices to array of addesses
+    *
     * @param devices
     * @return
     */
@@ -798,7 +821,8 @@ public class DataManagementService extends RoboService implements SharedPreferen
 
    /**
     * Resolve source addresses (MediumDevice) in session
-    * @param session    the data management session object
+    *
+    * @param session the data management session object
     * @return true if resolving addresses is successful
     */
    private boolean resolveSources(@NonNull DataManagementSession session) {
@@ -820,7 +844,8 @@ public class DataManagementService extends RoboService implements SharedPreferen
 
    /**
     * Resolve target addresses (MediumDevice) in session
-    * @param session    the data management session object
+    *
+    * @param session the data management session object
     * @return true if resolving addresses is successful
     */
    private boolean resolveTargets(@NonNull DataManagementSession session) {
@@ -832,7 +857,6 @@ public class DataManagementService extends RoboService implements SharedPreferen
          session.setDestinations(dsHelper.getLocalDatasources(session.getDestination().getType()));
          session.getDestination().setAddress(session.getDestination(0).getAddress()); //At this point, there is only one item in destinations
       }
-
       List<MediumDevice> destinations = session.getDestinations();
       List<MediumDevice> sources = session.getSources();
       if (destinations != null && sources != null) {
@@ -912,6 +936,9 @@ public class DataManagementService extends RoboService implements SharedPreferen
    }
 
    private class PerformOperationsTask extends SessionOperationTask<Void> {
+
+      private final String tempPath = UtilityHelper.CommonPaths.PATH_TMP.getPathString();
+
       @Override
       protected DataManagementSession doInBackground(DataManagementSession... params) {
          logger.debug("Performing Operations...");
@@ -946,7 +973,67 @@ public class DataManagementService extends RoboService implements SharedPreferen
                   }
                }
 
-               session.setResult(hasCancelled ? Result.CANCEL : Result.SUCCESS);
+               if (hasCancelled) {
+                  session.setResult(Result.CANCEL);
+               }
+               else {
+                  if (isUsbExport(session)) {
+                     boolean moveWasSuccessfull = false;
+
+                     final String USB_EXPORT_PATH = UtilityHelper.CommonPaths.PATH_USB_PORT.getPathString();
+
+                     final String PFDATABASE_FOLDER = UtilityHelper.CommonPaths.PATH_DESIGNATOR.getPathString()
+                           + formatManager.getFormat(UtilityHelper.CommonFormats.PFDATABASEFORMAT.getName()).path
+                           + UtilityHelper.CommonPaths.PATH_DESIGNATOR.getPathString();
+
+                     final String ISOXML_FOLDER = UtilityHelper.CommonPaths.PATH_DESIGNATOR.getPathString()
+                           + formatManager.getFormat(UtilityHelper.CommonFormats.ISOXMLFORMAT.getName()).path
+                           + UtilityHelper.CommonPaths.PATH_DESIGNATOR.getPathString();
+
+                     File tmpFolder = new File(tempPath);
+
+                     if (Environment.getExternalStorageState().equals(MEDIA_MOUNTED) && tmpFolder.exists()) {
+
+                        if (session.getFormat().equals(UtilityHelper.CommonFormats.PFDATABASEFORMAT.getName())) {
+                           logger.info("start moving files from: {} to {}{}", tempPath, USB_EXPORT_PATH, PFDATABASE_FOLDER);
+                           moveWasSuccessfull = moveFiles(tempPath, USB_EXPORT_PATH, PFDATABASE_FOLDER);
+                        }
+                        else if (session.getFormat().equals(UtilityHelper.CommonFormats.ISOXMLFORMAT.getName())) {
+                           logger.info("start moving files from: {} to {}{}",tempPath, USB_EXPORT_PATH, ISOXML_FOLDER);
+                           moveWasSuccessfull = moveFiles(tempPath, USB_EXPORT_PATH, ISOXML_FOLDER);
+                        }
+                        else {
+                           logger.info("Unknown destination on export");
+                        }
+
+                        logger.info("finished moving files");
+
+                        if (moveWasSuccessfull) {
+                           session.setResult(Result.SUCCESS);
+                        }
+                        else {
+                           session.setResult(Result.ERROR);
+                           globalEventManager.fire(new ErrorEvent(session, ErrorEvent.DataError.PERFORM_ERROR));
+                        }
+                     }
+                     else {
+                        faultHandler.getFault(FaultCode.USB_REMOVED_DURING_EXPORT).reset();
+                        faultHandler.getFault(FaultCode.USB_REMOVED_DURING_EXPORT).alert();
+                        session.setResult(Result.ERROR);
+                        session.setProgress(false);
+                        globalEventManager.fire(new ErrorEvent(session, ErrorEvent.DataError.PERFORM_ERROR));
+                     }
+
+                     if(tmpFolder.exists()) {
+                        if (!deleteRecursively(tmpFolder)){
+                           logger.error("unable to delete temporary folder:{}", tmpFolder.getPath());
+                        }
+                     }
+                  }
+                  else {
+                     session.setResult(Result.SUCCESS);
+                  }
+               }
             }
             else {
                session.setProgress(false);
@@ -962,6 +1049,138 @@ public class DataManagementService extends RoboService implements SharedPreferen
 
          }
          return session;
+      }
+
+      /**
+       * deletes file/folder and its content recursively
+       * @param path target to delete - if it is a folder - the content will be deleted recursively
+       * @return true if successful
+       */
+      protected boolean deleteRecursively(File path) {
+
+         boolean retValue = true;
+
+         if (path.exists()) {
+            if (path.isDirectory()) {
+               File[] fileList = path.listFiles();
+               if((null != fileList)&&(fileList.length > 0)) {
+                  for (File file : path.listFiles()) {
+                     retValue &= deleteRecursively(file);
+                  }
+               }
+            }
+            retValue &= path.delete();
+            if(!retValue){
+               logger.error("unable to delete: {}", path.getPath());
+            }
+         }
+         else {
+            logger.error("unable to delete not existing path: {}", path.getPath());
+            retValue = false;
+         }
+         return retValue;
+      }
+
+      private boolean moveFiles(String sourceDir, String destRoot, String destDir) {
+
+         boolean retValue = false;
+
+         File source = new File(sourceDir);
+         ArrayDeque<File> fileList = new ArrayDeque<File>();
+
+         File dest = new File(destRoot + destDir);
+         long exportSize = 0;
+
+         if ((null != source) && source.exists()) {
+
+            File[] paths = source.listFiles();
+            if (null != paths) {
+               for (File path : paths) {
+                  fileList.push(path);
+                  exportSize += path.length();
+               }
+            }
+            logger.debug("exporting source: ", source.getPath());
+            logger.debug("exporting destination: ", dest.getPath());
+
+            StatFs stat = new StatFs(destRoot);
+            long bytesFree = (long) stat.getAvailableBlocksLong() * (long) stat.getBlockCount();
+
+            boolean isMounted = Environment.getExternalStorageState().equals(MEDIA_MOUNTED);
+
+            if (exportSize == 0) {
+               logger.info("no source file found");
+            }
+            else if (bytesFree < exportSize) {
+               // reset before showing again
+               faultHandler.getFault(FaultCode.USB_NOT_ENOUGH_MEMORY).reset();
+               faultHandler.getFault(FaultCode.USB_NOT_ENOUGH_MEMORY).alert();
+               logger.info("not enough space on USB stick");
+            }
+            else if (!isMounted) {
+               // if the USB does not exist anymore, drop a USB removed alert
+               faultHandler.getFault(FaultCode.USB_REMOVED_DURING_EXPORT).reset();
+               faultHandler.getFault(FaultCode.USB_REMOVED_DURING_EXPORT).alert();
+               logger.info("USB stick is not mounted or has been removed");
+            }
+            else {
+               // check, if the folder on the USB stick is still existing and rename the old folder
+               if (dest.exists()) {
+                  logger.info("Renaming existing export destination folder");
+                  File copy = new File(dest.getAbsolutePath());
+                  copy.renameTo(new File(String.format("%s.%s", dest.getAbsolutePath(), new SimpleDateFormat("yyyyMMddHHmmss").format(new Date(dest.lastModified())))));
+               }
+               dest.mkdirs();
+
+               String root;
+
+               try {
+
+                  root = source.toString();
+                  File[] temppath = source.listFiles();
+                  File next;
+                  File destination;
+                  File parent;
+                  logger.info("start copy {} files", fileList.size());
+
+                  File destFolder = new File(destRoot);
+
+                  while (!fileList.isEmpty()) {
+                     next = fileList.pop();
+                     logger.info("copy:{}", next.getPath());
+                     if (next.isFile()) {
+                        destination = new File(String.format("%s%s", dest, next.toString().substring(root.length())));
+                        parent = destination.getCanonicalFile().getParentFile();
+                        if (!parent.exists()) {
+                           parent.mkdirs();
+                        }
+                        Files.move(next, destination);
+                        retValue = true;
+                     }
+                     else if (next.isDirectory()) {
+                        if (null != next.listFiles()) {
+                           for (File file : next.listFiles()) {
+                              fileList.push(file);
+                           }
+                           retValue = true;
+                        }
+                     }
+                  }
+                  logger.info("finished copy files");
+               }
+               catch (Exception e) {
+                  if (!Environment.getExternalStorageState().equals(MEDIA_MOUNTED)) {
+                     faultHandler.getFault(FaultCode.USB_REMOVED_DURING_EXPORT).reset();
+                     faultHandler.getFault(FaultCode.USB_REMOVED_DURING_EXPORT).alert();
+                  }
+                  logger.error("", e);
+               }
+            }
+         }
+         else {
+            logger.error("no source folder found");
+         }
+         return retValue;
       }
 
       @Override
