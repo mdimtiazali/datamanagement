@@ -15,6 +15,7 @@ import android.os.Bundle;
 import android.os.Environment;
 import android.os.RemoteException;
 import android.view.DragEvent;
+import android.view.Gravity;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.widget.Button;
@@ -24,6 +25,7 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import com.cnh.android.dialog.DialogViewInterface;
+import com.cnh.android.pf.widget.controls.ToastMessageCustom;
 import com.cnh.android.pf.widget.view.DisabledOverlay;
 import com.cnh.android.widget.activity.TabActivity;
 import com.cnh.android.widget.control.ProgressBarView;
@@ -320,7 +322,8 @@ public class ImportFragment extends BaseDataFragment {
          else if (getSession().getSessionOperation().equals(SessionOperation.CALCULATE_OPERATIONS) && !isCancelled()) {
             logger.debug("Calculate Targets");
             if (getSession().getData() == null || getSession().getData().isEmpty()) {
-               Toast.makeText(getActivity(), "No operations came back from server.  Check connectivity", Toast.LENGTH_SHORT).show();
+               ToastMessageCustom.makeToastMessageText(getActivity().getApplicationContext(), getString(R.string.no_operations_check_connectivity_string),
+                       Gravity.TOP| Gravity.CENTER_HORIZONTAL, getResources().getInteger(R.integer.toast_message_xoffset), getResources().getInteger(R.integer.toast_message_yoffset)).show();
                cancel();
                return;
             }
@@ -401,10 +404,12 @@ public class ImportFragment extends BaseDataFragment {
                getTreeAdapter().selectAll(treeViewList, false);
                removeProgressPanel();
                if (getSession().getResult().equals(Process.Result.SUCCESS)) {
-                  Toast.makeText(getActivity(), getString(R.string.import_complete), Toast.LENGTH_LONG).show();
+                  ToastMessageCustom.makeToastMessageText(getActivity().getApplicationContext(), getString(R.string.import_complete),
+                          Gravity.TOP| Gravity.CENTER_HORIZONTAL, getResources().getInteger(R.integer.toast_message_xoffset), getResources().getInteger(R.integer.toast_message_yoffset)).show();
                }
                else if (getSession().getResult().equals(Process.Result.CANCEL)) {
-                  Toast.makeText(getActivity(), getString(R.string.import_cancel), Toast.LENGTH_LONG).show();
+                  ToastMessageCustom.makeToastMessageText(getActivity().getApplicationContext(), getString(R.string.import_cancel),
+                          Gravity.TOP| Gravity.CENTER_HORIZONTAL, getResources().getInteger(R.integer.toast_message_xoffset), getResources().getInteger(R.integer.toast_message_yoffset)).show();
                }
             }
             else {

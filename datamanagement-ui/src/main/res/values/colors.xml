@@ -21,10 +21,16 @@
     <dimen name="selected_corner_radius">4dp</dimen>
 
     <!-- Dashed border -->
-    <color name="dash_border">#1277bd</color>
+    <color name="dash_border">#006ab1</color>
+    <color name="dash_border_initial">#bbbbbb</color>
     <dimen name="dash_gap">18dp</dimen>
     <dimen name="dash_length">18dp</dimen>
     <dimen name="dash_width">2dp</dimen>
+
+    <!-- Drag & Drop Area -->
+    <color name="drag_drop_background_initial">#ecedee</color>
+    <color name="drag_drop_background_accept">#e5ebf0</color>
+    <color name="drag_drop_glow_edge">#c7dfe9</color>
 
     <!-- Panel border -->
     <color name="data_panel_border">#80bee9</color>

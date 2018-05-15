@@ -14,64 +14,74 @@
         android:layout_height="match_parent">
 
     <LinearLayout
+            android:orientation="vertical"
             android:layout_width="match_parent"
             android:layout_height="match_parent"
-            android:layout_marginLeft="16dp"
-            android:layout_marginRight="16dp"
-            android:orientation="vertical">
-
-        <Button
-                android:id="@+id/import_source_btn"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:layout_marginTop="12dp"
-                android:layout_gravity="center"
-                style="@style/Button"
-                android:text="@string/select_source"
-                android:textSize="22dp" />
+            android:layout_marginStart="@dimen/left_layout_background_start_margin"
+            android:layout_marginEnd="@dimen/left_layout_background_end_margin"
+            android:background="@drawable/export_import_bg">
 
         <LinearLayout
                 android:layout_width="match_parent"
-                android:layout_height="@dimen/dataexchange_perform_box_import_height"
-                android:layout_marginTop="12dp"
-                android:orientation="vertical"
-                android:background="@drawable/dashed_border">
+                android:layout_height="match_parent"
+                android:layout_marginLeft="16dp"
+                android:layout_marginRight="16dp"
+                android:orientation="vertical">
 
-            <include layout="@layout/perform_left_layout"/>
+            <Button
+                    android:id="@+id/import_source_btn"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="12dp"
+                    android:layout_gravity="center"
+                    style="@style/Button"
+                    android:text="@string/select_source"
+                    android:textSize="22dp" />
 
             <LinearLayout
-                    android:id="@+id/import_drop_zone"
                     android:layout_width="match_parent"
+                    android:layout_height="@dimen/dataexchange_perform_box_import_height"
+                    android:layout_marginTop="12dp"
                     android:orientation="vertical"
-                    android:layout_height="match_parent">
+                    android:background="@drawable/dashed_border_accept">
 
-                <ImageView
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:layout_marginTop="50dp"
-                        android:background="@drawable/ic_dragdrop_import_display"
-                        android:layout_gravity="center"/>
+                <include layout="@layout/perform_left_layout"/>
 
-                <TextView
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:layout_gravity="center_horizontal"
-                        android:gravity="center"
-                        android:layout_marginBottom="50dp"
-                        style="@style/TextAppearance.Import.Entity"
-                        android:text="@string/import_drag_and_drop" />
+                <LinearLayout
+                        android:id="@+id/import_drop_zone"
+                        android:layout_width="match_parent"
+                        android:orientation="vertical"
+                        android:layout_height="match_parent">
+
+                    <ImageView
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:layout_marginTop="50dp"
+                            android:background="@drawable/ic_import_dragndrop_area"
+                            android:layout_gravity="center"/>
+
+                    <TextView
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:layout_gravity="center_horizontal"
+                            android:gravity="center"
+                            android:layout_marginBottom="50dp"
+                            style="@style/TextAppearance.Import.Entity"
+                            android:text="@string/import_drag_and_drop" />
+                </LinearLayout>
             </LinearLayout>
+
+            <Button
+                    android:id="@+id/import_selected_btn"
+                    style="@style/Button"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="12dp"
+                    android:enabled="false"
+                    android:text="@string/import_selected"
+                    android:textSize="22dp" />
         </LinearLayout>
 
-        <Button
-                android:id="@+id/import_selected_btn"
-                style="@style/Button"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:layout_marginTop="12dp"
-                android:enabled="false"
-                android:text="@string/import_selected"
-                android:textSize="22dp" />
     </LinearLayout>
 
 </LinearLayout>

@@ -53,7 +53,8 @@
                     style="@style/TextAppearance.Import.Entity"/>
             <Button
                     android:id="@+id/select_all_btn"
-                    android:layout_width="175dp"
+                    android:layout_width="@dimen/min_select_all_btn_width"
+                    android:minWidth="175dp"
                     android:layout_height="@dimen/button_height"
                     style="@style/Button"
                     android:enabled="false"

@@ -14,4 +14,7 @@
     <integer name="variety_list_item_name_weight">7</integer>
     <integer name="variety_list_item_crop_type_weight">6</integer>
     <integer name="variety_list_item_color_weight">5</integer>
+    <integer name="toast_message_yoffset">35</integer>
+    <integer name="toast_message_xoffset">0</integer>
+
 </resources>

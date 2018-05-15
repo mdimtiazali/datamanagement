@@ -30,6 +30,7 @@ import com.cnh.android.dialog.DialogViewInterface;
 import com.cnh.android.dialog.TextDialogView;
 import com.cnh.android.pf.widget.view.DisabledOverlay;
 import com.cnh.android.pf.widget.controls.PopoverWindowInfoView;
+import com.cnh.android.pf.widget.controls.ToastMessageCustom;
 import com.cnh.android.widget.activity.TabActivity;
 import com.cnh.android.widget.control.PickList;
 import com.cnh.android.widget.control.PickListAdapter;
@@ -104,9 +105,6 @@ public class ExportFragment extends BaseDataFragment {
    @InjectView(R.id.format_info_btn)
    ImageButton formatInfoButton;
 
-   private int dragAcceptColor;
-   private int dragRejectColor;
-   private int dragEnterColor;
    private int transparentColor;
    private VIPDataHandler vipDataHandler;
    private VipDataHelperListener vipDataHelperListener;
@@ -141,9 +139,6 @@ public class ExportFragment extends BaseDataFragment {
       }
 
       final Resources resources = getResources();
-      dragAcceptColor = resources.getColor(R.color.drag_accept);
-      dragRejectColor = resources.getColor(R.color.drag_reject);
-      dragEnterColor = resources.getColor(R.color.drag_enter);
       transparentColor = resources.getColor(android.R.color.transparent);
       loading_string = resources.getString(R.string.loading_string);
       x_of_y_format = resources.getString(R.string.x_of_y_format);
@@ -203,22 +198,28 @@ public class ExportFragment extends BaseDataFragment {
          public boolean onDrag(View v, DragEvent event) {
             switch (event.getAction()) {
             case DragEvent.ACTION_DRAG_STARTED:
-               if (exportSelectedBtn.isEnabled()) {
-                  exportDropZone.setBackgroundColor(dragAcceptColor);
-               }
                return true;
             case DragEvent.ACTION_DRAG_ENDED:
-               exportDropZone.setBackgroundColor(transparentColor);
                return true;
             case DragEvent.ACTION_DRAG_ENTERED:
-               exportDropZone.setBackgroundColor(exportSelectedBtn.isEnabled() ? dragEnterColor : dragRejectColor);
+               if (!exportSelectedBtn.isEnabled()) {
+                  ToastMessageCustom.makeToastMessageText(getActivity().getApplicationContext(), getString(R.string.error_drag_drop),
+                          Gravity.TOP| Gravity.CENTER_HORIZONTAL, getResources().getInteger(R.integer.toast_message_xoffset), getResources().getInteger(R.integer.toast_message_yoffset)).show();
+               }
+               else {
+                  exportDropZone.setBackgroundResource(R.drawable.dashed_border_accept);
+               }
                return true;
             case DragEvent.ACTION_DRAG_EXITED:
-               exportDropZone.setBackgroundColor(exportSelectedBtn.isEnabled() ? dragAcceptColor : transparentColor);
+               if (exportSelectedBtn.isEnabled()) {
+                  exportDropZone.setBackgroundColor(transparentColor);
+                  exportDropZone.setBackgroundResource(R.drawable.dashed_border_selected);
+               }
                return true;
             case DragEvent.ACTION_DROP:
                logger.info("Dropped");
                if (exportSelectedBtn.isEnabled()) {
+                  exportDropZone.setBackgroundResource(R.drawable.dashed_border_initial);
                   exportSelected();
                }
                return true;
@@ -699,7 +700,8 @@ public class ExportFragment extends BaseDataFragment {
                   showFinishedStatePanel(true);
                   progressCurrentValue = 0;
                   progressMaxValue = 0;
-                  Toast.makeText(getActivity(), getString(R.string.export_complete), Toast.LENGTH_LONG).show();
+                  ToastMessageCustom.makeToastMessageText(getActivity().getApplicationContext(), getString(R.string.export_complete),
+                          Gravity.TOP| Gravity.CENTER_HORIZONTAL, getResources().getInteger(R.integer.toast_message_xoffset), getResources().getInteger(R.integer.toast_message_yoffset)).show();
                }
                else {
                   showDragAndDropZone();
@@ -811,7 +813,8 @@ public class ExportFragment extends BaseDataFragment {
             setExportPicklistsReadOnly(true);
          }
          else {
-            Toast.makeText(getActivity(), "No data of selected format selected", Toast.LENGTH_LONG).show();
+            ToastMessageCustom.makeToastMessageText(getActivity().getApplicationContext(), getString(R.string.no_data_of_format_string),
+                    Gravity.TOP| Gravity.CENTER_HORIZONTAL, getResources().getInteger(R.integer.toast_message_xoffset), getResources().getInteger(R.integer.toast_message_yoffset)).show();
          }
       }
    }
@@ -882,7 +885,7 @@ public class ExportFragment extends BaseDataFragment {
          }
       }
       if (defaultButtonText == true) {
-         exportSelectedBtn .setText(getResources().getString(R.string.export_selected));
+         exportSelectedBtn.setText(getResources().getString(R.string.export_selected));
       }
       boolean hasSelection = getTreeAdapter() != null
               && s != null
@@ -891,7 +894,15 @@ public class ExportFragment extends BaseDataFragment {
               && s.getFormat() != null
               && getTreeAdapter().hasSelection();
 
-      exportSelectedBtn.setEnabled(hasSelection && !isActiveOperation);
+      if (hasSelection && !isActiveOperation) {
+         exportSelectedBtn.setEnabled(true);
+         exportDropZone.setBackgroundResource(R.drawable.dashed_border_selected);
+      }
+      else {
+         exportSelectedBtn.setEnabled(false);
+         exportDropZone.setBackgroundResource(R.drawable.dashed_border_initial);
+      }
+
    }
 
    @Override

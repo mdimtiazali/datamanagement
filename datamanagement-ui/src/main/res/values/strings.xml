@@ -34,6 +34,9 @@
     <string name="select_path">Select Path...</string>
     <string name="continue_string">Continue</string>
     <string name="next">Next</string>
+    <string name="copy_click_string">Copy click on node </string>
+    <string name="no_data_of_format_string">No data of selected format selected</string>
+    <string name="no_operations_check_connectivity_string">No operations came back from server. Check connectivity</string>
 
     <string name="pfds">Grower/Farm/Field/Task</string>
     <string name="vehicles">Vehicles</string>
@@ -133,6 +136,7 @@
     <string name="error_calculate_conflicts">Calculate Conflicts Error</string>
     <string name="error_calculate_operations">Calculate Targets Error</string>
     <string name="error_discovery">Discovery Error</string>
+    <string name="error_drag_drop">Select destination and/or format</string>
     <string name="status_cancelled">Cancelled</string>
     <string name="status_cancelling">Cancelling...</string>
     <string name="status_successful">Successful</string>

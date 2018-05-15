@@ -3,6 +3,7 @@ package com.cnh.pf.android.data.management;
 import android.app.ProgressDialog;
 import android.os.Bundle;
 import android.os.RemoteException;
+import android.view.Gravity;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -14,6 +15,7 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import com.cnh.android.dialog.DialogViewInterface;
+import com.cnh.android.pf.widget.controls.ToastMessageCustom;
 import com.cnh.android.pf.widget.view.DisabledOverlay;
 import com.cnh.android.widget.activity.TabActivity;
 import com.cnh.jgroups.Datasource;
@@ -115,8 +117,9 @@ public class ManageFragment extends BaseDataFragment implements SystemStatusHelp
          }
          case R.id.mng_copy_button: {
             ObjectGraph nodeInfo = (ObjectGraph) v.getTag();
-            //Todo: need to support copy&paste
-            Toast.makeText(getActivity(), "Copy click on node " + nodeInfo.toString(), Toast.LENGTH_LONG).show();
+            //Todo: need to support delete
+            ToastMessageCustom.makeToastMessageText(getActivity().getApplicationContext(), getString(R.string.copy_click_string) + nodeInfo.toString(),
+                    Gravity.TOP| Gravity.CENTER_HORIZONTAL, getResources().getInteger(R.integer.toast_message_xoffset), getResources().getInteger(R.integer.toast_message_yoffset)).show();
          }
          }
       }
@@ -195,8 +198,9 @@ public class ManageFragment extends BaseDataFragment implements SystemStatusHelp
                         }
                         deletingProg.show();
                      }
-                     else{
-                        Toast.makeText(getActivity(), getResources().getString(R.string.no_data_for_delete), Toast.LENGTH_LONG).show();
+                     else {
+                        ToastMessageCustom.makeToastMessageText(getActivity().getApplicationContext(), getString(R.string.no_data_for_delete),
+                                Gravity.TOP| Gravity.CENTER_HORIZONTAL, getResources().getInteger(R.integer.toast_message_xoffset), getResources().getInteger(R.integer.toast_message_yoffset)).show();
                      }
                   }
                }
@@ -301,14 +305,16 @@ public class ManageFragment extends BaseDataFragment implements SystemStatusHelp
             if (updatingProg != null) {
                updatingProg.dismiss();
             }
-            Toast.makeText(getActivity(), getString(R.string.update_error_notice), Toast.LENGTH_LONG).show();
+            ToastMessageCustom.makeToastMessageText(getActivity().getApplicationContext(), getString(R.string.update_error_notice),
+                    Gravity.TOP| Gravity.CENTER_HORIZONTAL, getResources().getInteger(R.integer.toast_message_xoffset), getResources().getInteger(R.integer.toast_message_yoffset)).show();
          }
          else if(getSession().getSessionOperation().equals(DataManagementSession.SessionOperation.DELETE)){
             if (deletingProg != null) {
                deletingProg.dismiss();
             }
             setHeaderAndDeleteButton(false);
-            Toast.makeText(getActivity(), getString(R.string.delete_error_notice), Toast.LENGTH_LONG).show();
+            ToastMessageCustom.makeToastMessageText(getActivity().getApplicationContext(), getString(R.string.delete_error_notice),
+                    Gravity.TOP| Gravity.CENTER_HORIZONTAL, getResources().getInteger(R.integer.toast_message_xoffset), getResources().getInteger(R.integer.toast_message_yoffset)).show();
             sessionOperate(session, DataManagementSession.SessionOperation.DISCOVERY);
          }
          else {
