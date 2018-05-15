@@ -57,7 +57,7 @@
                     android:src="@drawable/mng_del_button_states"
                     style="@style/Button"
                     android:enabled="false"
-                    android:layout_marginRight="16dp"
+                    android:layout_marginRight="@dimen/button_margin_right"
                     android:layout_marginBottom="@dimen/button_margin_bottom"
                     android:layout_marginTop="@dimen/button_margin_top"
                     android:layout_toLeftOf="@id/select_all_btn"/>
