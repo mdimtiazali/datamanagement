@@ -50,5 +50,8 @@
 
     <color name="list_item_text_color">#505050</color>
 
+   <!--Data Exchange overlay-->
+   <color name="data_exchange_overlay_background">#BBFFFFFF</color>
+   <color name="data_exchange_overlay_descriptiontext_color">#aeafaf</color>
 
 </resources>

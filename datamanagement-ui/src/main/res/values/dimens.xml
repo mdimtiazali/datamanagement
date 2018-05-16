@@ -88,4 +88,8 @@
 
     <dimen name="delete_dialog_width">592dp</dimen>
 
+   <!-- Import/Export Overlays-->
+   <dimen name="dataexchange_blocked_overlay_spacing_between_lines">10dp</dimen>
+   <dimen name="dataexchange_blocked_overlay_image_padding">40dp</dimen>
+
 </resources>

@@ -146,8 +146,15 @@
     <string name="import_cancel">Import Cancelled</string>
     <string name="export_complete">Export Completed</string>
     <string name="export_cancel">Export Cancelled</string>
+    <string name="export_in_progress">Export in Progress</string>
+    <string name="import_in_progress">Import in Progress</string>
+    <string name="dataexchange_accessible_after_process_finished">You may access this page once the\nprocess is
+        completed.
+    </string>
+    <string name="dataexchange_leave_during_export_process">You may leave this page during the export</string>
+    <string name="dataexchange_leave_during_import_process">You may leave this page during the import</string>
     <string name="error_delete">Fail to delete data</string>
-   <string name="delete_progress_title">In deleting data ...</string>
+    <string name="delete_progress_title">In deleting data ...</string>
     <plurals name="delete_confirm_dialog_title">
         <item quantity="one">Delete Confirmation (%1$d Item)</item>
         <item quantity="other">Delete Confirmation (%1$d Items)</item>
