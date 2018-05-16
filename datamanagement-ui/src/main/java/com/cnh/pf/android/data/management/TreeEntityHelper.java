@@ -39,6 +39,7 @@ public class TreeEntityHelper {
    public static final String NOTES = "NOTES";
    public static final String PRODUCT_MIX_VARIETY = "PRODUCT_MIX_VARIETY";
    public static final String GUIDANCE_CONFIGURATIONS = "GUIDANCE_CONFIGURATIONS";
+   public static final String DDOP = "DDOP";
 
    static {
       TYPE_ICONS.put(DataTypes.GROWER, R.drawable.ic_datatree_grower);
@@ -117,6 +118,7 @@ public class TreeEntityHelper {
          put(DataTypes.IMPLEMENT,IMPLEMENTS);
          put(DataTypes.NOTE,NOTES);
          put(DataTypes.GUIDANCE_CONFIGURATION,GUIDANCE_CONFIGURATIONS);
+         put(DataTypes.DDOP,DDOP);
       }
    };
    public static Map<String, String> group2group = new HashMap<String, String>() {

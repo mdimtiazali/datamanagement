@@ -26,6 +26,7 @@
       <type>GUIDANCE_PATTERN</type>
       <type>BOUNDARY</type>
       <type>LANDMARK</type>
+      <type>DDOP</type>
    </format>
 
    <format name="PF Database" pcm="true" standalone="true" path="PFDATABASE">
