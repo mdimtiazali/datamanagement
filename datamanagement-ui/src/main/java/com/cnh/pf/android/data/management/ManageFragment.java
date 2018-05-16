@@ -194,7 +194,7 @@ public class ManageFragment extends BaseDataFragment implements SystemStatusHelp
                         }
                         deletingProg.show();
                      }
-                     else {
+                     else{
                         Toast.makeText(getActivity(), getResources().getString(R.string.no_data_for_delete), Toast.LENGTH_LONG).show();
                      }
                   }
@@ -363,27 +363,61 @@ public class ManageFragment extends BaseDataFragment implements SystemStatusHelp
                }
             }
             if(undeletedObjects.isEmpty()){
-               treeAdapter.removeObjectGraphs(removedObjects);
-               treeAdapter.updateViewSelection(treeViewList);
-               manager.removeNodesRecursively(removedObjects);
-               setHeaderAndDeleteButton(false);
+               removeAndRefreshObjectUI(removedObjects);
             }
             else {
+               removeAndRefreshObjectUI(removedObjects);
                UndeleteObjectDialog undeleteObjectDialog = new UndeleteObjectDialog(getActivity(), undeletedObjects);
                undeleteObjectDialog.setBodyHeight(320);
                undeleteObjectDialog.setTitle(getString(R.string.undelete_objects_headline));
-               undeleteObjectDialog.setOnButtonClickListener(new DialogViewInterface.OnButtonClickListener() {
-                  @Override
-                  public void onButtonClick(DialogViewInterface dialogViewInterface, int i) {
-                     treeAdapter.removeObjectGraphs(removedObjects);
-                     treeAdapter.updateViewSelection(treeViewList);
-                     manager.removeNodesRecursively(removedObjects);
-                     setHeaderAndDeleteButton(false);
-                  }
-               });
                ((TabActivity) getActivity()).showPopup(undeleteObjectDialog, true);
             }
          }
+      }
+   }
+   //remove data and refresh UI
+   private void removeAndRefreshObjectUI(List<ObjectGraph> objects){
+      treeAdapter.removeObjectGraphs(objects);
+      treeAdapter.updateViewSelection(treeViewList);
+      manager.removeNodesRecursively(objects);
+      removeParentEmptyGroup(objects);
+      setHeaderAndDeleteButton(false);
+   }
+   //true for empty group false for not
+   private boolean isEmptyGroup(ObjectGraph objectGraph){
+      if(objectGraph instanceof GroupObjectGraph){
+         List<ObjectGraph> children = manager.getChildren(objectGraph);
+         if(children == null || children.isEmpty()){
+            return true;
+         }
+         else{
+            for(ObjectGraph o:children){
+               if(!isEmptyGroup(o)){
+                  return false;
+               }
+            }
+            return true;
+         }
+      }
+      return false;
+   }
+   //remove the empty group item
+   private void removeParentEmptyGroup(List<ObjectGraph> list){
+      Set<ObjectGraph> emptyGroup = new HashSet<ObjectGraph>();
+      for(ObjectGraph o : list){
+         if(TreeEntityHelper.obj2group.containsKey(o.getType())){
+            List<ObjectGraph> slibingsOrParent = manager.getChildren(o.getParent());
+            if(slibingsOrParent != null && ! slibingsOrParent.isEmpty()){
+               for(ObjectGraph obj : slibingsOrParent){
+                  if(obj instanceof GroupObjectGraph && isEmptyGroup(obj) && !emptyGroup.contains(obj)){
+                     emptyGroup.add(obj);
+                  }
+               }
+            }
+         }
+      }
+      if(!emptyGroup.isEmpty()){
+         manager.removeNodesRecursively(new LinkedList<ObjectGraph>(emptyGroup));
       }
    }
    // find out what object in change were removed compared with base object.
