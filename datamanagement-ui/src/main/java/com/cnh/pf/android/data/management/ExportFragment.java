@@ -24,7 +24,6 @@ import android.widget.Button;
 import android.widget.ImageButton;
 import android.widget.LinearLayout;
 import android.widget.TextView;
-import android.widget.Toast;
 
 import com.cnh.android.dialog.DialogViewInterface;
 import com.cnh.android.dialog.TextDialogView;
@@ -53,6 +52,7 @@ import com.cnh.pf.datamng.Process;
 import com.cnh.pf.model.vip.vehimp.VehicleCurrent;
 import com.google.inject.Inject;
 
+import java.math.BigDecimal;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -881,11 +881,17 @@ public class ExportFragment extends BaseDataFragment {
          int selectedItemCount = getTreeAdapter().getSelectionMap().size();
          if (selectedItemCount > 0) {
             defaultButtonText = false;
-            exportSelectedBtn.setText(getResources().getString(R.string.export_selected) + " (" + getTreeAdapter().getSelectionMap().size() + ")");
+            Resources resources = getResources();
+            exportSelectedBtn.setText(resources.getString(R.string.export_selected) + " (" + selectedItemCount + ")");
+            exportSelectedBtn.setTextSize(selectedItemCount > resources.getInteger(R.integer.max_tree_selections_before_text_adjustment)
+                    ? resources.getDimension(R.dimen.button_default_text_size) - resources.getDimension(R.dimen.decrease_text_size)
+                    : resources.getDimension(R.dimen.button_default_text_size));
          }
       }
       if (defaultButtonText == true) {
          exportSelectedBtn.setText(getResources().getString(R.string.export_selected));
+         float defaultButtonSize = getResources().getDimension(R.dimen.button_default_text_size);
+         if (exportSelectedBtn.getTextSize() < defaultButtonSize) exportSelectedBtn.setTextSize(defaultButtonSize);
       }
       boolean hasSelection = getTreeAdapter() != null
               && s != null

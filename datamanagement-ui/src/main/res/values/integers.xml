@@ -16,5 +16,6 @@
     <integer name="variety_list_item_color_weight">5</integer>
     <integer name="toast_message_yoffset">35</integer>
     <integer name="toast_message_xoffset">0</integer>
+    <integer name="max_tree_selections_before_text_adjustment">999</integer>
 
 </resources>

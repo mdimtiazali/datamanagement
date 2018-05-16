@@ -10,6 +10,8 @@
 <resources>
 
     <dimen name="minimum_padding">2dp</dimen>
+    <dimen name="minimum_text_size">18sp</dimen>
+    <dimen name="decrease_text_size">2sp</dimen>
 
     <dimen name="list_item_height">48dp</dimen>
     <dimen name="list_item_large_text_size">22sp</dimen>
@@ -86,6 +88,7 @@
     <dimen name="no_device_layout_text_view_text_size">18dp</dimen>
     <dimen name="left_layout_background_start_margin">1dp</dimen>
     <dimen name="left_layout_background_end_margin">2dp</dimen>
+    <dimen name="button_default_text_size">22sp</dimen>
 
     <dimen name="undelete_dialog_edge_margin">24dp</dimen>
     <dimen name="progress_circle_diameter">48dp</dimen>

@@ -11,6 +11,7 @@ package com.cnh.pf.android.data.management;
 
 import static android.os.Environment.MEDIA_BAD_REMOVAL;
 
+import android.content.res.Resources;
 import android.os.Bundle;
 import android.os.Environment;
 import android.os.RemoteException;
@@ -22,7 +23,6 @@ import android.widget.Button;
 import android.widget.ImageButton;
 import android.widget.LinearLayout;
 import android.widget.TextView;
-import android.widget.Toast;
 
 import com.cnh.android.dialog.DialogViewInterface;
 import com.cnh.android.pf.widget.controls.ToastMessageCustom;
@@ -187,11 +187,17 @@ public class ImportFragment extends BaseDataFragment {
          int selectedItemCount = getTreeAdapter().getSelectionMap().size();
          if (selectedItemCount > 0) {
             defaultButtonText = false;
-            importSelectedBtn.setText(getResources().getString(R.string.import_selected) + " (" + treeAdapter.getSelectionMap().size() + ")");
+            Resources resources = getResources();
+            importSelectedBtn.setText(resources.getString(R.string.import_selected) + " (" + selectedItemCount + ")");
+            importSelectedBtn.setTextSize(selectedItemCount > resources.getInteger(R.integer.max_tree_selections_before_text_adjustment)
+                    ? resources.getDimension(R.dimen.button_default_text_size) - resources.getDimension(R.dimen.decrease_text_size)
+                    : resources.getDimension(R.dimen.button_default_text_size));
          }
       }
       if (defaultButtonText == true) {
          importSelectedBtn.setText(getResources().getString(R.string.import_selected));
+         float defaultButtonSize = getResources().getDimension(R.dimen.button_default_text_size);
+         if (importSelectedBtn.getTextSize() < defaultButtonSize) importSelectedBtn.setTextSize(defaultButtonSize);
       }
       importSourceBtn.setEnabled(connected && !isActiveOperation);
       importSelectedBtn.setEnabled(connected && hasSelection && !isActiveOperation && s != null);
