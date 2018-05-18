@@ -83,30 +83,27 @@
     <string name="file_name">File Name</string>
     <string name="empty_discovery">No data found</string>
     <string name="export_cancel_confirmation">This will cancel current export.\nDo you want to proceed?</string>
-    <string name="format_description">Export Formats
-        \n
-        \nPF Database:
-        \n - All Data Types
+    <string name="format_description_title">Export Formats</string>
+    <string name="format_description">PF Database:
+        \n- All Data Types
         \n
         \nISOXML:
-        \n - Grower, Farm, Field, and Task Folders
-        \n - Task Data:
-        \n      - AsApplied Logs
-        \n      - Harvest Logs
-        \n      - Coverage Logs
-        \n      - Trip Computer Logs
-        \n - Products, Varieties, and Product Mixes
-        \n - Variety Maps
-        \n - Prescriptions
-        \n - Guidance Lines (Except Field and Multi-Swaths)
-        \n - Boundaries
-        \n - Landmarks:
-        \n      - Point, Line, and Area Features
+        \n- Grower, Farm, Field, and Task Folders
+        \n- Task Data:
+        \n\t\t- AsApplied Logs
+        \n\t\t- Harvest Logs
+        \n\t\t- Coverage Logs
+        \n\t\t- Trip Computer Logs
+        \n- Products, Varieties, and Product Mixes
+        \n- Variety Maps
+        \n- Prescriptions
+        \n- Guidance Lines (Except Field and Multi-Swaths)
+        \n- Boundaries
+        \n- Landmarks:
+        \n\t\t- Point, Line, and Area Features
     </string>
-    <string name="destination_heading">Supported Export Destinations:</string>
-    <string name="case_destination_info">Supported Export Destinations:
-        \n
-        \nPlease select the proper destination to ensure the export file structure is compatible with the destination file structure.
+    <string name="destination_title">Supported Export Destinations:</string>
+    <string name="case_destination_info">Please select the proper destination to ensure the export file structure is compatible with the destination file structure.
         \n
         \nYou can export to the USB for use on the following products:
         \n- Pro 1200
@@ -115,11 +112,9 @@
         \n- Desktop Software
         \n
         \nYou can export directly to the AFS Connect by selecting:
-        \n- AFS Connect"
+        \n- AFS Connect
     </string>
-    <string name="new_holland_destination_info">Supported Export Destinations:
-        \n
-        \nPlease select the proper destination to ensure the export file structure is compatible with the destination file structure.
+    <string name="new_holland_destination_info">Please select the proper destination to ensure the export file structure is compatible with the destination file structure.
         \n
         \nYou can export to the USB for use on the following products:
         \n- Intelliview 12
@@ -127,8 +122,8 @@
         \n- Intelliview IV
         \n- Desktop Software
         \n
-        \nYou can export directly to the AFS Connect by selecting:
-        \n- PLM Connect"
+        \nYou can export directly to the PLM Connect by selecting:
+        \n- PLM Connect
     </string>
 
     <string name="error_no_data">No Data</string>

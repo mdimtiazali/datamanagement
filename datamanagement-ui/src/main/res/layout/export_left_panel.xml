@@ -34,6 +34,15 @@
                     style="@style/TextAppearance.Import.Entity"
                     android:text="@string/export_to"/>
 
+            <ImageButton
+                    android:id="@+id/dest_info_btn"
+                    android:src="@drawable/ph_info_icon"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:padding="8dip"
+                    android:background="@android:color/transparent"
+                    android:layout_gravity="center_vertical"/>
+
         </LinearLayout>
 
         <com.cnh.android.widget.control.PickList
@@ -60,13 +69,14 @@
                     style="@style/TextAppearance.Import.Entity"
                     android:text="@string/export_format"/>
 
-            <com.cnh.android.widget.control.InfoButton
+            <ImageButton
                     android:id="@+id/format_info_btn"
+                    android:src="@drawable/ph_info_icon"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:layout_gravity="center_vertical"
-                    cnh:popup_description="@string/format_description"
-                    cnh:popover_style="light_info"/>
+                    android:padding="8dip"
+                    android:background="@android:color/transparent"
+                    android:layout_gravity="center_vertical"/>
 
         </LinearLayout>
 
