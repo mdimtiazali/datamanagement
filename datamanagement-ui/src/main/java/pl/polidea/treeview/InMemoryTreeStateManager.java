@@ -38,25 +38,10 @@ public class InMemoryTreeStateManager<T> implements TreeStateManager<T>, Sortabl
       }
    }
 
-   /**
-    * Sort a list of child nodes in the tree data recursively
-    * @param node parent node whose child nodes get sorted.
-    * @param comparator comparator object to implement comparison logic
-    */
-   private void recursiveSortChildren(InMemoryTreeNode<T> node, Comparator<? super InMemoryTreeNode<T>> comparator) {
-      if (node.getChildrenListSize() == 0) {
-         return;
-      }
-
-      Collections.sort(node.getChildren(), comparator);
-      for (InMemoryTreeNode<T> child : node.getChildren()) {
-         recursiveSortChildren(child, comparator);
-      }
-   }
 
    @Override
    public void sortChildren(Comparator<? super InMemoryTreeNode<T>> comparator) {
-      recursiveSortChildren(this.topSentinel, comparator);
+      this.topSentinel.sortChildren(comparator);
    }
 
    /**
@@ -141,7 +126,7 @@ public class InMemoryTreeStateManager<T> implements TreeStateManager<T>, Sortabl
    }
 
    @Override
-   public synchronized void addBeforeChild(final T parent, final T newChild, final T beforeChild) {
+   public synchronized boolean bAddBeforeChild(T parent, T newChild, T beforeChild) {
       expectNodeNotInTreeYet(newChild);
       final InMemoryTreeNode<T> node = getNodeFromTreeOrThrowAllowRoot(parent);
       final boolean visibility = getChildrenVisibility(node);
@@ -155,13 +140,17 @@ public class InMemoryTreeStateManager<T> implements TreeStateManager<T>, Sortabl
          final InMemoryTreeNode<T> added = node.add(index == -1 ? 0 : index, newChild, visibility);
          allNodes.put(newChild, added);
       }
-      if (visibility) {
-         internalDataSetChanged();
-      }
+      return visibility;
    }
 
    @Override
-   public synchronized void addAfterChild(final T parent, final T newChild, final T afterChild) {
+   public void addBeforeChild(final T parent, final T newChild, final T beforeChild) {
+      if (bAddBeforeChild(parent, newChild, beforeChild)) {
+         internalDataSetChanged();
+      }
+   }
+   @Override
+   public synchronized boolean bAddAfterChild(T parent, T newChild, T afterChild) {
       expectNodeNotInTreeYet(newChild);
       final InMemoryTreeNode<T> node = getNodeFromTreeOrThrowAllowRoot(parent);
       final boolean visibility = getChildrenVisibility(node);
@@ -174,9 +163,38 @@ public class InMemoryTreeStateManager<T> implements TreeStateManager<T>, Sortabl
          final InMemoryTreeNode<T> added = node.add(index == -1 ? node.getChildrenListSize() : index + 1, newChild, visibility);
          allNodes.put(newChild, added);
       }
-      if (visibility) {
+      return visibility;
+   }
+   @Override
+   public void addAfterChild(final T parent, final T newChild, final T afterChild) {
+
+      if (bAddAfterChild(parent, newChild,afterChild)) {
          internalDataSetChanged();
       }
+   }
+
+   @Override
+   public void removeNodesRecursively(List<T> ids) {
+      if(ids != null && !ids.isEmpty()){
+         boolean visibleNodeChanged = false;
+         for(T id: ids){
+            if(bRemoveNodeRecursively(id) && !visibleNodeChanged){
+               visibleNodeChanged = true;
+            }
+         }
+         if(visibleNodeChanged){
+            internalDataSetChanged();
+         }
+      }
+   }
+
+   private synchronized boolean bRemoveNodeRecursively(final T id) {
+      final InMemoryTreeNode<T> node = getNodeFromTreeOrThrowAllowRoot(id);
+      final boolean visibleNodeChanged = removeNodeRecursively(node);
+      final T parent = node.getParent();
+      final InMemoryTreeNode<T> parentNode = getNodeFromTreeOrThrowAllowRoot(parent);
+      parentNode.removeChild(id);
+      return visibleNodeChanged;
    }
 
    @Override
