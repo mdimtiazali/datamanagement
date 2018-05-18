@@ -72,7 +72,7 @@
     <dimen name="edit_dialog_warning_right_margin">16dp</dimen>
     <dimen name="edit_dialog_warning_left_margin">2dp</dimen>
     <dimen name="edit_dialog_name_bottom_margin">2dp</dimen>
-    <dimen name="delete_confirm_dialog_text_linespace">12dp</dimen>
+    <dimen name="delete_confirm_dialog_text_linespace">10dp</dimen>
 
     <!-- Import/Export perform - left layout -->
     <dimen name="dataexchange_perform_box_top_margin">16dp</dimen>
@@ -83,6 +83,8 @@
     <dimen name="dataexchange_perform_left_box_top_spacing_to_text">50dp</dimen>
     <dimen name="dataexchange_perform_left_box_spacing_from_top_image_to_text">50dp</dimen>
 
-    <dimen name="delete_dialog_width">592dp</dimen>
+    <dimen name="delete_dialog_width">560dp</dimen>
+    <dimen name="undelete_dialog_edge_margin">24dp</dimen>
+    <dimen name="progress_circle_diameter">48dp</dimen>
 
 </resources>

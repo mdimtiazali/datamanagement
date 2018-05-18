@@ -35,7 +35,7 @@
     <string name="continue_string">Continue</string>
     <string name="next">Next</string>
 
-    <string name="pfds">Grower / Farm / Field</string>
+    <string name="pfds">Grower/Farm/Field/Task</string>
     <string name="vehicles">Vehicles</string>
     <string name="imps">Implements</string>
     <string name="prescriptions">Prescriptions</string>
@@ -107,14 +107,15 @@
     <string name="export_complete">Export Completed</string>
     <string name="export_cancel">Export Cancelled</string>
     <string name="error_delete">Fail to delete data</string>
-   <string name="delete_progress_title">In deleting data ...</string>
+   <string name="delete_progress_title">Deleting data</string>
+    <string name="delete_progress_content">In progress ...</string>
     <plurals name="delete_confirm_dialog_title">
         <item quantity="one">Delete Confirmation (%1$d Item)</item>
         <item quantity="other">Delete Confirmation (%1$d Items)</item>
     </plurals>
     <plurals name="delete_confirm_dialog_content">
-        <item quantity="one">&lt;b>Are you sure you want to delete %1$d item? &lt;/b>\nThe item will be permanently deleted.</item>
-        <item quantity="other">&lt;b>Are you sure you want to delete %1$d items? &lt;/b>\nThe items will be permanently deleted.</item>
+        <item quantity="one">&lt;b>Are you sure you want to delete %1$d item? &lt;/b> &lt;br /> The item will be permanently deleted.</item>
+        <item quantity="other">&lt;b>Are you sure you want to delete %1$d items? &lt;/b> &lt;br />The items will be permanently deleted.</item>
     </plurals>
     <string name="usb_data_available">USB Data Available</string>
     <string name="usb_no_data_available">No USB Data Available</string>
@@ -211,7 +212,7 @@
 
     <string name="delete_dialog_confirm_button_text">Delete</string>
     <string name="delete_product_dialog_body_text">This will permanently delete this product and its settings.</string>
-
+    <string name="undelete_objects_headline">The followings cannot be deleted</string>
     <string name="alert_title">Alert</string>
     <string name="alert_dismiss">Dismiss</string>
     <string name="alert_in_use">This product is currently in use by a controller.</string>
@@ -252,6 +253,7 @@
     <!-- end of productlibrary-package usage -->
     <string name="edit_name_warning">The item with this name already exists. Please choose a different name</string>
     <string name="edit_update_title">Updating item</string>
+    <string name="edit_update_content">In progress ...</string>
     <string name="no_data_for_delete">No selected data right for deletion</string>
     <string name="update_error_notice">Error occur when updating the name</string>
     <string name="delete_error_notice">Error occur when deleting the data</string>
