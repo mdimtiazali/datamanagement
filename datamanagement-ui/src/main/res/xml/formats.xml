@@ -11,21 +11,33 @@
 <formats>
 
    <format name="ISOXML" pcm="true" standalone="false" path="TASKDATA">
+      <type>GROWERS</type>
       <type>GROWER</type>
       <type>FARM</type>
       <type>FIELD</type>
       <type>TASK</type>
       <type>FILE</type>
+      <type>TASKS</type>
+      <type>NOTE</type>
+      <type>NOTES</type>
       <type>RX_PLAN</type>
       <type>RX</type>
+      <type>RXS</type>
       <type>RX_ZONE</type>
-      <type>PRODUCT</type>
-      <type>PRODUCT_MIX</type>
       <type>VARIETY</type>
+      <type>VARIETIES</type>
+      <type>PRODUCT_MIX_VARIETY</type>
+      <type>PRODUCT</type>
+      <type>PRODUCTS</type>
+      <type>PRODUCT_MIX</type>
+      <type>PRODUCT_MIXS</type>
       <type>GUIDANCE_GROUP</type>
+      <type>GUIDANCE_GROUPS</type>
       <type>GUIDANCE_PATTERN</type>
       <type>BOUNDARY</type>
+      <type>BOUNDARIES</type>
       <type>LANDMARK</type>
+      <type>LANDMARKS</type>
       <type>DDOP</type>
    </format>
 

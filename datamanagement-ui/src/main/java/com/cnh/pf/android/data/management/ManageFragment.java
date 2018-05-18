@@ -22,7 +22,9 @@ import com.cnh.jgroups.Operation;
 import com.cnh.pf.android.data.management.adapter.ObjectTreeViewAdapter;
 import com.cnh.pf.android.data.management.dialog.DeleteDialog;
 import com.cnh.pf.android.data.management.dialog.EditDialog;
+import com.cnh.pf.android.data.management.dialog.UndeleteObjectDialog;
 import com.cnh.pf.android.data.management.graph.GroupObjectGraph;
+import com.cnh.pf.android.data.management.helper.SystemStatusHelper;
 import com.cnh.pf.data.management.DataManagementSession;
 import com.cnh.pf.data.management.aidl.MediumDevice;
 import com.cnh.pf.datamng.Process;
@@ -34,24 +36,35 @@ import org.slf4j.LoggerFactory;
 import pl.polidea.treeview.ImplicitSelectLinearLayout;
 import pl.polidea.treeview.TreeNodeInfo;
 
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.HashSet;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Set;
-import java.util.ArrayList;
-import java.util.HashSet;
-
-import java.util.Arrays;
 
 
 /**
  * Provide data management Tab implementation
  * Created by f09953c on 9/12/2017.
  */
-public class ManageFragment extends BaseDataFragment {
+public class ManageFragment extends BaseDataFragment implements SystemStatusHelper.Listener{
    private static final Logger logger = LoggerFactory.getLogger(ManageFragment.class);
-   ImageButton delBtn;
-   TextView header;
-   Set<String> copySet;
-   Set<String> editSet;
+   private ImageButton delBtn;
+   private TextView header;
+   private Set<String> copySet;
+   private Set<String> editSet;
+   private ProgressDialog updatingProg;
+   private ProgressDialog deletingProg;
+   private volatile boolean isAccessable = true;
+   private SystemStatusHelper statusHelper;
+
+   @Override
+   public void onSystemStatus(boolean status) {
+      logger.debug("onSystemStatus({})",status);
+      isAccessable = status;
+   }
+
    final View.OnClickListener optListener = new View.OnClickListener() {
       @Override
       public void onClick(View v) {
@@ -89,7 +102,8 @@ public class ManageFragment extends BaseDataFragment {
                   getDataManagementService().processOperation(getSession(), DataManagementSession.SessionOperation.UPDATE);
                   if (updatingProg == null) {
                      updatingProg = new ProgressDialog(getActivity(),ProgressDialog.THEME_HOLO_LIGHT);
-                     updatingProg.setTitle(R.string.edit_update_title);
+                     updatingProg.setIndeterminateDrawable(getResources().getDrawable(R.drawable.progress_circle));
+                     updatingProg.setMessage(getString(R.string.edit_update_content));
                   }
                   setHeaderAndDeleteButton(false);
                   updatingProg.show();
@@ -101,7 +115,7 @@ public class ManageFragment extends BaseDataFragment {
          }
          case R.id.mng_copy_button: {
             ObjectGraph nodeInfo = (ObjectGraph) v.getTag();
-            //Todo: need to support delete
+            //Todo: need to support copy&paste
             Toast.makeText(getActivity(), "Copy click on node " + nodeInfo.toString(), Toast.LENGTH_LONG).show();
          }
          }
@@ -113,6 +127,31 @@ public class ManageFragment extends BaseDataFragment {
       super.onCreate(savedInstanceState);
       copySet = new HashSet<String>(Arrays.asList(getResources().getStringArray(R.array.copy)));
       editSet = new HashSet<String>(Arrays.asList(getResources().getStringArray(R.array.edit)));
+      statusHelper = new SystemStatusHelper(this);
+   }
+
+   @Override
+   public void onStart() {
+      super.onStart();
+      statusHelper.start();
+   }
+
+   @Override
+   public void onResume() {
+      super.onResume();
+      statusHelper.subscribe();
+   }
+
+   @Override
+   public void onPause() {
+      super.onPause();
+      statusHelper.unsubscribe();
+   }
+
+   @Override
+   public void onStop() {
+      super.onStop();
+      statusHelper.stop();
    }
 
    @Override
@@ -151,11 +190,12 @@ public class ManageFragment extends BaseDataFragment {
                         setSession(getDataManagementService().processOperation(getSession(), DataManagementSession.SessionOperation.DELETE));
                         if(deletingProg == null){
                            deletingProg = new ProgressDialog(getActivity(),ProgressDialog.THEME_HOLO_LIGHT);
-                           deletingProg.setTitle(R.string.delete_progress_title);
+                           deletingProg.setIndeterminateDrawable(getResources().getDrawable(R.drawable.progress_circle));
+                           deletingProg.setMessage(getString(R.string.delete_progress_content));
                         }
                         deletingProg.show();
                      }
-                     else {
+                     else{
                         Toast.makeText(getActivity(), getResources().getString(R.string.no_data_for_delete), Toast.LENGTH_LONG).show();
                      }
                   }
@@ -235,6 +275,12 @@ public class ManageFragment extends BaseDataFragment {
 
    @Override
    protected void onErrorOperation() {
+      if(deletingProg != null){
+         deletingProg.dismiss();
+      }
+      if(updatingProg != null){
+         updatingProg.dismiss();
+      }
       if (getSession().getSessionOperation().equals(DataManagementSession.SessionOperation.DISCOVERY)) {
          idleUI();
       }
@@ -302,29 +348,116 @@ public class ManageFragment extends BaseDataFragment {
                deletingProg.dismiss();
             }
             RspList<Process> rsps = session.getResults();
-            List<ObjectGraph> objectGraphs = new ArrayList<ObjectGraph>(rsps.size());
-            List<ObjectGraph> unprocessedObjects = new ArrayList<ObjectGraph>(rsps.size());
+            final List<ObjectGraph> removedObjects = new LinkedList<ObjectGraph>();
+            final List<ObjectGraph> undeletedObjects = new LinkedList<ObjectGraph>();
             for (Process process : rsps.getResults()) {
                if(process.getOperations() != null) {
                   for (Operation operation : process.getOperations()) {
                      if (operation != null && operation.getStatus() == Operation.Status.DONE) {
-                        objectGraphs.add(operation.getData());
+                        removedObjects.addAll(findRemovedObjects(operation.getData(),operation.getUnprocessedData()));
                         if(operation.getUnprocessedData() != null){
-                           unprocessedObjects.add(operation.getUnprocessedData());
+                           undeletedObjects.add(operation.getUnprocessedData());
                         }
                      }
                   }
                }
             }
-            manager.removeNodesRecursively(objectGraphs);
-            treeAdapter.removeObjectGraphs(objectGraphs);
-            if(!unprocessedObjects.isEmpty()){
-               addToTree(unprocessedObjects);
-               treeAdapter.addObjectGraphs(unprocessedObjects);
+            if(undeletedObjects.isEmpty()){
+               removeAndRefreshObjectUI(removedObjects);
             }
-            setHeaderAndDeleteButton(false);
+            else {
+               removeAndRefreshObjectUI(removedObjects);
+               UndeleteObjectDialog undeleteObjectDialog = new UndeleteObjectDialog(getActivity(), undeletedObjects);
+               undeleteObjectDialog.setBodyHeight(320);
+               undeleteObjectDialog.setTitle(getString(R.string.undelete_objects_headline));
+               ((TabActivity) getActivity()).showPopup(undeleteObjectDialog, true);
+            }
          }
       }
+   }
+   //remove data and refresh UI
+   private void removeAndRefreshObjectUI(List<ObjectGraph> objects){
+      treeAdapter.removeObjectGraphs(objects);
+      treeAdapter.updateViewSelection(treeViewList);
+      manager.removeNodesRecursively(objects);
+      removeParentEmptyGroup(objects);
+      setHeaderAndDeleteButton(false);
+   }
+   //true for empty group false for not
+   private boolean isEmptyGroup(ObjectGraph objectGraph){
+      if(objectGraph instanceof GroupObjectGraph){
+         List<ObjectGraph> children = manager.getChildren(objectGraph);
+         if(children == null || children.isEmpty()){
+            return true;
+         }
+         else{
+            for(ObjectGraph o:children){
+               if(!isEmptyGroup(o)){
+                  return false;
+               }
+            }
+            return true;
+         }
+      }
+      return false;
+   }
+   //remove the empty group item
+   private void removeParentEmptyGroup(List<ObjectGraph> list){
+      Set<ObjectGraph> emptyGroup = new HashSet<ObjectGraph>();
+      for(ObjectGraph o : list){
+         if(TreeEntityHelper.obj2group.containsKey(o.getType())){
+            List<ObjectGraph> slibingsOrParent = manager.getChildren(o.getParent());
+            if(slibingsOrParent != null && ! slibingsOrParent.isEmpty()){
+               for(ObjectGraph obj : slibingsOrParent){
+                  if(obj instanceof GroupObjectGraph && isEmptyGroup(obj) && !emptyGroup.contains(obj)){
+                     emptyGroup.add(obj);
+                  }
+               }
+            }
+         }
+      }
+      if(!emptyGroup.isEmpty()){
+         manager.removeNodesRecursively(new LinkedList<ObjectGraph>(emptyGroup));
+      }
+   }
+   // find out what object in change were removed compared with base object.
+   private List<ObjectGraph> findRemovedObjects(ObjectGraph origin, ObjectGraph change){
+      final List<ObjectGraph> removedObjs = new LinkedList<ObjectGraph>();
+      if(change == null) {
+         if(origin == null) {
+            return removedObjs;
+         }
+         else {
+            removedObjs.add(origin);
+         }
+      }
+      else if(origin == null) {
+         return removedObjs;
+      }
+      else{
+         final Set<ObjectGraph> set = new HashSet<ObjectGraph>();
+         ObjectGraph.traverse(change, ObjectGraph.TRAVERSE_DOWN, new ObjectGraph.Visitor<ObjectGraph>() {
+            @Override
+            public boolean visit(ObjectGraph objectGraph) {
+               set.add(objectGraph);
+               return true;
+            }
+         });
+
+         ObjectGraph.traverse(origin, ObjectGraph.TRAVERSE_DOWN, new ObjectGraph.Visitor<ObjectGraph>() {
+            @Override
+            public boolean visit(ObjectGraph objectGraph) {
+               if (set.contains(objectGraph)) {
+                  return true;
+               }
+               else{
+                  removedObjs.add(objectGraph);
+                  return false;
+               }
+            }
+         });
+      }
+      return removedObjs;
    }
 
    @Override
@@ -333,14 +466,22 @@ public class ManageFragment extends BaseDataFragment {
       return session.equals(getSession());
    }
 
+   private void enableDeleteButton(boolean enable){
+      if(isAccessable && enable){
+         delBtn.setEnabled(true);
+      }
+      else{
+         delBtn.setEnabled(false);
+      }
+   }
    private void setHeaderAndDeleteButton(boolean en){
       if(en){
-         delBtn.setEnabled(true);
+         enableDeleteButton(true);
          int count = treeAdapter.getSelectionMap().size();
          header.setText(getResources().getQuantityString(R.plurals.tab_mng_selected_items_header, count, count));
       }
       else{
-         delBtn.setEnabled(false);
+         enableDeleteButton(false);
          header.setText(getResources().getString(R.string.tab_mng_none_header));
       }
    }
@@ -364,7 +505,7 @@ public class ManageFragment extends BaseDataFragment {
          treeAdapter = new ObjectTreeViewAdapter(getActivity(), manager, 1) {
             @Override
             public boolean isSupportedEdit(ObjectGraph node) {
-               if (node instanceof GroupObjectGraph || !editSet.contains(node.getType())) {
+               if (!isAccessable || node instanceof GroupObjectGraph || !editSet.contains(node.getType())) {
                   return false;
                }
                return true;
@@ -372,7 +513,7 @@ public class ManageFragment extends BaseDataFragment {
 
             @Override
             public boolean isSupportedCopy(ObjectGraph node) {
-               return copySet.contains(node.getType());
+               return isAccessable && copySet.contains(node.getType());
             }
 
             @Override
