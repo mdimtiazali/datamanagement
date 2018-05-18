@@ -86,7 +86,9 @@ public class DatasourceHelper {
             // NOTE: viewUpdateNeeded() needs to look at info associated with LEFT addresses. Remove left
             // addresses after calling viewUpdateNeeded().
             removeLeftAddresses(diff[1]);
-            listener.onConnectionChange(diff[1], diff[0], updateNeeded);
+            if (listener != null) {
+               listener.onConnectionChange(diff[1], diff[0], updateNeeded);
+            }
          }
       }.start();
    }
@@ -183,7 +185,7 @@ public class DatasourceHelper {
     * @param address    input address
     * @return     location type
     */
-   public Datasource.LocationType findLocationType(Address address) {
+   public synchronized Datasource.LocationType findLocationType(Address address) {
       for (Map.Entry<Datasource.LocationType, Set<Address>> map : addressMapForLocationType.entrySet()) {
          for (Address addr : map.getValue()) {
             if (addr.equals(address)) {

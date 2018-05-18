@@ -293,9 +293,10 @@ public class ImportFragment extends BaseDataFragment {
    @Override
    public void onMyselfSessionError(Session session, ErrorCode errorCode) {
       logger.debug("onMyselfSessionError(): {}, {}", session.getType(), errorCode);
-      if (SessionUtil.isDiscoveryTask(session) && ErrorCode.NO_DESTINATION_DATASOURCE.equals(errorCode)) {
+      if (SessionUtil.isDiscoveryTask(session)) {
          removeProgressPanel();
-         startText.setVisibility(View.VISIBLE);
+         hideDisabledOverlay();
+         showStartMessage();
       }
       else {
          if(SessionUtil.isDiscoveryTask(session)){

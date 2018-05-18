@@ -27,7 +27,7 @@ import javax.annotation.Nonnull;
  * @author: junsu.shin@cnhind.com
  */
 public class DeleteTask extends SessionOperationTask {
-   private static final Logger logger = LoggerFactory.getLogger(UpdateTask.class);
+   private static final Logger logger = LoggerFactory.getLogger(DeleteTask.class);
 
    public DeleteTask(@Nonnull Mediator mediator, @Nonnull SessionNotifier notifier) {
       super(mediator, notifier);

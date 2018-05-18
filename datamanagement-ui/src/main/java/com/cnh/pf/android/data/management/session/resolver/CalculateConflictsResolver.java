@@ -47,5 +47,8 @@ public class CalculateConflictsResolver implements Resolver {
          }
          session.setDestinations(destinations);
       }
+      else {
+         throw new SessionException(ErrorCode.CALCULATE_CONFLICT_ERROR);
+      }
    }
 }

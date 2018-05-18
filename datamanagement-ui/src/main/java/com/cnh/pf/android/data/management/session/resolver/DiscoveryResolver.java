@@ -56,5 +56,8 @@ public class DiscoveryResolver implements Resolver {
          }
          session.setSources(sources);
       }
+      else {
+         throw new SessionException(ErrorCode.DISCOVERY_ERROR);
+      }
    }
 }

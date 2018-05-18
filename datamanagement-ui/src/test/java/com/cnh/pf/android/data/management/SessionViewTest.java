@@ -18,7 +18,9 @@ import android.content.pm.PackageManager;
 import com.cnh.android.util.prefs.GlobalPreferences;
 import com.cnh.android.util.prefs.GlobalPreferencesNotAvailableException;
 import com.cnh.android.widget.activity.TabActivity;
+import com.cnh.jgroups.DataTypes;
 import com.cnh.jgroups.Mediator;
+import com.cnh.jgroups.ObjectGraph;
 import com.cnh.pf.android.data.management.service.DataManagementService;
 import com.cnh.pf.android.data.management.session.SessionManager;
 import com.google.common.net.HostAndPort;
@@ -37,6 +39,9 @@ import org.robolectric.RuntimeEnvironment;
 import org.robolectric.annotation.Config;
 import org.robolectric.util.ActivityController;
 import roboguice.RoboGuice;
+
+import java.util.ArrayList;
+import java.util.List;
 
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
@@ -72,14 +77,13 @@ public class SessionViewTest {
       //Start activity
       controller.create().start().resume();
       sessionManager = activity.sessionManager;
-
-      ManageFragment manage = new ManageFragment();
    }
 
    @Test
    public void testServiceConnected() {
       assertTrue(sessionManager.isServiceConnected());
    }
+
 
    @Test
    public void testManageView() {

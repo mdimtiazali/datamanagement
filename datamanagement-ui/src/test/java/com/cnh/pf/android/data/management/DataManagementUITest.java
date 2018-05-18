@@ -8,11 +8,15 @@
  */
 package com.cnh.pf.android.data.management;
 
+import static com.cnh.pf.android.data.management.session.Session.Type.DISCOVERY;
+import static org.hamcrest.core.Is.is;
+import static org.hamcrest.core.IsNull.notNullValue;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertNull;
+import static org.junit.Assert.assertThat;
 import static org.junit.Assert.assertTrue;
+import static org.mockito.Matchers.any;
+import static org.mockito.Mockito.doAnswer;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 import static org.robolectric.Shadows.shadowOf;
@@ -25,7 +29,6 @@ import android.os.RemoteException;
 import android.view.LayoutInflater;
 import android.view.View;
 
-import android.widget.ImageButton;
 import com.cnh.android.util.prefs.GlobalPreferences;
 import com.cnh.android.util.prefs.GlobalPreferencesNotAvailableException;
 import com.cnh.android.widget.activity.TabActivity;
@@ -39,10 +42,11 @@ import com.cnh.pf.android.data.management.adapter.SelectionTreeViewAdapter;
 import com.cnh.pf.android.data.management.parser.FormatManager;
 import com.cnh.pf.android.data.management.productlibrary.views.AddOrEditVarietyDialog;
 import com.cnh.pf.android.data.management.service.DataManagementService;
+import com.cnh.pf.android.data.management.session.Session;
+import com.cnh.pf.android.data.management.session.SessionExtra;
 import com.cnh.pf.data.management.DataManagementSession;
 import com.cnh.pf.data.management.aidl.MediumDevice;
 import com.cnh.pf.model.product.configuration.Variety;
-import com.cnh.pf.model.product.configuration.VarietyColor;
 import com.cnh.pf.model.product.library.CropType;
 import com.google.common.net.HostAndPort;
 import com.google.inject.AbstractModule;
@@ -57,9 +61,7 @@ import org.junit.Before;
 import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.runner.RunWith;
-import org.mockito.Matchers;
 import org.mockito.Mock;
-import org.mockito.Mockito;
 import org.mockito.MockitoAnnotations;
 import org.mockito.invocation.InvocationOnMock;
 import org.mockito.stubbing.Answer;
@@ -72,7 +74,6 @@ import org.xmlpull.v1.XmlPullParserException;
 
 import java.io.IOException;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 import java.util.Set;
 
@@ -87,6 +88,11 @@ import roboguice.event.EventManager;
 @RunWith(RobolectricMavenTestRunner.class)
 @Config(manifest = "src/main/AndroidManifest.xml", application = TestApp.class)
 public class DataManagementUITest {
+   private static int MANAGE_SOURCE_TAB_POSITION = 0;
+   private static int IMPORT_SOURCE_TAB_POSITION = 1;
+   private static int EXPORT_SOURCE_TAB_POSITION = 2;
+   private static int PRODUCT_LIBRARY_TAB_POSITION = 3;
+
    ActivityController<DataManagementActivity> controller;
    DataManagementActivity activity;
    EventManager eventManager;
@@ -97,9 +103,6 @@ public class DataManagementUITest {
    BaseDataFragment fragment;
    ObjectGraph customer;
    ObjectGraph testObject;
-   private static int IMPORT_SOURCE_TAB_POSITION = 1;
-   private static int EXPORT_SOURCE_TAB_POSITION = 2;
-   private static int PRODUCT_LIBRARY_TAB_POSITION = 3;
 
    @Before
    public void setUp() {
@@ -109,18 +112,6 @@ public class DataManagementUITest {
       controller = Robolectric.buildActivity(DataManagementActivity.class);
       activity = controller.get();
       when(binder.getService()).thenReturn(service);
-      // Temporarily commented and need to revisit this to complete test code
-//      when(service.getMediums()).thenReturn(Arrays.asList(new MediumDevice(Datasource.LocationType.USB_PHOENIX, RuntimeEnvironment.application.getFilesDir())));
-//      when(service.processOperation(Matchers.any(DataManagementSession.class), Matchers.any(DataManagementSession.SessionOperation.class)))
-//            .then(new Answer<DataManagementSession>() {
-//               @Override
-//               public DataManagementSession answer(InvocationOnMock invocation) throws Throwable {
-//                  DataManagementSession session = (DataManagementSession) invocation.getArguments()[0];
-//                  DataManagementSession.SessionOperation op = (DataManagementSession.SessionOperation) invocation.getArguments()[1];
-//                  session.setSessionOperation(op);
-//                  return session;
-//               }
-//            });
       shadowOf(RuntimeEnvironment.application).setComponentNameAndServiceForBindService(new ComponentName(activity.getPackageName(), DataManagementService.class.getName()),
             binder);
    }
@@ -144,7 +135,29 @@ public class DataManagementUITest {
       assertFalse("cnh does not support prescription type", parser.formatSupportsType("PF Database", DataTypes.RX));
    }
 
-   @Ignore
+   @Test
+   public void testDiscoveryComplete() {
+      activateTab(MANAGE_SOURCE_TAB_POSITION);
+      final ManageFragment manageFragment = (ManageFragment) ((TabActivity) activity).getFragmentManager().findFragmentByTag("Management");
+
+      final Session session = new Session();
+      session.setType(Session.Type.DISCOVERY);
+      session.setAction(Session.Action.MANAGE);
+      doAnswer(new Answer<Void>() {
+         @Override
+         public Void answer(InvocationOnMock invocation) throws Throwable {
+            session.setObjectData(getTestObjectData());
+            manageFragment.onMyselfSessionSuccess(session);
+            return null;
+         }
+      }).when(service).processSession(any(Session.class));
+
+      service.processSession(session);
+      assertThat(manageFragment.getTreeAdapter(), is(notNullValue()));
+      assertThat(manageFragment.getTreeAdapter().getCount() > 0, is(true));
+   }
+
+
    @Test
    public void testISOSupport() throws RemoteException {
       //Initialize export fragment
@@ -154,11 +167,12 @@ public class DataManagementUITest {
       ExportFragment fragment = (ExportFragment) ((TabActivity) activity).getFragmentManager().findFragmentByTag("Export");
       assertTrue("export fragment is visible", fragment != null);
       //Start new discovery
-      DataManagementSession session = new DataManagementSession(new Datasource.LocationType[] { Datasource.LocationType.PCM }, new Datasource.LocationType[] { Datasource.LocationType.PCM },
-            null, null, null, null);
-      session.setSessionOperation(DataManagementSession.SessionOperation.DISCOVERY);
+      Session session = new Session();
+      session.setType(DISCOVERY);
       session.setObjectData(getTestObjectData());
-      session.setFormat("ISOXML");
+      SessionExtra exportExtra = new SessionExtra(SessionExtra.USB, "test extra", 1);
+      exportExtra.setFormat("ISOXML");
+      session.setExtra(exportExtra);
       fireDiscoveryEvent(fragment, session);
       //Assert tree view shows results of discovery
       assertEquals("Object Tree View is visible", View.VISIBLE, fragment.getView().findViewById(R.id.tree_view_list).getVisibility());
@@ -173,18 +187,17 @@ public class DataManagementUITest {
    }
 
    /** Test to make sure that the data sent to destination datasource only has supported types */
-   @Ignore
    @Test
    public void testRecursiveFormatSupport() throws RemoteException {
       //Initialize export fragment
       activateTab(EXPORT_SOURCE_TAB_POSITION);
       //Mock picklist, select ISOXML as export format$
       ExportFragment fragment = (ExportFragment) ((TabActivity) activity).getFragmentManager().findFragmentByTag("Export");
-      DataManagementSession session = new DataManagementSession(new Datasource.LocationType[] { Datasource.LocationType.PCM }, new Datasource.LocationType[] { Datasource.LocationType.PCM },
-            null, null, null, null);
-      session.setSessionOperation(DataManagementSession.SessionOperation.DISCOVERY);
+      Session session = new Session();
+      session.setType(DISCOVERY);
       session.setObjectData(getTestObjectData());
-      session.setFormat("ISOXML");
+      SessionExtra exportExtra = new SessionExtra(SessionExtra.USB, "test extra", 1);
+      exportExtra.setFormat("ISOXML");
       fireDiscoveryEvent(fragment, session);
       fragment.exportFormatPicklist = mock(PickList.class);
       when(fragment.exportFormatPicklist.getSelectedItemValue()).thenReturn("ISOXML");
@@ -206,10 +219,9 @@ public class DataManagementUITest {
       ((TabActivity) activity).selectTabAtPosition(tabPosition);
    }
 
-   private void fireDiscoveryEvent(BaseDataFragment fragment, DataManagementSession session) throws RemoteException {
-      //Will revisit this to complete test code
+   private void fireDiscoveryEvent(BaseDataFragment fragment, Session session) throws RemoteException {
       //Start new discovery
-//      fragment.onDataSessionUpdated(session);
+      fragment.onMyselfSessionSuccess(session);
    }
 
    /* Generate Object tree for testing */

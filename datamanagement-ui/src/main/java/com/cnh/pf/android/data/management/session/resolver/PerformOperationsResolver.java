@@ -71,5 +71,8 @@ public class PerformOperationsResolver implements Resolver {
             session.setOperations(operations);
          }
       }
+      else {
+         throw new SessionException(ErrorCode.PERFORM_ERROR);
+      }
    }
 }

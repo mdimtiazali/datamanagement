@@ -47,5 +47,8 @@ public class CalculateOperationsResolver implements Resolver {
          }
          session.setDestinations(destinations);
       }
+      else {
+         throw new SessionException(ErrorCode.CALCULATE_OPERATIONS_ERROR);
+      }
    }
 }

@@ -474,9 +474,16 @@ public class DataManagementService extends RoboService implements SharedPreferen
    public void notifySessionSuccess(Session session) {
       logger.debug("notifySessionSuccess()");
       // Cache session result so that it can be recycled later.
-      if (SessionUtil.isComplete(session) &&
-              SessionUtil.isSuccessful(session)) {
+      if (SessionUtil.isComplete(session)
+              && SessionUtil.isSuccessful(session)) {
          cacheManager.save(session);
+
+         if (SessionUtil.isImportAction(session)
+                 && SessionUtil.isPerformOperationsTask(session)) {
+            // Clear cached discovery data for EXPORT & MANAGE once IMPORT is performed successfully.
+            cacheManager.reset(Session.Action.EXPORT, Session.Type.DISCOVERY);
+            cacheManager.reset(Session.Action.MANAGE, Session.Type.DISCOVERY);
+         }
       }
 
       notifySessionSuccessWithoutCaching(session);
@@ -488,11 +495,16 @@ public class DataManagementService extends RoboService implements SharedPreferen
     * @param session    the session object
     * @param errCode    error code
     */
-   public void notifySessionError(Session session, ErrorCode errCode) {
+   public void notifySessionError(final Session session, final ErrorCode errCode) {
       logger.debug("notifySessionError()");
-      for (SessionEventListener listener : this.sessionEventListeners) {
-         listener.onSessionError(session, errCode);
-      }
+      new Handler(Looper.getMainLooper()).post(new Runnable() {
+         @Override
+         public void run() {
+            for (SessionEventListener listener : sessionEventListeners) {
+               listener.onSessionError(session, errCode);
+            }
+         }
+      });
    }
 
    /**
