@@ -11,6 +11,8 @@ package com.cnh.pf.android.data.management.session.task;
 
 import android.os.AsyncTask;
 import com.cnh.jgroups.Mediator;
+import com.cnh.pf.android.data.management.fault.DMFaultHandler;
+import com.cnh.pf.android.data.management.parser.FormatManager;
 import com.cnh.pf.android.data.management.session.ErrorCode;
 import com.cnh.pf.android.data.management.session.Session;
 import com.cnh.pf.android.data.management.session.SessionException;
@@ -117,6 +119,8 @@ public abstract class SessionOperationTask<Progress> extends AsyncTask<Session, 
       private SessionNotifier _notifier;
       private StatusSender _statusSender;
       private Session _session;
+      private DMFaultHandler _faultHandler;
+      private FormatManager _formatManager;
 
       public TaskBuilder mediator(Mediator mediator) {
          this._mediator = mediator;
@@ -138,6 +142,16 @@ public abstract class SessionOperationTask<Progress> extends AsyncTask<Session, 
          return this;
       }
 
+      public TaskBuilder faultHandler(DMFaultHandler faultHandler) {
+         this._faultHandler = faultHandler;
+         return this;
+      }
+
+      public TaskBuilder formatManager(FormatManager formatManager) {
+         this._formatManager = formatManager;
+         return this;
+      }
+
       public SessionOperationTask build() throws IllegalStateException {
          SessionOperationTask task = null;
 
@@ -148,7 +162,10 @@ public abstract class SessionOperationTask<Progress> extends AsyncTask<Session, 
             task = new DiscoveryTask(_mediator, _notifier);
          }
          else if (SessionUtil.isPerformOperationsTask(_session)) {
-            task = new PerformOperationsTask(_mediator, _notifier, _statusSender);
+            if (_faultHandler == null || _formatManager == null) {
+               throw new IllegalStateException("FaultHandler & FormatManager is required.");
+            }
+            task = new PerformOperationsTask(_mediator, _notifier, _faultHandler, _formatManager, _statusSender);
          }
          else if (SessionUtil.isCalculateOperationsTask(_session)) {
             task = new CalculateOperationsTask(_mediator, _notifier);

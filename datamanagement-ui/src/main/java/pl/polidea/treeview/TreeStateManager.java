@@ -72,8 +72,19 @@ public interface TreeStateManager<T> extends Serializable {
     * @param beforeChild
     *            child before which to add the new child
     */
+   boolean bAddBeforeChild(T parent, T newChild, T beforeChild);
+   /**
+    * Adds the node before child or at the beginning.
+    *
+    * @param parent
+    *            id of the parent node. If null - adds at the top level
+    * @param newChild
+    *            new child to add if null - adds at the beginning.
+    * @param beforeChild
+    *            child before which to add the new child
+    * @return true if the new child are visible, false for invisible
+    */
    void addBeforeChild(T parent, T newChild, T beforeChild);
-
    /**
     * Adds the node after child or at the end.
     * 
@@ -85,7 +96,18 @@ public interface TreeStateManager<T> extends Serializable {
     *            child after which to add the new child
     */
    void addAfterChild(T parent, T newChild, T afterChild);
-
+   /**
+    * Adds the node after child or at the end .
+    *
+    * @param parent
+    *            id of the parent node. If null - adds at the top level.
+    * @param newChild
+    *            new child to add. If null - adds at the end.
+    * @param afterChild
+    *            child after which to add the new child
+    * @return true if the new child are visible, false for invisible
+    */
+   boolean bAddAfterChild(T parent, T newChild, T afterChild);
    /**
     * Removes a batch nodes and all their children from the tree.
     * 

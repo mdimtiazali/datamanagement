@@ -43,6 +43,7 @@ import com.cnh.pf.android.data.management.session.task.SessionOperationTask;
 import com.cnh.pf.data.management.service.ServiceConstants;
 import com.cnh.pf.datamng.Process.Result;
 import com.cnh.pf.jgroups.ChannelModule;
+
 import com.google.inject.name.Named;
 
 import org.jgroups.Address;
@@ -145,6 +146,8 @@ public class DataManagementService extends RoboService implements SharedPreferen
    private List<SessionEventListener> sessionEventListeners = new CopyOnWriteArrayList<SessionEventListener>();
    private Handler handler = new Handler();
    private final IBinder localBinder = new LocalBinder();
+
+   private boolean useInternalFileSystem = false;
 
    @Override
    public int onStartCommand(Intent intent, int flags, int startId) {
@@ -306,6 +309,8 @@ public class DataManagementService extends RoboService implements SharedPreferen
                  .session(session)
                  .notifier(this)
                  .statusSender(new StatusSender(getApplicationContext()))
+                 .formatManager(formatManager)
+                 .faultHandler(faultHandler)
                  .build();
 
          if (task != null) {

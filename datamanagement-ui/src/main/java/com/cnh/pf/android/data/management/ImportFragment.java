@@ -11,18 +11,20 @@ package com.cnh.pf.android.data.management;
 
 import static android.os.Environment.MEDIA_BAD_REMOVAL;
 
+import android.content.res.Resources;
 import android.os.Bundle;
 import android.os.Environment;
 import android.view.DragEvent;
+import android.view.Gravity;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.widget.Button;
 import android.widget.ImageButton;
 import android.widget.LinearLayout;
 import android.widget.TextView;
-import android.widget.Toast;
 
 import com.cnh.android.dialog.DialogViewInterface;
+import com.cnh.android.pf.widget.controls.ToastMessageCustom;
 import com.cnh.android.widget.activity.TabActivity;
 import com.cnh.android.widget.control.ProgressBarView;
 import com.cnh.jgroups.ObjectGraph;
@@ -158,14 +160,16 @@ public class ImportFragment extends BaseDataFragment {
    public void onSessionCancelled(Session session) {
       super.onSessionCancelled(session);
 
+      ToastMessageCustom.makeToastMessageText(getActivity().getApplicationContext(), getString(R.string.import_cancel),
+              Gravity.TOP| Gravity.CENTER_HORIZONTAL, getResources().getInteger(R.integer.toast_message_xoffset),
+              getResources().getInteger(R.integer.toast_message_yoffset)).show();
+
       if (SessionUtil.isDiscoveryTask(session)) {
-         Toast.makeText(getActivity(), getString(R.string.import_cancel), Toast.LENGTH_LONG).show();
          removeProgressPanel();
          showStartMessage();
          updateImportButton();
       }
       else if (SessionUtil.isPerformOperationsTask(session)) {
-         Toast.makeText(getActivity(), getString(R.string.import_cancel), Toast.LENGTH_LONG).show();
          hideDisabledOverlay();
          showTreeList();
          updateSelectAllState();
@@ -195,7 +199,9 @@ public class ImportFragment extends BaseDataFragment {
       else if (SessionUtil.isCalculateOperationsTask(session)) {
          logger.debug("Calculate Targets");
          if (session.getOperations() == null || session.getOperations().isEmpty()) {
-            Toast.makeText(getActivity(), "No operations came back from server.  Check connectivity", Toast.LENGTH_SHORT).show();
+            ToastMessageCustom.makeToastMessageText(getActivity().getApplicationContext(), getString(R.string.no_operations_check_connectivity_string),
+                    Gravity.TOP| Gravity.CENTER_HORIZONTAL, getResources().getInteger(R.integer.toast_message_xoffset),
+                    getResources().getInteger(R.integer.toast_message_yoffset)).show();
             cancelProcess();
             return;
          }
@@ -279,7 +285,9 @@ public class ImportFragment extends BaseDataFragment {
 
          clearTreeSelection();
          removeProgressPanel();
-         Toast.makeText(getActivity(), getString(R.string.import_complete), Toast.LENGTH_LONG).show();
+         ToastMessageCustom.makeToastMessageText(getActivity().getApplicationContext(), getString(R.string.import_complete),
+                 Gravity.TOP| Gravity.CENTER_HORIZONTAL, getResources().getInteger(R.integer.toast_message_xoffset),
+                 getResources().getInteger(R.integer.toast_message_yoffset)).show();
          // Reset session data after completing PERFORM_OPERATIONS successfully.
          resetSession();
       }
@@ -325,11 +333,17 @@ public class ImportFragment extends BaseDataFragment {
          int selectedItemCount = getTreeAdapter().getSelectionMap().size();
          if (selectedItemCount > 0) {
             defaultButtonText = false;
-            importSelectedBtn.setText(getResources().getString(R.string.import_selected) + " (" + treeAdapter.getSelectionMap().size() + ")");
+            Resources resources = getResources();
+            importSelectedBtn.setText(resources.getString(R.string.import_selected) + " (" + selectedItemCount + ")");
+            importSelectedBtn.setTextSize(selectedItemCount > resources.getInteger(R.integer.max_tree_selections_before_text_adjustment)
+                    ? resources.getDimension(R.dimen.button_default_text_size) - resources.getDimension(R.dimen.decrease_text_size)
+                    : resources.getDimension(R.dimen.button_default_text_size));
          }
       }
       if (defaultButtonText == true) {
          importSelectedBtn.setText(getResources().getString(R.string.import_selected));
+         float defaultButtonSize = getResources().getDimension(R.dimen.button_default_text_size);
+         if (importSelectedBtn.getTextSize() < defaultButtonSize) importSelectedBtn.setTextSize(defaultButtonSize);
       }
       importSourceBtn.setEnabled(!isActiveOperation);
       importSelectedBtn.setEnabled(hasSelection && !isActiveOperation && s != null);

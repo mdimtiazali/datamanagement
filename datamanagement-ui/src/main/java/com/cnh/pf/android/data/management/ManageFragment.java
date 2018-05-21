@@ -10,6 +10,8 @@ package com.cnh.pf.android.data.management;
 
 import android.app.ProgressDialog;
 import android.os.Bundle;
+
+import android.view.Gravity;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -19,9 +21,9 @@ import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.RelativeLayout;
 import android.widget.TextView;
-import android.widget.Toast;
 
 import com.cnh.android.dialog.DialogViewInterface;
+import com.cnh.android.pf.widget.controls.ToastMessageCustom;
 import com.cnh.android.pf.widget.view.DisabledOverlay;
 import com.cnh.android.widget.activity.TabActivity;
 import com.cnh.jgroups.ObjectGraph;
@@ -29,10 +31,13 @@ import com.cnh.jgroups.Operation;
 import com.cnh.pf.android.data.management.adapter.ObjectTreeViewAdapter;
 import com.cnh.pf.android.data.management.dialog.DeleteDialog;
 import com.cnh.pf.android.data.management.dialog.EditDialog;
+import com.cnh.pf.android.data.management.dialog.UndeleteObjectDialog;
 import com.cnh.pf.android.data.management.graph.GroupObjectGraph;
 import com.cnh.pf.android.data.management.session.ErrorCode;
 import com.cnh.pf.android.data.management.session.Session;
 import com.cnh.pf.android.data.management.session.SessionUtil;
+
+import com.cnh.pf.android.data.management.helper.SystemStatusHelper;
 import com.cnh.pf.datamng.Process;
 
 import org.jgroups.util.RspList;
@@ -42,12 +47,12 @@ import org.slf4j.LoggerFactory;
 import pl.polidea.treeview.ImplicitSelectLinearLayout;
 import pl.polidea.treeview.TreeNodeInfo;
 
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.HashSet;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Set;
-import java.util.ArrayList;
-import java.util.HashSet;
-
-import java.util.Arrays;
 
 import roboguice.inject.InjectView;
 
@@ -55,7 +60,7 @@ import roboguice.inject.InjectView;
  * Provide data management Tab implementation
  * Created by f09953c on 9/12/2017.
  */
-public class ManageFragment extends BaseDataFragment {
+public class ManageFragment extends BaseDataFragment implements SystemStatusHelper.Listener{
    private static final Logger logger = LoggerFactory.getLogger(ManageFragment.class);
 
    @InjectView(R.id.dm_delete_button)
@@ -65,6 +70,16 @@ public class ManageFragment extends BaseDataFragment {
 
    private Set<String> copySet;
    private Set<String> editSet;
+   private ProgressDialog updatingProg;
+   private ProgressDialog deletingProg;
+   private volatile boolean isAccessable = true;
+   private SystemStatusHelper statusHelper;
+
+   @Override
+   public void onSystemStatus(boolean status) {
+      logger.debug("onSystemStatus({})",status);
+      isAccessable = status;
+   }
 
    final View.OnClickListener optListener = new View.OnClickListener() {
       @Override
@@ -101,7 +116,8 @@ public class ManageFragment extends BaseDataFragment {
 
                   if (updatingProg == null) {
                      updatingProg = new ProgressDialog(getActivity(),ProgressDialog.THEME_HOLO_LIGHT);
-                     updatingProg.setTitle(R.string.edit_update_title);
+                     updatingProg.setIndeterminateDrawable(getResources().getDrawable(R.drawable.progress_circle));
+                     updatingProg.setMessage(getString(R.string.edit_update_content));
                   }
                   setHeaderAndDeleteButton(false);
                   updatingProg.show();
@@ -114,7 +130,9 @@ public class ManageFragment extends BaseDataFragment {
             case R.id.mng_copy_button: {
                ObjectGraph nodeInfo = (ObjectGraph) v.getTag();
                //Todo: need to support delete
-               Toast.makeText(getActivity(), "Copy click on node " + nodeInfo.toString(), Toast.LENGTH_LONG).show();
+               ToastMessageCustom.makeToastMessageText(getActivity().getApplicationContext(), getString(R.string.copy_click_string) + nodeInfo.toString(),
+                       Gravity.TOP| Gravity.CENTER_HORIZONTAL, getResources().getInteger(R.integer.toast_message_xoffset),
+                       getResources().getInteger(R.integer.toast_message_yoffset)).show();
             }
          }
       }
@@ -125,6 +143,31 @@ public class ManageFragment extends BaseDataFragment {
       super.onCreate(savedInstanceState);
       copySet = new HashSet<String>(Arrays.asList(getResources().getStringArray(R.array.copy)));
       editSet = new HashSet<String>(Arrays.asList(getResources().getStringArray(R.array.edit)));
+      statusHelper = new SystemStatusHelper(this);
+   }
+
+   @Override
+   public void onStart() {
+      super.onStart();
+      statusHelper.start();
+   }
+
+   @Override
+   public void onResume() {
+      super.onResume();
+      statusHelper.subscribe();
+   }
+
+   @Override
+   public void onPause() {
+      super.onPause();
+      statusHelper.unsubscribe();
+   }
+
+   @Override
+   public void onStop() {
+      super.onStop();
+      statusHelper.stop();
    }
 
    @Override
@@ -160,12 +203,14 @@ public class ManageFragment extends BaseDataFragment {
                         delete(delOperations);
                         if (deletingProg == null){
                            deletingProg = new ProgressDialog(getActivity(),ProgressDialog.THEME_HOLO_LIGHT);
-                           deletingProg.setTitle(R.string.delete_progress_title);
+                           deletingProg.setIndeterminateDrawable(getResources().getDrawable(R.drawable.progress_circle));
+                           deletingProg.setMessage(getString(R.string.delete_progress_content));
                         }
                         deletingProg.show();
                      }
                      else {
-                        Toast.makeText(getActivity(), getResources().getString(R.string.no_data_for_delete), Toast.LENGTH_LONG).show();
+                        ToastMessageCustom.makeToastMessageText(getActivity().getApplicationContext(), getString(R.string.no_data_for_delete),
+                                Gravity.TOP| Gravity.CENTER_HORIZONTAL, getResources().getInteger(R.integer.toast_message_xoffset), getResources().getInteger(R.integer.toast_message_yoffset)).show();
                      }
                   }
                }
@@ -173,6 +218,7 @@ public class ManageFragment extends BaseDataFragment {
             ((TabActivity) getActivity()).showPopup(delDialog, true);
          }
       });
+      delBtn.setEnabled(false);
       return layout;
    }
 
@@ -278,29 +324,120 @@ public class ManageFragment extends BaseDataFragment {
                deletingProg.dismiss();
             }
             RspList<Process> rsps = session.getResults();
-            List<ObjectGraph> objectGraphs = new ArrayList<ObjectGraph>(rsps.size());
-            List<ObjectGraph> unprocessedObjects = new ArrayList<ObjectGraph>(rsps.size());
+            final List<ObjectGraph> removedObjects = new LinkedList<ObjectGraph>();
+            final List<ObjectGraph> undeletedObjects = new LinkedList<ObjectGraph>();
             for (Process process : rsps.getResults()) {
                if (process.getOperations() != null) {
                   for (Operation operation : process.getOperations()) {
                      if (operation != null && operation.getStatus() == Operation.Status.DONE) {
-                        objectGraphs.add(operation.getData());
-                        if (operation.getUnprocessedData() != null){
-                           unprocessedObjects.add(operation.getUnprocessedData());
+                        removedObjects.addAll(findRemovedObjects(operation.getData(),operation.getUnprocessedData()));
+                        if (operation.getUnprocessedData() != null) {
+                           undeletedObjects.add(operation.getUnprocessedData());
                         }
                      }
                   }
                }
             }
-            manager.removeNodesRecursively(objectGraphs);
-            treeAdapter.removeObjectGraphs(objectGraphs);
-            if (!unprocessedObjects.isEmpty()){
-               addToTreeByBatch(unprocessedObjects);
-               treeAdapter.addObjectGraphs(unprocessedObjects);
+            if (undeletedObjects.isEmpty()) {
+               removeAndRefreshObjectUI(removedObjects);
             }
-            setHeaderAndDeleteButton(false);
+            else {
+               removeAndRefreshObjectUI(removedObjects);
+               UndeleteObjectDialog undeleteObjectDialog = new UndeleteObjectDialog(getActivity(), undeletedObjects);
+               undeleteObjectDialog.setBodyHeight(320);
+               undeleteObjectDialog.setTitle(getString(R.string.undelete_objects_headline));
+               ((TabActivity) getActivity()).showPopup(undeleteObjectDialog, true);
+            }
          }
       }
+   }
+
+   //remove data and refresh UI
+   private void removeAndRefreshObjectUI(List<ObjectGraph> objects){
+      treeAdapter.removeObjectGraphs(objects);
+      treeAdapter.updateViewSelection(treeViewList);
+      manager.removeNodesRecursively(objects);
+      removeParentEmptyGroup(objects);
+      setHeaderAndDeleteButton(false);
+   }
+
+   //true for empty group false for not
+   private boolean isEmptyGroup(ObjectGraph objectGraph){
+      if( objectGraph instanceof GroupObjectGraph) {
+         List<ObjectGraph> children = manager.getChildren(objectGraph);
+         if (children == null || children.isEmpty()) {
+            return true;
+         }
+         else {
+            for (ObjectGraph o:children) {
+               if (!isEmptyGroup(o)) {
+                  return false;
+               }
+            }
+            return true;
+         }
+      }
+      return false;
+   }
+
+   //remove the empty group item
+   private void removeParentEmptyGroup(List<ObjectGraph> list){
+      Set<ObjectGraph> emptyGroup = new HashSet<ObjectGraph>();
+      for (ObjectGraph o : list) {
+         if (TreeEntityHelper.obj2group.containsKey(o.getType())) {
+            List<ObjectGraph> slibingsOrParent = manager.getChildren(o.getParent());
+            if (slibingsOrParent != null && ! slibingsOrParent.isEmpty()) {
+               for (ObjectGraph obj : slibingsOrParent) {
+                  if (obj instanceof GroupObjectGraph && isEmptyGroup(obj) && !emptyGroup.contains(obj)) {
+                     emptyGroup.add(obj);
+                  }
+               }
+            }
+         }
+      }
+      if (!emptyGroup.isEmpty()) {
+         manager.removeNodesRecursively(new LinkedList<ObjectGraph>(emptyGroup));
+      }
+   }
+
+   // find out what object in change were removed compared with base object.
+   private List<ObjectGraph> findRemovedObjects(ObjectGraph origin, ObjectGraph change){
+      final List<ObjectGraph> removedObjs = new LinkedList<ObjectGraph>();
+      if (change == null) {
+         if (origin == null) {
+            return removedObjs;
+         }
+         else {
+            removedObjs.add(origin);
+         }
+      }
+      else if (origin == null) {
+         return removedObjs;
+      }
+      else {
+         final Set<ObjectGraph> set = new HashSet<ObjectGraph>();
+         ObjectGraph.traverse(change, ObjectGraph.TRAVERSE_DOWN, new ObjectGraph.Visitor<ObjectGraph>() {
+            @Override
+            public boolean visit(ObjectGraph objectGraph) {
+               set.add(objectGraph);
+               return true;
+            }
+         });
+
+         ObjectGraph.traverse(origin, ObjectGraph.TRAVERSE_DOWN, new ObjectGraph.Visitor<ObjectGraph>() {
+            @Override
+            public boolean visit(ObjectGraph objectGraph) {
+               if (set.contains(objectGraph)) {
+                  return true;
+               }
+               else{
+                  removedObjs.add(objectGraph);
+                  return false;
+               }
+            }
+         });
+      }
+      return removedObjs;
    }
 
    @Override
@@ -317,20 +454,32 @@ public class ManageFragment extends BaseDataFragment {
             deletingProg.dismiss();
          }
          setHeaderAndDeleteButton(false);
-         Toast.makeText(getActivity(), getString(R.string.delete_error_notice), Toast.LENGTH_LONG).show();
+         ToastMessageCustom.makeToastMessageText(getActivity().getApplicationContext(), getString(R.string.delete_error_notice),
+                 Gravity.TOP| Gravity.CENTER_HORIZONTAL, getResources().getInteger(R.integer.toast_message_xoffset),
+                 getResources().getInteger(R.integer.toast_message_yoffset)).show();
          discovery();
       }
       else if (SessionUtil.isUpdateTask(session)) {
          if (updatingProg != null) {
             updatingProg.dismiss();
          }
-         Toast.makeText(getActivity(), getString(R.string.update_error_notice), Toast.LENGTH_LONG).show();
+         ToastMessageCustom.makeToastMessageText(getActivity().getApplicationContext(), getString(R.string.update_error_notice),
+                 Gravity.TOP| Gravity.CENTER_HORIZONTAL, getResources().getInteger(R.integer.toast_message_xoffset),
+                 getResources().getInteger(R.integer.toast_message_yoffset)).show();
       }
    }
 
-   private void setHeaderAndDeleteButton(boolean enable){
-      if (enable) {
+   private void enableDeleteButton(boolean enable) {
+      if (isAccessable && enable) {
          delBtn.setEnabled(true);
+      }
+      else {
+         delBtn.setEnabled(false);
+      }
+   }
+   private void setHeaderAndDeleteButton(boolean enable) {
+      if (enable) {
+         enableDeleteButton(true);
          int count = treeAdapter.getSelectionMap().size();
          setHeaderText(getResources().getQuantityString(R.plurals.tab_mng_selected_items_header, count, count));
       }
@@ -361,7 +510,7 @@ public class ManageFragment extends BaseDataFragment {
          treeAdapter = new ObjectTreeViewAdapter(getActivity(), manager, 1) {
             @Override
             public boolean isSupportedEdit(ObjectGraph node) {
-               if (node instanceof GroupObjectGraph || !editSet.contains(node.getType())) {
+               if (!isAccessable || node instanceof GroupObjectGraph || !editSet.contains(node.getType())) {
                   return false;
                }
                return true;
@@ -369,7 +518,7 @@ public class ManageFragment extends BaseDataFragment {
 
             @Override
             public boolean isSupportedCopy(ObjectGraph node) {
-               return copySet.contains(node.getType());
+               return isAccessable && copySet.contains(node.getType());
             }
 
             @Override

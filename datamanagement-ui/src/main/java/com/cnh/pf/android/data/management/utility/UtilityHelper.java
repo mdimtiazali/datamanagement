@@ -265,4 +265,47 @@ public class UtilityHelper {
       }
       return sharedStringValue;
    }
+
+    /**
+     * enum for common used paths
+     */
+    public enum CommonPaths{
+        PATH_DESIGNATOR("/"),
+        PATH_USB_PORT("./storage/usb1"),
+        PATH_TMP("./tmp/data/");
+        //TODO move this folder to global access for isoservice, datamanagement and vipdmg
+
+        private final String path;
+
+        CommonPaths(String path){
+            this.path = path;
+        }
+
+        /**
+         * returns the specified path as String
+         * @return
+         */
+        public String getPathString(){
+            return this.path;
+        }
+    }
+
+    public enum CommonFormats{
+        PFDATABASEFORMAT("PF Database"),
+        ISOXMLFORMAT("ISOXML");
+
+        private final String name;
+
+        CommonFormats(String name){
+            this.name = name;
+        }
+
+        /**
+         * returns the specified name of the format
+         * @return
+         */
+        public String getName() {
+            return name;
+        }
+    }
 }

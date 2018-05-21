@@ -1,0 +1,45 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  ~ Copyright (C) 2018 CNH Industrial NV. All rights reserved.
+  ~
+  ~ This software contains proprietary information of CNH Industrial NV. Neither
+  ~ receipt nor possession thereof confers any right to reproduce, use, or
+  ~ disclose in whole or in part any such information without written
+  ~ authorization from CNH Industrial NV.
+  -->
+<merge xmlns:android="http://schemas.android.com/apk/res/android">
+   <LinearLayout
+           android:layout_width="match_parent"
+           android:layout_height="match_parent"
+           android:orientation="horizontal"
+           android:gravity="center">
+
+      <ImageView
+              android:id="@+id/data_exchange_overlay_mode_image"
+              android:layout_width="wrap_content"
+              android:layout_height="wrap_content"
+              android:src="@drawable/ic_tab_data_export_selected"
+              android:padding="@dimen/dataexchange_blocked_overlay_image_padding"/>
+
+      <LinearLayout
+              android:layout_width="wrap_content"
+              android:layout_height="wrap_content"
+              android:orientation="vertical"
+              android:gravity="center">
+         <TextView
+                 android:id="@+id/data_exchange_overlay_title"
+                 android:paddingBottom="@dimen/dataexchange_blocked_overlay_spacing_between_lines"
+                 android:layout_width="wrap_content"
+                 android:layout_height="wrap_content"
+                 android:layout_gravity="left"
+                 android:text=""/>
+         <TextView
+                 android:id="@+id/data_exchange_overlay_description"
+                 android:layout_width="wrap_content"
+                 android:layout_height="wrap_content"
+                 android:textColor="@color/data_exchange_overlay_descriptiontext_color"
+                 android:layout_gravity="left"
+                 android:text=""/>
+      </LinearLayout>
+   </LinearLayout>
+</merge>

@@ -276,14 +276,11 @@ public class DataManagementUITest {
       }
    }
 
-   @Ignore
    @Test
    public void testForNoImportSource() throws RemoteException {
       activateTab(IMPORT_SOURCE_TAB_POSITION);
-      ArrayList<MediumDevice> mockMediumDeviceForTest = new ArrayList<MediumDevice>();
       ImportFragment importFragment = (ImportFragment) ((TabActivity) activity).getFragmentManager().findFragmentByTag("Import");
       LayoutInflater layoutInflater = (LayoutInflater) activity.getSystemService(Context.LAYOUT_INFLATER_SERVICE);
-      DataManagementSession session = new DataManagementSession(new Datasource.LocationType[]{Datasource.LocationType.PCM}, new Datasource.LocationType[]{Datasource.LocationType.PCM}, mockMediumDeviceForTest, null, null, null);
       View view = layoutInflater.inflate(R.layout.no_device_layout, null);
       assertEquals("No Import Source", View.VISIBLE, view.findViewById(R.id.no_import_source_view).getVisibility());
    }

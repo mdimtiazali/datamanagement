@@ -34,8 +34,11 @@
     <string name="select_path">Select Path...</string>
     <string name="continue_string">Continue</string>
     <string name="next">Next</string>
+    <string name="copy_click_string">Copy click on node </string>
+    <string name="no_data_of_format_string">No data of selected format selected</string>
+    <string name="no_operations_check_connectivity_string">No operations came back from server. Check connectivity</string>
 
-    <string name="pfds">Grower / Farm / Field</string>
+    <string name="pfds">Grower/Farm/Field/Task</string>
     <string name="vehicles">Vehicles</string>
     <string name="imps">Implements</string>
     <string name="prescriptions">Prescriptions</string>
@@ -83,30 +86,27 @@
     <string name="file_name">File Name</string>
     <string name="empty_discovery">No data found</string>
     <string name="export_cancel_confirmation">This will cancel current export.\nDo you want to proceed?</string>
-    <string name="format_description">Export Formats
-        \n
-        \nPF Database:
-        \n - All Data Types
+    <string name="format_description_title">Export Formats</string>
+    <string name="format_description">PF Database:
+        \n- All Data Types
         \n
         \nISOXML:
-        \n - Grower, Farm, Field, and Task Folders
-        \n - Task Data:
-        \n      - AsApplied Logs
-        \n      - Harvest Logs
-        \n      - Coverage Logs
-        \n      - Trip Computer Logs
-        \n - Products, Varieties, and Product Mixes
-        \n - Variety Maps
-        \n - Prescriptions
-        \n - Guidance Lines (Except Field and Multi-Swaths)
-        \n - Boundaries
-        \n - Landmarks:
-        \n      - Point, Line, and Area Features
+        \n- Grower, Farm, Field, and Task Folders
+        \n- Task Data:
+        \n\t\t- AsApplied Logs
+        \n\t\t- Harvest Logs
+        \n\t\t- Coverage Logs
+        \n\t\t- Trip Computer Logs
+        \n- Products, Varieties, and Product Mixes
+        \n- Variety Maps
+        \n- Prescriptions
+        \n- Guidance Lines (Except Field and Multi-Swaths)
+        \n- Boundaries
+        \n- Landmarks:
+        \n\t\t- Point, Line, and Area Features
     </string>
-    <string name="destination_heading">Supported Export Destinations:</string>
-    <string name="case_destination_info">Supported Export Destinations:
-        \n
-        \nPlease select the proper destination to ensure the export file structure is compatible with the destination file structure.
+    <string name="destination_title">Supported Export Destinations:</string>
+    <string name="case_destination_info">Please select the proper destination to ensure the export file structure is compatible with the destination file structure.
         \n
         \nYou can export to the USB for use on the following products:
         \n- Pro 1200
@@ -115,11 +115,9 @@
         \n- Desktop Software
         \n
         \nYou can export directly to the AFS Connect by selecting:
-        \n- AFS Connect"
+        \n- AFS Connect
     </string>
-    <string name="new_holland_destination_info">Supported Export Destinations:
-        \n
-        \nPlease select the proper destination to ensure the export file structure is compatible with the destination file structure.
+    <string name="new_holland_destination_info">Please select the proper destination to ensure the export file structure is compatible with the destination file structure.
         \n
         \nYou can export to the USB for use on the following products:
         \n- Intelliview 12
@@ -127,8 +125,8 @@
         \n- Intelliview IV
         \n- Desktop Software
         \n
-        \nYou can export directly to the AFS Connect by selecting:
-        \n- PLM Connect"
+        \nYou can export directly to the PLM Connect by selecting:
+        \n- PLM Connect
     </string>
 
     <string name="error_no_data">No Data</string>
@@ -139,6 +137,7 @@
     <string name="error_calculate_conflicts">Calculate Conflicts Error</string>
     <string name="error_calculate_operations">Calculate Targets Error</string>
     <string name="error_discovery">Discovery Error</string>
+    <string name="error_drag_drop">Select destination and/or format</string>
     <string name="status_cancelled">Cancelled</string>
     <string name="status_cancelling">Cancelling...</string>
     <string name="status_successful">Successful</string>
@@ -147,15 +146,23 @@
     <string name="import_cancel">Import Cancelled</string>
     <string name="export_complete">Export Completed</string>
     <string name="export_cancel">Export Cancelled</string>
+    <string name="export_in_progress">Export in Progress</string>
+    <string name="import_in_progress">Import in Progress</string>
+    <string name="dataexchange_accessible_after_process_finished">You may access this page once the\nprocess is
+        completed.
+    </string>
+    <string name="dataexchange_leave_during_export_process">You may leave this page during the export</string>
+    <string name="dataexchange_leave_during_import_process">You may leave this page during the import</string>
     <string name="error_delete">Fail to delete data</string>
-   <string name="delete_progress_title">In deleting data ...</string>
+    <string name="delete_progress_title">Deleting data</string>
+    <string name="delete_progress_content">In progress ...</string>
     <plurals name="delete_confirm_dialog_title">
         <item quantity="one">Delete Confirmation (%1$d Item)</item>
         <item quantity="other">Delete Confirmation (%1$d Items)</item>
     </plurals>
     <plurals name="delete_confirm_dialog_content">
-        <item quantity="one">&lt;b>Are you sure you want to delete %1$d item? &lt;/b>\nThe item will be permanently deleted.</item>
-        <item quantity="other">&lt;b>Are you sure you want to delete %1$d items? &lt;/b>\nThe items will be permanently deleted.</item>
+        <item quantity="one">&lt;b>Are you sure you want to delete %1$d item? &lt;/b> &lt;br /> The item will be permanently deleted.</item>
+        <item quantity="other">&lt;b>Are you sure you want to delete %1$d items? &lt;/b> &lt;br />The items will be permanently deleted.</item>
     </plurals>
     <string name="usb_data_available">USB Data Available</string>
     <string name="usb_no_data_available">No USB Data Available</string>
@@ -252,7 +259,7 @@
 
     <string name="delete_dialog_confirm_button_text">Delete</string>
     <string name="delete_product_dialog_body_text">This will permanently delete this product and its settings.</string>
-
+    <string name="undelete_objects_headline">The followings cannot be deleted</string>
     <string name="alert_title">Alert</string>
     <string name="alert_dismiss">Dismiss</string>
     <string name="alert_in_use">This product is currently in use by a controller.</string>
@@ -293,6 +300,7 @@
     <!-- end of productlibrary-package usage -->
     <string name="edit_name_warning">The item with this name already exists. Please choose a different name</string>
     <string name="edit_update_title">Updating item</string>
+    <string name="edit_update_content">In progress ...</string>
 
     <string name="unknown_vehicle">Unknown Vehicle</string>
 

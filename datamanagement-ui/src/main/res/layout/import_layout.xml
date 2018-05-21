@@ -44,17 +44,18 @@
                     style="@style/TextAppearance.Import.Entity"/>
             <Button
                     android:id="@+id/select_all_btn"
-                    android:layout_width="wrap_content"
+                    android:layout_width="@dimen/min_select_all_btn_width"
+                    android:minWidth="175dp"
                     android:layout_height="@dimen/button_height"
                     style="@style/Button"
                     android:enabled="false"
-                    android:layout_alignParentRight="true"
+                    android:layout_alignParentEnd="true"
                     android:layout_centerVertical="true"
                     android:layout_marginTop="@dimen/button_margin_top"
                     android:layout_marginBottom="@dimen/button_margin_bottom"
-                    android:layout_marginRight="@dimen/button_margin_right"
+                    android:layout_marginEnd="@dimen/button_margin_right"
                     android:text="@string/select_all"
-                    android:textSize="22dp"/>
+                    android:textSize="22sp"/>
         </RelativeLayout>
         <com.cnh.android.pf.widget.view.DisabledOverlay
                 android:id="@+id/disabled_overlay"

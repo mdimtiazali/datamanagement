@@ -1,6 +1,8 @@
 package pl.polidea.treeview;
 
 import java.io.Serializable;
+import java.util.Collections;
+import java.util.Comparator;
 import java.util.LinkedList;
 import java.util.List;
 
@@ -70,11 +72,26 @@ public class InMemoryTreeNode<T> implements Serializable {
    /**
     * Note. This method should technically return unmodifiable collection, but
     * for performance reason on small devices we do not do it.
-    * 
+    *
     * @return children list
     */
    public List<InMemoryTreeNode<T>> getChildren() {
       return children;
+   }
+
+   /**
+    * Note. sort its children
+    *
+    * @param comparator
+    */
+   public synchronized void sortChildren( Comparator<? super InMemoryTreeNode<T>> comparator){
+      if(!children.isEmpty()){
+         childIdListCache = null;
+         Collections.sort(children, comparator);
+         for(InMemoryTreeNode node: children){
+            node.sortChildren(comparator);
+         }
+      }
    }
 
    public synchronized void clearChildren() {
@@ -111,4 +128,5 @@ public class InMemoryTreeNode<T> implements Serializable {
    public void setId(T id) {
       this.id = id;
    }
+
 }
