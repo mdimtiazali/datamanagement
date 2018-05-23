@@ -1,13 +1,10 @@
 package com.cnh.pf.android.data.management.utility;
 
-import android.app.Fragment;
 import android.content.Context;
 import android.content.SharedPreferences;
-import android.content.pm.PackageManager;
 import android.content.res.Resources;
 import android.preference.PreferenceManager;
 import com.cnh.jgroups.Datasource;
-import com.cnh.pf.android.data.management.DataManagementActivity;
 import com.cnh.pf.android.data.management.R;
 import com.cnh.pf.data.management.aidl.MediumDevice;
 import org.slf4j.Logger;
@@ -34,6 +31,11 @@ public class UtilityHelper {
     public static final String STORAGE_LOCATION_USB = "USB";
     public static final String STORAGE_LOCATION_INTERNAL = "INTERNAL_FLASH";
     public static final int NEGATIVE_BINARY_ERROR = -1;
+    public static final int MAX_TREE_SELECTIONS_FOR_DEFAULT_TEXT_SIZE = 999;
+    public static final int POPOVER_DEFAULT_WIDTH = 550;
+    public static final int EXPORT_DEST_POPOVER_DEFAULT_HEIGHT = 370;
+    public static final int EXPORT_FORMAT_POPOVER_DEFAULT_HEIGHT = 455;
+
     /**
      * Map for returning the correct strings based on the vehicle make and data sources available
      */

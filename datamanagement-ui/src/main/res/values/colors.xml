@@ -31,6 +31,8 @@
     <color name="drag_drop_background_initial">#ecedee</color>
     <color name="drag_drop_background_accept">#e5ebf0</color>
     <color name="drag_drop_glow_edge">#c7dfe9</color>
+    <color name="drag_drop_white_text_color">#fdfdfd</color>
+    <color name="drag_drop_default_text_color">#777777</color>
 
     <!-- Panel border -->
     <color name="data_panel_border">#80bee9</color>

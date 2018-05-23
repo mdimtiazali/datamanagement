@@ -89,6 +89,8 @@
     <dimen name="left_layout_background_start_margin">1dp</dimen>
     <dimen name="left_layout_background_end_margin">2dp</dimen>
     <dimen name="button_default_text_size">22sp</dimen>
+    <dimen name="info_image_button_padding">8dp</dimen>
+    <dimen name="import_left_layout_background_bottom_margin">50dp</dimen>
 
     <dimen name="undelete_dialog_edge_margin">24dp</dimen>
     <dimen name="progress_circle_diameter">48dp</dimen>

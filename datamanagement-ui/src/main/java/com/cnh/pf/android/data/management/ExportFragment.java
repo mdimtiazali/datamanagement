@@ -9,9 +9,13 @@
 
 package com.cnh.pf.android.data.management;
 
+import static com.cnh.pf.android.data.management.utility.UtilityHelper.EXPORT_DEST_POPOVER_DEFAULT_HEIGHT;
+import static com.cnh.pf.android.data.management.utility.UtilityHelper.EXPORT_FORMAT_POPOVER_DEFAULT_HEIGHT;
+import static com.cnh.pf.android.data.management.utility.UtilityHelper.MAX_TREE_SELECTIONS_FOR_DEFAULT_TEXT_SIZE;
 import static com.cnh.pf.android.data.management.utility.UtilityHelper.NEGATIVE_BINARY_ERROR;
 import android.content.Context;
 import android.content.res.Resources;
+import android.graphics.drawable.Drawable;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.RemoteException;
@@ -22,6 +26,7 @@ import android.view.View;
 import android.widget.AdapterView;
 import android.widget.Button;
 import android.widget.ImageButton;
+import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.TextView;
 
@@ -52,7 +57,6 @@ import com.cnh.pf.datamng.Process;
 import com.cnh.pf.model.vip.vehimp.VehicleCurrent;
 import com.google.inject.Inject;
 
-import java.math.BigDecimal;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -67,6 +71,8 @@ import java.io.File;
 
 
 import roboguice.inject.InjectView;
+
+import static com.cnh.pf.android.data.management.utility.UtilityHelper.POPOVER_DEFAULT_WIDTH;
 import static com.cnh.pf.model.constants.stringsConstants.BRAND_CASE_IH;
 import static com.cnh.pf.model.constants.stringsConstants.BRAND_NEW_HOLLAND;
 
@@ -88,6 +94,10 @@ public class ExportFragment extends BaseDataFragment {
    PickList exportFormatPicklist;
    @InjectView(R.id.export_drop_zone)
    LinearLayout exportDropZone;
+   @InjectView(R.id.export_drop_zone_image)
+   ImageView exportDropZoneImage;
+   @InjectView(R.id.export_drop_zone_text)
+   TextView exportDropZoneText;
    @InjectView(R.id.export_finished_state_panel)
    LinearLayout exportFinishedStatePanel;
    @InjectView(R.id.export_selected_btn)
@@ -106,6 +116,12 @@ public class ExportFragment extends BaseDataFragment {
    ImageButton formatInfoButton;
 
    private int transparentColor;
+   private int whiteTextColor;
+   private int defaultTextColor;
+
+   private Drawable exportWhiteIcon;
+   private Drawable exportDefaultIcon;
+
    private VIPDataHandler vipDataHandler;
    private VipDataHelperListener vipDataHelperListener;
    private Map<Datasource.LocationType, String> displayStringMap;
@@ -140,6 +156,12 @@ public class ExportFragment extends BaseDataFragment {
 
       final Resources resources = getResources();
       transparentColor = resources.getColor(android.R.color.transparent);
+      whiteTextColor = resources.getColor(R.color.drag_drop_white_text_color);
+      defaultTextColor = resources.getColor(R.color.drag_drop_default_text_color);
+
+      exportWhiteIcon = resources.getDrawable(R.drawable.export_ic_white);
+      exportDefaultIcon = resources.getDrawable(R.drawable.export_icon);
+
       loading_string = resources.getString(R.string.loading_string);
       x_of_y_format = resources.getString(R.string.x_of_y_format);
       vipDataHelperListener = new VipDataHelperListener();
@@ -207,19 +229,18 @@ public class ExportFragment extends BaseDataFragment {
                           Gravity.TOP| Gravity.CENTER_HORIZONTAL, getResources().getInteger(R.integer.toast_message_xoffset), getResources().getInteger(R.integer.toast_message_yoffset)).show();
                }
                else {
-                  exportDropZone.setBackgroundResource(R.drawable.dashed_border_accept);
+                  setExportDragDropArea(DragEvent.ACTION_DRAG_ENTERED);
                }
                return true;
             case DragEvent.ACTION_DRAG_EXITED:
                if (exportSelectedBtn.isEnabled()) {
-                  exportDropZone.setBackgroundColor(transparentColor);
-                  exportDropZone.setBackgroundResource(R.drawable.dashed_border_selected);
+                  setExportDragDropArea(DragEvent.ACTION_DRAG_EXITED);
                }
                return true;
             case DragEvent.ACTION_DROP:
                logger.info("Dropped");
                if (exportSelectedBtn.isEnabled()) {
-                  exportDropZone.setBackgroundResource(R.drawable.dashed_border_initial);
+                  setExportDragDropArea(DragEvent.ACTION_DROP);
                   exportSelected();
                }
                return true;
@@ -245,6 +266,19 @@ public class ExportFragment extends BaseDataFragment {
       operationName.setText(R.string.exporting_string);
    }
 
+   private void setExportDragDropArea(int event) {
+      if (event == DragEvent.ACTION_DRAG_ENTERED) {
+         exportDropZoneImage.setImageDrawable(exportWhiteIcon);
+         exportDropZoneText.setTextColor(whiteTextColor);
+         exportDropZone.setBackgroundResource(R.drawable.dashed_border_accept);
+      }
+      else {
+         exportDropZoneImage.setImageDrawable(exportDefaultIcon);
+         exportDropZoneText.setTextColor(defaultTextColor);
+         exportDropZone.setBackgroundResource(event == DragEvent.ACTION_DRAG_EXITED ? R.drawable.dashed_border_selected : R.drawable.dashed_border_initial);
+      }
+   }
+
    private void destInfoButtonClicked() {
       Context popoverContext = getActivity().getApplicationContext();
       String destInfoString = null;
@@ -257,7 +291,8 @@ public class ExportFragment extends BaseDataFragment {
          destInfoString = getString(R.string.new_holland_destination_info);
       }
 
-      PopoverWindowInfoView infoPopupWindow = new PopoverWindowInfoView(popoverContext, 550, 370, Popover.Style.LIGHT_INFO);
+      PopoverWindowInfoView infoPopupWindow = new PopoverWindowInfoView(popoverContext, POPOVER_DEFAULT_WIDTH,
+              EXPORT_DEST_POPOVER_DEFAULT_HEIGHT, Popover.Style.LIGHT_INFO);
       infoPopupWindow.setDescription(destInfoString);
       infoPopupWindow.setTitle(getString(R.string.destination_title));
       infoPopupWindow.showAt(destInfoButton, Gravity.END, Popover.ArrowPosition.LEFT_TOP);
@@ -265,7 +300,8 @@ public class ExportFragment extends BaseDataFragment {
 
    private void formatInfoButtonClicked() {
       Context popoverContext = getActivity().getApplicationContext();
-      PopoverWindowInfoView infoPopupWindow = new PopoverWindowInfoView(popoverContext, 550, 455, Popover.Style.LIGHT_INFO);
+      PopoverWindowInfoView infoPopupWindow = new PopoverWindowInfoView(popoverContext, POPOVER_DEFAULT_WIDTH,
+              EXPORT_FORMAT_POPOVER_DEFAULT_HEIGHT, Popover.Style.LIGHT_INFO);
       infoPopupWindow.setDescription(getString(R.string.format_description));
       infoPopupWindow.setTitle(getString(R.string.format_description_title));
       infoPopupWindow.showAt(formatInfoButton, Gravity.END, Popover.ArrowPosition.LEFT_TOP);
@@ -883,7 +919,7 @@ public class ExportFragment extends BaseDataFragment {
             defaultButtonText = false;
             Resources resources = getResources();
             exportSelectedBtn.setText(resources.getString(R.string.export_selected) + " (" + selectedItemCount + ")");
-            exportSelectedBtn.setTextSize(selectedItemCount > resources.getInteger(R.integer.max_tree_selections_before_text_adjustment)
+            exportSelectedBtn.setTextSize(selectedItemCount > MAX_TREE_SELECTIONS_FOR_DEFAULT_TEXT_SIZE
                     ? resources.getDimension(R.dimen.button_default_text_size) - resources.getDimension(R.dimen.decrease_text_size)
                     : resources.getDimension(R.dimen.button_default_text_size));
          }

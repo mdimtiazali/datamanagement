@@ -36,14 +36,14 @@
                     android:layout_gravity="center"
                     style="@style/Button"
                     android:text="@string/select_source"
-                    android:textSize="22dp" />
+                    android:textSize="@dimen/button_default_text_size" />
 
             <LinearLayout
                     android:layout_width="match_parent"
                     android:layout_height="@dimen/dataexchange_perform_box_import_height"
                     android:layout_marginTop="12dp"
                     android:orientation="vertical"
-                    android:background="@drawable/dashed_border_accept">
+                    android:background="@drawable/dashed_border_initial">
 
                 <include layout="@layout/perform_left_layout"/>
 
@@ -54,18 +54,21 @@
                         android:layout_height="match_parent">
 
                     <ImageView
+                            android:id="@+id/import_drop_zone_image"
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
-                            android:layout_marginTop="50dp"
-                            android:background="@drawable/ic_import_dragndrop_area"
+                            android:layout_marginTop="@dimen/dataexchange_perform_left_box_top_spacing_to_text"
+                            android:src="@drawable/ic_import_grey"
                             android:layout_gravity="center"/>
 
                     <TextView
+                            android:id="@+id/import_drop_zone_text"
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
                             android:layout_gravity="center_horizontal"
                             android:gravity="center"
-                            android:layout_marginBottom="50dp"
+                            android:layout_marginBottom="@dimen/import_left_layout_background_bottom_margin"
+                            android:textColor="@color/drag_drop_default_text_color"
                             style="@style/TextAppearance.Import.Entity"
                             android:text="@string/import_drag_and_drop" />
                 </LinearLayout>
