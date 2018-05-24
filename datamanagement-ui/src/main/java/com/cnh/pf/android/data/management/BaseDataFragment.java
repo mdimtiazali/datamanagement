@@ -82,6 +82,13 @@ public abstract class BaseDataFragment extends RoboFragment implements SessionCo
    }
 
    /**
+    * Expose session manager instance for child class.
+    */
+   protected SessionContract.SessionManager getSessionManager() {
+      return this.sessionManager;
+   }
+
+   /**
     * Comparator to sort list items in alphabetical order. Depending on requirement this could
     * be implemented differently but current requirement specifies alphabetical order.
     */

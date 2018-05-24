@@ -10,8 +10,10 @@
 package com.cnh.pf.android.data.management;
 
 import static android.os.Environment.MEDIA_BAD_REMOVAL;
+import static com.cnh.pf.android.data.management.utility.UtilityHelper.MAX_TREE_SELECTIONS_FOR_DEFAULT_TEXT_SIZE;
 
 import android.content.res.Resources;
+import android.graphics.drawable.Drawable;
 import android.os.Bundle;
 import android.os.Environment;
 import android.view.DragEvent;
@@ -20,6 +22,7 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.widget.Button;
 import android.widget.ImageButton;
+import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.TextView;
 
@@ -61,6 +64,10 @@ public class ImportFragment extends BaseDataFragment {
    Button importSourceBtn;
    @InjectView(R.id.import_drop_zone)
    LinearLayout importDropZone;
+   @InjectView(R.id.import_drop_zone_image)
+   ImageView importDropZoneImage;
+   @InjectView(R.id.import_drop_zone_text)
+   TextView importDropZoneText;
    @InjectView(R.id.import_selected_btn)
    Button importSelectedBtn;
    @InjectView(R.id.stop_button)
@@ -90,14 +97,26 @@ public class ImportFragment extends BaseDataFragment {
    private String importing_data;
    private String loading_string;
    private String x_of_y_format;
+   private int whiteTextColor;
+   private int defaultTextColor;
+
+   private Drawable importWhiteIcon;
+   private Drawable importDefaultIcon;
 
    @Override
    public void onCreate(Bundle savedInstanceState) {
       super.onCreate(savedInstanceState);
 
-      importing_data = getResources().getString(R.string.importing_data);
-      loading_string = getResources().getString(R.string.loading_string);
-      x_of_y_format = getResources().getString(R.string.x_of_y_format);
+      final Resources resources = getResources();
+      importing_data = resources.getString(R.string.importing_data);
+      loading_string = resources.getString(R.string.loading_string);
+      x_of_y_format = resources.getString(R.string.x_of_y_format);
+
+      whiteTextColor = resources.getColor(R.color.drag_drop_white_text_color);
+      defaultTextColor = resources.getColor(R.color.drag_drop_default_text_color);
+
+      importWhiteIcon = resources.getDrawable(R.drawable.ic_import_white);
+      importDefaultIcon = resources.getDrawable(R.drawable.ic_import_grey);
    }
 
    @Override
@@ -131,19 +150,18 @@ public class ImportFragment extends BaseDataFragment {
          public boolean onDrag(View v, DragEvent event) {
             switch (event.getAction()) {
             case DragEvent.ACTION_DRAG_STARTED:
-               importDropZone.setBackgroundColor(getResources().getColor(R.color.drag_accept));
                return true;
             case DragEvent.ACTION_DRAG_ENDED:
-               importDropZone.setBackgroundColor(getResources().getColor(android.R.color.transparent));
                return true;
             case DragEvent.ACTION_DRAG_ENTERED:
-               importDropZone.setBackgroundColor(getResources().getColor(R.color.drag_enter));
+               setImportDragDropArea(DragEvent.ACTION_DRAG_ENTERED);
                return true;
             case DragEvent.ACTION_DRAG_EXITED:
-               importDropZone.setBackgroundColor(getResources().getColor(R.color.drag_accept));
+               setImportDragDropArea(DragEvent.ACTION_DRAG_EXITED);
                return true;
             case DragEvent.ACTION_DROP:
                logger.info("Dropped");
+               setImportDragDropArea(DragEvent.ACTION_DROP);
                runImport();
                return true;
             }
@@ -173,6 +191,19 @@ public class ImportFragment extends BaseDataFragment {
          hideDisabledOverlay();
          showTreeList();
          updateSelectAllState();
+      }
+   }
+
+   private void setImportDragDropArea(int event) {
+      if (event == DragEvent.ACTION_DRAG_ENTERED) {
+         importDropZoneImage.setImageDrawable(importWhiteIcon);
+         importDropZoneText.setTextColor(whiteTextColor);
+         importDropZone.setBackgroundResource(R.drawable.dashed_border_accept);
+      }
+      else {
+         importDropZoneImage.setImageDrawable(importDefaultIcon);
+         importDropZoneText.setTextColor(defaultTextColor);
+         importDropZone.setBackgroundResource(event == DragEvent.ACTION_DRAG_EXITED ? R.drawable.dashed_border_selected : R.drawable.dashed_border_initial);
       }
    }
 
@@ -327,6 +358,7 @@ public class ImportFragment extends BaseDataFragment {
       boolean isActiveOperation = (SessionUtil.isCalculateConflictsTask(s) ||
               SessionUtil.isCalculateOperationsTask(s) ||
               SessionUtil.isPerformOperationsTask(s) && s.getResultCode() == null);
+      boolean connected = getSessionManager().isServiceConnected();
       boolean hasSelection = getTreeAdapter() != null && getTreeAdapter().hasSelection();
       boolean defaultButtonText = true;
       if (getTreeAdapter() != null && getTreeAdapter().getSelectionMap() != null) {
@@ -335,7 +367,7 @@ public class ImportFragment extends BaseDataFragment {
             defaultButtonText = false;
             Resources resources = getResources();
             importSelectedBtn.setText(resources.getString(R.string.import_selected) + " (" + selectedItemCount + ")");
-            importSelectedBtn.setTextSize(selectedItemCount > resources.getInteger(R.integer.max_tree_selections_before_text_adjustment)
+            importSelectedBtn.setTextSize(selectedItemCount > MAX_TREE_SELECTIONS_FOR_DEFAULT_TEXT_SIZE
                     ? resources.getDimension(R.dimen.button_default_text_size) - resources.getDimension(R.dimen.decrease_text_size)
                     : resources.getDimension(R.dimen.button_default_text_size));
          }
@@ -345,8 +377,16 @@ public class ImportFragment extends BaseDataFragment {
          float defaultButtonSize = getResources().getDimension(R.dimen.button_default_text_size);
          if (importSelectedBtn.getTextSize() < defaultButtonSize) importSelectedBtn.setTextSize(defaultButtonSize);
       }
-      importSourceBtn.setEnabled(!isActiveOperation);
-      importSelectedBtn.setEnabled(hasSelection && !isActiveOperation && s != null);
+
+      importSourceBtn.setEnabled(connected && !isActiveOperation);
+      if (connected && hasSelection && !isActiveOperation && s != null) {
+         importSelectedBtn.setEnabled(true);
+         importDropZone.setBackgroundResource(R.drawable.dashed_border_selected);
+      }
+      else {
+         importSelectedBtn.setEnabled(false);
+         importDropZone.setBackgroundResource(R.drawable.dashed_border_initial);
+      }
    }
 
    /**Called when user selects Import source, from Import Source Dialog*/

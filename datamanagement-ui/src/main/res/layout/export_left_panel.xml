@@ -47,7 +47,7 @@
                         android:src="@drawable/ph_info_icon"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:padding="8dip"
+                        android:padding="@dimen/info_image_button_padding"
                         android:background="@android:color/transparent"
                         android:layout_gravity="center_vertical"/>
 
@@ -82,7 +82,7 @@
                         android:src="@drawable/ph_info_icon"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:padding="8dip"
+                        android:padding="@dimen/info_image_button_padding"
                         android:background="@android:color/transparent"
                         android:layout_gravity="center_vertical"/>
 
@@ -116,17 +116,20 @@
                         android:orientation="vertical">
 
                     <ImageView
+                            android:id="@+id/export_drop_zone_image"
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
                             android:layout_marginTop="@dimen/dataexchange_perform_left_box_top_spacing_to_text"
-                            android:background="@drawable/export_icon"
+                            android:src="@drawable/export_icon"
                             android:layout_gravity="center"/>
 
                     <TextView
+                            android:id="@+id/export_drop_zone_text"
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
                             android:layout_gravity="center_horizontal"
                             android:gravity="center"
+                            android:textColor="@color/drag_drop_default_text_color"
                             style="@style/TextAppearance.Import.Entity"
                             android:text="@string/export_drag_and_drop"/>
                 </LinearLayout>

@@ -9,10 +9,9 @@
   -->
 
 <layer-list xmlns:android="http://schemas.android.com/apk/res/android">
-    <item android:drawable="@drawable/export_blue_bg"/>
+    <item android:drawable="@drawable/export_blue_bg_dark"/>
     <item>
         <shape>
-            <solid android:color="@color/drag_drop_background_accept" />
             <stroke
                     android:dashGap="@dimen/dash_gap"
                     android:dashWidth="@dimen/dash_length"

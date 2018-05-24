@@ -45,7 +45,7 @@
             <Button
                     android:id="@+id/select_all_btn"
                     android:layout_width="@dimen/min_select_all_btn_width"
-                    android:minWidth="175dp"
+                    android:minWidth="@dimen/min_select_all_btn_width"
                     android:layout_height="@dimen/button_height"
                     style="@style/Button"
                     android:enabled="false"
@@ -55,7 +55,7 @@
                     android:layout_marginBottom="@dimen/button_margin_bottom"
                     android:layout_marginEnd="@dimen/button_margin_right"
                     android:text="@string/select_all"
-                    android:textSize="22sp"/>
+                    android:textSize="@dimen/button_default_text_size"/>
         </RelativeLayout>
         <com.cnh.android.pf.widget.view.DisabledOverlay
                 android:id="@+id/disabled_overlay"
