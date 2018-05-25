@@ -55,6 +55,7 @@ import com.cnh.pf.android.data.management.session.Session;
 import com.cnh.pf.android.data.management.session.SessionExtra;
 import com.cnh.pf.android.data.management.session.SessionUtil;
 import com.cnh.pf.android.data.management.utility.UtilityHelper;
+import com.cnh.pf.data.management.aidl.MediumDevice;
 import com.cnh.pf.model.vip.vehimp.VehicleCurrent;
 import com.google.inject.Inject;
 
@@ -428,6 +429,9 @@ public class ExportFragment extends BaseDataFragment {
       }
       else if (exportFormatPicklist.getAdapter().getCount() > 0) {
          exportFormatPicklist.setDisplayText(R.string.select_string); //Set to "Select" if no saved item selected
+         if (exportMediumPicklist.getAdapter().getCount() == 0) {
+            exportFormatPicklist.setReadOnly(true);
+         }
       }
    }
 
@@ -476,10 +480,12 @@ public class ExportFragment extends BaseDataFragment {
             // Reset the selection if the previous selection cannot be found.
             resetMediumSelection();
             exportMediumPicklist.setDisplayText(R.string.select_string); //Set to "Select" if no saved item selected
+            exportMediumPicklist.setReadOnly(false);
          }
       }
       else if (exportMediumPicklist.getAdapter().getCount() > 0) {
          exportMediumPicklist.setDisplayText(R.string.select_string); //Set to "Select" if no saved item selected
+         exportMediumPicklist.setReadOnly(false);
       }
    }
 
@@ -595,6 +601,9 @@ public class ExportFragment extends BaseDataFragment {
          public void onNothingSelected(AdapterView<?> adapterView) {
             resetFormatSelection();
             exportFormatPicklist.setDisplayText(R.string.select_string);
+            if (exportMediumPicklist.getAdapter().getCount() == 0) {
+               exportFormatPicklist.setReadOnly(true);
+            }
          }
       });
    }
@@ -630,6 +639,8 @@ public class ExportFragment extends BaseDataFragment {
          }
          exportFormatPicklist.setReadOnly(false);
          exportMediumPicklist.setDisplayText(R.string.connect_source_string); //Set to "Connect Source" since no medium are present
+         exportFormatPicklist.setDisplayText(R.string.select_string);
+         setExportPicklistsReadOnly(true); //Make both picklists read only
       }
    }
 
@@ -830,7 +841,22 @@ public class ExportFragment extends BaseDataFragment {
     */
    private void setExportPicklistsReadOnly(boolean readOnly) {
       exportMediumPicklist.setReadOnly(readOnly);
-      exportFormatPicklist.setReadOnly(readOnly);
+
+      //Only change state of Format Picklist if it isn't one of the three data sources below
+      if (exportMediumPicklist.getAdapter().getCount() > 0) {
+         SessionExtra extra = ((ObjectPickListItem<SessionExtra>) exportMediumPicklist.getSelectedItem()).getObject();
+         UtilityHelper.MediumVariant mediumVariant = UtilityHelper.MediumVariant.fromValue(extra.getOrder());
+         if (mediumVariant.equals(UtilityHelper.MediumVariant.CLOUD_OUTBOX) || mediumVariant.equals(UtilityHelper.MediumVariant.USB_DESKTOP_SW) ||
+                 mediumVariant.equals(UtilityHelper.MediumVariant.USB_FRED)) {
+            exportFormatPicklist.setReadOnly(true);
+         }
+         else {
+            exportFormatPicklist.setReadOnly(readOnly);
+         }
+      }
+      else { //Set the state of Format Picklist to value passed if Medium Picklist is empty
+         exportFormatPicklist.setReadOnly(readOnly);
+      }
    }
 
    @Override
