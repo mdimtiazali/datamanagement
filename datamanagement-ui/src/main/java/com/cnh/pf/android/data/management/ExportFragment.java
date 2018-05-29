@@ -12,7 +12,6 @@ package com.cnh.pf.android.data.management;
 import static com.cnh.pf.android.data.management.utility.UtilityHelper.EXPORT_DEST_POPOVER_DEFAULT_HEIGHT;
 import static com.cnh.pf.android.data.management.utility.UtilityHelper.EXPORT_FORMAT_POPOVER_DEFAULT_HEIGHT;
 import static com.cnh.pf.android.data.management.utility.UtilityHelper.MAX_TREE_SELECTIONS_FOR_DEFAULT_TEXT_SIZE;
-import static com.cnh.pf.android.data.management.utility.UtilityHelper.NEGATIVE_BINARY_ERROR;
 
 import android.content.Context;
 import android.content.res.Resources;
@@ -977,7 +976,7 @@ public class ExportFragment extends BaseDataFragment {
       boolean useDefaultText = true;
 
       if (getTreeAdapter() != null && getTreeAdapter().getSelectionMap() != null) {
-         int selectedItemCount = getTreeAdapter().getSelectionMap().size();
+         int selectedItemCount = countSelectedItem();
          if (selectedItemCount > 0) {
             useDefaultText = false;
             Resources resources = getResources();

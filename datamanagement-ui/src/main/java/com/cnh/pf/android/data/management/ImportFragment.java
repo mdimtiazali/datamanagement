@@ -362,7 +362,7 @@ public class ImportFragment extends BaseDataFragment {
       boolean hasSelection = getTreeAdapter() != null && getTreeAdapter().hasSelection();
       boolean defaultButtonText = true;
       if (getTreeAdapter() != null && getTreeAdapter().getSelectionMap() != null) {
-         int selectedItemCount = getTreeAdapter().getSelectionMap().size();
+         int selectedItemCount = countSelectedItem();
          if (selectedItemCount > 0) {
             defaultButtonText = false;
             Resources resources = getResources();

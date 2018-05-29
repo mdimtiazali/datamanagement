@@ -38,6 +38,7 @@ import org.slf4j.LoggerFactory;
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
+import java.util.Set;
 
 import pl.polidea.treeview.InMemoryTreeNode;
 import pl.polidea.treeview.InMemoryTreeStateManager;
@@ -640,6 +641,23 @@ public abstract class BaseDataFragment extends RoboFragment implements SessionCo
     */
    public ObjectTreeViewAdapter getTreeAdapter() {
       return treeAdapter;
+   }
+
+   /**
+    * Count the number of selected items that have only valid records.
+    *
+    * @return  the number of selected items on the tree UI
+    */
+   protected int countSelectedItem() {
+      int sum = 0;
+
+      if (getTreeAdapter() != null) {
+         Set<ObjectGraph> selectedObjs = getTreeAdapter().getSelected();
+         for (ObjectGraph obj : selectedObjs) {
+            sum += obj.size();
+         }
+      }
+      return sum;
    }
 
    /**
