@@ -383,11 +383,25 @@ public class ManageFragment extends BaseDataFragment implements SystemStatusHelp
    //remove the empty group item
    private void removeParentEmptyGroup(List<ObjectGraph> list){
       Set<ObjectGraph> emptyGroup = new HashSet<ObjectGraph>();
+      List<ObjectGraph> siblingsOrParent = null;
       for (ObjectGraph o : list) {
          if (TreeEntityHelper.obj2group.containsKey(o.getType())) {
-            List<ObjectGraph> slibingsOrParent = manager.getChildren(o.getParent());
-            if (slibingsOrParent != null && ! slibingsOrParent.isEmpty()) {
-               for (ObjectGraph obj : slibingsOrParent) {
+            if(TreeEntityHelper.group2group.containsKey(TreeEntityHelper.obj2group.get(o.getType()))) {
+               List<ObjectGraph> ggoups = manager.getChildren(o.getParent());
+               if (ggoups != null && !ggoups.isEmpty()) {
+                  for (ObjectGraph gg : ggoups) {
+                     if (gg.getType().equals(TreeEntityHelper.group2group.get(TreeEntityHelper.obj2group.get(o.getType())))) {
+                        siblingsOrParent = manager.getChildren(gg);
+                        break;
+                     }
+                  }
+               }
+            }
+            else{
+               siblingsOrParent = manager.getChildren(o.getParent());
+            }
+            if (siblingsOrParent != null && ! siblingsOrParent.isEmpty()) {
+               for (ObjectGraph obj : siblingsOrParent) {
                   if (obj instanceof GroupObjectGraph && isEmptyGroup(obj) && !emptyGroup.contains(obj)) {
                      emptyGroup.add(obj);
                   }

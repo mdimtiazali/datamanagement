@@ -572,16 +572,18 @@ public abstract class BaseDataFragment extends RoboFragment implements SessionCo
          //Check if entity can be grouped
          if (TreeEntityHelper.obj2group.containsKey(object.getType()) || object.getParent() == null) {
             GroupObjectGraph group = null;
+            GroupObjectGraph ggroup = null;
             for (ObjectGraph child : manager.getChildren(parent)) { //find the group node
-               if (child instanceof GroupObjectGraph){
-                  if(TreeEntityHelper.obj2group.containsKey(object.getType()) && child.getType().equals(TreeEntityHelper.obj2group.get(object.getType()))){
-                     group = (GroupObjectGraph) child;
+               if (child instanceof GroupObjectGraph && TreeEntityHelper.obj2group.containsKey(object.getType())) {
+                  if (child.getType().equals(TreeEntityHelper.obj2group.get(object.getType()))) {
+                     group = (GroupObjectGraph) child;//found the group
                      break;
-                  }
-                  else if(TreeEntityHelper.group2group.containsKey(TreeEntityHelper.obj2group.get(object.getType()))){
-                     for(ObjectGraph cchild: manager.getChildren(child)){
-                        if(child instanceof GroupObjectGraph && child.getType().equals(TreeEntityHelper.group2group.get(TreeEntityHelper.obj2group.get(object.getType())))){
-                           group = (GroupObjectGraph)cchild;
+                  } else if (TreeEntityHelper.group2group.containsKey(TreeEntityHelper.obj2group.get(object.getType())) &&
+                          child.getType().equals(TreeEntityHelper.group2group.get(TreeEntityHelper.obj2group.get(object.getType())))) {
+                     ggroup = (GroupObjectGraph) child;//found the group's parent
+                     for (ObjectGraph cchild : manager.getChildren(child)) {
+                        if (cchild instanceof GroupObjectGraph && cchild.getType().equals(TreeEntityHelper.obj2group.get(object.getType()))) {
+                           group = (GroupObjectGraph) cchild;//found the group
                            break;
                         }
                      }
@@ -590,11 +592,13 @@ public abstract class BaseDataFragment extends RoboFragment implements SessionCo
             }
             if (group == null) { //if group node doesn't exist we gotta make it
                if(TreeEntityHelper.group2group.containsKey(TreeEntityHelper.obj2group.get(object.getType()))){
-                  GroupObjectGraph ggroup = new GroupObjectGraph(null, TreeEntityHelper.group2group.get(TreeEntityHelper.obj2group.get(object.getType())), TreeEntityHelper.getGroupName(getActivity(), TreeEntityHelper.group2group.get(TreeEntityHelper.obj2group.get(object.getType()))),null, parent);
-                  group = new GroupObjectGraph(null, TreeEntityHelper.obj2group.get(object.getType()), TreeEntityHelper.getGroupName(getActivity(), TreeEntityHelper.obj2group.get(object.getType())), null, ggroup);
-                  if(treeBuilder.bAddRelation(parent,ggroup) && !bVisible){
-                     bVisible = true;
+                  if(ggroup == null){
+                     ggroup = new GroupObjectGraph(null, TreeEntityHelper.group2group.get(TreeEntityHelper.obj2group.get(object.getType())), TreeEntityHelper.getGroupName(getActivity(), TreeEntityHelper.group2group.get(TreeEntityHelper.obj2group.get(object.getType()))),null, parent);
+                     if(treeBuilder.bAddRelation(parent,ggroup) && !bVisible){
+                        bVisible = true;
+                     }
                   }
+                  group = new GroupObjectGraph(null, TreeEntityHelper.obj2group.get(object.getType()), TreeEntityHelper.getGroupName(getActivity(), TreeEntityHelper.obj2group.get(object.getType())), null, ggroup);
                   if(treeBuilder.bAddRelation(ggroup, group) && !bVisible){
                      bVisible = true;
                   }
