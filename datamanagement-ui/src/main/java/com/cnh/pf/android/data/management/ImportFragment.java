@@ -42,9 +42,11 @@ import com.cnh.pf.android.data.management.session.Session;
 import com.cnh.pf.android.data.management.session.SessionExtra;
 import com.cnh.pf.android.data.management.session.SessionUtil;
 
+import com.cnh.pf.android.data.management.utility.UtilityHelper;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -524,9 +526,33 @@ public class ImportFragment extends BaseDataFragment {
    }
 
    private List<SessionExtra> generateImportExtras() {
+      logger.debug("generateImportExtras: external storage state = {}", Environment.getExternalStorageState());
+      boolean internalFileSystem = false;
       List<SessionExtra> list = new ArrayList<SessionExtra>();
 
-      if (Environment.getExternalStorageState().equals(Environment.MEDIA_MOUNTED)) {
+      try {
+         String fileStorage = UtilityHelper.getSharedPreferenceString(getActivity().getApplicationContext(),
+                 UtilityHelper.STORAGE_LOCATION_TYPE);
+         String fileStorageLocation = UtilityHelper.getSharedPreferenceString(getActivity().getApplicationContext(),
+                 UtilityHelper.STORAGE_LOCATION);
+
+         if (fileStorage != null && UtilityHelper.STORAGE_LOCATION_INTERNAL.equals(fileStorage)
+                 && fileStorageLocation != null && !fileStorageLocation.isEmpty()) {
+            File storageFolder = new File(fileStorageLocation);
+            if (storageFolder.exists() && storageFolder.canRead() && storageFolder.canWrite()) {
+               SessionExtra newExtra = new SessionExtra(SessionExtra.USB, "USB", 0);
+               newExtra.setPath(storageFolder.getPath());
+               list.add(newExtra);
+               internalFileSystem = true;
+               logger.debug("using internal storage = {}", storageFolder);
+            }
+         }
+      }
+      catch (Exception e) {
+         logger.info("Unable to check if internal flash need to be used.", e);
+      }
+
+      if (!internalFileSystem && Environment.getExternalStorageState().equals(Environment.MEDIA_MOUNTED)) {
          SessionExtra newExtra = new SessionExtra(SessionExtra.USB, "USB", 0);
          newExtra.setPath(Environment.getExternalStorageDirectory().getPath());
          list.add(newExtra);

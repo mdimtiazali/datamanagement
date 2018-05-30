@@ -54,7 +54,6 @@ import com.cnh.pf.android.data.management.session.Session;
 import com.cnh.pf.android.data.management.session.SessionExtra;
 import com.cnh.pf.android.data.management.session.SessionUtil;
 import com.cnh.pf.android.data.management.utility.UtilityHelper;
-import com.cnh.pf.data.management.aidl.MediumDevice;
 import com.cnh.pf.model.vip.vehimp.VehicleCurrent;
 import com.google.inject.Inject;
 
@@ -527,7 +526,7 @@ public class ExportFragment extends BaseDataFragment {
 
    private List<SessionExtra> generateExportExtras() {
       //temporarily always add usb for testing
-      logger.debug("getDevices external storage state = {}", Environment.getExternalStorageState());
+      logger.debug("generateExportExtras external storage state = {}", Environment.getExternalStorageState());
       boolean internalFileSystem = false;
 
       List<SessionExtra> list = new ArrayList<SessionExtra>();
