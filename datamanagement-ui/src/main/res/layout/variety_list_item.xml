@@ -22,7 +22,7 @@
             android:layout_weight="@integer/variety_list_item_name_weight"
             android:layout_height="wrap_content"
             style="@style/TextAppearance.ItemList"
-            android:paddingLeft="@dimen/product_library_sort_header_left_padding"
+            android:paddingLeft="@dimen/product_library_list_header_left_padding"
             android:singleLine="true"
             android:ellipsize="end"/>
 
@@ -32,7 +32,7 @@
             android:layout_width="0dp"
             android:layout_height="wrap_content"
             style="@style/TextAppearance.ItemList"
-            android:paddingLeft="@dimen/product_library_sort_header_left_padding"
+            android:paddingLeft="@dimen/product_library_list_header_left_padding"
             android:paddingRight="@dimen/list_item_padding"/>
 
     <RelativeLayout
@@ -40,7 +40,7 @@
             android:layout_weight="@integer/variety_list_item_color_weight"
             android:layout_width="0dp"
             android:layout_height="wrap_content"
-            android:paddingLeft="@dimen/product_library_sort_header_left_padding"
+            android:paddingLeft="@dimen/product_library_list_header_left_padding"
             android:paddingRight="@dimen/list_item_padding"
             android:layout_gravity="center_horizontal">
 

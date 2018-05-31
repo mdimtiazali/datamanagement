@@ -16,6 +16,7 @@
     <color name="bg_implicit_stroke">#ff83b8db</color>
     <color name="bg_implicit_fill">#ffe0f3f8</color>
     <color name="bg_notsupported_fill">#f9f6aa</color>
+    <color name="progress_circle">#1277db</color>
 
     <dimen name="selected_corner_radius">4dp</dimen>
 
@@ -38,7 +39,7 @@
     <color name="product_mix_dialog_table_dark_cell_color">#ffeeeded</color>
     <color name="product_mix_dialog_table_default_cell_color">#fffcfcfc</color>
 
-    <color name="product_library_empty_table_text">#7d333333</color>
+    <color name="product_library_empty_table_text_color">#7d333333</color>
 
     <color name="odd_rows">#16525252</color>
     <color name="even_rows">#ffffff</color>
