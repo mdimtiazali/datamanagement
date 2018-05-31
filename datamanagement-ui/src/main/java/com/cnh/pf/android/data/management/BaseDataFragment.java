@@ -20,6 +20,7 @@ import android.widget.TextView;
 import android.widget.LinearLayout;
 
 import com.cnh.android.pf.widget.view.DisabledOverlay;
+import com.cnh.jgroups.DataTypes;
 import com.cnh.jgroups.ObjectGraph;
 import com.cnh.jgroups.Operation;
 import com.cnh.pf.android.data.management.adapter.ObjectTreeViewAdapter;
@@ -550,9 +551,9 @@ public abstract class BaseDataFragment extends RoboFragment implements SessionCo
     */
    protected void addToTree(List<ObjectGraph> objectGraphs){
       boolean bVisible = false;
-      if(objectGraphs!=null && !objectGraphs.isEmpty()){
+      if(objectGraphs != null && !objectGraphs.isEmpty()){
          for(ObjectGraph o: objectGraphs){
-            if(bAddToTree(o.getParent(), o) && !bVisible){
+            if(bAddToTree(o.getParent(), o) && !bVisible) {
                bVisible = true;
             }
          }
@@ -570,6 +571,9 @@ public abstract class BaseDataFragment extends RoboFragment implements SessionCo
    private boolean bAddToTree(ObjectGraph parent, ObjectGraph object) {
       boolean bVisible = false;
       try {
+         if(object.getType().equals(DataTypes.DDOP)) {
+            return bVisible;
+         }
          //Check if entity can be grouped
          if (TreeEntityHelper.obj2group.containsKey(object.getType()) || object.getParent() == null) {
             GroupObjectGraph group = null;

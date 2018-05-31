@@ -43,6 +43,7 @@ import com.cnh.android.widget.control.PickListItem;
 import com.cnh.android.widget.control.Popover;
 import com.cnh.android.widget.control.ProgressBarView;
 import com.cnh.jgroups.Datasource;
+import com.cnh.jgroups.DataTypes;
 import com.cnh.jgroups.ObjectGraph;
 import com.cnh.jgroups.Operation;
 
@@ -873,6 +874,12 @@ public class ExportFragment extends BaseDataFragment {
       logger.trace("runExport()");
       progressValue = ProgressValue.initProgress();
       List<ObjectGraph> selected = new ArrayList<ObjectGraph>(getTreeAdapter().getSelected());
+      ArrayList<ObjectGraph> ddopsSelect = new ArrayList<ObjectGraph>(getTreeAdapter().getData());
+      for(ObjectGraph object : ddopsSelect) {
+         if(object.getType().equals(DataTypes.DDOP)) {
+            selected.add(object);
+         }
+      }
 
       if (!selected.isEmpty()) {
          final String tempPath = UtilityHelper.CommonPaths.PATH_TMP.getPathString();
