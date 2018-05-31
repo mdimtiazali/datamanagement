@@ -9,6 +9,7 @@
 package com.cnh.pf.android.data.management;
 
 import android.app.ProgressDialog;
+import android.os.AsyncTask;
 import android.os.Bundle;
 
 import android.view.Gravity;
@@ -36,10 +37,11 @@ import com.cnh.pf.android.data.management.graph.GroupObjectGraph;
 import com.cnh.pf.android.data.management.session.ErrorCode;
 import com.cnh.pf.android.data.management.session.Session;
 import com.cnh.pf.android.data.management.session.SessionUtil;
-
-import com.cnh.pf.android.data.management.helper.SystemStatusHelper;
+import com.cnh.pf.android.data.management.helper.DmAccessibleObserver;
+import com.cnh.pf.android.data.management.misc.DeleteButton;
 import com.cnh.pf.datamng.Process;
 
+import com.google.inject.Inject;
 import org.jgroups.util.RspList;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -54,30 +56,36 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Set;
 
-import roboguice.inject.InjectView;
 
 /**
  * Provide data management Tab implementation
  * Created by f09953c on 9/12/2017.
  */
-public class ManageFragment extends BaseDataFragment implements SystemStatusHelper.Listener{
+public class ManageFragment extends BaseDataFragment implements DmAccessibleObserver.Listener{
    private static final Logger logger = LoggerFactory.getLogger(ManageFragment.class);
 
-   @InjectView(R.id.dm_delete_button)
-   private ImageButton delBtn;
-   @InjectView(R.id.header)
-   private RelativeLayout headerLayout;
-
+   private DeleteButton delBtn;
+   private TextView header;
    private Set<String> copySet;
    private Set<String> editSet;
    private ProgressDialog updatingProg;
    private ProgressDialog deletingProg;
    private volatile boolean isAccessable = true;
-   private SystemStatusHelper statusHelper;
+   @Inject
+   private DmAccessibleObserver statusHelper;
 
    @Override
-   public void onSystemStatus(boolean status) {
-      logger.debug("onSystemStatus({})",status);
+   public void onAccessStatus(boolean status) {
+      logger.debug("onAccessStatus({}), isAccessable={}",status,isAccessable);
+      if(isAccessable != status) {
+         isAccessable = status;
+         getActivity().runOnUiThread(new Runnable() {
+            @Override
+            public void run() {
+               freshUdcUi();
+            }
+         });
+      }
       isAccessable = status;
    }
 
@@ -140,44 +148,60 @@ public class ManageFragment extends BaseDataFragment implements SystemStatusHelp
 
    @Override
    public void onCreate(Bundle savedInstanceState) {
+      logger.debug("onCreate()");
       super.onCreate(savedInstanceState);
       copySet = new HashSet<String>(Arrays.asList(getResources().getStringArray(R.array.copy)));
       editSet = new HashSet<String>(Arrays.asList(getResources().getStringArray(R.array.edit)));
-      statusHelper = new SystemStatusHelper(this);
+      statusHelper.setListener(this);
    }
 
    @Override
    public void onStart() {
       super.onStart();
-      statusHelper.start();
-   }
-
-   @Override
-   public void onResume() {
-      super.onResume();
-      statusHelper.subscribe();
-   }
-
-   @Override
-   public void onPause() {
-      super.onPause();
-      statusHelper.unsubscribe();
+      new AsyncTask<Void,Void,Void>(){
+         @Override
+         protected Void doInBackground(Void... voids) {
+            statusHelper.start();
+            return null;
+         }
+      }.execute();
    }
 
    @Override
    public void onStop() {
+      logger.debug("onStop()");
       super.onStop();
-      statusHelper.stop();
+      new AsyncTask<Void,Void,Void>(){
+         @Override
+         protected Void doInBackground(Void... voids) {
+            statusHelper.stop();
+            return null;
+         }
+      }.execute();
+
    }
 
+   /**
+    * refresh edit delete copy UI
+    */
+   private void freshUdcUi(){
+      if(treeAdapter != null && treeAdapter.hasSelection()) {
+         if (isAccessable) {
+            enableDeleteButton(true);
+         }
+         else{
+            enableDeleteButton(false);
+         }
+         treeAdapter.refresh();
+      }
+   }
    @Override
    public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
       View layout = inflater.inflate(R.layout.manage_layout, container, false);
       LinearLayout leftPanel = (LinearLayout) layout.findViewById(R.id.left_panel_wrapper);
       inflateViews(inflater, leftPanel);
       disabledOverlay = (DisabledOverlay) layout.findViewById(R.id.disabled_overlay);
-
-      delBtn = (ImageButton) layout.findViewById(R.id.dm_delete_button);
+      delBtn = (DeleteButton) layout.findViewById(R.id.dm_delete_button);
       delBtn.setOnClickListener(new View.OnClickListener() {
          @Override
          public void onClick(View v) {
@@ -218,21 +242,19 @@ public class ManageFragment extends BaseDataFragment implements SystemStatusHelp
             ((TabActivity) getActivity()).showPopup(delDialog, true);
          }
       });
+      delBtn.setPopContentProvider(new DeleteButton.PopContentProvider() {
+         @Override
+         public int getStringResourceId() {
+            if(!isAccessable){
+               return R.string.delete_select_notice_inaccessible;
+            }
+            return R.string.delete_select_notice;
+         }
+      });
       delBtn.setEnabled(false);
       return layout;
    }
 
-   private void showHeader() {
-      if (headerLayout != null) {
-         headerLayout.setVisibility(View.VISIBLE);
-      }
-   }
-
-   private void hideHeader() {
-      if (headerLayout != null) {
-         headerLayout.setVisibility(View.GONE);
-      }
-   }
 
    @Override
    public void inflateViews(LayoutInflater inflater, View leftPanel) {
@@ -244,7 +266,6 @@ public class ManageFragment extends BaseDataFragment implements SystemStatusHelp
       super.onViewCreated(view, savedInstanceState);
 
       delBtn.setEnabled(false);
-      showHeader();
    }
 
    @Override
@@ -703,7 +724,7 @@ public class ManageFragment extends BaseDataFragment implements SystemStatusHelp
          };
       }
       else {
-         treeAdapter.getSelectionMap().clear();
+         treeAdapter.selectAll(treeViewList,false);
       }
    }
 
