@@ -79,6 +79,7 @@ public class PerformOperationsTask extends SessionOperationTask<Void> {
                   hasCancelled |= Process.Result.CANCEL.equals(ret.getValue().getResult());
                }
                else {
+                  logger.debug("Either the session results have no value or the value itself is null. ({})", session.getAction());
                   session.setResultCode(Process.Result.ERROR);
                   throw new SessionException(ErrorCode.PERFORM_ERROR);
                }

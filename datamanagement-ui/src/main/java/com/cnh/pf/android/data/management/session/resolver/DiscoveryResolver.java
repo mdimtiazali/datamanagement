@@ -57,6 +57,7 @@ public class DiscoveryResolver implements Resolver {
          session.setSources(sources);
       }
       else {
+         logger.info("Undefined case for session resolution, DISCOVERY");
          throw new SessionException(ErrorCode.DISCOVERY_ERROR);
       }
    }

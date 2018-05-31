@@ -71,7 +71,23 @@ public class PerformOperationsResolver implements Resolver {
             session.setOperations(operations);
          }
       }
+      else if (SessionUtil.isImportAction(session)) {
+         logger.trace("resolve() - IMPORT");
+         // Session resolution for IMPORT's PERFORM_OPERATIONS should already be done in CALCULATE_OPERATIONS
+         // but in case it's not resolved for some reason repeat the resolve.
+         if (session.getDestinations().size() == 0) {
+            logger.info("Strange! PERFORM_OPERATIONS session for IMPORT hasn't been resolved.");
+            // Find the destination addresses
+            List<Address> destinations = dsHelper.getAddressesForLocation(Datasource.LocationType.PCM);
+            if (destinations.isEmpty()) {
+               logger.debug("resolve() - IMPORT: No destinations");
+               throw new SessionException(ErrorCode.NO_DESTINATION_DATASOURCE);
+            }
+            session.setDestinations(destinations);
+         }
+      }
       else {
+         logger.info("Undefined case for session resolution, PERFORM_OPERATIONS");
          throw new SessionException(ErrorCode.PERFORM_ERROR);
       }
    }

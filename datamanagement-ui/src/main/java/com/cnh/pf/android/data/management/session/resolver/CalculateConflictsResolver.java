@@ -48,6 +48,7 @@ public class CalculateConflictsResolver implements Resolver {
          session.setDestinations(destinations);
       }
       else {
+         logger.info("Undefined case for session resolution, CALCULATE_CONFLICT");
          throw new SessionException(ErrorCode.CALCULATE_CONFLICT_ERROR);
       }
    }

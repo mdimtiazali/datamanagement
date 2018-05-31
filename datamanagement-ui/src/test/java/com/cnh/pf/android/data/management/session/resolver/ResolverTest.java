@@ -108,6 +108,16 @@ public class ResolverTest {
       // Make sure session for EXPORT, PERFORM_OPERATIONS gets resolved.
       Resolver exportResolver = ResolverFactory.createResolver(dsHelper, session);
       checkResolver(exportResolver, session);
+
+      session.setAction(Session.Action.IMPORT);
+      session.setExtra(exportExtra);
+
+      when(dsHelper.getAddressesForLocation(Datasource.LocationType.PCM)).thenReturn(destinations);
+      when(dsHelper.getAddressesForLocation(Datasource.LocationType.USB)).thenReturn(sources);
+
+      // Make sure session for IMPORT, PERFORM_OPERATIONS gets resolved.
+      Resolver importResolver = ResolverFactory.createResolver(dsHelper, session);
+      checkResolver(importResolver, session);
    }
 
    @Test

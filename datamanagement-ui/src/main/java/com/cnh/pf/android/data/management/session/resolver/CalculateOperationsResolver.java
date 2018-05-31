@@ -48,6 +48,7 @@ public class CalculateOperationsResolver implements Resolver {
          session.setDestinations(destinations);
       }
       else {
+         logger.info("Undefined case for session resolution, CALCULATE_OPERATIONS");
          throw new SessionException(ErrorCode.CALCULATE_OPERATIONS_ERROR);
       }
    }
