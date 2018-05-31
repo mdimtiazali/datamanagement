@@ -69,6 +69,7 @@ import java.util.Map;
 
 import roboguice.inject.InjectView;
 
+import static com.cnh.pf.android.data.management.utility.UtilityHelper.NEGATIVE_BINARY_ERROR;
 import static com.cnh.pf.android.data.management.utility.UtilityHelper.POPOVER_DEFAULT_WIDTH;
 import static com.cnh.pf.model.constants.stringsConstants.BRAND_CASE_IH;
 import static com.cnh.pf.model.constants.stringsConstants.BRAND_NEW_HOLLAND;
@@ -413,7 +414,7 @@ public class ExportFragment extends BaseDataFragment {
     * PickList doesn't maintain its state upon fragment (tab) switch.
     */
    private void restoreFormatSelection() {
-      if (getArguments() != null && getArguments().getString(SAVED_FORMAT) != null) {
+      if (getArguments() != null && getArguments().getString(SAVED_FORMAT) != null && exportFormatPicklist.getAdapter().getCount() > 0) {
          boolean found = false;
          String selectedFormat = getArguments().getString(SAVED_FORMAT);
          logger.debug("Saved format: {}", selectedFormat);
@@ -433,6 +434,11 @@ public class ExportFragment extends BaseDataFragment {
          if (exportMediumPicklist.getAdapter().getCount() == 0) {
             exportFormatPicklist.setReadOnly(true);
          }
+      }
+      else {
+         resetFormatSelection();
+         exportFormatPicklist.setReadOnly(true);
+         exportFormatPicklist.setDisplayText(R.string.select_string);
       }
    }
 
@@ -458,6 +464,28 @@ public class ExportFragment extends BaseDataFragment {
    }
 
    /**
+    * Reset the picklist selections
+    */
+   private void resetPicklistSelections(boolean mediumReadOnly) {
+      if (getArguments() != null) {
+         Bundle arguments = getArguments();
+         arguments.putParcelable(SAVED_MEDIUM, null);
+         arguments.putParcelable(SAVED_FORMAT, null);
+      }
+
+      if (mediumReadOnly) {
+         exportMediumPicklist.setDisplayText(R.string.connect_source_string);
+      }
+      else {
+         exportMediumPicklist.setDisplayText(R.string.select_string);
+      }
+      exportMediumPicklist.setReadOnly(mediumReadOnly);
+
+      exportFormatPicklist.setDisplayText(R.string.select_string);
+      exportFormatPicklist.setReadOnly(true);
+   }
+
+   /**
     * Restore user selection for the medium pick list. This works when a user switches back to this fragment.
     * PickList doesn't maintain its state upon fragment (tab) switch.
     */
@@ -479,14 +507,11 @@ public class ExportFragment extends BaseDataFragment {
 
          if (!found) {
             // Reset the selection if the previous selection cannot be found.
-            resetMediumSelection();
-            exportMediumPicklist.setDisplayText(R.string.select_string); //Set to "Select" if no saved item selected
-            exportMediumPicklist.setReadOnly(false);
+            resetPicklistSelections(false);
          }
       }
       else if (exportMediumPicklist.getAdapter().getCount() > 0) {
-         exportMediumPicklist.setDisplayText(R.string.select_string); //Set to "Select" if no saved item selected
-         exportMediumPicklist.setReadOnly(false);
+         resetPicklistSelections(false);
       }
    }
 
@@ -580,7 +605,7 @@ public class ExportFragment extends BaseDataFragment {
 
          @Override
          public void onNothingSelected(AdapterView<?> parent) {
-            resetMediumSelection();
+            resetPicklistSelections(exportMediumPicklist.getAdapter().getCount() > 0);
             updateExportButton();
          }
       });
@@ -635,14 +660,10 @@ public class ExportFragment extends BaseDataFragment {
          restoreMediumSelection();
       }
       else {
-         resetMediumSelection();
          if (exportMediumPicklist.getAdapter().getCount() > 0) { //There are no medium devices, but picklist is still populated
             exportMediumPicklist.getAdapter().clear();
          }
-         exportFormatPicklist.setReadOnly(false);
-         exportMediumPicklist.setDisplayText(R.string.connect_source_string); //Set to "Connect Source" since no medium are present
-         exportFormatPicklist.setDisplayText(R.string.select_string);
-         setExportPicklistsReadOnly(true); //Make both picklists read only
+         resetPicklistSelections(true);
       }
    }
 
@@ -651,7 +672,7 @@ public class ExportFragment extends BaseDataFragment {
     * While Medium Device is set to Fred/USB or DesktopSW/USB, force to ISOXML and disable user selection of format.
    */
    private void forceMediumDeviceFormat() {
-      if (exportMediumPicklist.getSelectedItemPosition() > -1) {
+      if (exportMediumPicklist.getSelectedItemPosition() > NEGATIVE_BINARY_ERROR) {
          Boolean isReadOnly = false;
          SessionExtra extra = ((ObjectPickListItem<SessionExtra>) exportMediumPicklist.getSelectedItem()).getObject();
          UtilityHelper.MediumVariant mediumVariant = UtilityHelper.MediumVariant.fromValue(extra.getOrder());
@@ -830,7 +851,7 @@ public class ExportFragment extends BaseDataFragment {
 
    @Override
    public boolean supportedByFormat(ObjectGraph node) {
-      if (exportFormatPicklist.getSelectedItemPosition() > -1) {
+      if (exportFormatPicklist.getSelectedItemPosition() > NEGATIVE_BINARY_ERROR) {
          String format = exportFormatPicklist.getSelectedItemValue();
          return formatManager.formatSupportsType(format, node.getType());
       }
@@ -842,10 +863,10 @@ public class ExportFragment extends BaseDataFragment {
     * @param readOnly True if picklists are to be set to readonly, false otherwise
     */
    private void setExportPicklistsReadOnly(boolean readOnly) {
-      exportMediumPicklist.setReadOnly(readOnly);
-
-      //Only change state of Format Picklist if it isn't one of the three data sources below
       if (exportMediumPicklist.getAdapter().getCount() > 0) {
+         exportMediumPicklist.setReadOnly(readOnly);
+
+         //Only change state of Format Picklist if it isn't one of the three data sources below
          SessionExtra extra = ((ObjectPickListItem<SessionExtra>) exportMediumPicklist.getSelectedItem()).getObject();
          UtilityHelper.MediumVariant mediumVariant = UtilityHelper.MediumVariant.fromValue(extra.getOrder());
          if (mediumVariant.equals(UtilityHelper.MediumVariant.CLOUD_OUTBOX) || mediumVariant.equals(UtilityHelper.MediumVariant.USB_DESKTOP_SW) ||
@@ -856,8 +877,11 @@ public class ExportFragment extends BaseDataFragment {
             exportFormatPicklist.setReadOnly(readOnly);
          }
       }
-      else { //Set the state of Format Picklist to value passed if Medium Picklist is empty
-         exportFormatPicklist.setReadOnly(readOnly);
+      else { //Reset both picklists and set them to read only (likely bad USB removal)
+         exportMediumPicklist.setDisplayText(R.string.connect_source_string);
+         exportMediumPicklist.setReadOnly(true);
+         exportFormatPicklist.setDisplayText(R.string.select_string);
+         exportFormatPicklist.setReadOnly(true);
       }
    }
 
@@ -1003,8 +1027,8 @@ public class ExportFragment extends BaseDataFragment {
       }
 
       boolean hasSelection = (getTreeAdapter() != null && s != null &&
-              exportMediumPicklist.getSelectedItemPosition() >= 0 &&
-              exportFormatPicklist.getSelectedItemPosition() >= 0 &&
+              exportMediumPicklist.getSelectedItemPosition() > NEGATIVE_BINARY_ERROR &&
+              exportFormatPicklist.getSelectedItemPosition() > NEGATIVE_BINARY_ERROR &&
               getTreeAdapter().hasSelection());
 
       if (hasSelection && !isActiveOperation) {
