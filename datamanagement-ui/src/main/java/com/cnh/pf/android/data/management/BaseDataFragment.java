@@ -110,8 +110,7 @@ public abstract class BaseDataFragment extends RoboFragment implements IDataMana
    protected Handler handler = new Handler(Looper.getMainLooper());
    protected boolean cancelled;
    protected boolean hasLocalSource = false;
-   protected ProgressDialog updatingProg;
-   protected ProgressDialog deletingProg;
+
 
    /** Current session */
    protected volatile DataManagementSession session = null;
@@ -372,12 +371,7 @@ public abstract class BaseDataFragment extends RoboFragment implements IDataMana
                else {
                   onOtherSessionUpdate(event.getSession());
                }
-               if(updatingProg != null){
-                  updatingProg.dismiss();
-               }
-               if(deletingProg != null){
-                  deletingProg.dismiss();
-               }
+
                //suppress error message of need data path at import.
                if(event.getSession().getSource() != null && event.getSession().getSource().getType().equals(Datasource.Source.USB)
                      && (event.getType() != DataServiceConnectionImpl.ErrorEvent.DataError.NEED_DATA_PATH)) {
@@ -663,7 +657,7 @@ public abstract class BaseDataFragment extends RoboFragment implements IDataMana
             }
          }
          for (ObjectGraph child : object.getChildren()) {
-            if(treeBuilder.bAddRelation(object, child) && !bVisible){
+            if(bAddToTree(object, child) && !bVisible){
                bVisible = true;
             }
          }
@@ -674,7 +668,7 @@ public abstract class BaseDataFragment extends RoboFragment implements IDataMana
    }
 
    void updateSelectAllState() {
-      selectAllBtn.setEnabled(getSession() != null && getSession().getObjectData() != null && !getSession().getObjectData().isEmpty());
+      selectAllBtn.setEnabled(treeAdapter.getData() != null && !treeAdapter.getData().isEmpty());
       boolean allSelected = getTreeAdapter().areAllSelected();
       selectAllBtn.setText(allSelected ? R.string.deselect_all : R.string.select_all);
       selectAllBtn.setActivated(allSelected);
