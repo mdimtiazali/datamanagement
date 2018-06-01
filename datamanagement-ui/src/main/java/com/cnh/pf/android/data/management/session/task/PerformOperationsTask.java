@@ -33,6 +33,7 @@ import org.slf4j.LoggerFactory;
 
 import javax.annotation.Nonnull;
 import java.io.File;
+import java.io.IOException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayDeque;
 import java.util.Date;
@@ -92,34 +93,10 @@ public class PerformOperationsTask extends SessionOperationTask<Void> {
                SessionExtra extra = session.getExtra();
                if (extra != null && extra.isUsbExtra() && SessionUtil.isExportAction(session)) {
                   boolean moveWasSuccessfull = false;
-
-                  final String USB_EXPORT_PATH = UtilityHelper.CommonPaths.PATH_USB_PORT.getPathString();
-
-                  final String PFDATABASE_FOLDER = UtilityHelper.CommonPaths.PATH_DESIGNATOR.getPathString()
-                          + formatManager.getFormat(UtilityHelper.CommonFormats.PFDATABASEFORMAT.getName()).path
-                          + UtilityHelper.CommonPaths.PATH_DESIGNATOR.getPathString();
-
-                  final String ISOXML_FOLDER = UtilityHelper.CommonPaths.PATH_DESIGNATOR.getPathString()
-                          + formatManager.getFormat(UtilityHelper.CommonFormats.ISOXMLFORMAT.getName()).path
-                          + UtilityHelper.CommonPaths.PATH_DESIGNATOR.getPathString();
-
                   File tmpFolder = new File(tempPath);
-                  if (Environment.getExternalStorageState().equals(MEDIA_MOUNTED) && tmpFolder.exists()) {
 
-                     if (extra.getFormat().equals(UtilityHelper.CommonFormats.PFDATABASEFORMAT.getName())) {
-                        logger.info("start moving files from: {} to {}{}", tempPath, USB_EXPORT_PATH, PFDATABASE_FOLDER);
-                        moveWasSuccessfull = moveFiles(tempPath, USB_EXPORT_PATH, PFDATABASE_FOLDER);
-                     }
-                     else if (extra.getFormat().equals(UtilityHelper.CommonFormats.ISOXMLFORMAT.getName())) {
-                        logger.info("start moving files from: {} to {}{}",tempPath, USB_EXPORT_PATH, ISOXML_FOLDER);
-                        moveWasSuccessfull = moveFiles(tempPath, USB_EXPORT_PATH, ISOXML_FOLDER);
-                     }
-                     else {
-                        logger.info("Unknown destination on export");
-                     }
-
-                     logger.info("finished moving files");
-
+                  if (extra.isUseInternalFileSystem()) {
+                     moveWasSuccessfull = moveFilesToInternalFlash(session.getExtra());
                      if (moveWasSuccessfull) {
                         session.setResultCode(Process.Result.SUCCESS);
                      }
@@ -129,11 +106,45 @@ public class PerformOperationsTask extends SessionOperationTask<Void> {
                      }
                   }
                   else {
-                     logger.info("Either USB is not mounted or temporary folder doesn't exist.");
-                     faultHandler.getFault(FaultCode.USB_REMOVED_DURING_EXPORT).reset();
-                     faultHandler.getFault(FaultCode.USB_REMOVED_DURING_EXPORT).alert();
-                     session.setResultCode(Process.Result.ERROR);
-                     throw new SessionException(ErrorCode.PERFORM_ERROR);
+                     final String USB_EXPORT_PATH = UtilityHelper.CommonPaths.PATH_USB_PORT.getPathString();
+
+                     final String PFDATABASE_FOLDER =
+                        UtilityHelper.CommonPaths.PATH_DESIGNATOR.getPathString() + formatManager.getFormat(UtilityHelper.CommonFormats.PFDATABASEFORMAT.getName()).path + UtilityHelper.CommonPaths.PATH_DESIGNATOR.getPathString();
+
+                     final String ISOXML_FOLDER =
+                        UtilityHelper.CommonPaths.PATH_DESIGNATOR.getPathString() + formatManager.getFormat(UtilityHelper.CommonFormats.ISOXMLFORMAT.getName()).path + UtilityHelper.CommonPaths.PATH_DESIGNATOR.getPathString();
+
+                     if (Environment.getExternalStorageState().equals(MEDIA_MOUNTED) && tmpFolder.exists()) {
+
+                        if (extra.getFormat().equals(UtilityHelper.CommonFormats.PFDATABASEFORMAT.getName())) {
+                           logger.info("start moving files from: {} to {}{}", tempPath, USB_EXPORT_PATH, PFDATABASE_FOLDER);
+                           moveWasSuccessfull = moveFiles(tempPath, USB_EXPORT_PATH, PFDATABASE_FOLDER);
+                        }
+                        else if (extra.getFormat().equals(UtilityHelper.CommonFormats.ISOXMLFORMAT.getName())) {
+                           logger.info("start moving files from: {} to {}{}", tempPath, USB_EXPORT_PATH, ISOXML_FOLDER);
+                           moveWasSuccessfull = moveFiles(tempPath, USB_EXPORT_PATH, ISOXML_FOLDER);
+                        }
+                        else {
+                           logger.info("Unknown destination on export");
+                        }
+
+                        logger.info("finished moving files");
+
+                        if (moveWasSuccessfull) {
+                           session.setResultCode(Process.Result.SUCCESS);
+                        }
+                        else {
+                           session.setResultCode(Process.Result.ERROR);
+                           throw new SessionException(ErrorCode.PERFORM_ERROR);
+                        }
+                     }
+                     else {
+                        logger.info("Either USB is not mounted or temporary folder doesn't exist.");
+                        faultHandler.getFault(FaultCode.USB_REMOVED_DURING_EXPORT).reset();
+                        faultHandler.getFault(FaultCode.USB_REMOVED_DURING_EXPORT).alert();
+                        session.setResultCode(Process.Result.ERROR);
+                        throw new SessionException(ErrorCode.PERFORM_ERROR);
+                     }
                   }
 
                   if (tmpFolder.exists()) {
@@ -314,5 +325,57 @@ public class PerformOperationsTask extends SessionOperationTask<Void> {
          logger.error("no source folder found");
       }
       return retValue;
+   }
+
+   private boolean moveFilesToInternalFlash(SessionExtra extra) {
+      boolean moveStatus = false;
+      File source = new File(tempPath);
+      File dest = new File(extra.getPath());
+      final String PFDATABASE_FOLDER =
+         UtilityHelper.CommonPaths.PATH_DESIGNATOR.getPathString() + formatManager.getFormat(UtilityHelper.CommonFormats.PFDATABASEFORMAT.getName()).path +
+            UtilityHelper.CommonPaths.PATH_DESIGNATOR.getPathString();
+      final String ISOXML_FOLDER = UtilityHelper.CommonPaths.PATH_DESIGNATOR.getPathString() + formatManager.getFormat(UtilityHelper.CommonFormats.ISOXMLFORMAT.getName()).path
+         + UtilityHelper.CommonPaths.PATH_DESIGNATOR.getPathString();
+
+      if (dest.exists()) {
+         logger.info("Renaming existing export destination folder");
+         File copy = new File(dest.getAbsolutePath());
+         copy.renameTo(new File(String.format("%s.%s", dest.getAbsolutePath(), new SimpleDateFormat("yyyyMMddHHmmss").format(new Date(dest.lastModified())))));
+      }
+      dest.mkdirs();
+
+      try {
+         File[] fileList = source.listFiles();
+         if (fileList != null) {
+            logger.info("start copy {} files", fileList.length);
+            copyFileorFolders(source.getPath(), extra.getPath());
+         }
+         logger.info("finished copy files");
+         moveStatus = true;
+      }
+      catch (Exception e) {
+         if (!Environment.getExternalStorageState().equals(MEDIA_MOUNTED)) {
+            faultHandler.getFault(FaultCode.USB_REMOVED_DURING_EXPORT).reset();
+            faultHandler.getFault(FaultCode.USB_REMOVED_DURING_EXPORT).alert();
+         }
+         logger.error("", e);
+      }
+      return moveStatus;
+   }
+
+   void copyFileorFolders(String srcFolder, String destFolder) throws IOException {
+      File src = new File(srcFolder);
+      File dest = new File(destFolder);
+      if(src.isDirectory()) {
+         String files[] = src.list();
+         for (String file: files) {
+            String srcFile = srcFolder + UtilityHelper.CommonPaths.PATH_DESIGNATOR.getPathString() + file;
+            copyFileorFolders(srcFile, destFolder);
+         }
+      }
+      else{
+         String destFile = destFolder + UtilityHelper.CommonPaths.PATH_DESIGNATOR.getPathString() + src.getName();
+         Files.move(src, new File(destFile));
+      }
    }
 }

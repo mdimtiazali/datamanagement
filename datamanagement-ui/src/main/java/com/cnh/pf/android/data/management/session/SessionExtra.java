@@ -45,6 +45,8 @@ public class SessionExtra implements Parcelable {
    private String desc;
    /** Used to sort extra items in extra list */
    private int order;
+   /** Used to indicate if the path is internal or external */
+   private boolean useInternalFileSystem = false;
 
    public SessionExtra(Parcel in) {
       this.format = in.readString();
@@ -57,6 +59,7 @@ public class SessionExtra implements Parcelable {
       this.type = in.readInt();
       this.desc = in.readString();
       this.order = in.readInt();
+      useInternalFileSystem = (in.readInt() == 0) ? false : true;
    }
 
    @Override
@@ -78,6 +81,7 @@ public class SessionExtra implements Parcelable {
       out.writeInt(this.type);
       out.writeString(this.desc);
       out.writeInt(this.order);
+      out.writeInt(this.useInternalFileSystem ? 1 : 0);
    }
 
    public SessionExtra(SessionExtra other) {
@@ -87,6 +91,7 @@ public class SessionExtra implements Parcelable {
       this.basePath = other.basePath;
       this.desc = other.desc;
       this.order = other.order;
+      this.useInternalFileSystem = other.useInternalFileSystem;
    }
 
    public SessionExtra(int type, String desc, int order) {
@@ -107,6 +112,7 @@ public class SessionExtra implements Parcelable {
               .add("path", path)
               .add("format", format)
               .add("order", order)
+              .add("useInternalFileSystem", useInternalFileSystem)
               .toString();
    }
 
@@ -152,6 +158,14 @@ public class SessionExtra implements Parcelable {
 
    public void setOrder(int order) {
       this.order = order;
+   }
+
+   public boolean isUseInternalFileSystem() {
+      return useInternalFileSystem;
+   }
+
+   public void setUseInternalFileSystem(boolean useInternalFileSystem) {
+      this.useInternalFileSystem = useInternalFileSystem;
    }
 
    public boolean isUsbExtra() {

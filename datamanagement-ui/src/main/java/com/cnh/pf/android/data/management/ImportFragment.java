@@ -541,9 +541,12 @@ public class ImportFragment extends BaseDataFragment {
             File storageFolder = new File(fileStorageLocation);
             if (storageFolder.exists() && storageFolder.canRead() && storageFolder.canWrite()) {
                SessionExtra newExtra = new SessionExtra(SessionExtra.USB, "USB", 0);
+               internalFileSystem = true;
+               newExtra.setUseInternalFileSystem(internalFileSystem);
+               newExtra.setBasePath(storageFolder.getPath());
                newExtra.setPath(storageFolder.getPath());
                list.add(newExtra);
-               internalFileSystem = true;
+
                logger.debug("using internal storage = {}", storageFolder);
             }
          }

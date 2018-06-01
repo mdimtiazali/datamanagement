@@ -126,6 +126,8 @@ public class ExportFragment extends BaseDataFragment {
    private VIPDataHandler vipDataHandler;
    private VipDataHelperListener vipDataHelperListener;
    private Map<Datasource.LocationType, String> displayStringMap;
+   /** Used to indicate if the path is internal or external */
+   private boolean useInternalFileSystem = false;
 
    /**
     * Sets the VIP Data Handler
@@ -518,6 +520,7 @@ public class ExportFragment extends BaseDataFragment {
             Integer resId = resourceMap.get(mediumVariant);
             SessionExtra newExtra = new SessionExtra(SessionExtra.USB, getResources().getString(resId), mediumVariant.getValue());
             newExtra.setBasePath(basePath);
+            newExtra.setUseInternalFileSystem(useInternalFileSystem);
             list.add(newExtra);
          }
       }
@@ -528,7 +531,7 @@ public class ExportFragment extends BaseDataFragment {
    private List<SessionExtra> generateExportExtras() {
       //temporarily always add usb for testing
       logger.debug("generateExportExtras external storage state = {}", Environment.getExternalStorageState());
-      boolean internalFileSystem = false;
+      useInternalFileSystem = false;
 
       List<SessionExtra> list = new ArrayList<SessionExtra>();
       String defaultMakeString = getResources().getString(R.string.unknown_vehicle);
@@ -542,8 +545,8 @@ public class ExportFragment extends BaseDataFragment {
                  &&fileStorageLocation != null && !fileStorageLocation.isEmpty()) {
             File storageFolder = new File(fileStorageLocation);
             if (storageFolder.exists() && storageFolder.canRead() && storageFolder.canWrite()) {
+               useInternalFileSystem = true;
                list = createMediumVariants(resourceMap, storageFolder.getPath());
-               internalFileSystem = true;
                logger.debug("using internal storage = {}", storageFolder);
             }
          }
@@ -552,7 +555,7 @@ public class ExportFragment extends BaseDataFragment {
          logger.info("Unable to check if internal flash need to be used.", e);
       }
 
-      if (!resourceMap.isEmpty() && internalFileSystem == false && Environment.getExternalStorageState().equals(Environment.MEDIA_MOUNTED)) {
+      if (!resourceMap.isEmpty() && useInternalFileSystem == false && Environment.getExternalStorageState().equals(Environment.MEDIA_MOUNTED)) {
          list = createMediumVariants(resourceMap, Environment.getExternalStorageDirectory().getPath());
       }
       return list;
