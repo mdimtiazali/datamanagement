@@ -498,7 +498,7 @@ public class ProductLibraryFragment extends RoboFragment implements ProductMixCa
                }
             }, ProductLibraryFragment.this.currentImplement, productList);
 
-            addProductDialog.setFirstButtonText(getResources().getString(R.string.product_dialog_save_button))
+            addProductDialog.setFirstButtonText(getResources().getString(R.string.product_dialog_add_button))
                   .setSecondButtonText(getResources().getString(R.string.product_dialog_cancel_button)).showThirdButton(false)
                   .setTitle(getResources().getString(R.string.product_dialog_add_tile)).setBodyHeight(DIALOG_HEIGHT);
 
