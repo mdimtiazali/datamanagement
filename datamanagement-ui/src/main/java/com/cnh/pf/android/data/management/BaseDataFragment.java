@@ -659,6 +659,12 @@ public abstract class BaseDataFragment extends RoboFragment implements SessionCo
          Set<ObjectGraph> selectedObjs = getTreeAdapter().getSelected();
          for (ObjectGraph obj : selectedObjs) {
             sum += obj.size();
+
+            ObjectGraph parent = obj.getParent();
+            while (parent != null) {
+               sum++;
+               parent = parent.getParent();
+            }
          }
       }
       return sum;
