@@ -15,6 +15,8 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.widget.FrameLayout;
 import android.widget.ImageView;
+import android.widget.LinearLayout;
+import android.widget.ProgressBar;
 import android.widget.TextView;
 
 import com.cnh.pf.android.data.management.R;
@@ -29,12 +31,15 @@ public class DataExchangeBlockedOverlay extends FrameLayout {
     * modes available for overlay
     */
    public enum MODE {
-      BLOCKED_BY_EXPORT, BLOCKED_BY_IMPORT, HIDDEN
+      DISCONNECTED, LOADING, BLOCKED_BY_EXPORT, BLOCKED_BY_IMPORT, HIDDEN
    };
 
    private TextView titleText = null;
    private TextView descriptionText = null;
    private ImageView modeImage = null;
+   private LinearLayout blockedContainer = null;
+   private ProgressBar loadingContainer = null;
+   private ImageView disconnectedContainer = null;
 
    private MODE mode = MODE.HIDDEN;
 
@@ -66,30 +71,59 @@ public class DataExchangeBlockedOverlay extends FrameLayout {
       if (inflater != null) {
          inflater.inflate(R.layout.data_exchange_blocked_overlay, this);
       }
+      blockedContainer = (LinearLayout) findViewById(R.id.data_exchange_blocked);
       titleText = (TextView) findViewById(R.id.data_exchange_overlay_title);
       descriptionText = (TextView) findViewById(R.id.data_exchange_overlay_description);
       descriptionText.setText(R.string.dataexchange_accessible_after_process_finished);
       modeImage = (ImageView) findViewById(R.id.data_exchange_overlay_mode_image);
+      loadingContainer = (ProgressBar) findViewById(R.id.data_exchange_loading);
+      disconnectedContainer = (ImageView) findViewById(R.id.data_exchange_disconnected);
       this.mode = MODE.HIDDEN;
       hideOverlay();
    }
 
    /**
-    * show disabled overlay with loading animation
+    * show blocked by export overlay
     */
    private void showBlockedByExport() {
       this.setVisibility(VISIBLE);
+      blockedContainer.setVisibility(VISIBLE);
+      loadingContainer.setVisibility(GONE);
+      disconnectedContainer.setVisibility(GONE);
       titleText.setText(R.string.export_in_progress);
       modeImage.setImageResource(R.drawable.ic_tab_data_export_selected);
    }
 
    /**
-    * show disabled overlay with disconnected graphic
+    * show blocked by import overlay
     */
    private void showBlockedByImport() {
       this.setVisibility(VISIBLE);
+      blockedContainer.setVisibility(VISIBLE);
+      loadingContainer.setVisibility(GONE);
+      disconnectedContainer.setVisibility(GONE);
       titleText.setText(R.string.import_in_progress);
       modeImage.setImageResource(R.drawable.ic_tab_data_import_selected);
+   }
+
+   /**
+    * show loading overlay
+    */
+   private void showLoading() {
+      this.setVisibility(VISIBLE);
+      blockedContainer.setVisibility(GONE);
+      loadingContainer.setVisibility(VISIBLE);
+      disconnectedContainer.setVisibility(GONE);
+   }
+
+   /**
+    * show disconnected overlay
+    */
+   private void showDisconnected() {
+      this.setVisibility(VISIBLE);
+      blockedContainer.setVisibility(GONE);
+      loadingContainer.setVisibility(GONE);
+      disconnectedContainer.setVisibility(VISIBLE);
    }
 
    /**
@@ -97,6 +131,9 @@ public class DataExchangeBlockedOverlay extends FrameLayout {
     */
    private void hideOverlay() {
       this.setVisibility(GONE);
+      blockedContainer.setVisibility(GONE);
+      loadingContainer.setVisibility(GONE);
+      disconnectedContainer.setVisibility(GONE);
    }
 
    /**
@@ -112,6 +149,12 @@ public class DataExchangeBlockedOverlay extends FrameLayout {
             break;
          case BLOCKED_BY_IMPORT:
             showBlockedByImport();
+            break;
+         case LOADING:
+            showLoading();
+            break;
+         case DISCONNECTED:
+            showDisconnected();
             break;
          case HIDDEN:
          default:

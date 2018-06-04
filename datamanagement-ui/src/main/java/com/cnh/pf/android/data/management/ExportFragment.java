@@ -12,6 +12,10 @@ package com.cnh.pf.android.data.management;
 import static com.cnh.pf.android.data.management.utility.UtilityHelper.EXPORT_DEST_POPOVER_DEFAULT_HEIGHT;
 import static com.cnh.pf.android.data.management.utility.UtilityHelper.EXPORT_FORMAT_POPOVER_DEFAULT_HEIGHT;
 import static com.cnh.pf.android.data.management.utility.UtilityHelper.MAX_TREE_SELECTIONS_FOR_DEFAULT_TEXT_SIZE;
+import static com.cnh.pf.android.data.management.utility.UtilityHelper.NEGATIVE_BINARY_ERROR;
+import static com.cnh.pf.android.data.management.utility.UtilityHelper.POPOVER_DEFAULT_WIDTH;
+import static com.cnh.pf.model.constants.stringsConstants.BRAND_CASE_IH;
+import static com.cnh.pf.model.constants.stringsConstants.BRAND_NEW_HOLLAND;
 
 import android.content.Context;
 import android.content.res.Resources;
@@ -32,7 +36,6 @@ import android.widget.TextView;
 
 import com.cnh.android.dialog.DialogViewInterface;
 import com.cnh.android.dialog.TextDialogView;
-
 import com.cnh.android.pf.widget.controls.PopoverWindowInfoView;
 import com.cnh.android.pf.widget.controls.ToastMessageCustom;
 import com.cnh.android.widget.activity.TabActivity;
@@ -42,11 +45,11 @@ import com.cnh.android.widget.control.PickListEditable;
 import com.cnh.android.widget.control.PickListItem;
 import com.cnh.android.widget.control.Popover;
 import com.cnh.android.widget.control.ProgressBarView;
-import com.cnh.jgroups.Datasource;
 import com.cnh.jgroups.DataTypes;
+import com.cnh.jgroups.Datasource;
 import com.cnh.jgroups.ObjectGraph;
 import com.cnh.jgroups.Operation;
-
+import com.cnh.pf.android.data.management.helper.DataExchangeProcessOverlay;
 import com.cnh.pf.android.data.management.helper.IVIPDataHelper;
 import com.cnh.pf.android.data.management.helper.VIPDataHandler;
 import com.cnh.pf.android.data.management.parser.FormatManager;
@@ -63,16 +66,12 @@ import org.slf4j.LoggerFactory;
 
 import java.io.File;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Comparator;
 import java.util.List;
 import java.util.Map;
 
 import roboguice.inject.InjectView;
-
-import static com.cnh.pf.android.data.management.utility.UtilityHelper.NEGATIVE_BINARY_ERROR;
-import static com.cnh.pf.android.data.management.utility.UtilityHelper.POPOVER_DEFAULT_WIDTH;
-import static com.cnh.pf.model.constants.stringsConstants.BRAND_CASE_IH;
-import static com.cnh.pf.model.constants.stringsConstants.BRAND_NEW_HOLLAND;
 
 /**
  * Export Tab Fragment, handles export to external mediums {USB, External Display}.
@@ -116,6 +115,8 @@ public class ExportFragment extends BaseDataFragment {
    ImageButton destInfoButton;
    @InjectView(R.id.format_info_btn)
    ImageButton formatInfoButton;
+
+   private final List<Session.Action> blockingActions = new ArrayList<Session.Action>(Arrays.asList(Session.Action.IMPORT));
 
    private int transparentColor;
    private int whiteTextColor;
@@ -201,6 +202,11 @@ public class ExportFragment extends BaseDataFragment {
    private static final int SHOWING_FEEDBACK_AFTER_PROGRESS_MS = 2000;
 
    @Override
+   protected List<Session.Action> getBlockingActions() {
+      return blockingActions;
+   }
+
+   @Override
    public void onCreate(Bundle savedInstanceState) {
       super.onCreate(savedInstanceState);
       try {
@@ -281,9 +287,8 @@ public class ExportFragment extends BaseDataFragment {
                return true;
             case DragEvent.ACTION_DRAG_ENTERED:
                if (!exportSelectedBtn.isEnabled()) {
-                  ToastMessageCustom.makeToastMessageText(getActivity().getApplicationContext(), getString(R.string.error_drag_drop),
-                          Gravity.TOP| Gravity.CENTER_HORIZONTAL, getResources().getInteger(R.integer.toast_message_xoffset),
-                          getResources().getInteger(R.integer.toast_message_yoffset)).show();
+                  ToastMessageCustom.makeToastMessageText(getActivity().getApplicationContext(), getString(R.string.error_drag_drop), Gravity.TOP | Gravity.CENTER_HORIZONTAL,
+                        getResources().getInteger(R.integer.toast_message_xoffset), getResources().getInteger(R.integer.toast_message_yoffset)).show();
                }
                else {
                   setExportDragDropArea(DragEvent.ACTION_DRAG_ENTERED);
@@ -348,8 +353,7 @@ public class ExportFragment extends BaseDataFragment {
          destInfoString = getString(R.string.new_holland_destination_info);
       }
 
-      PopoverWindowInfoView infoPopupWindow = new PopoverWindowInfoView(popoverContext, POPOVER_DEFAULT_WIDTH,
-              EXPORT_DEST_POPOVER_DEFAULT_HEIGHT, Popover.Style.LIGHT_INFO);
+      PopoverWindowInfoView infoPopupWindow = new PopoverWindowInfoView(popoverContext, POPOVER_DEFAULT_WIDTH, EXPORT_DEST_POPOVER_DEFAULT_HEIGHT, Popover.Style.LIGHT_INFO);
       infoPopupWindow.setDescription(destInfoString);
       infoPopupWindow.setTitle(getString(R.string.destination_title));
       infoPopupWindow.showAt(destInfoButton, Gravity.END, Popover.ArrowPosition.LEFT_TOP);
@@ -357,8 +361,7 @@ public class ExportFragment extends BaseDataFragment {
 
    private void formatInfoButtonClicked() {
       Context popoverContext = getActivity().getApplicationContext();
-      PopoverWindowInfoView infoPopupWindow = new PopoverWindowInfoView(popoverContext, POPOVER_DEFAULT_WIDTH,
-              EXPORT_FORMAT_POPOVER_DEFAULT_HEIGHT, Popover.Style.LIGHT_INFO);
+      PopoverWindowInfoView infoPopupWindow = new PopoverWindowInfoView(popoverContext, POPOVER_DEFAULT_WIDTH, EXPORT_FORMAT_POPOVER_DEFAULT_HEIGHT, Popover.Style.LIGHT_INFO);
       infoPopupWindow.setDescription(getString(R.string.format_description));
       infoPopupWindow.setTitle(getString(R.string.format_description_title));
       infoPopupWindow.showAt(formatInfoButton, Gravity.END, Popover.ArrowPosition.LEFT_TOP);
@@ -566,8 +569,7 @@ public class ExportFragment extends BaseDataFragment {
          String fileStorage = UtilityHelper.getSharedPreferenceString(getActivity().getApplicationContext(), UtilityHelper.STORAGE_LOCATION_TYPE);
          String fileStorageLocation = UtilityHelper.getSharedPreferenceString(getActivity().getApplicationContext(), UtilityHelper.STORAGE_LOCATION);
 
-         if (fileStorage != null && UtilityHelper.STORAGE_LOCATION_INTERNAL.equals(fileStorage)
-                 &&fileStorageLocation != null && !fileStorageLocation.isEmpty()) {
+         if (fileStorage != null && UtilityHelper.STORAGE_LOCATION_INTERNAL.equals(fileStorage) && fileStorageLocation != null && !fileStorageLocation.isEmpty()) {
             File storageFolder = new File(fileStorageLocation);
             if (storageFolder.exists() && storageFolder.canRead() && storageFolder.canWrite()) {
                useInternalFileSystem = true;
@@ -683,15 +685,15 @@ public class ExportFragment extends BaseDataFragment {
                exportFormatPicklist.setSelectionByPosition(exportFormatPicklist.findItemPositionByValue(PFDATABASE_FORMAT, true));
                saveFormatSelection(PFDATABASE_FORMAT);
                logger.debug("Force format to PF Database");
-            } else if (UtilityHelper.MediumVariant.USB_DESKTOP_SW.equals(mediumVariant)
-                    || UtilityHelper.MediumVariant.USB_FRED.equals(mediumVariant)) {
+            }
+            else if (UtilityHelper.MediumVariant.USB_DESKTOP_SW.equals(mediumVariant) || UtilityHelper.MediumVariant.USB_FRED.equals(mediumVariant)) {
                isReadOnly = true;
                // "ISOXML" is format type in formats.xml file
                exportFormatPicklist.setSelectionByPosition(exportFormatPicklist.findItemPositionByValue(ISOXML_FORMAT, true));
                saveFormatSelection(ISOXML_FORMAT);
                logger.debug("Force format to ISOXML");
-            } else if (UtilityHelper.MediumVariant.USB_PHOENIX.equals(mediumVariant)
-                    || UtilityHelper.MediumVariant.USB_HAWK.equals(mediumVariant)) {
+            }
+            else if (UtilityHelper.MediumVariant.USB_PHOENIX.equals(mediumVariant) || UtilityHelper.MediumVariant.USB_HAWK.equals(mediumVariant)) {
                exportFormatPicklist.setSelectionByPosition(exportFormatPicklist.findItemPositionByValue(PFDATABASE_FORMAT, true));
                saveFormatSelection(PFDATABASE_FORMAT);
                logger.debug("Force format to PF Database as default");
@@ -724,25 +726,35 @@ public class ExportFragment extends BaseDataFragment {
    }
 
    @Override
+   public void onPCMConnected() {
+      logger.trace("PCM is online.");
+      showLoadingOverlay();
+      onResumeSession();
+   }
+
+   @Override
    public void onResumeSession() {
       final Session session = getSession();
       logger.debug("onResumeSession(): {}", session.getType());
+      //verify that no other session is blocking fragment
+      if (!requestAndUpdateBlockedOverlay(getBlockingActions())) {
+         if (SessionUtil.isInProgress(session) && SessionUtil.isPerformOperationsTask(session)) {
+            logger.debug("onResumeSession(): Still processing EXPORT. Show progress panel.");
+            processOverlay.setMode(DataExchangeProcessOverlay.MODE.EXPORT_PROCESS);
+            setExportPicklistsReadOnly(true);
+            showProgressPanel();
+            updateProgressbar(progressValue);
 
-      if (SessionUtil.isInProgress(session) && SessionUtil.isPerformOperationsTask(session)) {
-         logger.debug("onResumeSession(): Still processing EXPORT. Show progress panel.");
-         setExportPicklistsReadOnly(true);
-         showProgressPanel();
-         updateProgressbar(progressValue);
-
-         initAndPouplateTree(session.getObjectData());
-         hideDisabledOverlay();
-         showTreeList();
-         updateSelectAllState();
-      }
-      else {
-         hideTreeList();
-         showLoadingOverlay();
-         discovery();
+            initAndPouplateTree(session.getObjectData());
+            hideDisabledOverlay();
+            showTreeList();
+            updateSelectAllState();
+         }
+         else {
+            hideTreeList();
+            showLoadingOverlay();
+            discovery();
+         }
       }
    }
 
@@ -750,20 +762,15 @@ public class ExportFragment extends BaseDataFragment {
    public void onSessionCancelled(Session session) {
       logger.debug("onSessionCancelled(): {}, {}", session.getType(), session.getAction());
       if (SessionUtil.isPerformOperationsTask(session) || SessionUtil.isDiscoveryTask(session)) {
-         ToastMessageCustom.makeToastMessageText(getActivity().getApplicationContext(), getString(R.string.export_cancel),
-                 Gravity.TOP| Gravity.CENTER_HORIZONTAL, getResources().getInteger(R.integer.toast_message_xoffset),
-                 getResources().getInteger(R.integer.toast_message_yoffset)).show();
+         ToastMessageCustom.makeToastMessageText(getActivity().getApplicationContext(), getString(R.string.export_cancel), Gravity.TOP | Gravity.CENTER_HORIZONTAL,
+               getResources().getInteger(R.integer.toast_message_xoffset), getResources().getInteger(R.integer.toast_message_yoffset)).show();
          clearTreeSelection();
       }
 
       updateExportButton();
+      processOverlay.setMode(DataExchangeProcessOverlay.MODE.HIDDEN);
       setExportPicklistsReadOnly(false);
       showDragAndDropZone();
-   }
-
-   @Override
-   public void onOtherSessionSuccess(Session session) {
-      logger.debug("onOtherSessionSuccess(): {}", session.getType());
    }
 
    @Override
@@ -785,13 +792,13 @@ public class ExportFragment extends BaseDataFragment {
          logger.trace("Resetting new session.  Operation completed.");
          getTreeAdapter().selectAll(treeViewList, false);
          if (session.getResultCode() != null) {
+            processOverlay.setMode(DataExchangeProcessOverlay.MODE.HIDDEN);
             setExportPicklistsReadOnly(false);
             if (SessionUtil.isSuccessful(session)) {
                showFinishedStatePanel(true);
                progressValue = ProgressValue.initProgress();
-               ToastMessageCustom.makeToastMessageText(getActivity().getApplicationContext(), getString(R.string.export_complete),
-                       Gravity.TOP| Gravity.CENTER_HORIZONTAL, getResources().getInteger(R.integer.toast_message_xoffset),
-                       getResources().getInteger(R.integer.toast_message_yoffset)).show();
+               ToastMessageCustom.makeToastMessageText(getActivity().getApplicationContext(), getString(R.string.export_complete), Gravity.TOP | Gravity.CENTER_HORIZONTAL,
+                     getResources().getInteger(R.integer.toast_message_xoffset), getResources().getInteger(R.integer.toast_message_yoffset)).show();
 
                // Reset session data after completing PERFORM_OPERATIONS successfully.
                resetSession();
@@ -808,20 +815,15 @@ public class ExportFragment extends BaseDataFragment {
    }
 
    @Override
-   public void onOtherSessionError(Session session, ErrorCode errorCode) {
-      logger.debug("onOtherSessionError(): {}", session.getType());
-   }
-
-   @Override
    public void onMyselfSessionError(Session session, ErrorCode errorCode) {
       logger.debug("onMyselfSessionError(): {}", session.getType());
       if (SessionUtil.isPerformOperationsTask(session)) {
-         ToastMessageCustom.makeToastMessageText(getActivity().getApplicationContext(), getString(R.string.export_cancel),
-                 Gravity.TOP| Gravity.CENTER_HORIZONTAL, getResources().getInteger(R.integer.toast_message_xoffset),
-                 getResources().getInteger(R.integer.toast_message_yoffset)).show();
+         ToastMessageCustom.makeToastMessageText(getActivity().getApplicationContext(), getString(R.string.export_cancel), Gravity.TOP | Gravity.CENTER_HORIZONTAL,
+               getResources().getInteger(R.integer.toast_message_xoffset), getResources().getInteger(R.integer.toast_message_yoffset)).show();
          showDragAndDropZone();
          clearTreeSelection();
          updateExportButton();
+         processOverlay.setMode(DataExchangeProcessOverlay.MODE.HIDDEN);
          setExportPicklistsReadOnly(false);
       }
    }
@@ -866,15 +868,20 @@ public class ExportFragment extends BaseDataFragment {
       if (exportMediumPicklist.getAdapter().getCount() > 0) {
          exportMediumPicklist.setReadOnly(readOnly);
 
-         //Only change state of Format Picklist if it isn't one of the three data sources below
-         SessionExtra extra = ((ObjectPickListItem<SessionExtra>) exportMediumPicklist.getSelectedItem()).getObject();
-         UtilityHelper.MediumVariant mediumVariant = UtilityHelper.MediumVariant.fromValue(extra.getOrder());
-         if (mediumVariant.equals(UtilityHelper.MediumVariant.CLOUD_OUTBOX) || mediumVariant.equals(UtilityHelper.MediumVariant.USB_DESKTOP_SW) ||
-                 mediumVariant.equals(UtilityHelper.MediumVariant.USB_FRED)) {
-            exportFormatPicklist.setReadOnly(true);
+         if (exportMediumPicklist.getSelectedItem() != null) {
+            //Only change state of Format Picklist if it isn't one of the three data sources below
+            SessionExtra extra = ((ObjectPickListItem<SessionExtra>) exportMediumPicklist.getSelectedItem()).getObject();
+            UtilityHelper.MediumVariant mediumVariant = UtilityHelper.MediumVariant.fromValue(extra.getOrder());
+            if (mediumVariant.equals(UtilityHelper.MediumVariant.CLOUD_OUTBOX) || mediumVariant.equals(UtilityHelper.MediumVariant.USB_DESKTOP_SW)
+                  || mediumVariant.equals(UtilityHelper.MediumVariant.USB_FRED)) {
+               exportFormatPicklist.setReadOnly(true);
+            }
+            else {
+               exportFormatPicklist.setReadOnly(readOnly);
+            }
          }
          else {
-            exportFormatPicklist.setReadOnly(readOnly);
+            exportFormatPicklist.setReadOnly(true);
          }
       }
       else { //Reset both picklists and set them to read only (likely bad USB removal)
@@ -902,8 +909,8 @@ public class ExportFragment extends BaseDataFragment {
       progressValue = ProgressValue.initProgress();
       List<ObjectGraph> selected = new ArrayList<ObjectGraph>(getTreeAdapter().getSelected());
       ArrayList<ObjectGraph> ddopsSelect = new ArrayList<ObjectGraph>(getTreeAdapter().getData());
-      for(ObjectGraph object : ddopsSelect) {
-         if(object.getType().equals(DataTypes.DDOP)) {
+      for (ObjectGraph object : ddopsSelect) {
+         if (object.getType().equals(DataTypes.DDOP)) {
             selected.add(object);
          }
       }
@@ -937,15 +944,15 @@ public class ExportFragment extends BaseDataFragment {
             operations.add(new Operation(obj, null));
          }
          showProgressPanel();
+         processOverlay.setMode(DataExchangeProcessOverlay.MODE.EXPORT_PROCESS);
          setExportPicklistsReadOnly(true);
 
          performOperations(extra, operations);
          updateExportButton();
       }
       else {
-         ToastMessageCustom.makeToastMessageText(getActivity().getApplicationContext(),
-                 getString(R.string.no_data_of_format_string), Gravity.TOP| Gravity.CENTER_HORIZONTAL,
-                 getResources().getInteger(R.integer.toast_message_xoffset), getResources().getInteger(R.integer.toast_message_yoffset)).show();
+         ToastMessageCustom.makeToastMessageText(getActivity().getApplicationContext(), getString(R.string.no_data_of_format_string), Gravity.TOP | Gravity.CENTER_HORIZONTAL,
+               getResources().getInteger(R.integer.toast_message_xoffset), getResources().getInteger(R.integer.toast_message_yoffset)).show();
       }
    }
 
@@ -1015,8 +1022,8 @@ public class ExportFragment extends BaseDataFragment {
             Resources resources = getResources();
             exportSelectedBtn.setText(resources.getString(R.string.export_selected) + " (" + selectedItemCount + ")");
             exportSelectedBtn.setTextSize(selectedItemCount > MAX_TREE_SELECTIONS_FOR_DEFAULT_TEXT_SIZE
-                    ? resources.getDimension(R.dimen.button_default_text_size) - resources.getDimension(R.dimen.decrease_text_size)
-                    : resources.getDimension(R.dimen.button_default_text_size));
+                  ? resources.getDimension(R.dimen.button_default_text_size) - resources.getDimension(R.dimen.decrease_text_size)
+                  : resources.getDimension(R.dimen.button_default_text_size));
          }
       }
 
@@ -1026,10 +1033,8 @@ public class ExportFragment extends BaseDataFragment {
          if (exportSelectedBtn.getTextSize() < defaultButtonSize) exportSelectedBtn.setTextSize(defaultButtonSize);
       }
 
-      boolean hasSelection = (getTreeAdapter() != null && s != null &&
-              exportMediumPicklist.getSelectedItemPosition() > NEGATIVE_BINARY_ERROR &&
-              exportFormatPicklist.getSelectedItemPosition() > NEGATIVE_BINARY_ERROR &&
-              getTreeAdapter().hasSelection());
+      boolean hasSelection = (getTreeAdapter() != null && s != null && exportMediumPicklist.getSelectedItemPosition() > NEGATIVE_BINARY_ERROR
+            && exportFormatPicklist.getSelectedItemPosition() > NEGATIVE_BINARY_ERROR && getTreeAdapter().hasSelection());
 
       if (hasSelection && !isActiveOperation) {
          exportSelectedBtn.setEnabled(true);

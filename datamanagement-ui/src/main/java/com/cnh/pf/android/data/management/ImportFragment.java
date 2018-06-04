@@ -49,6 +49,7 @@ import org.slf4j.LoggerFactory;
 
 import java.io.File;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
 import roboguice.event.EventThread;
@@ -97,6 +98,8 @@ public class ImportFragment extends BaseDataFragment {
    @InjectView(R.id.operation_name)
    TextView operationName;
 
+   private final List<Session.Action> blockingActions = new ArrayList<Session.Action>(Arrays.asList(Session.Action.EXPORT));
+
    private String importing_data;
    private String loading_string;
    private String x_of_y_format;
@@ -105,6 +108,11 @@ public class ImportFragment extends BaseDataFragment {
 
    private Drawable importWhiteIcon;
    private Drawable importDefaultIcon;
+
+   @Override
+   protected List<Session.Action> getBlockingActions() {
+      return blockingActions;
+   }
 
    @Override
    public void onCreate(Bundle savedInstanceState) {
@@ -207,11 +215,6 @@ public class ImportFragment extends BaseDataFragment {
          importDropZoneText.setTextColor(defaultTextColor);
          importDropZone.setBackgroundResource(event == DragEvent.ACTION_DRAG_EXITED ? R.drawable.dashed_border_selected : R.drawable.dashed_border_initial);
       }
-   }
-
-   @Override
-   public void onOtherSessionSuccess(Session session) {
-      logger.debug("onOtherSessionSuccess(): {}", session.getType());
    }
 
    @Override
@@ -328,11 +331,6 @@ public class ImportFragment extends BaseDataFragment {
    }
 
    @Override
-   public void onOtherSessionError(Session session, ErrorCode errorCode) {
-      logger.debug("onOtherSessionError(): {}, {}", session.getType(), errorCode);
-   }
-
-   @Override
    public void onMyselfSessionError(Session session, ErrorCode errorCode) {
       logger.debug("onMyselfSessionError(): {}, {}", session.getType(), errorCode);
       if (SessionUtil.isDiscoveryTask(session)) {
@@ -412,28 +410,38 @@ public class ImportFragment extends BaseDataFragment {
    }
 
    @Override
+   public void onPCMConnected() {
+      logger.trace("PCM is online.");
+      showLoadingOverlay();
+      onResumeSession();
+   }
+
+   @Override
    public void onResumeSession() {
       logger.debug("onResumeSession()");
-      final Session session = getSession();
+      //verify that no other session is blocking fragment
+      if (!requestAndUpdateBlockedOverlay(getBlockingActions())) {
+         final Session session = getSession();
 
-      if (SessionUtil.isDiscoveryTask(session) && session.getObjectData() != null && !session.getObjectData().isEmpty()) {
-         logger.trace("There is already active session. Continue on the previous active session.");
-         initAndPouplateTree(session.getObjectData());
+         if (SessionUtil.isDiscoveryTask(session) && session.getObjectData() != null && !session.getObjectData().isEmpty()) {
+            logger.trace("There is already active session. Continue on the previous active session.");
+            initAndPouplateTree(session.getObjectData());
 
-         showTreeList();
-         hideDisabledOverlay();
-         updateSelectAllState();
+            showTreeList();
+            hideDisabledOverlay();
+            updateSelectAllState();
 
-         if (session.getExtra() != null && session.getExtra().isUsbExtra()) {
-            setHeaderText(session.getExtra().getPath());
+            if (session.getExtra() != null && session.getExtra().isUsbExtra()) {
+               setHeaderText(session.getExtra().getPath());
+            }
          }
+         else {
+            hideTreeList();
+            hideDisabledOverlay();
+            showStartMessage();
+         }
+         updateImportButton();
       }
-      else {
-         hideTreeList();
-         hideDisabledOverlay();
-         showStartMessage();
-      }
-      updateImportButton();
    }
 
    /** Shows conflict resolution dialog */

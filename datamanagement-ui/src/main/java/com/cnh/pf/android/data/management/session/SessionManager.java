@@ -15,11 +15,13 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.ServiceConnection;
 import android.os.IBinder;
+
 import com.cnh.jgroups.ObjectGraph;
 import com.cnh.jgroups.Operation;
 import com.cnh.pf.android.data.management.service.DataManagementService;
 import com.google.inject.Inject;
 import com.google.inject.Singleton;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -108,6 +110,17 @@ public class SessionManager implements SessionContract.SessionManager, SessionEv
       }
 
       return retSession;
+   }
+
+   @Override
+   public boolean actionIsActive(Session.Action action) {
+      if (action != Session.Action.UNKNOWN && sessionMap.containsKey(action) && sessionMap.get(action) != null) {
+         //TODO: determine, if WAIT is different on initial loading and waiting for user input / conflict solving.
+         return sessionMap.get(action).getState() != Session.State.COMPLETE && sessionMap.get(action).getState() != Session.State.WAIT;
+      }
+      else {
+         return false;
+      }
    }
 
    /**
@@ -384,8 +397,7 @@ public class SessionManager implements SessionContract.SessionManager, SessionEv
       logger.debug("{}:onMediumUpdate()", this.getClass().getSimpleName());
       // Need to hijack before calling callback. Reset cached data for IMPORT action when
       // different fragment is focused
-      if ((view == null || !Session.Action.IMPORT.equals(view.getAction()))
-              && sessionMap.containsKey(Session.Action.IMPORT)) {
+      if ((view == null || !Session.Action.IMPORT.equals(view.getAction())) && sessionMap.containsKey(Session.Action.IMPORT)) {
          sessionMap.remove(Session.Action.IMPORT);
       }
 

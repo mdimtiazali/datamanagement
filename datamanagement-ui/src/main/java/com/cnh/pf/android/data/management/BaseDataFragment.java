@@ -16,20 +16,22 @@ import android.view.ViewGroup;
 import android.widget.AbsListView;
 import android.widget.AdapterView;
 import android.widget.Button;
-import android.widget.TextView;
 import android.widget.LinearLayout;
+import android.widget.TextView;
 
-import com.cnh.android.pf.widget.view.DisabledOverlay;
+import com.android.annotations.Nullable;
 import com.cnh.jgroups.DataTypes;
 import com.cnh.jgroups.ObjectGraph;
 import com.cnh.jgroups.Operation;
 import com.cnh.pf.android.data.management.adapter.ObjectTreeViewAdapter;
 import com.cnh.pf.android.data.management.adapter.SelectionTreeViewAdapter;
 import com.cnh.pf.android.data.management.graph.GroupObjectGraph;
+import com.cnh.pf.android.data.management.helper.DataExchangeBlockedOverlay;
+import com.cnh.pf.android.data.management.helper.DataExchangeProcessOverlay;
 import com.cnh.pf.android.data.management.helper.TreeDragShadowBuilder;
 import com.cnh.pf.android.data.management.session.ErrorCode;
-import com.cnh.pf.android.data.management.session.SessionContract;
 import com.cnh.pf.android.data.management.session.Session;
+import com.cnh.pf.android.data.management.session.SessionContract;
 import com.cnh.pf.android.data.management.session.SessionExtra;
 
 import org.jgroups.Address;
@@ -48,7 +50,6 @@ import pl.polidea.treeview.SortableChildrenTree;
 import pl.polidea.treeview.TreeBuilder;
 import pl.polidea.treeview.TreeStateManager;
 import pl.polidea.treeview.TreeViewList;
-
 import roboguice.fragment.provided.RoboFragment;
 import roboguice.inject.InjectView;
 
@@ -69,7 +70,8 @@ public abstract class BaseDataFragment extends RoboFragment implements SessionCo
    @InjectView(R.id.header_text)
    TextView headerTextView;
 
-   protected DisabledOverlay disabledOverlay = null;
+   protected DataExchangeBlockedOverlay disabledOverlay = null;
+   protected DataExchangeProcessOverlay processOverlay = null;
    protected TreeStateManager<ObjectGraph> manager;
    protected TreeBuilder<ObjectGraph> treeBuilder;
    protected ObjectTreeViewAdapter treeAdapter;
@@ -148,6 +150,11 @@ public abstract class BaseDataFragment extends RoboFragment implements SessionCo
    public abstract void onPCMDisconnected();
 
    /**
+    * Callback when PCM is connected.
+    */
+   public abstract void onPCMConnected();
+
+   /**
     * Callback when a session is successfully finished.
     *
     * @param session the session
@@ -160,7 +167,12 @@ public abstract class BaseDataFragment extends RoboFragment implements SessionCo
     *
     * @param session the session
     */
-   public abstract void onOtherSessionSuccess(Session session);
+   public void onOtherSessionSuccess(Session session) {
+      logger.debug("onOtherSessionSuccess(): {}", session.getType());
+      if (!requestAndUpdateBlockedOverlay(getBlockingActions())) {
+         onResumeSession();
+      }
+   }
 
    /**
     * Callback when a session is finished with an error
@@ -177,7 +189,12 @@ public abstract class BaseDataFragment extends RoboFragment implements SessionCo
     * @param session the session
     * @param errorCode  error code
     */
-   public abstract void onOtherSessionError(Session session, ErrorCode errorCode);
+   public void onOtherSessionError(Session session, ErrorCode errorCode) {
+      logger.debug("onOtherSessionError(): {}, {}", session.getType(), errorCode);
+      if (!requestAndUpdateBlockedOverlay(getBlockingActions())) {
+         onResumeSession();
+      }
+   }
 
    /**
     * Progress update from datasource.
@@ -202,6 +219,13 @@ public abstract class BaseDataFragment extends RoboFragment implements SessionCo
     * @return  <code>true</code> if supported, <code>false</code> otherwise.
     */
    public abstract boolean supportedByFormat(ObjectGraph node);
+
+   /**
+    * Defines actions which (if currently active) block / prohibit execution of fragment
+    *
+    * @return List of Session.Actions prohibiting fragments UI
+    */
+   protected abstract List<Session.Action> getBlockingActions();
 
    @Override
    public void onChannelConnectionChange(boolean updateNeeded) {
@@ -230,7 +254,8 @@ public abstract class BaseDataFragment extends RoboFragment implements SessionCo
       LinearLayout leftPanel = (LinearLayout) layout.findViewById(R.id.left_panel_wrapper);
       inflateViews(inflater, leftPanel);
 
-      disabledOverlay = (DisabledOverlay)layout.findViewById(R.id.disabled_overlay);
+      disabledOverlay = (DataExchangeBlockedOverlay) layout.findViewById(R.id.disabled_overlay);
+      processOverlay = (DataExchangeProcessOverlay) layout.findViewById(R.id.process_overlay);
       showLoadingOverlay();
       return layout;
    }
@@ -440,8 +465,7 @@ public abstract class BaseDataFragment extends RoboFragment implements SessionCo
     */
    protected void showLoadingOverlay() {
       if (disabledOverlay != null) {
-         disabledOverlay.setMode(DisabledOverlay.MODE.LOADING);
-         disabledOverlay.setVisibility(View.VISIBLE);
+         disabledOverlay.setMode(DataExchangeBlockedOverlay.MODE.LOADING);
       }
    }
 
@@ -450,8 +474,7 @@ public abstract class BaseDataFragment extends RoboFragment implements SessionCo
     */
    protected void showDisconnectedOverlay() {
       if (disabledOverlay != null) {
-         disabledOverlay.setMode(DisabledOverlay.MODE.DISCONNECTED);
-         disabledOverlay.setVisibility(View.VISIBLE);
+         disabledOverlay.setMode(DataExchangeBlockedOverlay.MODE.DISCONNECTED);
       }
    }
 
@@ -460,8 +483,7 @@ public abstract class BaseDataFragment extends RoboFragment implements SessionCo
     */
    protected void hideDisabledOverlay() {
       if (disabledOverlay != null) {
-         disabledOverlay.setMode(DisabledOverlay.MODE.HIDDEN);
-         disabledOverlay.setVisibility(View.GONE);
+         disabledOverlay.setMode(DataExchangeBlockedOverlay.MODE.HIDDEN);
       }
    }
 
@@ -549,21 +571,22 @@ public abstract class BaseDataFragment extends RoboFragment implements SessionCo
     * adding object(s) to treeview
     * @param  objectGraphs objects to add
     */
-   protected void addToTree(List<ObjectGraph> objectGraphs){
+   protected void addToTree(List<ObjectGraph> objectGraphs) {
       boolean bVisible = false;
-      if(objectGraphs != null && !objectGraphs.isEmpty()){
-         for(ObjectGraph o: objectGraphs){
-            if(bAddToTree(o.getParent(), o) && !bVisible) {
+      if (objectGraphs != null && !objectGraphs.isEmpty()) {
+         for (ObjectGraph o : objectGraphs) {
+            if (bAddToTree(o.getParent(), o) && !bVisible) {
                bVisible = true;
             }
          }
-         if(bVisible){
+         if (bVisible) {
             dataChangedRefresh();
          }
       }
    }
+
    //notify the treeview data change
-   private void dataChangedRefresh(){
+   private void dataChangedRefresh() {
       manager.refresh();
    }
 
@@ -571,7 +594,7 @@ public abstract class BaseDataFragment extends RoboFragment implements SessionCo
    private boolean bAddToTree(ObjectGraph parent, ObjectGraph object) {
       boolean bVisible = false;
       try {
-         if(object.getType().equals(DataTypes.DDOP)) {
+         if (object.getType().equals(DataTypes.DDOP)) {
             return bVisible;
          }
          //Check if entity can be grouped
@@ -582,16 +605,16 @@ public abstract class BaseDataFragment extends RoboFragment implements SessionCo
             GroupObjectGraph group = null;
             GroupObjectGraph gGroup = null;
             for (ObjectGraph child : manager.getChildren(parent)) { //find the group node
-               if (child instanceof GroupObjectGraph){
-                  if(child.getType().equals(gType)){
+               if (child instanceof GroupObjectGraph) {
+                  if (child.getType().equals(gType)) {
                      group = (GroupObjectGraph) child;
                      break;
                   }
-                  else if(TreeEntityHelper.isGroupOfGroup(objectType) && child.getType().equals(ggType)){
+                  else if (TreeEntityHelper.isGroupOfGroup(objectType) && child.getType().equals(ggType)) {
                      gGroup = (GroupObjectGraph) child;
-                     for(ObjectGraph cchild: manager.getChildren(child)){
-                        if(child instanceof GroupObjectGraph && cchild.getType().equals(gType)){
-                           group = (GroupObjectGraph)cchild;
+                     for (ObjectGraph cchild : manager.getChildren(child)) {
+                        if (child instanceof GroupObjectGraph && cchild.getType().equals(gType)) {
+                           group = (GroupObjectGraph) cchild;
                            break;
                         }
                      }
@@ -600,37 +623,37 @@ public abstract class BaseDataFragment extends RoboFragment implements SessionCo
                }
             }
             if (group == null) { //if group node doesn't exist we gotta make it
-               if(TreeEntityHelper.isGroupOfGroup(objectType)){
-                  if(gGroup == null){
-                     gGroup = new GroupObjectGraph(null, ggType, TreeEntityHelper.getGroupName(getActivity(), ggType),null, parent);
-                     if(treeBuilder.bAddRelation(parent,gGroup) && !bVisible){
+               if (TreeEntityHelper.isGroupOfGroup(objectType)) {
+                  if (gGroup == null) {
+                     gGroup = new GroupObjectGraph(null, ggType, TreeEntityHelper.getGroupName(getActivity(), ggType), null, parent);
+                     if (treeBuilder.bAddRelation(parent, gGroup) && !bVisible) {
                         bVisible = true;
                      }
                   }
                   group = new GroupObjectGraph(null, gType, TreeEntityHelper.getGroupName(getActivity(), gType), null, gGroup);
-                  if(treeBuilder.bAddRelation(gGroup, group) && !bVisible){
+                  if (treeBuilder.bAddRelation(gGroup, group) && !bVisible) {
                      bVisible = true;
                   }
                }
-               else{
+               else {
                   group = new GroupObjectGraph(null, gType, TreeEntityHelper.getGroupName(getActivity(), gType), null, parent);
-                  if(treeBuilder.bAddRelation(parent,group) && !bVisible){
+                  if (treeBuilder.bAddRelation(parent, group) && !bVisible) {
                      bVisible = true;
                   }
                }
             }
-            if(treeBuilder.bAddRelation(group, object) && !bVisible){
+            if (treeBuilder.bAddRelation(group, object) && !bVisible) {
                bVisible = true;
             }
          }
          //Else just add to parent
          else {
-            if(treeBuilder.bAddRelation(parent, object) && !bVisible){
+            if (treeBuilder.bAddRelation(parent, object) && !bVisible) {
                bVisible = true;
             }
          }
          for (ObjectGraph child : object.getChildren()) {
-            if(bAddToTree(object, child) && !bVisible){
+            if (bAddToTree(object, child) && !bVisible) {
                bVisible = true;
             }
          }
@@ -698,9 +721,7 @@ public abstract class BaseDataFragment extends RoboFragment implements SessionCo
     */
    protected void updateSelectAllState() {
       final Session session = getSession();
-      boolean enable = session != null
-              && session.getObjectData() != null
-              && !session.getObjectData().isEmpty();
+      boolean enable = session != null && session.getObjectData() != null && !session.getObjectData().isEmpty();
 
       logger.debug("Enable Select All button: {}", enable);
       enableSelectAllButton(enable);
@@ -721,10 +742,40 @@ public abstract class BaseDataFragment extends RoboFragment implements SessionCo
    }
 
    /**
-    * Set connection state to BaseDataFragment classes
-    * @param isConnectedToPcm Connection state of pcm to display (true: connected, false: not connected)
+    * Updates the blocked overlay, returns weather it is shown or not.
+    * @param blockingActions List of Actions that are allowed to block fragments
+    * @return True if blocking overlay is shown afterwards, False otherwise
     */
-   protected static void setIsConnectedToPcm(boolean isConnectedToPcm) {
-      BaseDataFragment.isConnectedToPcm = isConnectedToPcm;
+   protected boolean requestAndUpdateBlockedOverlay(@Nullable List<Session.Action> blockingActions) {
+      if (blockingActions != null && sessionManager != null && !DataExchangeBlockedOverlay.MODE.DISCONNECTED.equals(disabledOverlay.getMode())) {
+         for (Session.Action action : blockingActions) {
+            if (action != null) {
+               if (sessionManager.actionIsActive(action)) {
+                  //found blocking session, determine reason
+                  final DataExchangeBlockedOverlay.MODE overlayMode;
+                  switch (action) {
+                  case IMPORT:
+                     overlayMode = DataExchangeBlockedOverlay.MODE.BLOCKED_BY_IMPORT;
+                     break;
+                  case EXPORT:
+                     overlayMode = DataExchangeBlockedOverlay.MODE.BLOCKED_BY_EXPORT;
+                     break;
+                  default:
+                     overlayMode = DataExchangeBlockedOverlay.MODE.HIDDEN;
+                     logger.error("Could not determine blocked-by state of data exchange fragment! Hiding blocked by overlay!");
+                     break;
+                  }
+                  disabledOverlay.setMode(overlayMode);
+                  return true; //true:enabled blocking overlay
+               }
+            }
+            else {
+               logger.warn("Got empty action in requestAndUpdateBlockedOverlay.");
+            }
+         }
+         //No blocking action found, hide overlay
+         disabledOverlay.setMode(DataExchangeBlockedOverlay.MODE.HIDDEN);
+      }
+      return false; //false:disabled blocking overlay
    }
 }

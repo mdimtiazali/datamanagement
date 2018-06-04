@@ -30,6 +30,14 @@ public interface SessionContract {
       Session getCurrentSession(Session.Action action);
 
       /**
+       * Return whether a active session exists for the given session action (MANAGE, IMPORT & EXPORT)
+       *
+       * @param action Session.Action its state is to be determined.
+       * @return True if action does currently run an action, false otherwise
+       */
+      boolean actionIsActive(Session.Action action);
+
+      /**
        * Set session view for the session manager to interact with the view
        *
        * @param view session view
@@ -146,6 +154,11 @@ public interface SessionContract {
        * Callback for PCM disconnection notification
        */
       void onPCMDisconnected();
+
+      /**
+       * Callback for PCM connection notification
+       */
+      void onPCMConnected();
 
       /**
        * Callback for progress update during PERFORM_OPERATIONS

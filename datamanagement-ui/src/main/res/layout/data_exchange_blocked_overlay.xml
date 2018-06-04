@@ -11,6 +11,7 @@
    <LinearLayout
            android:layout_width="match_parent"
            android:layout_height="match_parent"
+           android:id="@+id/data_exchange_blocked"
            android:orientation="horizontal"
            android:gravity="center">
 
@@ -42,4 +43,16 @@
                  android:text=""/>
       </LinearLayout>
    </LinearLayout>
+   <ProgressBar
+           android:id="@+id/data_exchange_loading"
+           style="@style/IndeterminateProgressLargeBlue"
+           android:layout_gravity="center"
+           android:visibility="invisible"/>
+   <ImageView
+           android:id="@+id/data_exchange_disconnected"
+           android:layout_width="wrap_content"
+           android:layout_height="wrap_content"
+           android:layout_gravity="center"
+           android:src="@drawable/ic_disconnected"
+           android:visibility="invisible"/>
 </merge>

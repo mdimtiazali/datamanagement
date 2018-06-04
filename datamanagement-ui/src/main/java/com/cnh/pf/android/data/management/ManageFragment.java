@@ -11,7 +11,6 @@ package com.cnh.pf.android.data.management;
 import android.app.ProgressDialog;
 import android.os.AsyncTask;
 import android.os.Bundle;
-
 import android.view.Gravity;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -20,12 +19,10 @@ import android.widget.AdapterView;
 import android.widget.ImageButton;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
-import android.widget.RelativeLayout;
 import android.widget.TextView;
 
 import com.cnh.android.dialog.DialogViewInterface;
 import com.cnh.android.pf.widget.controls.ToastMessageCustom;
-import com.cnh.android.pf.widget.view.DisabledOverlay;
 import com.cnh.android.widget.activity.TabActivity;
 import com.cnh.jgroups.ObjectGraph;
 import com.cnh.jgroups.Operation;
@@ -34,20 +31,18 @@ import com.cnh.pf.android.data.management.dialog.DeleteDialog;
 import com.cnh.pf.android.data.management.dialog.EditDialog;
 import com.cnh.pf.android.data.management.dialog.UndeleteObjectDialog;
 import com.cnh.pf.android.data.management.graph.GroupObjectGraph;
+import com.cnh.pf.android.data.management.helper.DataExchangeBlockedOverlay;
+import com.cnh.pf.android.data.management.helper.DmAccessibleObserver;
+import com.cnh.pf.android.data.management.misc.DeleteButton;
 import com.cnh.pf.android.data.management.session.ErrorCode;
 import com.cnh.pf.android.data.management.session.Session;
 import com.cnh.pf.android.data.management.session.SessionUtil;
-import com.cnh.pf.android.data.management.helper.DmAccessibleObserver;
-import com.cnh.pf.android.data.management.misc.DeleteButton;
 import com.cnh.pf.datamng.Process;
-
 import com.google.inject.Inject;
+
 import org.jgroups.util.RspList;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
-import pl.polidea.treeview.ImplicitSelectLinearLayout;
-import pl.polidea.treeview.TreeNodeInfo;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -56,12 +51,14 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Set;
 
+import pl.polidea.treeview.ImplicitSelectLinearLayout;
+import pl.polidea.treeview.TreeNodeInfo;
 
 /**
  * Provide data management Tab implementation
  * Created by f09953c on 9/12/2017.
  */
-public class ManageFragment extends BaseDataFragment implements DmAccessibleObserver.Listener{
+public class ManageFragment extends BaseDataFragment implements DmAccessibleObserver.Listener {
    private static final Logger logger = LoggerFactory.getLogger(ManageFragment.class);
 
    private DeleteButton delBtn;
@@ -74,10 +71,17 @@ public class ManageFragment extends BaseDataFragment implements DmAccessibleObse
    @Inject
    private DmAccessibleObserver statusHelper;
 
+   private final List<Session.Action> blockingActions = new ArrayList<Session.Action>(Arrays.asList(Session.Action.IMPORT, Session.Action.EXPORT));
+
+   @Override
+   protected List<Session.Action> getBlockingActions() {
+      return blockingActions;
+   }
+
    @Override
    public void onAccessStatus(boolean status) {
-      logger.debug("onAccessStatus({}), isAccessable={}",status,isAccessable);
-      if(isAccessable != status) {
+      logger.debug("onAccessStatus({}), isAccessable={}", status, isAccessable);
+      if (isAccessable != status) {
          isAccessable = status;
          getActivity().runOnUiThread(new Runnable() {
             @Override
@@ -123,25 +127,25 @@ public class ManageFragment extends BaseDataFragment implements DmAccessibleObse
                   update(operations);
 
                   if (updatingProg == null) {
-                     updatingProg = new ProgressDialog(getActivity(),ProgressDialog.THEME_HOLO_LIGHT);
+                     updatingProg = new ProgressDialog(getActivity(), ProgressDialog.THEME_HOLO_LIGHT);
                      updatingProg.setIndeterminateDrawable(getResources().getDrawable(R.drawable.progress_circle));
                      updatingProg.setMessage(getString(R.string.edit_update_content));
                   }
                   setHeaderAndDeleteButton(false);
                   updatingProg.show();
-                  }
-               });
-               final TabActivity useModal = (DataManagementActivity) getActivity();
-               useModal.showModalPopup(editDialog);
-               break;
-            }
-            case R.id.mng_copy_button: {
-               ObjectGraph nodeInfo = (ObjectGraph) v.getTag();
-               //Todo: need to support delete
-               ToastMessageCustom.makeToastMessageText(getActivity().getApplicationContext(), getString(R.string.copy_click_string) + nodeInfo.toString(),
-                       Gravity.TOP| Gravity.CENTER_HORIZONTAL, getResources().getInteger(R.integer.toast_message_xoffset),
-                       getResources().getInteger(R.integer.toast_message_yoffset)).show();
-            }
+               }
+            });
+            final TabActivity useModal = (DataManagementActivity) getActivity();
+            useModal.showModalPopup(editDialog);
+            break;
+         }
+         case R.id.mng_copy_button: {
+            ObjectGraph nodeInfo = (ObjectGraph) v.getTag();
+            //Todo: need to support delete
+            ToastMessageCustom.makeToastMessageText(getActivity().getApplicationContext(), getString(R.string.copy_click_string) + nodeInfo.toString(),
+                  Gravity.TOP | Gravity.CENTER_HORIZONTAL, getResources().getInteger(R.integer.toast_message_xoffset), getResources().getInteger(R.integer.toast_message_yoffset))
+                  .show();
+         }
          }
       }
    };
@@ -158,7 +162,7 @@ public class ManageFragment extends BaseDataFragment implements DmAccessibleObse
    @Override
    public void onStart() {
       super.onStart();
-      new AsyncTask<Void,Void,Void>(){
+      new AsyncTask<Void, Void, Void>() {
          @Override
          protected Void doInBackground(Void... voids) {
             statusHelper.start();
@@ -171,7 +175,7 @@ public class ManageFragment extends BaseDataFragment implements DmAccessibleObse
    public void onStop() {
       logger.debug("onStop()");
       super.onStop();
-      new AsyncTask<Void,Void,Void>(){
+      new AsyncTask<Void, Void, Void>() {
          @Override
          protected Void doInBackground(Void... voids) {
             statusHelper.stop();
@@ -184,40 +188,41 @@ public class ManageFragment extends BaseDataFragment implements DmAccessibleObse
    /**
     * refresh edit delete copy UI
     */
-   private void freshUdcUi(){
-      if(treeAdapter != null && treeAdapter.hasSelection()) {
+   private void freshUdcUi() {
+      if (treeAdapter != null && treeAdapter.hasSelection()) {
          if (isAccessable) {
             enableDeleteButton(true);
          }
-         else{
+         else {
             enableDeleteButton(false);
          }
          treeAdapter.refresh();
       }
    }
+
    @Override
    public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
       View layout = inflater.inflate(R.layout.manage_layout, container, false);
       LinearLayout leftPanel = (LinearLayout) layout.findViewById(R.id.left_panel_wrapper);
       inflateViews(inflater, leftPanel);
-      disabledOverlay = (DisabledOverlay) layout.findViewById(R.id.disabled_overlay);
+      disabledOverlay = (DataExchangeBlockedOverlay) layout.findViewById(R.id.disabled_overlay);
       delBtn = (DeleteButton) layout.findViewById(R.id.dm_delete_button);
       delBtn.setOnClickListener(new View.OnClickListener() {
          @Override
          public void onClick(View v) {
-            final DeleteDialog delDialog = new DeleteDialog(getActivity(),treeAdapter.getSelectionMap().size());
+            final DeleteDialog delDialog = new DeleteDialog(getActivity(), treeAdapter.getSelectionMap().size());
             delDialog.setOnButtonClickListener(new DialogViewInterface.OnButtonClickListener() {
                @Override
                public void onButtonClick(DialogViewInterface dialogViewInterface, int i) {
-                  if(i == DeleteDialog.BUTTON_FIRST){
+                  if (i == DeleteDialog.BUTTON_FIRST) {
                      Set<ObjectGraph> set = getTreeAdapter().getSelectedRootNodes();
                      List<ObjectGraph> filteredList = new ArrayList<ObjectGraph>(set.size());
-                     for (ObjectGraph o: set){
+                     for (ObjectGraph o : set) {
                         if (!TreeEntityHelper.isGroupType(o.getType())) {
                            filteredList.add(o);
                         }
                      }
-                     if (!filteredList.isEmpty()){
+                     if (!filteredList.isEmpty()) {
                         List<Operation> delOperations = new ArrayList<Operation>();
                         for (ObjectGraph obj : filteredList) {
                            Operation operation = new Operation(obj, null);
@@ -225,16 +230,18 @@ public class ManageFragment extends BaseDataFragment implements DmAccessibleObse
                            delOperations.add(operation);
                         }
                         delete(delOperations);
-                        if (deletingProg == null){
-                           deletingProg = new ProgressDialog(getActivity(),ProgressDialog.THEME_HOLO_LIGHT);
+                        if (deletingProg == null) {
+                           deletingProg = new ProgressDialog(getActivity(), ProgressDialog.THEME_HOLO_LIGHT);
                            deletingProg.setIndeterminateDrawable(getResources().getDrawable(R.drawable.progress_circle));
                            deletingProg.setMessage(getString(R.string.delete_progress_content));
                         }
                         deletingProg.show();
                      }
                      else {
-                        ToastMessageCustom.makeToastMessageText(getActivity().getApplicationContext(), getString(R.string.no_data_for_delete),
-                                Gravity.TOP| Gravity.CENTER_HORIZONTAL, getResources().getInteger(R.integer.toast_message_xoffset), getResources().getInteger(R.integer.toast_message_yoffset)).show();
+                        ToastMessageCustom
+                              .makeToastMessageText(getActivity().getApplicationContext(), getString(R.string.no_data_for_delete), Gravity.TOP | Gravity.CENTER_HORIZONTAL,
+                                    getResources().getInteger(R.integer.toast_message_xoffset), getResources().getInteger(R.integer.toast_message_yoffset))
+                              .show();
                      }
                   }
                }
@@ -245,7 +252,7 @@ public class ManageFragment extends BaseDataFragment implements DmAccessibleObse
       delBtn.setPopContentProvider(new DeleteButton.PopContentProvider() {
          @Override
          public int getStringResourceId() {
-            if(!isAccessable){
+            if (!isAccessable) {
                return R.string.delete_select_notice_inaccessible;
             }
             return R.string.delete_select_notice;
@@ -254,7 +261,6 @@ public class ManageFragment extends BaseDataFragment implements DmAccessibleObse
       delBtn.setEnabled(false);
       return layout;
    }
-
 
    @Override
    public void inflateViews(LayoutInflater inflater, View leftPanel) {
@@ -278,12 +284,22 @@ public class ManageFragment extends BaseDataFragment implements DmAccessibleObse
    }
 
    @Override
+   public void onPCMConnected() {
+      logger.trace("PCM is online.");
+
+      showLoadingOverlay();
+      onResumeSession();
+   }
+
+   @Override
    public void onResumeSession() {
       logger.debug("onResumeSession()");
-      hideTreeList();
-      showLoadingOverlay();
-
-      discovery();
+      //verify that no other session is blocking fragment
+      if (!requestAndUpdateBlockedOverlay(getBlockingActions())) {
+         hideTreeList();
+         showLoadingOverlay();
+         discovery();
+      }
    }
 
    @Override
@@ -296,11 +312,6 @@ public class ManageFragment extends BaseDataFragment implements DmAccessibleObse
 
          discovery();
       }
-   }
-
-   @Override
-   public void onOtherSessionSuccess(Session session) {
-      logger.debug("onOtherSessionComplete(): {}", session.getType());
    }
 
    @Override
@@ -351,7 +362,7 @@ public class ManageFragment extends BaseDataFragment implements DmAccessibleObse
                if (process.getOperations() != null) {
                   for (Operation operation : process.getOperations()) {
                      if (operation != null && operation.getStatus() == Operation.Status.DONE) {
-                        removedObjects.addAll(findRemovedObjects(operation.getData(),operation.getUnprocessedData()));
+                        removedObjects.addAll(findRemovedObjects(operation.getData(), operation.getUnprocessedData()));
                         if (operation.getUnprocessedData() != null) {
                            undeletedObjects.add(operation.getUnprocessedData());
                         }
@@ -374,7 +385,7 @@ public class ManageFragment extends BaseDataFragment implements DmAccessibleObse
    }
 
    //remove data and refresh UI
-   private void removeAndRefreshObjectUI(List<ObjectGraph> objects){
+   private void removeAndRefreshObjectUI(List<ObjectGraph> objects) {
       treeAdapter.removeObjectGraphs(objects);
       treeAdapter.updateViewSelection(treeViewList);
       manager.removeNodesRecursively(objects);
@@ -383,14 +394,14 @@ public class ManageFragment extends BaseDataFragment implements DmAccessibleObse
    }
 
    //true for empty group false for not
-   private boolean isEmptyGroup(ObjectGraph objectGraph){
-      if( objectGraph instanceof GroupObjectGraph) {
+   private boolean isEmptyGroup(ObjectGraph objectGraph) {
+      if (objectGraph instanceof GroupObjectGraph) {
          List<ObjectGraph> children = manager.getChildren(objectGraph);
          if (children == null || children.isEmpty()) {
             return true;
          }
          else {
-            for (ObjectGraph o:children) {
+            for (ObjectGraph o : children) {
                if (!isEmptyGroup(o)) {
                   return false;
                }
@@ -402,12 +413,12 @@ public class ManageFragment extends BaseDataFragment implements DmAccessibleObse
    }
 
    //remove the empty group item
-   private void removeParentEmptyGroup(List<ObjectGraph> list){
+   private void removeParentEmptyGroup(List<ObjectGraph> list) {
       Set<ObjectGraph> emptyGroup = new HashSet<ObjectGraph>();
       List<ObjectGraph> siblingsOrParent = null;
       for (ObjectGraph o : list) {
          if (TreeEntityHelper.obj2group.containsKey(o.getType())) {
-            if(TreeEntityHelper.group2group.containsKey(TreeEntityHelper.obj2group.get(o.getType()))) {
+            if (TreeEntityHelper.group2group.containsKey(TreeEntityHelper.obj2group.get(o.getType()))) {
                List<ObjectGraph> ggoups = manager.getChildren(o.getParent());
                if (ggoups != null && !ggoups.isEmpty()) {
                   for (ObjectGraph gg : ggoups) {
@@ -418,10 +429,10 @@ public class ManageFragment extends BaseDataFragment implements DmAccessibleObse
                   }
                }
             }
-            else{
+            else {
                siblingsOrParent = manager.getChildren(o.getParent());
             }
-            if (siblingsOrParent != null && ! siblingsOrParent.isEmpty()) {
+            if (siblingsOrParent != null && !siblingsOrParent.isEmpty()) {
                for (ObjectGraph obj : siblingsOrParent) {
                   if (obj instanceof GroupObjectGraph && isEmptyGroup(obj) && !emptyGroup.contains(obj)) {
                      emptyGroup.add(obj);
@@ -436,7 +447,7 @@ public class ManageFragment extends BaseDataFragment implements DmAccessibleObse
    }
 
    // find out what object in change were removed compared with base object.
-   private List<ObjectGraph> findRemovedObjects(ObjectGraph origin, ObjectGraph change){
+   private List<ObjectGraph> findRemovedObjects(ObjectGraph origin, ObjectGraph change) {
       final List<ObjectGraph> removedObjs = new LinkedList<ObjectGraph>();
       if (change == null) {
          if (origin == null) {
@@ -465,7 +476,7 @@ public class ManageFragment extends BaseDataFragment implements DmAccessibleObse
                if (set.contains(objectGraph)) {
                   return true;
                }
-               else{
+               else {
                   removedObjs.add(objectGraph);
                   return false;
                }
@@ -473,11 +484,6 @@ public class ManageFragment extends BaseDataFragment implements DmAccessibleObse
          });
       }
       return removedObjs;
-   }
-
-   @Override
-   public void onOtherSessionError(Session session, ErrorCode errorCode) {
-      logger.debug("onOtherSessionError(): {}, {}", session.getType(), errorCode);
    }
 
    @Override
@@ -489,18 +495,16 @@ public class ManageFragment extends BaseDataFragment implements DmAccessibleObse
             deletingProg.dismiss();
          }
          setHeaderAndDeleteButton(false);
-         ToastMessageCustom.makeToastMessageText(getActivity().getApplicationContext(), getString(R.string.delete_error_notice),
-                 Gravity.TOP| Gravity.CENTER_HORIZONTAL, getResources().getInteger(R.integer.toast_message_xoffset),
-                 getResources().getInteger(R.integer.toast_message_yoffset)).show();
+         ToastMessageCustom.makeToastMessageText(getActivity().getApplicationContext(), getString(R.string.delete_error_notice), Gravity.TOP | Gravity.CENTER_HORIZONTAL,
+               getResources().getInteger(R.integer.toast_message_xoffset), getResources().getInteger(R.integer.toast_message_yoffset)).show();
          discovery();
       }
       else if (SessionUtil.isUpdateTask(session)) {
          if (updatingProg != null) {
             updatingProg.dismiss();
          }
-         ToastMessageCustom.makeToastMessageText(getActivity().getApplicationContext(), getString(R.string.update_error_notice),
-                 Gravity.TOP| Gravity.CENTER_HORIZONTAL, getResources().getInteger(R.integer.toast_message_xoffset),
-                 getResources().getInteger(R.integer.toast_message_yoffset)).show();
+         ToastMessageCustom.makeToastMessageText(getActivity().getApplicationContext(), getString(R.string.update_error_notice), Gravity.TOP | Gravity.CENTER_HORIZONTAL,
+               getResources().getInteger(R.integer.toast_message_xoffset), getResources().getInteger(R.integer.toast_message_yoffset)).show();
       }
    }
 
@@ -512,6 +516,7 @@ public class ManageFragment extends BaseDataFragment implements DmAccessibleObse
          delBtn.setEnabled(false);
       }
    }
+
    private void setHeaderAndDeleteButton(boolean enable) {
       if (enable) {
          enableDeleteButton(true);
@@ -604,12 +609,13 @@ public class ManageFragment extends BaseDataFragment implements DmAccessibleObse
                   ind.setVisibility(View.INVISIBLE);
                }
             }
-            private void updateButtonVisible(ObjectGraph node, ImageButton copyButton, ImageButton editButton){
+
+            private void updateButtonVisible(ObjectGraph node, ImageButton copyButton, ImageButton editButton) {
                if (getSelectionMap().containsKey(node)) {
                   if (isSupportedCopy(node)) {
                      copyButton.setVisibility(View.VISIBLE);
                   }
-                  else{
+                  else {
                      copyButton.setVisibility(View.INVISIBLE);
                   }
                   if (isSupportedEdit(node)) {
@@ -624,6 +630,7 @@ public class ManageFragment extends BaseDataFragment implements DmAccessibleObse
                   editButton.setVisibility(View.INVISIBLE);
                }
             }
+
             @Override
             public View updateView(View view, TreeNodeInfo treeNodeInfo) {
                ObjectGraph graph = (ObjectGraph) treeNodeInfo.getId();
@@ -634,7 +641,7 @@ public class ManageFragment extends BaseDataFragment implements DmAccessibleObse
                final ImageButton editButton = (ImageButton) view.findViewById(R.id.mng_edit_button);
                editButton.setTag(graph);
                editButton.setOnClickListener(optListener);
-               updateButtonVisible(graph,cpButton,editButton);
+               updateButtonVisible(graph, cpButton, editButton);
                nameView.setText(graph.getName());
                nameView.setTextColor(getActivity().getResources().getColorStateList(R.color.tree_text_color));
                if (TreeEntityHelper.hasIcon(graph.getType()) && (graph instanceof GroupObjectGraph || !isGroupableEntity(graph))) {
@@ -662,7 +669,8 @@ public class ManageFragment extends BaseDataFragment implements DmAccessibleObse
                         SelectionType type = getSelectionMap().get(node);
                         layout.setSelected(SelectionType.FULL.equals(type));
                         layout.setImplicitlySelected(SelectionType.IMPLICIT.equals(type));
-                     } else {
+                     }
+                     else {
                         layout.setSelected(false);
                         layout.setImplicitlySelected(false);
                      }
@@ -724,7 +732,7 @@ public class ManageFragment extends BaseDataFragment implements DmAccessibleObse
          };
       }
       else {
-         treeAdapter.selectAll(treeViewList,false);
+         treeAdapter.selectAll(treeViewList, false);
       }
    }
 
@@ -732,7 +740,6 @@ public class ManageFragment extends BaseDataFragment implements DmAccessibleObse
    public boolean supportedByFormat(ObjectGraph node) {
       return true;
    }
-
 
    @Override
    public Session.Action getAction() {
