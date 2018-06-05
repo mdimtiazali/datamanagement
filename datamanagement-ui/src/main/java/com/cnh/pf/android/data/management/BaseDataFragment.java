@@ -575,46 +575,49 @@ public abstract class BaseDataFragment extends RoboFragment implements SessionCo
             return bVisible;
          }
          //Check if entity can be grouped
-         if (TreeEntityHelper.obj2group.containsKey(object.getType()) || object.getParent() == null) {
+         String objectType = object.getType();
+         if (TreeEntityHelper.isGroup(objectType) || object.getParent() == null) {
+            String gType = TreeEntityHelper.getGroupType(objectType);
+            String ggType = TreeEntityHelper.getGroupOfGroupType(objectType);
             GroupObjectGraph group = null;
-            GroupObjectGraph ggroup = null;
+            GroupObjectGraph gGroup = null;
             for (ObjectGraph child : manager.getChildren(parent)) { //find the group node
-               if (child instanceof GroupObjectGraph && TreeEntityHelper.obj2group.containsKey(object.getType())) {
-                  if (child.getType().equals(TreeEntityHelper.obj2group.get(object.getType()))) {
-                     group = (GroupObjectGraph) child;//found the group
+               if (child instanceof GroupObjectGraph){
+                  if(child.getType().equals(gType)){
+                     group = (GroupObjectGraph) child;
                      break;
-                  } else if (TreeEntityHelper.group2group.containsKey(TreeEntityHelper.obj2group.get(object.getType())) &&
-                          child.getType().equals(TreeEntityHelper.group2group.get(TreeEntityHelper.obj2group.get(object.getType())))) {
-                     ggroup = (GroupObjectGraph) child;//found the group's parent
-                     for (ObjectGraph cchild : manager.getChildren(child)) {
-                        if (cchild instanceof GroupObjectGraph && cchild.getType().equals(TreeEntityHelper.obj2group.get(object.getType()))) {
-                           group = (GroupObjectGraph) cchild;//found the group
+                  }
+                  else if(TreeEntityHelper.isGroupOfGroup(objectType) && child.getType().equals(ggType)){
+                     gGroup = (GroupObjectGraph) child;
+                     for(ObjectGraph cchild: manager.getChildren(child)){
+                        if(child instanceof GroupObjectGraph && cchild.getType().equals(gType)){
+                           group = (GroupObjectGraph)cchild;
                            break;
                         }
                      }
+                     break;
                   }
                }
             }
             if (group == null) { //if group node doesn't exist we gotta make it
-               if(TreeEntityHelper.group2group.containsKey(TreeEntityHelper.obj2group.get(object.getType()))){
-                  if(ggroup == null){
-                     ggroup = new GroupObjectGraph(null, TreeEntityHelper.group2group.get(TreeEntityHelper.obj2group.get(object.getType())), TreeEntityHelper.getGroupName(getActivity(), TreeEntityHelper.group2group.get(TreeEntityHelper.obj2group.get(object.getType()))),null, parent);
-                     if(treeBuilder.bAddRelation(parent,ggroup) && !bVisible){
+               if(TreeEntityHelper.isGroupOfGroup(objectType)){
+                  if(gGroup == null){
+                     gGroup = new GroupObjectGraph(null, ggType, TreeEntityHelper.getGroupName(getActivity(), ggType),null, parent);
+                     if(treeBuilder.bAddRelation(parent,gGroup) && !bVisible){
                         bVisible = true;
                      }
                   }
-                  group = new GroupObjectGraph(null, TreeEntityHelper.obj2group.get(object.getType()), TreeEntityHelper.getGroupName(getActivity(), TreeEntityHelper.obj2group.get(object.getType())), null, ggroup);
-                  if(treeBuilder.bAddRelation(ggroup, group) && !bVisible){
+                  group = new GroupObjectGraph(null, gType, TreeEntityHelper.getGroupName(getActivity(), gType), null, gGroup);
+                  if(treeBuilder.bAddRelation(gGroup, group) && !bVisible){
                      bVisible = true;
                   }
                }
                else{
-                  group = new GroupObjectGraph(null, TreeEntityHelper.obj2group.get(object.getType()), TreeEntityHelper.getGroupName(getActivity(), TreeEntityHelper.obj2group.get(object.getType())), null, parent);
+                  group = new GroupObjectGraph(null, gType, TreeEntityHelper.getGroupName(getActivity(), gType), null, parent);
                   if(treeBuilder.bAddRelation(parent,group) && !bVisible){
                      bVisible = true;
                   }
                }
-
             }
             if(treeBuilder.bAddRelation(group, object) && !bVisible){
                bVisible = true;

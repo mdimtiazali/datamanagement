@@ -128,7 +128,48 @@ public class TreeEntityHelper {
          put(VARIETIES, PRODUCT_MIX_VARIETY);
       }
    };
+   /**
+    * get a its group type, return origin type if there is no config
+    * @param type the ObjectGraph type
+    * @return  group's data type
+    */
+   public static String getGroupType(String type){
+      if(obj2group.containsKey(type)){
+         return obj2group.get(type);
+      }
+      return type;
+   }
+   /**
+    * get a its group's group type, return origin type if there is no config
+    * @param type the ObjectGraph type
+    * @return  group's group data type
+    */
+   public static String getGroupOfGroupType(String type){
+      if(group2group.containsKey(obj2group.get(type))) {
+         return group2group.get(obj2group.get(type));
+      }
+      return type;
+   }
 
+   /**
+    * check if the data type has a parent group
+    * @param type the ObjectGraph type
+    * @return  true if it has a parent group, false for no
+    */
+   public static boolean isGroup(String type){
+      return obj2group.containsKey(type);
+   }
+   /**
+    * check if the data type has a group's group
+    * @param type the ObjectGraph type
+    * @return  true if it has a group's group, false for no
+    */
+   public static boolean isGroupOfGroup(String type){
+      if(isGroup(type)){
+         return group2group.containsKey(getGroupType(type));
+      }
+      return false;
+   }
    public static String getGroupName(Context context, String type) {
       if (group2name.containsKey(type)){
          return context.getString(group2name.get(type));
@@ -137,12 +178,6 @@ public class TreeEntityHelper {
       return CaseFormat.UPPER_UNDERSCORE.to(CaseFormat.UPPER_CAMEL, name) + "s";
    }
 
-   public static String getGroupType(String type){
-      if(obj2group.containsKey(type)){
-         return obj2group.get(type);
-      }
-      return null;
-   }
    /**
     * @param type the ObjectGraph type
     * @return  the icon resource id
