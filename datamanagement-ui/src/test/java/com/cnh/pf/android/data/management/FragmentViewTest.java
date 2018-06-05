@@ -12,23 +12,9 @@ package com.cnh.pf.android.data.management;
 import static org.junit.Assert.assertTrue;
 
 import android.content.ComponentName;
-import android.content.Context;
-import android.content.SharedPreferences;
-import android.content.pm.PackageManager;
-import com.cnh.android.util.prefs.GlobalPreferences;
-import com.cnh.android.util.prefs.GlobalPreferencesNotAvailableException;
 import com.cnh.android.widget.activity.TabActivity;
-import com.cnh.jgroups.DataTypes;
-import com.cnh.jgroups.Mediator;
-import com.cnh.jgroups.ObjectGraph;
-import com.cnh.pf.android.data.management.helper.DmAccessibleObserver;
 import com.cnh.pf.android.data.management.service.DataManagementService;
 import com.cnh.pf.android.data.management.session.SessionManager;
-import com.google.common.net.HostAndPort;
-import com.google.inject.AbstractModule;
-import com.google.inject.Provides;
-import com.google.inject.Singleton;
-import com.google.inject.name.Named;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -41,11 +27,6 @@ import org.robolectric.annotation.Config;
 import org.robolectric.util.ActivityController;
 import roboguice.RoboGuice;
 
-import java.util.ArrayList;
-import java.util.List;
-
-import static org.mockito.Mockito.doNothing;
-import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 import static org.robolectric.Shadows.shadowOf;
 
@@ -54,7 +35,7 @@ import static org.robolectric.Shadows.shadowOf;
  */
 @RunWith(RobolectricMavenTestRunner.class)
 @Config(manifest = "src/main/AndroidManifest.xml", application = TestApp.class)
-public class SessionViewTest {
+public class FragmentViewTest {
    private static int MANAGE_SOURCE_TAB_POSITION = 0;
    private static int IMPORT_SOURCE_TAB_POSITION = 1;
    private static int EXPORT_SOURCE_TAB_POSITION = 2;
@@ -70,7 +51,7 @@ public class SessionViewTest {
    @Before
    public void setUp() {
       MockitoAnnotations.initMocks(this);
-      RoboGuice.overrideApplicationInjector(RuntimeEnvironment.application, new SessionViewTest.MyTestModule());
+      RoboGuice.overrideApplicationInjector(RuntimeEnvironment.application, new TestModule());
       controller = Robolectric.buildActivity(DataManagementActivity.class);
       activity = controller.get();
       when(binder.getService()).thenReturn(service);
@@ -114,44 +95,5 @@ public class SessionViewTest {
    private void activateTab(int tabPosition) {
       //Select Tab at position
       ((TabActivity) activity).selectTabAtPosition(tabPosition);
-   }
-
-   public class MyTestModule extends AbstractModule {
-
-      @Override
-      protected void configure() {
-         bind(Mediator.class).toInstance(mock(Mediator.class));
-      }
-
-      @Provides
-      @Singleton
-      @Named("global")
-      @SuppressWarnings("deprecation")
-      private SharedPreferences getPrefs() throws PackageManager.NameNotFoundException {
-         return null;
-      }
-      @Provides
-      @Singleton
-      public DmAccessibleObserver getDmAccessibleObserver(){
-         DmAccessibleObserver observer = mock(DmAccessibleObserver.class);
-         doNothing().when(observer).start();
-         doNothing().when(observer).stop();
-         return observer;
-      }
-
-      @Provides
-      @Singleton
-      public GlobalPreferences getGlobalPreferences(Context context) throws GlobalPreferencesNotAvailableException {
-         GlobalPreferences prefs = mock(GlobalPreferences.class);
-         when(prefs.hasPCM()).thenReturn(true);
-         return prefs;
-      }
-
-      @Provides
-      @Singleton
-      @Named("daemon")
-      public HostAndPort getDaemon() {
-         return HostAndPort.fromParts("127.0.0.1", 14000);
-      }
    }
 }

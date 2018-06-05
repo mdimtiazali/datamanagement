@@ -17,51 +17,34 @@ import static org.junit.Assert.assertThat;
 import static org.junit.Assert.assertTrue;
 import static org.mockito.Matchers.any;
 import static org.mockito.Mockito.doAnswer;
-import static org.mockito.Mockito.doNothing;
 import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.mockingDetails;
 import static org.mockito.Mockito.when;
 import static org.robolectric.Shadows.shadowOf;
 
 import android.content.ComponentName;
 import android.content.Context;
-import android.content.SharedPreferences;
-import android.content.pm.PackageManager;
 import android.os.RemoteException;
 import android.view.LayoutInflater;
 import android.view.View;
 
-import com.cnh.android.util.prefs.GlobalPreferences;
-import com.cnh.android.util.prefs.GlobalPreferencesNotAvailableException;
 import com.cnh.android.widget.activity.TabActivity;
 import com.cnh.android.widget.control.PickList;
 import com.cnh.jgroups.DataTypes;
-import com.cnh.jgroups.Datasource;
-import com.cnh.jgroups.Mediator;
 import com.cnh.jgroups.ObjectGraph;
 import com.cnh.pf.android.data.management.adapter.ObjectTreeViewAdapter;
 import com.cnh.pf.android.data.management.adapter.SelectionTreeViewAdapter;
-import com.cnh.pf.android.data.management.helper.DmAccessibleObserver;
 import com.cnh.pf.android.data.management.parser.FormatManager;
 import com.cnh.pf.android.data.management.productlibrary.views.AddOrEditVarietyDialog;
 import com.cnh.pf.android.data.management.service.DataManagementService;
 import com.cnh.pf.android.data.management.session.Session;
 import com.cnh.pf.android.data.management.session.SessionExtra;
-import com.cnh.pf.data.management.DataManagementSession;
-import com.cnh.pf.data.management.aidl.MediumDevice;
 import com.cnh.pf.model.product.configuration.Variety;
 import com.cnh.pf.model.product.library.CropType;
-import com.google.common.net.HostAndPort;
-import com.google.inject.AbstractModule;
 import com.google.inject.Key;
-import com.google.inject.Provides;
-import com.google.inject.Singleton;
-import com.google.inject.name.Named;
 import com.google.inject.name.Names;
 
 import org.junit.After;
 import org.junit.Before;
-import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.Mock;
@@ -110,7 +93,7 @@ public class DataManagementUITest {
    @Before
    public void setUp() {
       MockitoAnnotations.initMocks(this);
-      RoboGuice.overrideApplicationInjector(RuntimeEnvironment.application, new MyTestModule());
+      RoboGuice.overrideApplicationInjector(RuntimeEnvironment.application, new TestModule());
       eventManager = RoboGuice.getInjector(RuntimeEnvironment.application).getInstance(Key.get(EventManager.class, Names.named(DefaultRoboModule.GLOBAL_EVENT_MANAGER_NAME)));
       controller = Robolectric.buildActivity(DataManagementActivity.class);
       activity = controller.get();
@@ -245,47 +228,6 @@ public class DataManagementUITest {
             add(customer);
          }
       });
-   }
-
-   public class MyTestModule extends AbstractModule {
-
-      @Override
-      protected void configure() {
-         //         bind(DataManagementService.class).toInstance(service);
-         bind(Mediator.class).toInstance(mock(Mediator.class));
-      }
-
-      @Provides
-      @Singleton
-      @Named("global")
-      @SuppressWarnings("deprecation")
-      private SharedPreferences getPrefs() throws PackageManager.NameNotFoundException {
-         return null;
-      }
-
-      @Provides
-      @Singleton
-      public DmAccessibleObserver getDmAccessibleObserver(){
-         DmAccessibleObserver observer = mock(DmAccessibleObserver.class);
-         doNothing().when(observer).start();
-         doNothing().when(observer).stop();
-         return observer;
-      }
-
-      @Provides
-      @Singleton
-      public GlobalPreferences getGlobalPreferences(Context context) throws GlobalPreferencesNotAvailableException {
-         GlobalPreferences prefs = mock(GlobalPreferences.class);
-         when(prefs.hasPCM()).thenReturn(true);
-         return prefs;
-      }
-
-      @Provides
-      @Singleton
-      @Named("daemon")
-      public HostAndPort getDaemon() {
-         return HostAndPort.fromParts("127.0.0.1", 14000);
-      }
    }
 
    @Test
