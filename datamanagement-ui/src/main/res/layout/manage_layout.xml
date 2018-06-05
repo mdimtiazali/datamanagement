@@ -39,17 +39,16 @@
                 android:layout_weight="1"
                 android:gravity="center_vertical|left"
                 style="@style/TextAppearance.Import.Entity" />
-            <ImageButton
-                    android:id="@+id/dm_delete_button"
-                    android:layout_width="@dimen/del_button_width"
-                    android:layout_height="@dimen/button_height"
-                    android:src="@drawable/mng_del_button_states"
-                    style="@style/Button"
-                    android:enabled="false"
-                    android:layout_marginEnd="@dimen/button_margin_right"
-                    android:layout_marginBottom="@dimen/button_margin_bottom"
-                    android:layout_marginTop="@dimen/button_margin_top"
-                    android:layout_toLeftOf="@id/select_all_btn"/>
+            <com.cnh.pf.android.data.management.misc.DeleteButton
+                android:id="@+id/dm_delete_button"
+                android:layout_width="@dimen/del_button_width"
+                android:layout_height="@dimen/button_height"
+                android:src="@drawable/mng_del_button_states"
+                style="@style/Button"
+                android:layout_marginRight ="16dp"
+                android:layout_marginBottom="@dimen/button_margin_bottom"
+                android:layout_marginTop="@dimen/button_margin_top"
+                android:layout_toLeftOf="@id/select_all_btn"/>
             <Button
                     android:id="@+id/select_all_btn"
                     android:layout_width="@dimen/min_select_all_btn_width"

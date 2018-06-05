@@ -345,5 +345,6 @@
     <string name="no_data_for_delete">No selected data right for deletion</string>
     <string name="update_error_notice">Error occur when updating the name</string>
     <string name="delete_error_notice">Error occur when deleting the data</string>
-
+    <string name="delete_select_notice">No selection is made</string>
+    <string name="delete_select_notice_inaccessible">Delete isn\'t allowed since system is in work or engage</string>
 </resources>

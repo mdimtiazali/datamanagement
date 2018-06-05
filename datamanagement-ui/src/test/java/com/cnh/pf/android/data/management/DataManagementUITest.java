@@ -17,7 +17,9 @@ import static org.junit.Assert.assertThat;
 import static org.junit.Assert.assertTrue;
 import static org.mockito.Matchers.any;
 import static org.mockito.Mockito.doAnswer;
+import static org.mockito.Mockito.doNothing;
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.mockingDetails;
 import static org.mockito.Mockito.when;
 import static org.robolectric.Shadows.shadowOf;
 
@@ -39,6 +41,7 @@ import com.cnh.jgroups.Mediator;
 import com.cnh.jgroups.ObjectGraph;
 import com.cnh.pf.android.data.management.adapter.ObjectTreeViewAdapter;
 import com.cnh.pf.android.data.management.adapter.SelectionTreeViewAdapter;
+import com.cnh.pf.android.data.management.helper.DmAccessibleObserver;
 import com.cnh.pf.android.data.management.parser.FormatManager;
 import com.cnh.pf.android.data.management.productlibrary.views.AddOrEditVarietyDialog;
 import com.cnh.pf.android.data.management.service.DataManagementService;
@@ -258,6 +261,15 @@ public class DataManagementUITest {
       @SuppressWarnings("deprecation")
       private SharedPreferences getPrefs() throws PackageManager.NameNotFoundException {
          return null;
+      }
+
+      @Provides
+      @Singleton
+      public DmAccessibleObserver getDmAccessibleObserver(){
+         DmAccessibleObserver observer = mock(DmAccessibleObserver.class);
+         doNothing().when(observer).start();
+         doNothing().when(observer).stop();
+         return observer;
       }
 
       @Provides

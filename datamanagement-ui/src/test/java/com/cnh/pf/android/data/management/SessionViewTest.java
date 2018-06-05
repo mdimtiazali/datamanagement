@@ -21,6 +21,7 @@ import com.cnh.android.widget.activity.TabActivity;
 import com.cnh.jgroups.DataTypes;
 import com.cnh.jgroups.Mediator;
 import com.cnh.jgroups.ObjectGraph;
+import com.cnh.pf.android.data.management.helper.DmAccessibleObserver;
 import com.cnh.pf.android.data.management.service.DataManagementService;
 import com.cnh.pf.android.data.management.session.SessionManager;
 import com.google.common.net.HostAndPort;
@@ -43,6 +44,7 @@ import roboguice.RoboGuice;
 import java.util.ArrayList;
 import java.util.List;
 
+import static org.mockito.Mockito.doNothing;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 import static org.robolectric.Shadows.shadowOf;
@@ -127,6 +129,14 @@ public class SessionViewTest {
       @SuppressWarnings("deprecation")
       private SharedPreferences getPrefs() throws PackageManager.NameNotFoundException {
          return null;
+      }
+      @Provides
+      @Singleton
+      public DmAccessibleObserver getDmAccessibleObserver(){
+         DmAccessibleObserver observer = mock(DmAccessibleObserver.class);
+         doNothing().when(observer).start();
+         doNothing().when(observer).stop();
+         return observer;
       }
 
       @Provides
