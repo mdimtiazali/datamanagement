@@ -34,8 +34,8 @@ public class CancelTask extends SessionOperationTask<Void> {
    }
 
    @Override
-   protected void execute(@Nonnull Session session) throws SessionException {
-      logger.debug("{}:execute()", this.getClass().getSimpleName());
+   protected void processSession(@Nonnull Session session) throws SessionException {
+      logger.debug("{}:processSession()", this.getClass().getSimpleName());
       try {
          List<Address> targetAddresses = session.getDestinations();
          List<Address> sourceAddresses = session.getSources();
