@@ -10,6 +10,7 @@
 package com.cnh.pf.android.data.management;
 
 import static android.os.Environment.MEDIA_BAD_REMOVAL;
+
 import static com.cnh.pf.android.data.management.utility.UtilityHelper.MAX_TREE_SELECTIONS_FOR_DEFAULT_TEXT_SIZE;
 
 import android.content.res.Resources;
@@ -41,8 +42,8 @@ import com.cnh.pf.android.data.management.session.ErrorCode;
 import com.cnh.pf.android.data.management.session.Session;
 import com.cnh.pf.android.data.management.session.SessionExtra;
 import com.cnh.pf.android.data.management.session.SessionUtil;
-
 import com.cnh.pf.android.data.management.utility.UtilityHelper;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -180,9 +181,8 @@ public class ImportFragment extends BaseDataFragment {
    public void onSessionCancelled(Session session) {
       super.onSessionCancelled(session);
 
-      ToastMessageCustom.makeToastMessageText(getActivity().getApplicationContext(), getString(R.string.import_cancel),
-              Gravity.TOP| Gravity.CENTER_HORIZONTAL, getResources().getInteger(R.integer.toast_message_xoffset),
-              getResources().getInteger(R.integer.toast_message_yoffset)).show();
+      ToastMessageCustom.makeToastMessageText(getActivity().getApplicationContext(), getString(R.string.import_cancel), Gravity.TOP | Gravity.CENTER_HORIZONTAL,
+            getResources().getInteger(R.integer.toast_message_xoffset), getResources().getInteger(R.integer.toast_message_yoffset)).show();
 
       if (SessionUtil.isDiscoveryTask(session)) {
          removeProgressPanel();
@@ -233,8 +233,8 @@ public class ImportFragment extends BaseDataFragment {
          logger.debug("Calculate Targets");
          if (session.getOperations() == null || session.getOperations().isEmpty()) {
             ToastMessageCustom.makeToastMessageText(getActivity().getApplicationContext(), getString(R.string.no_operations_check_connectivity_string),
-                    Gravity.TOP| Gravity.CENTER_HORIZONTAL, getResources().getInteger(R.integer.toast_message_xoffset),
-                    getResources().getInteger(R.integer.toast_message_yoffset)).show();
+                  Gravity.TOP | Gravity.CENTER_HORIZONTAL, getResources().getInteger(R.integer.toast_message_xoffset), getResources().getInteger(R.integer.toast_message_yoffset))
+                  .show();
             cancelProcess();
             return;
          }
@@ -268,7 +268,8 @@ public class ImportFragment extends BaseDataFragment {
                   calculateConflicts(operations);
                }
             });
-         } else {
+         }
+         else {
             logger.debug("Found no targets with no parents, skipping to Calculate Conflicts");
             showConflictDialog();
 
@@ -305,7 +306,8 @@ public class ImportFragment extends BaseDataFragment {
                   performOperations(extra, operations);
                }
             });
-         } else {
+         }
+         else {
             logger.debug("No conflicts found");
 
             processDialog.hide();
@@ -318,9 +320,8 @@ public class ImportFragment extends BaseDataFragment {
 
          clearTreeSelection();
          removeProgressPanel();
-         ToastMessageCustom.makeToastMessageText(getActivity().getApplicationContext(), getString(R.string.import_complete),
-                 Gravity.TOP| Gravity.CENTER_HORIZONTAL, getResources().getInteger(R.integer.toast_message_xoffset),
-                 getResources().getInteger(R.integer.toast_message_yoffset)).show();
+         ToastMessageCustom.makeToastMessageText(getActivity().getApplicationContext(), getString(R.string.import_complete), Gravity.TOP | Gravity.CENTER_HORIZONTAL,
+               getResources().getInteger(R.integer.toast_message_xoffset), getResources().getInteger(R.integer.toast_message_yoffset)).show();
          // Reset session data after completing PERFORM_OPERATIONS successfully.
          resetSession();
       }
@@ -340,7 +341,7 @@ public class ImportFragment extends BaseDataFragment {
          showStartMessage();
       }
       else {
-         if(SessionUtil.isDiscoveryTask(session)){
+         if (SessionUtil.isDiscoveryTask(session)) {
             hideTreeList();
             hideDisabledOverlay();
          }
@@ -357,9 +358,8 @@ public class ImportFragment extends BaseDataFragment {
     */
    private void updateImportButton() {
       Session s = getSession();
-      boolean isActiveOperation = (SessionUtil.isCalculateConflictsTask(s) ||
-              SessionUtil.isCalculateOperationsTask(s) ||
-              SessionUtil.isPerformOperationsTask(s) && s.getResultCode() == null);
+      boolean isActiveOperation = (SessionUtil.isCalculateConflictsTask(s) || SessionUtil.isCalculateOperationsTask(s)
+            || SessionUtil.isPerformOperationsTask(s) && s.getResultCode() == null);
       boolean connected = getSessionManager().isServiceConnected();
       boolean hasSelection = getTreeAdapter() != null && getTreeAdapter().hasSelection();
       boolean defaultButtonText = true;
@@ -370,8 +370,8 @@ public class ImportFragment extends BaseDataFragment {
             Resources resources = getResources();
             importSelectedBtn.setText(resources.getString(R.string.import_selected) + " (" + selectedItemCount + ")");
             importSelectedBtn.setTextSize(selectedItemCount > MAX_TREE_SELECTIONS_FOR_DEFAULT_TEXT_SIZE
-                    ? resources.getDimension(R.dimen.button_default_text_size) - resources.getDimension(R.dimen.decrease_text_size)
-                    : resources.getDimension(R.dimen.button_default_text_size));
+                  ? resources.getDimension(R.dimen.button_default_text_size) - resources.getDimension(R.dimen.decrease_text_size)
+                  : resources.getDimension(R.dimen.button_default_text_size));
          }
       }
       if (defaultButtonText == true) {
@@ -416,9 +416,7 @@ public class ImportFragment extends BaseDataFragment {
       logger.debug("onResumeSession()");
       final Session session = getSession();
 
-      if (SessionUtil.isDiscoveryTask(session)
-              && session.getObjectData() != null
-              && !session.getObjectData().isEmpty()) {
+      if (SessionUtil.isDiscoveryTask(session) && session.getObjectData() != null && !session.getObjectData().isEmpty()) {
          logger.trace("There is already active session. Continue on the previous active session.");
          initAndPouplateTree(session.getObjectData());
 
@@ -447,6 +445,8 @@ public class ImportFragment extends BaseDataFragment {
       processDialog.setOnDismissListener(new DialogViewInterface.OnDismissListener() {
          @Override
          public void onDismiss(DialogViewInterface dialog) {
+            ToastMessageCustom.makeToastMessageText(getActivity().getApplicationContext(), getString(R.string.import_cancel), Gravity.TOP | Gravity.CENTER_HORIZONTAL,
+                  getResources().getInteger(R.integer.toast_message_xoffset), getResources().getInteger(R.integer.toast_message_yoffset)).show();
             cancelProcess();
          }
       });
@@ -457,12 +457,12 @@ public class ImportFragment extends BaseDataFragment {
     * Cancel ongoing IMPORT process.
     */
    private void cancelProcess() {
-      processDialog.hide();
       logger.debug("Cancel current import process.");
+      processDialog.hide();
       getSession().setType(Session.Type.DISCOVERY);
-
       clearTreeSelection();
       updateImportButton();
+      updateSelectAllState();
    }
 
    /** Inflates left panel progress view */
@@ -495,8 +495,8 @@ public class ImportFragment extends BaseDataFragment {
    @Override
    public boolean supportedByFormat(ObjectGraph node) {
       // TEMPORARY: Do not import the four data types
-      if (node.getType().equals("IMPLEMENT") || node.getType().equals("VEHICLE_IMPLEMENT") ||
-              node.getType().equals("VEHICLE_IMPLEMENT_CONFIG") || node.getType().equals("IMPLEMENT_PRODUCT_CONFIG")) {
+      if (node.getType().equals("IMPLEMENT") || node.getType().equals("VEHICLE_IMPLEMENT") || node.getType().equals("VEHICLE_IMPLEMENT_CONFIG")
+            || node.getType().equals("IMPLEMENT_PRODUCT_CONFIG")) {
          return false;
       }
       //For import, all formats supported
@@ -513,12 +513,20 @@ public class ImportFragment extends BaseDataFragment {
          processDialog.init();
          processDialog.setTitle(getResources().getString(R.string.checking_targets));
          processDialog.setProgress(0);
-         processDialog.setOnDismissListener(new DialogViewInterface.OnDismissListener() {
+
+         processDialog.setOnButtonClickListener(new DialogViewInterface.OnButtonClickListener() {
             @Override
-            public void onDismiss(DialogViewInterface dialog) {
-               cancelProcess();
+            public void onButtonClick(DialogViewInterface dialog, int which) {
+               if (which == DialogViewInterface.BUTTON_THIRD) {
+                  //cancel button has been clicked
+                  processDialog.dismiss();
+                  ToastMessageCustom.makeToastMessageText(getActivity().getApplicationContext(), getString(R.string.import_cancel), Gravity.TOP | Gravity.CENTER_HORIZONTAL,
+                        getResources().getInteger(R.integer.toast_message_xoffset), getResources().getInteger(R.integer.toast_message_yoffset)).show();
+                  cancelProcess();
+               }
             }
          });
+
          processDialog.show();
 
          calculateOperations(selected);
@@ -531,13 +539,10 @@ public class ImportFragment extends BaseDataFragment {
       List<SessionExtra> list = new ArrayList<SessionExtra>();
 
       try {
-         String fileStorage = UtilityHelper.getSharedPreferenceString(getActivity().getApplicationContext(),
-                 UtilityHelper.STORAGE_LOCATION_TYPE);
-         String fileStorageLocation = UtilityHelper.getSharedPreferenceString(getActivity().getApplicationContext(),
-                 UtilityHelper.STORAGE_LOCATION);
+         String fileStorage = UtilityHelper.getSharedPreferenceString(getActivity().getApplicationContext(), UtilityHelper.STORAGE_LOCATION_TYPE);
+         String fileStorageLocation = UtilityHelper.getSharedPreferenceString(getActivity().getApplicationContext(), UtilityHelper.STORAGE_LOCATION);
 
-         if (fileStorage != null && UtilityHelper.STORAGE_LOCATION_INTERNAL.equals(fileStorage)
-                 && fileStorageLocation != null && !fileStorageLocation.isEmpty()) {
+         if (fileStorage != null && UtilityHelper.STORAGE_LOCATION_INTERNAL.equals(fileStorage) && fileStorageLocation != null && !fileStorageLocation.isEmpty()) {
             File storageFolder = new File(fileStorageLocation);
             if (storageFolder.exists() && storageFolder.canRead() && storageFolder.canWrite()) {
                SessionExtra newExtra = new SessionExtra(SessionExtra.USB, "USB", 0);
