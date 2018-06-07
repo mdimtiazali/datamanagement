@@ -229,7 +229,9 @@ public class ImportFragment extends BaseDataFragment {
          updateSelectAllState();
 
          if (session.getExtra() != null && session.getExtra().isUsbExtra()) {
-            setHeaderText(session.getExtra().getPath());
+            String filename = UtilityHelper.filenameOnly(session.getExtra().getPath());
+            if (filename == null) filename = "";
+            setHeaderText(filename);
          }
       }
       else if (SessionUtil.isCalculateOperationsTask(session)) {
@@ -432,7 +434,9 @@ public class ImportFragment extends BaseDataFragment {
             updateSelectAllState();
 
             if (session.getExtra() != null && session.getExtra().isUsbExtra()) {
-               setHeaderText(session.getExtra().getPath());
+               String filename = UtilityHelper.filenameOnly(session.getExtra().getPath());
+               if (filename == null) filename = "";
+               setHeaderText(filename);
             }
          }
          else {

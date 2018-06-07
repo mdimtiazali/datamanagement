@@ -10,6 +10,7 @@ import com.cnh.pf.android.data.management.session.SessionExtra;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.io.File;
 import java.util.EnumMap;
 import java.util.Map;
 
@@ -315,5 +316,19 @@ public class UtilityHelper {
         public String getName() {
             return name;
         }
+    }
+
+   /**
+    * Extract only file name & extension from full path string
+    *
+    * @param fullPath   full path string
+    * @return           string containing file name & extension
+    */
+    public static String filenameOnly(String fullPath) {
+       int lastPath = fullPath.lastIndexOf(File.separator);
+       if (lastPath < 0) {
+          return null;
+       }
+       return fullPath.substring(lastPath + 1);
     }
 }
