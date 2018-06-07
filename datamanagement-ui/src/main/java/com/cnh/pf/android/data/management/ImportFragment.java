@@ -38,6 +38,7 @@ import com.cnh.pf.android.data.management.adapter.DataManagementBaseAdapter;
 import com.cnh.pf.android.data.management.adapter.TargetProcessViewAdapter;
 import com.cnh.pf.android.data.management.dialog.ImportSourceDialog;
 import com.cnh.pf.android.data.management.dialog.ProcessDialog;
+import com.cnh.pf.android.data.management.helper.DataExchangeProcessOverlay;
 import com.cnh.pf.android.data.management.session.ErrorCode;
 import com.cnh.pf.android.data.management.session.Session;
 import com.cnh.pf.android.data.management.session.SessionExtra;
@@ -307,17 +308,20 @@ public class ImportFragment extends BaseDataFragment {
                   logger.debug("onCompletion {}", operations);
                   processDialog.hide();
                   showProgressPanel();
-
+                  processOverlay.setMode(DataExchangeProcessOverlay.MODE.IMPORT_PROCESS);
+                  updateImportButton();
                   performOperations(extra, operations);
                }
             });
          }
          else {
             logger.debug("No conflicts found");
-
             processDialog.hide();
             showProgressPanel();
+            processOverlay.setMode(DataExchangeProcessOverlay.MODE.IMPORT_PROCESS);
+            updateImportButton();
             performOperations(extra, session.getOperations());
+
          }
       }
       else if (SessionUtil.isPerformOperationsTask(session)) {
@@ -325,6 +329,7 @@ public class ImportFragment extends BaseDataFragment {
 
          clearTreeSelection();
          removeProgressPanel();
+         processOverlay.setMode(DataExchangeProcessOverlay.MODE.HIDDEN);
          ToastMessageCustom.makeToastMessageText(getActivity().getApplicationContext(), getString(R.string.import_complete), Gravity.TOP | Gravity.CENTER_HORIZONTAL,
                getResources().getInteger(R.integer.toast_message_xoffset), getResources().getInteger(R.integer.toast_message_yoffset)).show();
          // Reset session data after completing PERFORM_OPERATIONS successfully.
@@ -335,6 +340,7 @@ public class ImportFragment extends BaseDataFragment {
    @Override
    public void onMyselfSessionError(Session session, ErrorCode errorCode) {
       logger.debug("onMyselfSessionError(): {}, {}", session.getType(), errorCode);
+      processOverlay.setMode(DataExchangeProcessOverlay.MODE.HIDDEN);
       if (SessionUtil.isDiscoveryTask(session)) {
          removeProgressPanel();
          hideDisabledOverlay();
@@ -425,7 +431,8 @@ public class ImportFragment extends BaseDataFragment {
       if (!requestAndUpdateBlockedOverlay(getBlockingActions())) {
          final Session session = getSession();
 
-         if (SessionUtil.isDiscoveryTask(session) && session.getObjectData() != null && !session.getObjectData().isEmpty()) {
+         if ((SessionUtil.isInProgress(session) && SessionUtil.isPerformOperationsTask(session))
+               || (SessionUtil.isDiscoveryTask(session) && session.getObjectData() != null && !session.getObjectData().isEmpty())) {
             logger.trace("There is already active session. Continue on the previous active session.");
             initAndPouplateTree(session.getObjectData());
 
@@ -438,6 +445,8 @@ public class ImportFragment extends BaseDataFragment {
                if (filename == null) filename = "";
                setHeaderText(filename);
             }
+            showProgressPanel();
+            processOverlay.setMode(DataExchangeProcessOverlay.MODE.IMPORT_PROCESS);
          }
          else {
             hideTreeList();
@@ -471,6 +480,7 @@ public class ImportFragment extends BaseDataFragment {
    private void cancelProcess() {
       logger.debug("Cancel current import process.");
       processDialog.hide();
+      processOverlay.setMode(DataExchangeProcessOverlay.MODE.HIDDEN);
       getSession().setType(Session.Type.DISCOVERY);
       clearTreeSelection();
       updateImportButton();
@@ -540,7 +550,6 @@ public class ImportFragment extends BaseDataFragment {
          });
 
          processDialog.show();
-
          calculateOperations(selected);
       }
    }
