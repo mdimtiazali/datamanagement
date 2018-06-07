@@ -520,7 +520,7 @@ public class ManageFragment extends BaseDataFragment implements DmAccessibleObse
    private void setHeaderAndDeleteButton(boolean enable) {
       if (enable) {
          enableDeleteButton(true);
-         int count = treeAdapter.getSelectionMap().size();
+         int count = countSelectedItem();
          setHeaderText(getResources().getQuantityString(R.plurals.tab_mng_selected_items_header, count, count));
       }
       else {

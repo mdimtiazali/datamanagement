@@ -124,7 +124,7 @@ public class DataManagementUITest {
    @Test
    public void testDiscoveryComplete() {
       activateTab(MANAGE_SOURCE_TAB_POSITION);
-      final ManageFragment manageFragment = (ManageFragment) ((TabActivity) activity).getFragmentManager().findFragmentByTag("Management");
+      final ManageFragment manageFragment = (ManageFragment) ((TabActivity) activity).getFragmentManager().findFragmentByTag("Data Management");
 
       final Session session = new Session();
       session.setType(Session.Type.DISCOVERY);
