@@ -37,8 +37,8 @@ public class CalculateOperationsTask extends SessionOperationTask<Void> {
    }
 
    @Override
-   protected void execute(@Nonnull Session session) throws SessionException {
-      logger.debug("{}:execute()", this.getClass().getSimpleName());
+   protected void processSession(@Nonnull Session session) throws SessionException {
+      logger.debug("{}:processSession()", this.getClass().getSimpleName());
       try {
          Address[] addresses = session.getDestinations().toArray(new Address[0]);
          logger.debug("Calculate operations to address: {}", SessionUtil.addressToString(addresses));

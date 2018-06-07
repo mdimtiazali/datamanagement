@@ -35,8 +35,8 @@ public class DiscoveryTask extends SessionOperationTask<Void> {
    }
 
    @Override
-   protected void execute(@Nonnull Session session) throws SessionException {
-      logger.debug("{}:execute()", this.getClass().getSimpleName());
+   protected void processSession(@Nonnull Session session) throws SessionException {
+      logger.debug("{}:processSession()", this.getClass().getSimpleName());
       Address[] addrs = session.getSources().toArray(new Address[0]);
 
       try {

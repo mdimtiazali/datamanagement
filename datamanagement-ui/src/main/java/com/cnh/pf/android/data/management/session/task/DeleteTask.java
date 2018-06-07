@@ -26,7 +26,7 @@ import javax.annotation.Nonnull;
  *
  * @author: junsu.shin@cnhind.com
  */
-public class DeleteTask extends SessionOperationTask {
+public class DeleteTask extends SessionOperationTask<Void> {
    private static final Logger logger = LoggerFactory.getLogger(DeleteTask.class);
 
    public DeleteTask(@Nonnull Mediator mediator, @Nonnull SessionNotifier notifier) {
@@ -34,8 +34,8 @@ public class DeleteTask extends SessionOperationTask {
    }
 
    @Override
-   protected void execute(@Nonnull Session session) throws SessionException {
-      logger.debug("{}:execute()", this.getClass().getSimpleName());
+   protected void processSession(@Nonnull Session session) throws SessionException {
+      logger.debug("{}:processSession()", this.getClass().getSimpleName());
       try {
          session.setResults(getMediator().deleteOperations(session.getOperations(), null));
          boolean hasCancelled = Process.Result.CANCEL.equals(session.getResultCode());

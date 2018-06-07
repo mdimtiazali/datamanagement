@@ -51,7 +51,7 @@ public abstract class SessionOperationTask<Progress> extends AsyncTask<Session, 
     * @param session
     * @throws SessionException
     */
-   protected abstract void execute(@Nonnull Session session) throws SessionException;
+   protected abstract void processSession(@Nonnull Session session) throws SessionException;
 
    /**
     * A function to expose the mediator to child task class.
@@ -79,7 +79,7 @@ public abstract class SessionOperationTask<Progress> extends AsyncTask<Session, 
       try {
          session.setState(Session.State.IN_PROGRESS);
          session.setResultCode(null);
-         execute(session);
+         processSession(session);
       }
       catch (SessionException e) {
          sessionErrCode = e.getErrorCode();
