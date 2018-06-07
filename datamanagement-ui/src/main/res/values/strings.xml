@@ -73,7 +73,7 @@
     <string name="importing_string">Importing</string>
     <string name="exporting_data">Exporting Data</string>
     <string name="importing_data">Importing Data</string>
-    <string name="select_source_first">To get started \nfirst select your \nImport Source</string>
+    <string name="select_source_first">Select Import Source \nto get started</string>
     <string name="no_import_source">No import source device is detected. \nPlease check the device connection.</string>
     <string name="deselect_all">Deselect All</string>
     <string formatted="false" name="duplicate_file">A %s named \"%s\" already exists</string>

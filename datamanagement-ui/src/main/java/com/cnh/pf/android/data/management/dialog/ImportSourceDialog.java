@@ -88,7 +88,7 @@ public class ImportSourceDialog extends DialogView {
 
    private void init(List<SessionExtra> extrasIn) {
       setTitle(getResources().getString(R.string.select_source));
-      if (extrasIn == null) {
+      if (extrasIn != null && extrasIn.isEmpty()) {
          View view = layoutInflater.inflate(R.layout.no_device_layout, null);
          setBodyView(view);
          setFirstButtonText(getResources().getString(R.string.ok));
