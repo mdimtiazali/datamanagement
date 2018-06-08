@@ -71,7 +71,7 @@ public class FragmentViewTest {
    @Test
    public void testManageView() {
       activateTab(MANAGE_SOURCE_TAB_POSITION);
-      ManageFragment view = (ManageFragment) ((TabActivity) activity).getFragmentManager().findFragmentByTag("Management");
+      ManageFragment view = (ManageFragment) ((TabActivity) activity).getFragmentManager().findFragmentByTag("Data Management");
       assertTrue("SessionView is not null", sessionManager.getView() != null);
       assertTrue("SessionView is MANAGE view", sessionManager.getView() == view);
    }
