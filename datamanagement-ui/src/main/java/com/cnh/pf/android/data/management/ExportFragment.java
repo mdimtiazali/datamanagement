@@ -773,6 +773,7 @@ public class ExportFragment extends BaseDataFragment {
       processOverlay.setMode(DataExchangeProcessOverlay.MODE.HIDDEN);
       setExportPicklistsReadOnly(false);
       showDragAndDropZone();
+      updateSelectAllState();
    }
 
    @Override
@@ -814,6 +815,7 @@ public class ExportFragment extends BaseDataFragment {
          }
       }
       updateExportButton();
+      updateSelectAllState();
    }
 
    @Override
@@ -827,6 +829,7 @@ public class ExportFragment extends BaseDataFragment {
          updateExportButton();
          processOverlay.setMode(DataExchangeProcessOverlay.MODE.HIDDEN);
          setExportPicklistsReadOnly(false);
+         updateSelectAllState();
       }
    }
 
@@ -951,6 +954,7 @@ public class ExportFragment extends BaseDataFragment {
 
          performOperations(extra, operations);
          updateExportButton();
+         updateSelectAllState();
       }
       else {
          ToastMessageCustom.makeToastMessageText(getActivity().getApplicationContext(), getString(R.string.no_data_of_format_string), Gravity.TOP | Gravity.CENTER_HORIZONTAL,

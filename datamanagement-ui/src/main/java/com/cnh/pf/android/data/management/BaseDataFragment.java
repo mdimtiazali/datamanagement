@@ -33,6 +33,7 @@ import com.cnh.pf.android.data.management.session.ErrorCode;
 import com.cnh.pf.android.data.management.session.Session;
 import com.cnh.pf.android.data.management.session.SessionContract;
 import com.cnh.pf.android.data.management.session.SessionExtra;
+import com.cnh.pf.android.data.management.session.SessionUtil;
 
 import org.jgroups.Address;
 import org.slf4j.Logger;
@@ -723,7 +724,7 @@ public abstract class BaseDataFragment extends RoboFragment implements SessionCo
     */
    protected void updateSelectAllState() {
       final Session session = getSession();
-      boolean enable = session != null && session.getObjectData() != null && !session.getObjectData().isEmpty();
+      boolean enable = SessionUtil.isComplete(session) && session.getObjectData() != null;
 
       logger.debug("Enable Select All button: {}", enable);
       enableSelectAllButton(enable);
