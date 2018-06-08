@@ -9,7 +9,7 @@
   -->
 
 <resources>
-    <color name="tree_line">#ffd9d9d9</color>
+    <color name="tree_line">#ffb9b9b9</color>
     <color name="tree_dotted_line">#ff6bc4cb</color>
 
     <color name="bg_selected">#ff25a9ce</color>
