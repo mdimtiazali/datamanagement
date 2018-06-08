@@ -379,6 +379,7 @@ public class ImportFragment extends BaseDataFragment {
          logger.trace("Import process has been completed. Reset session.");
 
          clearTreeSelection();
+         showStartMessage();
          removeProgressPanel();
          processOverlay.setMode(DataExchangeProcessOverlay.MODE.HIDDEN);
          ToastMessageCustom.makeToastMessageText(getActivity().getApplicationContext(), getString(R.string.import_complete), Gravity.TOP | Gravity.CENTER_HORIZONTAL,
@@ -485,20 +486,37 @@ public class ImportFragment extends BaseDataFragment {
       if (!requestAndUpdateBlockedOverlay(getBlockingActions())) {
          final Session session = getSession();
 
-         if ((SessionUtil.isInProgress(session) && SessionUtil.isPerformOperationsTask(session))
-               || (SessionUtil.isDiscoveryTask(session) && session.getObjectData() != null && !session.getObjectData().isEmpty())) {
-            logger.trace("There is already active session. Continue on the previous active session.");
-            initAndPouplateTree(session.getObjectData());
+         if (SessionUtil.isPerformOperationsTask(session) && SessionUtil.isComplete(session)) {
+            // This could happen when the import completes while the user focus is on other tab.
+            // In that case, reset session & tree selection before updating UI.
+            resetSession();
+            clearTreeSelection();
+         }
 
-            showTreeList();
-            hideDisabledOverlay();
-            updateSelectAllState();
+         if (SessionUtil.isDiscoveryTask(session) && (SessionUtil.isInProgress(session) || SessionUtil.isComplete(session))) {
+            logger.info("There is already active session. Continue on the previous active session.");
+            if (session.getObjectData() != null && !session.getObjectData().isEmpty()) {
+               initAndPouplateTree(session.getObjectData());
 
-            if (session.getExtra() != null && session.getExtra().isUsbExtra()) {
-               String filename = UtilityHelper.filenameOnly(session.getExtra().getPath());
-               if (filename == null) filename = "";
-               setHeaderText(filename);
+               showTreeList();
+               hideDisabledOverlay();
+               updateSelectAllState();
+
+               if (session.getExtra() != null && session.getExtra().isUsbExtra()) {
+                  String filename = UtilityHelper.filenameOnly(session.getExtra().getPath());
+                  if (filename == null) filename = "";
+                  setHeaderText(filename);
+               }
             }
+            else {
+               logger.info("Still loading data from media.");
+               hideTreeList();
+               hideStartMessage();
+               showLoadingOverlay();
+            }
+         }
+         else if (SessionUtil.isPerformOperationsTask(session) && SessionUtil.isInProgress(session)) {
+            logger.info("There is import session (PERFORM_OPERATIONS) going on. Display the import process overlay.");
             showProgressPanel();
             processOverlay.setMode(DataExchangeProcessOverlay.MODE.IMPORT_PROCESS);
          }

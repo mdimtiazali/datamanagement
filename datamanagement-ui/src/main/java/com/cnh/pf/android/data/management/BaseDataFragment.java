@@ -142,6 +142,7 @@ public abstract class BaseDataFragment extends RoboFragment implements SessionCo
       session.setOperations(new ArrayList<Operation>());
       session.setSources(new ArrayList<Address>());
       session.setDestinations(new ArrayList<Address>());
+      session.setState(Session.State.WAIT);
    }
 
    /**
