@@ -86,6 +86,7 @@
     <string name="file_name">File Name</string>
     <string name="empty_discovery">No data found</string>
     <string name="export_cancel_confirmation">This will cancel current export.\nDo you want to proceed?</string>
+    <string name="import_cancel_confirmation">This will cancel current import.\nDo you want to proceed?</string>
     <string name="format_description_title">Export Formats</string>
     <string name="format_description">PF Database:
         \n- All Data Types

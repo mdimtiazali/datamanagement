@@ -13,6 +13,7 @@ import static android.os.Environment.MEDIA_BAD_REMOVAL;
 
 import static com.cnh.pf.android.data.management.utility.UtilityHelper.MAX_TREE_SELECTIONS_FOR_DEFAULT_TEXT_SIZE;
 
+import android.app.Activity;
 import android.content.res.Resources;
 import android.graphics.drawable.Drawable;
 import android.os.Bundle;
@@ -27,7 +28,9 @@ import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.TextView;
 
+import com.android.annotations.Nullable;
 import com.cnh.android.dialog.DialogViewInterface;
+import com.cnh.android.dialog.TextDialogView;
 import com.cnh.android.pf.widget.controls.ToastMessageCustom;
 import com.cnh.android.widget.activity.TabActivity;
 import com.cnh.android.widget.control.ProgressBarView;
@@ -100,6 +103,9 @@ public class ImportFragment extends BaseDataFragment {
    TextView operationName;
 
    private final List<Session.Action> blockingActions = new ArrayList<Session.Action>(Arrays.asList(Session.Action.EXPORT));
+   private static final int CANCEL_DIALOG_WIDTH = 550;
+
+   private TextDialogView lastCancelDialogView; //used to keep track of the cancel dialog (should be closed if open if process is finished)
 
    private String importing_data;
    private String loading_string;
@@ -154,7 +160,16 @@ public class ImportFragment extends BaseDataFragment {
       stopBtn.setOnClickListener(new View.OnClickListener() {
          @Override
          public void onClick(View v) {
-            cancel();
+            //Show confirmation cancel-dialog
+            DialogViewInterface.OnButtonClickListener buttonListener = new DialogViewInterface.OnButtonClickListener() {
+               @Override
+               public void onButtonClick(DialogViewInterface dialog, int buttonId) {
+                  if (buttonId == TextDialogView.BUTTON_FIRST) {
+                     cancel();
+                  }
+               }
+            };
+            showCancelDialog(buttonListener);
          }
       });
       importDropZone.setOnDragListener(new View.OnDragListener() {
@@ -192,6 +207,10 @@ public class ImportFragment extends BaseDataFragment {
 
       ToastMessageCustom.makeToastMessageText(getActivity().getApplicationContext(), getString(R.string.import_cancel), Gravity.TOP | Gravity.CENTER_HORIZONTAL,
             getResources().getInteger(R.integer.toast_message_xoffset), getResources().getInteger(R.integer.toast_message_yoffset)).show();
+
+      //close cancel dialog if still open
+      closeCancelDialog();
+      removeProgressPanel();
 
       if (SessionUtil.isDiscoveryTask(session)) {
          removeProgressPanel();
@@ -302,6 +321,38 @@ public class ImportFragment extends BaseDataFragment {
             processDialog.setSecondButtonText(replaceStr);
             processDialog.clearLoading();
 
+            //show add custom cancel handling
+            final DataManagementBaseAdapter.OnActionSelectedListener listener = adapter.getActionListener();
+            processDialog.setOnButtonClickListener(new DialogViewInterface.OnButtonClickListener() {
+               @Override
+               public void onButtonClick(DialogViewInterface dialog, int which) {
+                  if (which == DialogViewInterface.BUTTON_FIRST) {
+                     listener.onButtonSelected(processDialog, DataManagementBaseAdapter.Action.ACTION1);
+                  }
+                  else if (which == DialogViewInterface.BUTTON_SECOND) {
+                     listener.onButtonSelected(processDialog, DataManagementBaseAdapter.Action.ACTION2);
+                  }
+                  else if (which == DialogViewInterface.BUTTON_THIRD) {
+                     listener.onButtonSelected(processDialog, null);
+                     //Show confirmation cancel-dialog
+                     DialogViewInterface.OnButtonClickListener onButtonClickListener = new DialogViewInterface.OnButtonClickListener() {
+                        @Override
+                        public void onButtonClick(DialogViewInterface dialog, int buttonId) {
+                           if (buttonId == TextDialogView.BUTTON_FIRST) {
+                              processDialog.dismiss();
+                              ToastMessageCustom
+                                    .makeToastMessageText(getActivity().getApplicationContext(), getString(R.string.import_cancel), Gravity.TOP | Gravity.CENTER_HORIZONTAL,
+                                          getResources().getInteger(R.integer.toast_message_xoffset), getResources().getInteger(R.integer.toast_message_yoffset))
+                                    .show();
+                              cancelProcess();
+                           }
+                        }
+                     };
+                     showCancelDialog(onButtonClickListener);
+                  }
+               }
+            });
+
             adapter.setOnTargetsSelectedListener(new DataManagementBaseAdapter.OnTargetsSelectedListener() {
                @Override
                public void onCompletion(List<Operation> operations) {
@@ -334,6 +385,9 @@ public class ImportFragment extends BaseDataFragment {
                getResources().getInteger(R.integer.toast_message_xoffset), getResources().getInteger(R.integer.toast_message_yoffset)).show();
          // Reset session data after completing PERFORM_OPERATIONS successfully.
          resetSession();
+
+         //close cancel dialog if still open
+         closeCancelDialog();
       }
    }
 
@@ -463,14 +517,24 @@ public class ImportFragment extends BaseDataFragment {
       processDialog.init();
       processDialog.setTitle(getResources().getString(R.string.checking_conflicts));
       processDialog.setProgress(0);
-      processDialog.setOnDismissListener(new DialogViewInterface.OnDismissListener() {
+      processDialog.setOnCancelListener(new DialogViewInterface.OnCancelListener() {
          @Override
-         public void onDismiss(DialogViewInterface dialog) {
-            ToastMessageCustom.makeToastMessageText(getActivity().getApplicationContext(), getString(R.string.import_cancel), Gravity.TOP | Gravity.CENTER_HORIZONTAL,
-                  getResources().getInteger(R.integer.toast_message_xoffset), getResources().getInteger(R.integer.toast_message_yoffset)).show();
-            cancelProcess();
+         public void onCancel(DialogViewInterface dialogViewInterface) {
+            //Show confirmation cancel-dialog
+            DialogViewInterface.OnButtonClickListener onButtonClickListener = new DialogViewInterface.OnButtonClickListener() {
+               @Override
+               public void onButtonClick(DialogViewInterface dialog, int buttonId) {
+                  if (buttonId == TextDialogView.BUTTON_FIRST) {
+                     ToastMessageCustom.makeToastMessageText(getActivity().getApplicationContext(), getString(R.string.import_cancel), Gravity.TOP | Gravity.CENTER_HORIZONTAL,
+                           getResources().getInteger(R.integer.toast_message_xoffset), getResources().getInteger(R.integer.toast_message_yoffset)).show();
+                     cancelProcess();
+                  }
+               }
+            };
+            showCancelDialog(onButtonClickListener);
          }
       });
+
       processDialog.show();
    }
 
@@ -485,6 +549,9 @@ public class ImportFragment extends BaseDataFragment {
       clearTreeSelection();
       updateImportButton();
       updateSelectAllState();
+
+      //close cancel dialog if still open
+      closeCancelDialog();
    }
 
    /** Inflates left panel progress view */
@@ -526,6 +593,49 @@ public class ImportFragment extends BaseDataFragment {
    }
 
    /**
+    * Shows Cancel Dialog with a custom listener if cancel is pressed.
+    *
+    * @param onClickListener Listener to be hooked to he cancel button
+    */
+   private void showCancelDialog(@Nullable final DialogViewInterface.OnButtonClickListener onClickListener) {
+      final Resources resources = getResources();
+      final TextDialogView cancelDialogue = new TextDialogView(ImportFragment.this.getActivity());
+      cancelDialogue.setFirstButtonText(resources.getString(R.string.yes));
+      cancelDialogue.setSecondButtonText(resources.getString(R.string.no));
+      cancelDialogue.showThirdButton(false);
+      cancelDialogue.setTitle(resources.getString(R.string.cancel));
+      cancelDialogue.setBodyText(resources.getString(R.string.import_cancel_confirmation));
+      cancelDialogue.setIcon(resources.getDrawable(R.drawable.ic_alert_red));
+      cancelDialogue.setOnButtonClickListener(onClickListener);
+      cancelDialogue.setDialogWidth(CANCEL_DIALOG_WIDTH);
+      ((TabActivity) getActivity()).showModalPopup(cancelDialogue);
+      cancelDialogue.setOnDismissListener(new DialogViewInterface.OnDismissListener() {
+         @Override
+         public void onDismiss(DialogViewInterface dialogViewInterface) {
+            //remove reference just closed dialogue
+            lastCancelDialogView = null;
+         }
+      });
+      lastCancelDialogView = cancelDialogue;
+   }
+
+   /**
+    * Dismisses Cancel Dialog if shown.
+    */
+   private void closeCancelDialog() {
+      if (lastCancelDialogView != null) {
+         final Activity activity = getActivity();
+         if (activity instanceof TabActivity) {
+            final TabActivity tabActivity = (TabActivity) getActivity();
+            tabActivity.dismissPopup(lastCancelDialogView);
+         }
+         else {
+            logger.debug("Could not dismiss Cancel Dialog!");
+         }
+      }
+   }
+
+   /**
     * Run IMPORT.
     */
    private void runImport() {
@@ -541,10 +651,22 @@ public class ImportFragment extends BaseDataFragment {
             public void onButtonClick(DialogViewInterface dialog, int which) {
                if (which == DialogViewInterface.BUTTON_THIRD) {
                   //cancel button has been clicked
-                  processDialog.dismiss();
-                  ToastMessageCustom.makeToastMessageText(getActivity().getApplicationContext(), getString(R.string.import_cancel), Gravity.TOP | Gravity.CENTER_HORIZONTAL,
-                        getResources().getInteger(R.integer.toast_message_xoffset), getResources().getInteger(R.integer.toast_message_yoffset)).show();
-                  cancelProcess();
+                  //Show confirmation cancel-dialog
+                  DialogViewInterface.OnButtonClickListener onButtonClickListener = new DialogViewInterface.OnButtonClickListener() {
+                     @Override
+                     public void onButtonClick(DialogViewInterface dialog, int buttonId) {
+                        if (buttonId == TextDialogView.BUTTON_FIRST) {
+                           processDialog.dismiss();
+                           ToastMessageCustom
+                                 .makeToastMessageText(getActivity().getApplicationContext(), getString(R.string.import_cancel), Gravity.TOP | Gravity.CENTER_HORIZONTAL,
+                                       getResources().getInteger(R.integer.toast_message_xoffset), getResources().getInteger(R.integer.toast_message_yoffset))
+                                 .show();
+                           cancelProcess();
+                        }
+                     }
+                  };
+                  showCancelDialog(onButtonClickListener);
+
                }
             }
          });
