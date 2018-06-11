@@ -97,8 +97,10 @@ public class ExportFragment extends BaseDataFragment {
    ImageView exportDropZoneImage;
    @InjectView(R.id.export_drop_zone_text)
    TextView exportDropZoneText;
-   @InjectView(R.id.export_finished_state_panel)
+   @InjectView(R.id.dataexchange_success_zone)
    LinearLayout exportFinishedStatePanel;
+   @InjectView(R.id.dataexchange_success_text)
+   TextView exportFinishedText;
    @InjectView(R.id.export_selected_btn)
    Button exportSelectedBtn;
    @InjectView(R.id.stop_button)
@@ -130,6 +132,14 @@ public class ExportFragment extends BaseDataFragment {
    private Map<Datasource.LocationType, String> displayStringMap;
    /** Used to indicate if the path is internal or external */
    private boolean useInternalFileSystem = false;
+
+   private ProgressValue progressValue = ProgressValue.initProgress();
+
+   private String loading_string;
+   private String x_of_y_format;
+
+   private TextDialogView lastDialogView;
+   private static final int CANCEL_DIALOG_WIDTH = 550;
 
    /**
     * Sets the VIP Data Handler
@@ -191,15 +201,6 @@ public class ExportFragment extends BaseDataFragment {
          return new ProgressValue(0, 0);
       }
    }
-
-   private ProgressValue progressValue = ProgressValue.initProgress();
-
-   private String loading_string;
-   private String x_of_y_format;
-
-   private TextDialogView lastDialogView;
-   private static final int CANCEL_DIALOG_WIDTH = 550;
-   private static final int SHOWING_FEEDBACK_AFTER_PROGRESS_MS = 2000;
 
    @Override
    protected List<Session.Action> getBlockingActions() {
@@ -324,6 +325,7 @@ public class ExportFragment extends BaseDataFragment {
       });
 
       exportFinishedStatePanel.setVisibility(View.GONE);
+      exportFinishedText.setText(R.string.export_complete);
       startText.setVisibility(View.GONE);
       operationName.setText(R.string.exporting_string);
    }

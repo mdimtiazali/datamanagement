@@ -77,6 +77,7 @@ public abstract class BaseDataFragment extends RoboFragment implements SessionCo
    protected ObjectTreeViewAdapter treeAdapter;
 
    protected static boolean isConnectedToPcm = false;
+   protected static final int SHOWING_FEEDBACK_AFTER_PROGRESS_MS = 2000;
 
    private SessionContract.SessionManager sessionManager;
 

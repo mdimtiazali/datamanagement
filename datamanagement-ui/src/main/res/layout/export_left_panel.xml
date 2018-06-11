@@ -9,10 +9,10 @@
   -->
 
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
-        xmlns:cnh="http://schemas.android.com/apk/res/com.cnh.pf.android.data.management"
-        android:orientation="vertical"
-        android:layout_width="match_parent"
-        android:layout_height="match_parent">
+              xmlns:cnh="http://schemas.android.com/apk/res/com.cnh.pf.android.data.management"
+              android:orientation="vertical"
+              android:layout_width="match_parent"
+              android:layout_height="match_parent">
 
     <LinearLayout
             android:orientation="vertical"
@@ -97,7 +97,7 @@
                     cnh:allowItemDeletion="false"
                     cnh:allowItemCreation="false"
                     cnh:allowItemEditing="false"
-                    cnh:allowItemManagement="false" />
+                    cnh:allowItemManagement="false"/>
 
             <LinearLayout
                     android:layout_width="match_parent"
@@ -135,29 +135,7 @@
                 </LinearLayout>
 
 
-                <LinearLayout
-                        android:id="@+id/export_finished_state_panel"
-                        android:layout_width="match_parent"
-                        android:layout_height="match_parent"
-                        android:orientation="vertical"
-                        android:visibility="visible">
-
-                    <ImageView
-                            android:layout_width="wrap_content"
-                            android:layout_height="wrap_content"
-                            android:layout_marginTop="@dimen/dataexchange_perform_left_box_top_spacing_to_text"
-                            android:layout_marginBottom="@dimen/dataexchange_perform_left_box_spacing_from_top_image_to_text"
-                            android:background="@drawable/checkmark"
-                            android:layout_gravity="center"/>
-
-                    <TextView
-                            android:layout_width="wrap_content"
-                            android:layout_height="wrap_content"
-                            android:layout_gravity="center_horizontal"
-                            android:gravity="center"
-                            style="@style/TextAppearance.Import.Entity"
-                            android:text="@string/export_complete"/>
-                </LinearLayout>
+                <include layout="@layout/data_exchange_success_zone"/>
             </LinearLayout>
 
             <Button
@@ -168,7 +146,7 @@
                     android:layout_marginTop="12dp"
                     android:enabled="false"
                     android:text="@string/export_selected"
-                    android:textSize="@dimen/button_default_text_size" />
+                    android:textSize="@dimen/button_default_text_size"/>
         </LinearLayout>
     </LinearLayout>
 

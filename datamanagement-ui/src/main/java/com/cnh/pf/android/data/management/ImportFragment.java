@@ -18,6 +18,7 @@ import android.content.res.Resources;
 import android.graphics.drawable.Drawable;
 import android.os.Bundle;
 import android.os.Environment;
+import android.os.Handler;
 import android.view.DragEvent;
 import android.view.Gravity;
 import android.view.LayoutInflater;
@@ -86,6 +87,8 @@ public class ImportFragment extends BaseDataFragment {
    LinearLayout leftStatus;
    @InjectView(R.id.start_text)
    TextView startText;
+   @InjectView(R.id.dataexchange_success_zone)
+   LinearLayout importFinishedStatePanel;
 
    ProcessDialog processDialog;
 
@@ -199,6 +202,8 @@ public class ImportFragment extends BaseDataFragment {
       startText.setVisibility(View.GONE);
       operationName.setText(R.string.importing_string);
       updateImportButton();
+
+      importFinishedStatePanel.setVisibility(View.GONE);
    }
 
    @Override
@@ -210,10 +215,10 @@ public class ImportFragment extends BaseDataFragment {
 
       //close cancel dialog if still open
       closeCancelDialog();
-      removeProgressPanel();
+      showDragAndDropZone();
 
       if (SessionUtil.isDiscoveryTask(session)) {
-         removeProgressPanel();
+         showDragAndDropZone();
          showStartMessage();
          updateImportButton();
       }
@@ -380,7 +385,7 @@ public class ImportFragment extends BaseDataFragment {
 
          clearTreeSelection();
          showStartMessage();
-         removeProgressPanel();
+         showFinishedStatePanel();
          processOverlay.setMode(DataExchangeProcessOverlay.MODE.HIDDEN);
          ToastMessageCustom.makeToastMessageText(getActivity().getApplicationContext(), getString(R.string.import_complete), Gravity.TOP | Gravity.CENTER_HORIZONTAL,
                getResources().getInteger(R.integer.toast_message_xoffset), getResources().getInteger(R.integer.toast_message_yoffset)).show();
@@ -397,17 +402,19 @@ public class ImportFragment extends BaseDataFragment {
       logger.debug("onMyselfSessionError(): {}, {}", session.getType(), errorCode);
       processOverlay.setMode(DataExchangeProcessOverlay.MODE.HIDDEN);
       if (SessionUtil.isDiscoveryTask(session)) {
-         removeProgressPanel();
+         showDragAndDropZone();
          hideDisabledOverlay();
          showStartMessage();
       }
       else {
          if (SessionUtil.isDiscoveryTask(session)) {
+            //This block will never be executed since this is the else branch of the same condition
+            //TODO: verify, that SessionUtil.isDiscoveryTask(session) is the proper condition in this or the previous if conditioning
             hideTreeList();
             hideDisabledOverlay();
          }
          else {
-            removeProgressPanel();
+            showDragAndDropZone();
             hideDisabledOverlay();
             showTreeList();
          }
@@ -577,13 +584,33 @@ public class ImportFragment extends BaseDataFragment {
       importDropZone.setVisibility(View.GONE);
       progressBar.setSecondText(true, loading_string, null, true);
       progressBar.setProgress(0);
+      importFinishedStatePanel.setVisibility(View.GONE);
       leftStatus.setVisibility(View.VISIBLE);
    }
 
    /** Removes left panel progress view and replaces with operation view */
-   private void removeProgressPanel() {
+   private void showDragAndDropZone() {
       leftStatus.setVisibility(View.GONE);
+      importFinishedStatePanel.setVisibility(View.GONE);
       importDropZone.setVisibility(View.VISIBLE);
+   }
+
+   /**
+    * This method is called to represent the finished import state in the UI.
+    */
+   private void showFinishedStatePanel() {
+      logger.debug("showFinishedStatePanel");
+      leftStatus.setVisibility(View.GONE);
+      importDropZone.setVisibility(View.GONE);
+      importFinishedStatePanel.setVisibility(View.VISIBLE);
+      //post cleanup to show drag and drop zone after time X
+      final Handler handler = new Handler();
+      handler.postDelayed(new Runnable() {
+         @Override
+         public void run() {
+            showDragAndDropZone();
+         }
+      }, SHOWING_FEEDBACK_AFTER_PROGRESS_MS);
    }
 
    @Override
@@ -756,7 +783,7 @@ public class ImportFragment extends BaseDataFragment {
          logger.debug("onMediumUpdate() - Reset the import screen and session state.");
 
          processDialog.hide();
-         removeProgressPanel();
+         showDragAndDropZone();
          setHeaderText("");
          showStartMessage();
          clearTreeSelection();
