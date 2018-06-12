@@ -78,6 +78,8 @@ public class TreeEntityHelper {
       TYPE_ICONS.put(DataTypes.IMPLEMENT_PRODUCT_CONFIG, R.drawable.ic_datatree_screenshots);
       TYPE_ICONS.put(VARIETIES, R.drawable.ic_data_management_varieties);
       TYPE_ICONS.put(DataTypes.VARIETY, R.drawable.ic_data_management_varieties);
+      TYPE_ICONS.put(DataTypes.USB, R.drawable.ic_data_tree_usb_active);
+      TYPE_ICONS.put(DataTypes.CLOUD,R.drawable.ic_data_tree_cloud_active);
    }
    /* Map lists all entities which are groupable in ui, entities with types specified in
    this list will be grouped in ui.

@@ -18,6 +18,9 @@
     <integer name="toast_message_xoffset">0</integer>
     <integer name="max_tree_selections_before_text_adjustment">999</integer>
 
+    <!--Import Source Dialog-->
+    <integer name="import_source_dialog_width">585</integer>
+
 
     <!--Configuration for dimensions of the shadow representative of multiple items for drag and drop in DM-->
     <integer name="tree_drag_multiple_selection_shadow_box_corner_radius">9</integer>

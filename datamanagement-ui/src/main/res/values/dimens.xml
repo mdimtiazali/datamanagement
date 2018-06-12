@@ -101,4 +101,12 @@
    <dimen name="dataexchange_blocked_overlay_spacing_between_lines">10dp</dimen>
    <dimen name="dataexchange_blocked_overlay_image_padding">40dp</dimen>
 
+    <!--Import Source Dialog-->
+    <dimen name="import_source_layout_text_view_margin_left">45dp</dimen>
+    <dimen name="import_source_layout_text_view_text_size">20sp</dimen>
+    <dimen name="import_source_layout_tree_view_divider_height">8dp</dimen>
+    <dimen name="import_source_layout_tree_view_cnh_indent_width">18dp</dimen>
+    <dimen name="import_source_layout_tree_view_cnh_line_width">2dp</dimen>
+    <dimen name="import_source_no_device_layout_image_view_margin_top">20dp</dimen>
+    <dimen name="import_source_no_device_layout_text_view_text_size">18sp</dimen>
 </resources>
