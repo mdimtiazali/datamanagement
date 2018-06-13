@@ -41,6 +41,7 @@ import org.slf4j.LoggerFactory;
 
 import java.util.ArrayList;
 import java.util.Comparator;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
@@ -685,13 +686,17 @@ public abstract class BaseDataFragment extends RoboFragment implements SessionCo
       int sum = 0;
 
       if (getTreeAdapter() != null) {
+         Set<ObjectGraph> parentSet = new HashSet<ObjectGraph>();
          Set<ObjectGraph> selectedObjs = getTreeAdapter().getSelected();
          for (ObjectGraph obj : selectedObjs) {
             sum += obj.size();
 
             ObjectGraph parent = obj.getParent();
             while (parent != null) {
-               sum++;
+               if (!parentSet.contains(parent)) {
+                  sum++;
+                  parentSet.add(parent);
+               }
                parent = parent.getParent();
             }
          }
