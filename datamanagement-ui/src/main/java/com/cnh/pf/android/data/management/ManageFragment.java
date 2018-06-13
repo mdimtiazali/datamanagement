@@ -210,7 +210,7 @@ public class ManageFragment extends BaseDataFragment implements DmAccessibleObse
       delBtn.setOnClickListener(new View.OnClickListener() {
          @Override
          public void onClick(View v) {
-            final DeleteDialog delDialog = new DeleteDialog(getActivity(), treeAdapter.getSelectionMap().size());
+            final DeleteDialog delDialog = new DeleteDialog(getActivity(), countSelectedItem());
             delDialog.setOnButtonClickListener(new DialogViewInterface.OnButtonClickListener() {
                @Override
                public void onButtonClick(DialogViewInterface dialogViewInterface, int i) {
@@ -521,6 +521,7 @@ public class ManageFragment extends BaseDataFragment implements DmAccessibleObse
       if (enable) {
          enableDeleteButton(true);
          int count = countSelectedItem();
+         logger.info("The # of selected items: {}", count);
          setHeaderText(getResources().getQuantityString(R.plurals.tab_mng_selected_items_header, count, count));
       }
       else {
