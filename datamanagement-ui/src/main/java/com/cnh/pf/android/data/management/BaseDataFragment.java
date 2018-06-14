@@ -10,6 +10,7 @@
 package com.cnh.pf.android.data.management;
 
 import android.os.Bundle;
+import android.view.Gravity;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -20,6 +21,7 @@ import android.widget.LinearLayout;
 import android.widget.TextView;
 
 import com.android.annotations.Nullable;
+import com.cnh.android.pf.widget.controls.ToastMessageCustom;
 import com.cnh.jgroups.DataTypes;
 import com.cnh.jgroups.ObjectGraph;
 import com.cnh.jgroups.Operation;
@@ -34,6 +36,7 @@ import com.cnh.pf.android.data.management.session.Session;
 import com.cnh.pf.android.data.management.session.SessionContract;
 import com.cnh.pf.android.data.management.session.SessionExtra;
 import com.cnh.pf.android.data.management.session.SessionUtil;
+import com.cnh.pf.datamng.Process;
 
 import org.jgroups.Address;
 import org.slf4j.Logger;
@@ -215,6 +218,50 @@ public abstract class BaseDataFragment extends RoboFragment implements SessionCo
    @Override
    public void onSessionCancelled(Session session) {
       logger.trace("onSessionCancelled(): {}, {}", session.getType(), session.getAction());
+      if (getExecutableActions().contains(session.getAction())) {
+         onMyselfSessionCancelled(session);
+      }
+      else {
+         onOtherSessionCancelled(session);
+      }
+   }
+
+   /**
+    * The own session was cancelled (e.g. unplugging USB stick while process was running)
+    *
+    * @param session Session that was cancelled.
+    */
+   protected void onMyselfSessionCancelled(Session session) {
+      logger.debug("No further action performed as session was cancelled.");
+   }
+
+   /**
+    * Another session was cancelled (e.g. unplugging USB stick while process was running)
+    *
+    * @param session Session that was cancelled.
+    */
+   protected void onOtherSessionCancelled(Session session) {
+      //default behaviour on other session cancelled
+      if (getBlockingActions().contains(session.getAction()) && !requestAndUpdateBlockedOverlay(getBlockingActions())) {
+         onResumeSession();
+      }
+      //notify using a toast, which session has been cancelled
+      Session.Action action = session.getAction();
+      int cancelResourceId = R.string.cancel;
+      if (action != null) {
+         switch (action) {
+         case EXPORT:
+            cancelResourceId = R.string.export_cancel;
+            break;
+         case IMPORT:
+            cancelResourceId = R.string.import_cancel;
+            break;
+         default:
+            logger.error("Could not identify cancelled action!");
+         }
+         ToastMessageCustom.makeToastMessageText(getActivity().getApplicationContext(), getString(cancelResourceId), Gravity.TOP | Gravity.CENTER_HORIZONTAL,
+               getResources().getInteger(R.integer.toast_message_xoffset), getResources().getInteger(R.integer.toast_message_yoffset)).show();
+      }
    }
 
    /**
@@ -230,6 +277,13 @@ public abstract class BaseDataFragment extends RoboFragment implements SessionCo
     * @return List of Session.Actions prohibiting fragments UI
     */
    protected abstract List<Session.Action> getBlockingActions();
+
+   /**
+    * Defines actions which can be executed by the current fragment
+    *
+    * @return List of Session.Actions prohibiting fragments UI
+    */
+   protected abstract List<Session.Action> getExecutableActions();
 
    @Override
    public void onChannelConnectionChange(boolean updateNeeded) {
@@ -758,7 +812,7 @@ public abstract class BaseDataFragment extends RoboFragment implements SessionCo
       if (blockingActions != null && sessionManager != null && !DataExchangeBlockedOverlay.MODE.DISCONNECTED.equals(disabledOverlay.getMode())) {
          for (Session.Action action : blockingActions) {
             if (action != null) {
-               if (sessionManager.actionIsActive(action)) {
+               if (sessionManager.actionIsActive(action) && !Process.Result.CANCEL.equals(sessionManager.getCurrentSession(action).getResultCode())) {
                   //found blocking session, determine reason
                   final DataExchangeBlockedOverlay.MODE overlayMode;
                   switch (action) {
@@ -775,6 +829,13 @@ public abstract class BaseDataFragment extends RoboFragment implements SessionCo
                   }
                   disabledOverlay.setMode(overlayMode);
                   return true; //true:enabled blocking overlay
+               }
+               else {
+                  if (!DataExchangeBlockedOverlay.MODE.HIDDEN.equals(disabledOverlay.getMode())) {
+                     //disable overlay is shown but should be hidden
+                     disabledOverlay.setMode(DataExchangeBlockedOverlay.MODE.HIDDEN);
+                     return false;
+                  }
                }
             }
             else {

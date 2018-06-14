@@ -139,6 +139,7 @@
     <string name="error_calculate_operations">Calculate Targets Error</string>
     <string name="error_discovery">Discovery Error</string>
     <string name="error_drag_drop">Select destination and/or format</string>
+    <string name="error_usb_removal">USB Removal Error</string>
     <string name="status_cancelled">Cancelled</string>
     <string name="status_cancelling">Cancelling...</string>
     <string name="status_successful">Successful</string>

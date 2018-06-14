@@ -119,6 +119,7 @@ public class ExportFragment extends BaseDataFragment {
    ImageButton formatInfoButton;
 
    private final List<Session.Action> blockingActions = new ArrayList<Session.Action>(Arrays.asList(Session.Action.IMPORT));
+   private final List<Session.Action> executableActions = new ArrayList<Session.Action>(Arrays.asList(Session.Action.EXPORT));
 
    private int transparentColor;
    private int whiteTextColor;
@@ -205,6 +206,11 @@ public class ExportFragment extends BaseDataFragment {
    @Override
    protected List<Session.Action> getBlockingActions() {
       return blockingActions;
+   }
+
+   @Override
+   protected List<Session.Action> getExecutableActions() {
+      return executableActions;
    }
 
    @Override
@@ -761,7 +767,7 @@ public class ExportFragment extends BaseDataFragment {
    }
 
    @Override
-   public void onSessionCancelled(Session session) {
+   public void onMyselfSessionCancelled(Session session) {
       logger.debug("onSessionCancelled(): {}, {}", session.getType(), session.getAction());
       if (SessionUtil.isPerformOperationsTask(session) || SessionUtil.isDiscoveryTask(session)) {
          ToastMessageCustom.makeToastMessageText(getActivity().getApplicationContext(), getString(R.string.export_cancel), Gravity.TOP | Gravity.CENTER_HORIZONTAL,

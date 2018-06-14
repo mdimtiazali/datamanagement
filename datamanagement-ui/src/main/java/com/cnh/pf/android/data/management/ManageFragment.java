@@ -72,10 +72,16 @@ public class ManageFragment extends BaseDataFragment implements DmAccessibleObse
    private DmAccessibleObserver statusHelper;
 
    private final List<Session.Action> blockingActions = new ArrayList<Session.Action>(Arrays.asList(Session.Action.IMPORT, Session.Action.EXPORT));
+   private final List<Session.Action> executableActions = new ArrayList<Session.Action>();
 
    @Override
    protected List<Session.Action> getBlockingActions() {
       return blockingActions;
+   }
+
+   @Override
+   protected List<Session.Action> getExecutableActions() {
+      return executableActions;
    }
 
    @Override

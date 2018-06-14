@@ -105,7 +105,12 @@ public class ImportFragment extends BaseDataFragment {
    @InjectView(R.id.operation_name)
    TextView operationName;
 
+   //this variable denotes the current state of dynamic visual feedback (success or failure of process)
+   private boolean visualFeedbackActive = false; //true: visual feedback is currently shown, false: currently no visual feedback shown
+
    private final List<Session.Action> blockingActions = new ArrayList<Session.Action>(Arrays.asList(Session.Action.EXPORT));
+   private final List<Session.Action> executableActions = new ArrayList<Session.Action>(Arrays.asList(Session.Action.IMPORT));
+
    private static final int CANCEL_DIALOG_WIDTH = 550;
 
    private TextDialogView lastCancelDialogView; //used to keep track of the cancel dialog (should be closed if open if process is finished)
@@ -122,6 +127,11 @@ public class ImportFragment extends BaseDataFragment {
    @Override
    protected List<Session.Action> getBlockingActions() {
       return blockingActions;
+   }
+
+   @Override
+   protected List<Session.Action> getExecutableActions() {
+      return executableActions;
    }
 
    @Override
@@ -207,8 +217,7 @@ public class ImportFragment extends BaseDataFragment {
    }
 
    @Override
-   public void onSessionCancelled(Session session) {
-      super.onSessionCancelled(session);
+   public void onMyselfSessionCancelled(Session session) {
 
       ToastMessageCustom.makeToastMessageText(getActivity().getApplicationContext(), getString(R.string.import_cancel), Gravity.TOP | Gravity.CENTER_HORIZONTAL,
             getResources().getInteger(R.integer.toast_message_xoffset), getResources().getInteger(R.integer.toast_message_yoffset)).show();
@@ -220,13 +229,14 @@ public class ImportFragment extends BaseDataFragment {
       if (SessionUtil.isDiscoveryTask(session)) {
          showDragAndDropZone();
          showStartMessage();
-         updateImportButton();
       }
       else if (SessionUtil.isPerformOperationsTask(session)) {
          hideDisabledOverlay();
          showTreeList();
          updateSelectAllState();
       }
+      updateImportButton();
+      processOverlay.setMode(DataExchangeProcessOverlay.MODE.HIDDEN);
    }
 
    private void setImportDragDropArea(int event) {
@@ -400,22 +410,28 @@ public class ImportFragment extends BaseDataFragment {
    @Override
    public void onMyselfSessionError(Session session, ErrorCode errorCode) {
       logger.debug("onMyselfSessionError(): {}, {}", session.getType(), errorCode);
+      //disable overlays
       processOverlay.setMode(DataExchangeProcessOverlay.MODE.HIDDEN);
-      if (SessionUtil.isDiscoveryTask(session)) {
-         showDragAndDropZone();
-         hideDisabledOverlay();
+      hideDisabledOverlay();
+      closeCancelDialog();
+
+      if (ErrorCode.USB_REMOVED.equals(errorCode)) {
+         showErrorStatePanel();
+         //USB was removed, no tree available anymore
+         hideTreeList();
          showStartMessage();
       }
       else {
          if (SessionUtil.isDiscoveryTask(session)) {
-            //This block will never be executed since this is the else branch of the same condition
-            //TODO: verify, that SessionUtil.isDiscoveryTask(session) is the proper condition in this or the previous if conditioning
+            //if task was discovery, just reset UI to beginning state
+            showDragAndDropZone();
             hideTreeList();
-            hideDisabledOverlay();
+            showStartMessage();
          }
          else {
-            showDragAndDropZone();
-            hideDisabledOverlay();
+            //if import was active, show error indicator
+            showErrorStatePanel();
+            //tree is still available
             showTreeList();
          }
       }
@@ -487,17 +503,24 @@ public class ImportFragment extends BaseDataFragment {
    }
 
    @Override
+   public void onResume() {
+      super.onResume();
+      visualFeedbackActive = false;
+   }
+
+   @Override
    public void onResumeSession() {
       logger.debug("onResumeSession()");
       //verify that no other session is blocking fragment
       if (!requestAndUpdateBlockedOverlay(getBlockingActions())) {
          final Session session = getSession();
 
-         if (SessionUtil.isPerformOperationsTask(session) && SessionUtil.isComplete(session)) {
+         if ((SessionUtil.isPerformOperationsTask(session) && SessionUtil.isComplete(session)) || SessionUtil.isCancelled(session)) {
             // This could happen when the import completes while the user focus is on other tab.
             // In that case, reset session & tree selection before updating UI.
             resetSession();
             clearTreeSelection();
+            updateImportButton();
          }
 
          if (SessionUtil.isDiscoveryTask(session) && (SessionUtil.isInProgress(session) || SessionUtil.isComplete(session))) {
@@ -568,6 +591,7 @@ public class ImportFragment extends BaseDataFragment {
     */
    private void cancelProcess() {
       logger.debug("Cancel current import process.");
+      cancel();
       processDialog.hide();
       processOverlay.setMode(DataExchangeProcessOverlay.MODE.HIDDEN);
       getSession().setType(Session.Type.DISCOVERY);
@@ -581,18 +605,24 @@ public class ImportFragment extends BaseDataFragment {
 
    /** Inflates left panel progress view */
    private void showProgressPanel() {
-      importDropZone.setVisibility(View.GONE);
-      progressBar.setSecondText(true, loading_string, null, true);
-      progressBar.setProgress(0);
-      importFinishedStatePanel.setVisibility(View.GONE);
-      leftStatus.setVisibility(View.VISIBLE);
+      //only update UI if no visual success/failure feedback is currently active
+      if (!visualFeedbackActive) {
+         importDropZone.setVisibility(View.GONE);
+         progressBar.setSecondText(true, loading_string, null, true);
+         progressBar.setProgress(0);
+         importFinishedStatePanel.setVisibility(View.GONE);
+         leftStatus.setVisibility(View.VISIBLE);
+      }
    }
 
    /** Removes left panel progress view and replaces with operation view */
    private void showDragAndDropZone() {
-      leftStatus.setVisibility(View.GONE);
-      importFinishedStatePanel.setVisibility(View.GONE);
-      importDropZone.setVisibility(View.VISIBLE);
+      //only update UI if no visual success/failure feedback is currently active
+      if (!visualFeedbackActive) {
+         leftStatus.setVisibility(View.GONE);
+         importFinishedStatePanel.setVisibility(View.GONE);
+         importDropZone.setVisibility(View.VISIBLE);
+      }
    }
 
    /**
@@ -600,6 +630,7 @@ public class ImportFragment extends BaseDataFragment {
     */
    private void showFinishedStatePanel() {
       logger.debug("showFinishedStatePanel");
+      visualFeedbackActive = true;
       leftStatus.setVisibility(View.GONE);
       importDropZone.setVisibility(View.GONE);
       importFinishedStatePanel.setVisibility(View.VISIBLE);
@@ -608,6 +639,28 @@ public class ImportFragment extends BaseDataFragment {
       handler.postDelayed(new Runnable() {
          @Override
          public void run() {
+            visualFeedbackActive = false;
+            showDragAndDropZone();
+         }
+      }, SHOWING_FEEDBACK_AFTER_PROGRESS_MS);
+   }
+
+   /**
+    * This method is called to represent the erroneous import state in the UI.
+    */
+   private void showErrorStatePanel() {
+      logger.debug("showErrorStatePanel");
+      visualFeedbackActive = true;
+      importDropZone.setVisibility(View.GONE);
+      importFinishedStatePanel.setVisibility(View.GONE);
+      leftStatus.setVisibility(View.VISIBLE);
+      progressBar.setErrorProgress(progressBar.getProgress(), getResources().getString(R.string.pb_error));
+      //post cleanup to show drag and drop zone after time X
+      final Handler handler = new Handler();
+      handler.postDelayed(new Runnable() {
+         @Override
+         public void run() {
+            visualFeedbackActive = false;
             showDragAndDropZone();
          }
       }, SHOWING_FEEDBACK_AFTER_PROGRESS_MS);

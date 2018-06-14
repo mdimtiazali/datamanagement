@@ -395,12 +395,6 @@ public class SessionManager implements SessionContract.SessionManager, SessionEv
    @Override
    public void onMediumUpdate() {
       logger.debug("{}:onMediumUpdate()", this.getClass().getSimpleName());
-      // Need to hijack before calling callback. Reset cached data for IMPORT action when
-      // different fragment is focused
-      if ((view == null || !Session.Action.IMPORT.equals(view.getAction())) && sessionMap.containsKey(Session.Action.IMPORT)) {
-         sessionMap.remove(Session.Action.IMPORT);
-      }
-
       if (view != null) {
          view.onMediumUpdate();
       }

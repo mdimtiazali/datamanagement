@@ -16,8 +16,8 @@ import android.os.Binder;
 import android.os.Environment;
 import android.os.Handler;
 import android.os.IBinder;
-
 import android.os.Looper;
+
 import com.cnh.jgroups.Datasource;
 import com.cnh.jgroups.Mediator;
 import com.cnh.jgroups.ObjectGraph;
@@ -43,7 +43,6 @@ import com.cnh.pf.android.data.management.session.task.SessionOperationTask;
 import com.cnh.pf.data.management.service.ServiceConstants;
 import com.cnh.pf.datamng.Process.Result;
 import com.cnh.pf.jgroups.ChannelModule;
-
 import com.google.inject.name.Named;
 
 import org.jgroups.Address;
@@ -168,7 +167,7 @@ public class DataManagementService extends RoboService implements SharedPreferen
          notifyMediumUpdate();
       }
       else if (Intent.ACTION_MEDIA_UNMOUNTED.equals(intent.getAction()) || Intent.ACTION_MEDIA_BAD_REMOVAL.equals(intent.getAction())
-              || Intent.ACTION_MEDIA_REMOVED.equals(intent.getAction()) || Intent.ACTION_MEDIA_EJECT.equals(intent.getAction())) {
+            || Intent.ACTION_MEDIA_REMOVED.equals(intent.getAction()) || Intent.ACTION_MEDIA_EJECT.equals(intent.getAction())) {
          logger.info("Media has been unmounted");
          if (hasActiveSession() && Intent.ACTION_MEDIA_BAD_REMOVAL.equals(intent.getAction())) {
             logger.debug("Bad USB removal during task");
@@ -177,24 +176,24 @@ public class DataManagementService extends RoboService implements SharedPreferen
             final Session curSession = getActiveSession();
             logger.debug("Current active session: {}, {}", curSession.getType(), curSession.getAction());
 
-            if (SessionUtil.isInProgress(curSession)
-                    && (curSession.getExtra() != null && curSession.getExtra().isUsbExtra())) {
+            if (SessionUtil.isInProgress(curSession) && (curSession.getExtra() != null && curSession.getExtra().isUsbExtra())) {
                logger.debug("USB unplugged while interacting with datasources. Cancel the current session.");
-
+               notifySessionError(curSession, ErrorCode.USB_REMOVED);
                cancelSession(curSession);
-               FaultCode faultCode = SessionUtil.isExportAction(curSession) ? FaultCode.USB_REMOVED_DURING_EXPORT :
-                       FaultCode.USB_REMOVED_DURING_IMPORT;
-               faultHandler.getFault(faultCode).reset();
-               faultHandler.getFault(faultCode).alert();
+               FaultCode faultCode = SessionUtil.isExportAction(curSession) ? FaultCode.USB_REMOVED_DURING_EXPORT : FaultCode.USB_REMOVED_DURING_IMPORT;
+               DMFaultHandler.Fault fault = faultHandler.getFault(faultCode);
+               fault.reset();
+               fault.alert();
             }
             else if (SessionUtil.isImportAction(curSession) && curSession.getObjectData() != null && getActiveView() != null
-                    && (SessionUtil.isDiscoveryTask(curSession) || SessionUtil.isCalculateConflictsTask(curSession))) {
+                  && (SessionUtil.isDiscoveryTask(curSession) || SessionUtil.isCalculateConflictsTask(curSession))) {
                logger.debug("USB unplugged while waiting for the user response (discovery/conflict resolution).");
-
+               notifySessionError(curSession, ErrorCode.USB_REMOVED);
                curSession.setResultCode(Result.CANCEL);
                curSession.setType(Session.Type.DISCOVERY);
-               faultHandler.getFault(FaultCode.USB_REMOVED_DURING_IMPORT).reset();
-               faultHandler.getFault(FaultCode.USB_REMOVED_DURING_IMPORT).alert();
+               DMFaultHandler.Fault fault = faultHandler.getFault(FaultCode.USB_REMOVED_DURING_IMPORT);
+               fault.reset();
+               fault.alert();
             }
          }
 
@@ -304,14 +303,8 @@ public class DataManagementService extends RoboService implements SharedPreferen
             return;
          }
 
-         SessionOperationTask task = new SessionOperationTask.TaskBuilder()
-                 .mediator(mediator)
-                 .session(session)
-                 .notifier(this)
-                 .statusSender(new StatusSender(getApplicationContext()))
-                 .formatManager(formatManager)
-                 .faultHandler(faultHandler)
-                 .build();
+         SessionOperationTask task = new SessionOperationTask.TaskBuilder().mediator(mediator).session(session).notifier(this)
+               .statusSender(new StatusSender(getApplicationContext())).formatManager(formatManager).faultHandler(faultHandler).build();
 
          if (task != null) {
             task.executeTask(session);
@@ -357,8 +350,7 @@ public class DataManagementService extends RoboService implements SharedPreferen
          return;
       }
 
-      if ((SessionUtil.isExportAction(session) && SessionUtil.isPerformOperationsTask(session)) ||
-              (SessionUtil.isImportAction(session) && SessionUtil.isDiscoveryTask(session))) {
+      if ((SessionUtil.isExportAction(session) && SessionUtil.isPerformOperationsTask(session)) || (SessionUtil.isImportAction(session) && SessionUtil.isDiscoveryTask(session))) {
          // Run USB service code in new thread to show UI change faster
          new Thread(new Runnable() {
             @Override
@@ -369,8 +361,7 @@ public class DataManagementService extends RoboService implements SharedPreferen
                   // 'SESSION IN PROGRESS'.
                   session.setState(Session.State.IN_PROGRESS);
                   usbServiceManager.stopAllDatasourceBeforeStart();
-                  if (usbServiceManager.startUsbDatasource(session.getExtra(),
-                          SessionUtil.isExportAction(session))) {
+                  if (usbServiceManager.startUsbDatasource(session.getExtra(), SessionUtil.isExportAction(session))) {
                      executeSession(session);
                   }
                   else {
@@ -479,12 +470,10 @@ public class DataManagementService extends RoboService implements SharedPreferen
    public void notifySessionSuccess(Session session) {
       logger.debug("notifySessionSuccess()");
       // Cache session result so that it can be recycled later.
-      if (SessionUtil.isComplete(session)
-              && SessionUtil.isSuccessful(session)) {
+      if (SessionUtil.isComplete(session) && SessionUtil.isSuccessful(session)) {
          cacheManager.save(session);
 
-         if (SessionUtil.isImportAction(session)
-                 && SessionUtil.isPerformOperationsTask(session)) {
+         if (SessionUtil.isImportAction(session) && SessionUtil.isPerformOperationsTask(session)) {
             // Clear cached discovery data for EXPORT & MANAGE once IMPORT is performed successfully.
             cacheManager.reset(Session.Action.EXPORT, Session.Type.DISCOVERY);
             cacheManager.reset(Session.Action.MANAGE, Session.Type.DISCOVERY);
