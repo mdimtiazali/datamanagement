@@ -562,6 +562,7 @@ public abstract class BaseDataFragment extends RoboFragment implements SessionCo
    protected void createTreeAdapter() {
       if (treeAdapter == null) {
          treeAdapter = new ObjectTreeViewAdapter(getActivity(), manager, 1) {
+
             @Override
             protected boolean isGroupableEntity(ObjectGraph node) {
                return TreeEntityHelper.obj2group.containsKey(node.getType()) || node.getParent() == null;
@@ -571,8 +572,30 @@ public abstract class BaseDataFragment extends RoboFragment implements SessionCo
             public boolean isSupportedEntitiy(ObjectGraph node) {
                return supportedByFormat(node);
             }
+
+            @Override
+            protected boolean childSelectionDoesImplicitSelectParentNodes(ObjectGraph rootNode) {
+               if (rootNode != null) {
+                  List<String> rootNodeNamesWithAutomaticParentSelection = getRootNodeNamesWithAutomaticParentSelection();
+                  if (rootNodeNamesWithAutomaticParentSelection != null) {
+                     return rootNodeNamesWithAutomaticParentSelection.contains(rootNode.getName());
+                  }
+               }
+               return false;
+            }
+
          };
       }
+   }
+
+   /**
+    * Returns the list of node names that should automatic select their parents
+    *
+    * @return List of node names that should automatic select their parents
+    */
+   @Nullable
+   protected List<String> getRootNodeNamesWithAutomaticParentSelection() {
+      return null;
    }
 
    /**

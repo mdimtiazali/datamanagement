@@ -110,6 +110,7 @@ public class ImportFragment extends BaseDataFragment {
 
    private final List<Session.Action> blockingActions = new ArrayList<Session.Action>(Arrays.asList(Session.Action.EXPORT));
    private final List<Session.Action> executableActions = new ArrayList<Session.Action>(Arrays.asList(Session.Action.IMPORT));
+   private final List<String> dataTreeRootNodesWithAutomaticParentSelection = new ArrayList<String>(Arrays.asList("Grower/Farm/Field/Task"));
 
    private static final int CANCEL_DIALOG_WIDTH = 550;
 
@@ -132,6 +133,11 @@ public class ImportFragment extends BaseDataFragment {
    @Override
    protected List<Session.Action> getExecutableActions() {
       return executableActions;
+   }
+
+   @Override
+   protected List<String> getRootNodeNamesWithAutomaticParentSelection() {
+      return dataTreeRootNodesWithAutomaticParentSelection;
    }
 
    @Override

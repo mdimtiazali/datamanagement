@@ -692,50 +692,6 @@ public class ManageFragment extends BaseDataFragment implements DmAccessibleObse
                return R.layout.tree_list_item_wrapper_full_screen;
             }
 
-            @Override
-            public void selectionImpl(Object id) {
-               ObjectGraph start = (ObjectGraph) id;
-               if (getManager().getParent((ObjectGraph) id) != null && includeParent((ObjectGraph) id)) {
-                  start = getManager().getParent((ObjectGraph) id);
-               }
-               //select itself and all its children
-               if (!getSelectionMap().containsKey(start)) {
-                  traverseTree(start, TRAVERSE_DOWN, new Visitor<ObjectGraph>() {
-                     @Override
-                     public boolean visit(ObjectGraph node) {
-                        getSelectionMap().put(node, SelectionType.FULL);
-                        return true;
-                     }
-                  });
-               }
-               else {//unselect all its direct parent
-                  if (getManager().getParent(start) != null) {
-                     traverseTree(getManager().getParent(start), TRAVERSE_UP, new Visitor<ObjectGraph>() {
-                        @Override
-                        public boolean visit(ObjectGraph node) {
-                           if (getSelectionMap().containsKey(node)) {
-                              getSelectionMap().remove(node);
-                              return true;
-                           }
-                           return false;
-                        }
-                     });
-                  }
-                  //unselect itself and its all children
-                  traverseTree(start, TRAVERSE_DOWN, new Visitor<ObjectGraph>() {
-                     @Override
-                     public boolean visit(ObjectGraph node) {
-                        if (getSelectionMap().containsKey(node)) {
-                           getSelectionMap().remove(node);
-                           return true;
-                        }
-                        return false;
-                     }
-                  });
-               }
-
-            }
-
          };
       }
       else {
