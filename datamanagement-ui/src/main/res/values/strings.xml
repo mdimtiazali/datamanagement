@@ -88,10 +88,7 @@
     <string name="export_cancel_confirmation">This will cancel current export.\nDo you want to proceed?</string>
     <string name="import_cancel_confirmation">This will cancel current import.\nDo you want to proceed?</string>
     <string name="format_description_title">Export Formats</string>
-    <string name="format_description">PF Database:
-        \n- All Data Types
-        \n
-        \nISOXML:
+    <string name="format_description">ISOXML:
         \n- Grower, Farm, Field, and Task Folders
         \n- Task Data:
         \n\t\t- AsApplied Logs

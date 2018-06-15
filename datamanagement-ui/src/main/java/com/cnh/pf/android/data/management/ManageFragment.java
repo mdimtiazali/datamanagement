@@ -324,7 +324,7 @@ public class ManageFragment extends BaseDataFragment implements DmAccessibleObse
    public void onMyselfSessionSuccess(Session session) {
       logger.debug("onMyselfSessionComplete(): {}", session.getType());
       if (SessionUtil.isDiscoveryTask(session)) {
-         initAndPouplateTree(session.getObjectData());
+         initAndPopulateTree(session.getObjectData());
 
          hideDisabledOverlay();
          showTreeList();
