@@ -82,7 +82,6 @@ public class ExportFragment extends BaseDataFragment {
    private static final Logger logger = LoggerFactory.getLogger(ExportFragment.class);
    private static final String SAVED_MEDIUM = "medium";
    private static final String SAVED_FORMAT = "format";
-   private static final String PFDATABASE_FORMAT = "PF Database";
    private static final String ISOXML_FORMAT = "ISOXML";
 
    @Inject
@@ -427,39 +426,6 @@ public class ExportFragment extends BaseDataFragment {
    }
 
    /**
-    * Restore user selection for the format pick list. This works when a user switches back to this fragment.
-    * PickList doesn't maintain its state upon fragment (tab) switch.
-    */
-   private void restoreFormatSelection() {
-      if (getArguments() != null && getArguments().getString(SAVED_FORMAT) != null && exportFormatPicklist.getAdapter().getCount() > 0) {
-         boolean found = false;
-         String selectedFormat = getArguments().getString(SAVED_FORMAT);
-         logger.debug("Saved format: {}", selectedFormat);
-
-         int pos = exportFormatPicklist.findItemPositionByValue(selectedFormat, true);
-         if (pos >= 0) {
-            exportFormatPicklist.setSelectionByPosition(pos);
-         }
-         else {
-            // Reset the selection if the previous selection cannot be found.
-            resetFormatSelection();
-            exportFormatPicklist.setDisplayText(R.string.select_string);
-         }
-      }
-      else if (exportFormatPicklist.getAdapter().getCount() > 0) {
-         exportFormatPicklist.setDisplayText(R.string.select_string); //Set to "Select" if no saved item selected
-         if (exportMediumPicklist.getAdapter().getCount() == 0) {
-            exportFormatPicklist.setReadOnly(true);
-         }
-      }
-      else {
-         resetFormatSelection();
-         exportFormatPicklist.setReadOnly(true);
-         exportFormatPicklist.setDisplayText(R.string.select_string);
-      }
-   }
-
-   /**
     * Save the current selection for the format pick list and it will be used later when a user comes back
     * to this fragment (tab).
     *
@@ -472,22 +438,12 @@ public class ExportFragment extends BaseDataFragment {
    }
 
    /**
-    * Reset the format selection.
-    */
-   private void resetFormatSelection() {
-      if (getArguments() != null) {
-         getArguments().putString(SAVED_FORMAT, null);
-      }
-   }
-
-   /**
     * Reset the picklist selections
     */
    private void resetPicklistSelections(boolean mediumReadOnly) {
       if (getArguments() != null) {
          Bundle arguments = getArguments();
          arguments.putParcelable(SAVED_MEDIUM, null);
-         arguments.putParcelable(SAVED_FORMAT, null);
       }
 
       if (mediumReadOnly) {
@@ -497,9 +453,6 @@ public class ExportFragment extends BaseDataFragment {
          exportMediumPicklist.setDisplayText(R.string.select_string);
       }
       exportMediumPicklist.setReadOnly(mediumReadOnly);
-
-      exportFormatPicklist.setDisplayText(R.string.select_string);
-      exportFormatPicklist.setReadOnly(true);
    }
 
    /**
@@ -615,7 +568,6 @@ public class ExportFragment extends BaseDataFragment {
             if (item != null) {
                saveMediumSelection(item.getObject());
             }
-            forceMediumDeviceFormat();
             updateExportButton();
          }
 
@@ -627,28 +579,6 @@ public class ExportFragment extends BaseDataFragment {
       });
 
       exportFormatPicklist.setAdapter(new PickListAdapter(exportFormatPicklist, getActivity().getApplicationContext()));
-      exportFormatPicklist.setOnItemSelectedListener(new PickListEditable.OnItemSelectedListener() {
-         @Override
-         public void onItemSelected(AdapterView<?> adapterView, View view, int position, long id, boolean b) {
-            String selectedFormat = (id != -1 ? exportFormatPicklist.findItemById(id).getValue() : null);
-            saveFormatSelection(selectedFormat);
-            logger.trace("setFormat {}", selectedFormat);
-            if (getTreeAdapter() != null) {
-               getTreeAdapter().updateViewSelection(treeViewList);
-            }
-            updateExportButton();
-            treeViewList.invalidate();
-         }
-
-         @Override
-         public void onNothingSelected(AdapterView<?> adapterView) {
-            resetFormatSelection();
-            exportFormatPicklist.setDisplayText(R.string.select_string);
-            if (exportMediumPicklist.getAdapter().getCount() == 0) {
-               exportFormatPicklist.setReadOnly(true);
-            }
-         }
-      });
    }
 
    private void populateFormatPickList() {
@@ -659,7 +589,10 @@ public class ExportFragment extends BaseDataFragment {
          exportFormatPicklist.addItem(new PickListItem(formatId++, format));
       }
 
-      restoreFormatSelection();
+      exportFormatPicklist.setSelectionByPosition(exportFormatPicklist.findItemPositionByValue(ISOXML_FORMAT, true));
+      saveFormatSelection(ISOXML_FORMAT);
+      exportFormatPicklist.setReadOnly(true);
+      logger.debug("Force format to ISOXML");
    }
 
    private void populateExportToPickList() {
@@ -680,40 +613,6 @@ public class ExportFragment extends BaseDataFragment {
             exportMediumPicklist.getAdapter().clear();
          }
          resetPicklistSelections(true);
-      }
-   }
-
-   /**
-    * While Medium Device is set to CLOUD, force to CNH format and disable user selection of format.
-    * While Medium Device is set to Fred/USB or DesktopSW/USB, force to ISOXML and disable user selection of format.
-   */
-   private void forceMediumDeviceFormat() {
-      if (exportMediumPicklist.getSelectedItemPosition() > NEGATIVE_BINARY_ERROR) {
-         Boolean isReadOnly = false;
-         SessionExtra extra = ((ObjectPickListItem<SessionExtra>) exportMediumPicklist.getSelectedItem()).getObject();
-         UtilityHelper.MediumVariant mediumVariant = UtilityHelper.MediumVariant.fromValue(extra.getOrder());
-         if (null != mediumVariant) {
-            if (UtilityHelper.MediumVariant.CLOUD_OUTBOX.equals(mediumVariant)) { //Cloud export is only done in PF Database format
-               isReadOnly = true;
-               // "PF Database" is format type in formats.xml file
-               exportFormatPicklist.setSelectionByPosition(exportFormatPicklist.findItemPositionByValue(PFDATABASE_FORMAT, true));
-               saveFormatSelection(PFDATABASE_FORMAT);
-               logger.debug("Force format to PF Database");
-            }
-            else if (UtilityHelper.MediumVariant.USB_DESKTOP_SW.equals(mediumVariant) || UtilityHelper.MediumVariant.USB_FRED.equals(mediumVariant)) {
-               isReadOnly = true;
-               // "ISOXML" is format type in formats.xml file
-               exportFormatPicklist.setSelectionByPosition(exportFormatPicklist.findItemPositionByValue(ISOXML_FORMAT, true));
-               saveFormatSelection(ISOXML_FORMAT);
-               logger.debug("Force format to ISOXML");
-            }
-            else if (UtilityHelper.MediumVariant.USB_PHOENIX.equals(mediumVariant) || UtilityHelper.MediumVariant.USB_HAWK.equals(mediumVariant)) {
-               exportFormatPicklist.setSelectionByPosition(exportFormatPicklist.findItemPositionByValue(PFDATABASE_FORMAT, true));
-               saveFormatSelection(PFDATABASE_FORMAT);
-               logger.debug("Force format to PF Database as default");
-            }
-         }
-         exportFormatPicklist.setReadOnly(isReadOnly);
       }
    }
 
@@ -759,7 +658,7 @@ public class ExportFragment extends BaseDataFragment {
             showProgressPanel();
             updateProgressbar(progressValue);
 
-            initAndPouplateTree(session.getObjectData());
+            initAndPopulateTree(session.getObjectData());
             hideDisabledOverlay();
             showTreeList();
             updateSelectAllState();
@@ -797,7 +696,7 @@ public class ExportFragment extends BaseDataFragment {
 
       logger.debug("onMyselfSessionSuccess(): {}", session.getType());
       if (SessionUtil.isDiscoveryTask(session)) {
-         initAndPouplateTree(session.getObjectData());
+         initAndPopulateTree(session.getObjectData());
 
          hideDisabledOverlay();
          showTreeList();
@@ -884,28 +783,10 @@ public class ExportFragment extends BaseDataFragment {
    private void setExportPicklistsReadOnly(boolean readOnly) {
       if (exportMediumPicklist.getAdapter().getCount() > 0) {
          exportMediumPicklist.setReadOnly(readOnly);
-
-         if (exportMediumPicklist.getSelectedItem() != null) {
-            //Only change state of Format Picklist if it isn't one of the three data sources below
-            SessionExtra extra = ((ObjectPickListItem<SessionExtra>) exportMediumPicklist.getSelectedItem()).getObject();
-            UtilityHelper.MediumVariant mediumVariant = UtilityHelper.MediumVariant.fromValue(extra.getOrder());
-            if (mediumVariant.equals(UtilityHelper.MediumVariant.CLOUD_OUTBOX) || mediumVariant.equals(UtilityHelper.MediumVariant.USB_DESKTOP_SW)
-                  || mediumVariant.equals(UtilityHelper.MediumVariant.USB_FRED)) {
-               exportFormatPicklist.setReadOnly(true);
-            }
-            else {
-               exportFormatPicklist.setReadOnly(readOnly);
-            }
-         }
-         else {
-            exportFormatPicklist.setReadOnly(true);
-         }
       }
       else { //Reset both picklists and set them to read only (likely bad USB removal)
          exportMediumPicklist.setDisplayText(R.string.connect_source_string);
          exportMediumPicklist.setReadOnly(true);
-         exportFormatPicklist.setDisplayText(R.string.select_string);
-         exportFormatPicklist.setReadOnly(true);
       }
    }
 

@@ -613,8 +613,8 @@ public abstract class BaseDataFragment extends RoboFragment implements SessionCo
     *
     * @param objectGraphs  ObjectGraph data to populate the tree list
     */
-   protected void initAndPouplateTree(List<ObjectGraph> objectGraphs) {
-      logger.debug("initAndPouplateTree()");
+   protected void initAndPopulateTree(List<ObjectGraph> objectGraphs) {
+      logger.debug("initAndPopulateTree()");
 
       if (manager == null) {
          manager = new InMemoryTreeStateManager<ObjectGraph>();
@@ -806,7 +806,7 @@ public abstract class BaseDataFragment extends RoboFragment implements SessionCo
     */
    protected void updateSelectAllState() {
       final Session session = getSession();
-      boolean enable = SessionUtil.isComplete(session) && session.getObjectData() != null;
+      boolean enable = !SessionUtil.isInProgress(session) && session.getObjectData() != null;
 
       logger.debug("Enable Select All button: {}", enable);
       enableSelectAllButton(enable);
