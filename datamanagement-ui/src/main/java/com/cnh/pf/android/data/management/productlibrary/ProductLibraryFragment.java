@@ -180,6 +180,8 @@ public class ProductLibraryFragment extends RoboFragment implements ProductMixCa
 
       @Override
       public void onServerConnect() throws RemoteException {
+         onPCMConnectionEstablished();
+
          log.debug("onServerConnect called");
          pcmConnected = true;
          // get only some small amount of data to show something
@@ -197,8 +199,7 @@ public class ProductLibraryFragment extends RoboFragment implements ProductMixCa
 
       @Override
       public void onServerDisconnect() throws RemoteException {
-         pcmConnected = false;
-         vipCommunicationHandler.obtainMessage(WHAT_PING).sendToTarget();
+         onPCMConnectionLoss();
       }
 
       @Override
@@ -276,11 +277,61 @@ public class ProductLibraryFragment extends RoboFragment implements ProductMixCa
       }
    };
 
+   private void onPCMConnectionLoss() {
+      log.debug("onPCMConnectionLoss called");
+      if (pcmConnected) {
+         pcmConnected = false;
+         updateDisconnectedOverlay(pcmConnected);
+         vipCommunicationHandler.obtainMessage(WHAT_PING).sendToTarget();
+      }
+      else {
+         log.error("Invalid Connection lifecycle! Tried to invoke onServerDisconnect twice without connection!");
+      }
+   }
+
+   private void onPCMConnectionEstablished() {
+      log.debug("onPCMConnectionEstablished called");
+      if (!pcmConnected) {
+         pcmConnected = true;
+         updateDisconnectedOverlay(pcmConnected);
+         vipCommunicationHandler.obtainMessage(WHAT_LOAD_PRODUCT_LIST).sendToTarget();
+         vipCommunicationHandler.obtainMessage(WHAT_LOAD_UNIT_LIST).sendToTarget();
+         vipCommunicationHandler.obtainMessage(WHAT_LOAD_PRODUCT_MIX_LIST).sendToTarget();
+         vipCommunicationHandler.obtainMessage(WHAT_GET_VARIETY_LIST).sendToTarget();
+         try {
+            vipService.requestImplementProductConfigCurrent();
+         }
+         catch (RemoteException e) {
+            log.error("Could not request ImplementProductConfigCurrent: ", e);
+         }
+      }
+      else {
+         log.error("Invalid Connection lifecycle! Tried to invoke onServerConnect twice without disconnect!");
+      }
+   }
+
    private void checkMode() {
       if (isProductMixListSizeDelivered && isProductListSizeDelivered && isVarietyListSizeDelivered) {
          disabledOverlay.setMode(DisabledOverlay.MODE.HIDDEN);
          disabledOverlay.setVisibility(View.GONE);
       }
+   }
+
+   private void updateDisconnectedOverlay(final boolean connected) {
+      getActivity().runOnUiThread(new Runnable() {
+         @Override
+         public void run() {
+            log.debug("updating Disconnected Overlay to {}", connected);
+            if (connected) {
+               //connected
+               disabledOverlay.setMode(DisabledOverlay.MODE.HIDDEN);
+            }
+            else {
+               //disconnected
+               disabledOverlay.setMode(DisabledOverlay.MODE.DISCONNECTED);
+            }
+         }
+      });
    }
 
    private Handler vipCommunicationHandler = new Handler(Looper.getMainLooper()) {
@@ -447,7 +498,7 @@ public class ProductLibraryFragment extends RoboFragment implements ProductMixCa
                }
             }, ProductLibraryFragment.this.currentImplement, productList);
 
-            addProductDialog.setFirstButtonText(getResources().getString(R.string.product_dialog_save_button))
+            addProductDialog.setFirstButtonText(getResources().getString(R.string.product_dialog_add_button))
                   .setSecondButtonText(getResources().getString(R.string.product_dialog_cancel_button)).showThirdButton(false)
                   .setTitle(getResources().getString(R.string.product_dialog_add_tile)).setBodyHeight(DIALOG_HEIGHT);
 
@@ -755,7 +806,7 @@ public class ProductLibraryFragment extends RoboFragment implements ProductMixCa
          this.productMixList = new ArrayList<ProductMix>(incomingProductMixList);
          populateProductMixes(productMixList.size());
          if (productMixAdapter == null) {
-            productMixAdapter = new ProductMixAdapter(getActivity().getApplicationContext(), incomingProductMixList, (TabActivity) getActivity(), vipService,pvipService,
+            productMixAdapter = new ProductMixAdapter(getActivity().getApplicationContext(), incomingProductMixList, (TabActivity) getActivity(), vipService, pvipService,
                   this, measurementSystemCache);
             productMixSearch.setFilterable(productMixAdapter);
             if (productMixComparator != null) {
@@ -797,7 +848,7 @@ public class ProductLibraryFragment extends RoboFragment implements ProductMixCa
             currentProduct = productList.get((int) productListView.getSelectedId());
          }
          if (productAdapter == null) {
-            productAdapter = new ProductAdapter(getActivity().getApplicationContext(), incomingProductList, (TabActivity) getActivity(), vipService,pvipService,
+            productAdapter = new ProductAdapter(getActivity().getApplicationContext(), incomingProductList, (TabActivity) getActivity(), vipService, pvipService,
                   this, productUnitsList, currentImplement, measurementSystemCache);
             productSearch.setFilterable(productAdapter);
             if (productComparator != null) {
@@ -892,7 +943,7 @@ public class ProductLibraryFragment extends RoboFragment implements ProductMixCa
    @Override
    public void onResume() {
       log.debug("onResume called");
-
+      updateDisconnectedOverlay(pcmConnected);
       // super on resume must be called before registerVIPService because this checks isResumed()
       super.onResume();
       measurementSystemCache.registerContentObservers();
@@ -1062,6 +1113,14 @@ public class ProductLibraryFragment extends RoboFragment implements ProductMixCa
       }
       if (productMixAdapter != null) {
          productMixAdapter.setVIPService(vipService);
+      }
+      if (this.vipService == null) {
+         //vipService is disconnected
+         if (pcmConnected) {
+            //invoke disconnect action
+            onPCMConnectionLoss();
+            log.debug("invoked onPCMConnectionLoss!");
+         }
       }
    }
    /**

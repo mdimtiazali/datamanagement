@@ -8,7 +8,7 @@
   ~ authorization from CNH Industrial NV.
   -->
 <resources>
-    <string name="app_name">Data Management</string>
+    <string name="app_name">Data</string>
     <string name="tab_import">Import</string>
     <string name="tab_import_test">Import test</string>
     <string name="import_source">Import Source</string>
@@ -34,6 +34,9 @@
     <string name="select_path">Select Path...</string>
     <string name="continue_string">Continue</string>
     <string name="next">Next</string>
+    <string name="copy_click_string">Copy click on node </string>
+    <string name="no_data_of_format_string">No data of selected format selected</string>
+    <string name="no_operations_check_connectivity_string">No operations came back from server. Check connectivity</string>
 
     <string name="pfds">Grower/Farm/Field/Task</string>
     <string name="vehicles">Vehicles</string>
@@ -61,8 +64,8 @@
     <string name="display_numbered">Display %d</string>
     <string name="display_named">Display %s</string>
     <string name="select_string">Select</string>
-    <string name="export_to">Destination:</string>
-    <string name="export_format">Export Format:</string>
+    <string name="export_to">Destination</string>
+    <string name="export_format">Export Format</string>
     <string name="tab_export">Export</string>
     <string name="percent_complete">% Complete</string>
     <string name="loading_string">Loading</string>
@@ -70,7 +73,7 @@
     <string name="importing_string">Importing</string>
     <string name="exporting_data">Exporting Data</string>
     <string name="importing_data">Importing Data</string>
-    <string name="select_source_first">To get started \nfirst select your \nImport Source</string>
+    <string name="select_source_first">Select Import Source \nto get started</string>
     <string name="no_import_source">No import source device is detected. \nPlease check the device connection.</string>
     <string name="deselect_all">Deselect All</string>
     <string formatted="false" name="duplicate_file">A %s named \"%s\" already exists</string>
@@ -83,21 +86,60 @@
     <string name="file_name">File Name</string>
     <string name="empty_discovery">No data found</string>
     <string name="export_cancel_confirmation">This will cancel current export.\nDo you want to proceed?</string>
-
-    <string name="format_description">ISOXML:
-      \nAll files can be exported in ISOXML.
-      \n
-      \nShapefile:
-      \nPrescriptions.
-   </string>
+    <string name="import_cancel_confirmation">This will cancel current import.\nDo you want to proceed?</string>
+    <string name="format_description_title">Export Formats</string>
+    <string name="format_description">PF Database:
+        \n- All Data Types
+        \n
+        \nISOXML:
+        \n- Grower, Farm, Field, and Task Folders
+        \n- Task Data:
+        \n\t\t- AsApplied Logs
+        \n\t\t- Harvest Logs
+        \n\t\t- Coverage Logs
+        \n\t\t- Trip Computer Logs
+        \n- Products, Varieties, and Product Mixes
+        \n- Variety Maps
+        \n- Prescriptions
+        \n- Guidance Lines (Except Field and Multi-Swaths)
+        \n- Boundaries
+        \n- Landmarks:
+        \n\t\t- Point, Line, and Area Features
+    </string>
+    <string name="destination_title">Supported Export Destinations:</string>
+    <string name="case_destination_info">Please select the proper destination to ensure the export file structure is compatible with the destination file structure.
+        \n
+        \nYou can export to the USB for use on the following products:
+        \n- Pro 1200
+        \n- Pro 800
+        \n- Pro 700
+        \n- Desktop Software
+        \n
+        \nYou can export directly to the AFS Connect by selecting:
+        \n- AFS Connect
+    </string>
+    <string name="new_holland_destination_info">Please select the proper destination to ensure the export file structure is compatible with the destination file structure.
+        \n
+        \nYou can export to the USB for use on the following products:
+        \n- Intelliview 12
+        \n- Intelliview 8
+        \n- Intelliview IV
+        \n- Desktop Software
+        \n
+        \nYou can export directly to the PLM Connect by selecting:
+        \n- PLM Connect
+    </string>
 
     <string name="error_no_data">No Data</string>
     <string name="error_no_source">No Source Datasource</string>
-    <string name="error_no_target">No Target Datasource</string>
+    <string name="error_no_target">No Destination Datasource</string>
     <string name="error_perform_ops">Perform Operations Error</string>
+    <string name="error_update">Update Error</string>
     <string name="error_calculate_conflicts">Calculate Conflicts Error</string>
     <string name="error_calculate_operations">Calculate Targets Error</string>
     <string name="error_discovery">Discovery Error</string>
+    <string name="error_drag_drop">Select destination and/or format</string>
+    <string name="error_usb_removal">USB Removal Error</string>
     <string name="status_cancelled">Cancelled</string>
     <string name="status_cancelling">Cancelling...</string>
     <string name="status_successful">Successful</string>
@@ -106,8 +148,15 @@
     <string name="import_cancel">Import Cancelled</string>
     <string name="export_complete">Export Completed</string>
     <string name="export_cancel">Export Cancelled</string>
+    <string name="export_in_progress">Export in Progress</string>
+    <string name="import_in_progress">Import in Progress</string>
+    <string name="dataexchange_accessible_after_process_finished">You may access this page once the\nprocess is
+        completed.
+    </string>
+    <string name="dataexchange_leave_during_export_process">You may leave this page during the export</string>
+    <string name="dataexchange_leave_during_import_process">You may leave this page during the import</string>
     <string name="error_delete">Fail to delete data</string>
-   <string name="delete_progress_title">Deleting data</string>
+    <string name="delete_progress_title">Deleting data</string>
     <string name="delete_progress_content">In progress ...</string>
     <plurals name="delete_confirm_dialog_title">
         <item quantity="one">Delete Confirmation (%1$d Item)</item>
@@ -239,7 +288,7 @@
     <string name="variety_list_header_name_text">NAME</string>
     <string name="variety_not_available">You have no varieties added.</string>
     <string name="variety_search_hint">Variety, crop type</string>
-    <string name="tab_management">Management</string>
+    <string name="tab_management">Data Management</string>
     <string name="edit_field_name">Name</string>
     <string name="edit_dialog_header">Edit Name</string>
     <string name="edit_dialog_save">Save</string>
@@ -254,7 +303,50 @@
     <string name="edit_name_warning">The item with this name already exists. Please choose a different name</string>
     <string name="edit_update_title">Updating item</string>
     <string name="edit_update_content">In progress ...</string>
+
+    <string name="unknown_vehicle">Unknown Vehicle</string>
+
+    <!-- Destination / Format Combinations -->
+    <string name="connect_source_string">Not Connected</string>
+    <string name="case_pro1200_usb">USB for Pro 1200</string>
+    <string name="case_pro800_usb">USB for Pro 800</string>
+    <string name="case_pro700_usb">USB for Pro 700</string>
+    <string name="case_desktopsw_usb">USB for Desktop Software</string>
+    <string name="case_cloud_connect_outbox">AFS Connect</string>
+    <string name="case_cloud_connect_inbox">AFS Connect / INBOX</string>
+    <string name="case_display">Display</string>
+    <string name="case_internal">Internal</string>
+
+    <string name="new_holland_intelli12_usb">USB for Intelliview 12</string>
+    <string name="new_holland_intelli8_usb">USB for Intelliview 8</string>
+    <string name="new_holland_intelli4_usb">USB for Intelliview IV</string>
+    <string name="new_holland_desktopsw_usb">USB for Desktop Software</string>
+    <string name="new_holland_cloud_connect_outbox">PLM Connect</string>
+    <string name="new_holland_cloud_connect_inbox">PLM Connect / INBOX</string>
+    <string name="new_holland_display">Display</string>
+    <string name="new_holland_internal">Internal</string>
+
+    <string name="steyr_12_usb">USB for Steyr 12</string>
+    <string name="steyr_8_usb">USB for Steyr 8</string>
+    <string name="steyr_4_usb">USB for Steyr 7</string>
+    <string name="steyr_desktopsw_usb">USB for Desktop Software</string>
+    <string name="steyr_cloud_connect_outbox">Cloud Connect / OUTBOX</string>
+    <string name="steyr_cloud_connect_inbox">Cloud Connect / INBOX</string>
+    <string name="steyr_display">Display</string>
+    <string name="steyr_internal">Internal</string>
+
+    <string name="generic_tractor_12_usb">USB for 1200</string>
+    <string name="generic_tractor_8_usb">USB for 800</string>
+    <string name="generic_tractor_4_usb">USB for 700</string>
+    <string name="generic_tractor_desktopsw_usb">USB for Desktop Software</string>
+    <string name="generic_tractor_cloud_connect_outbox">Cloud Connect / OUTBOX</string>
+    <string name="generic_tractor_cloud_connect_inbox">Cloud Connect / INBOX</string>
+    <string name="generic_tractor_display">Display</string>
+    <string name="generic_tractor_internal">Internal</string>
+
     <string name="no_data_for_delete">No selected data right for deletion</string>
     <string name="update_error_notice">Error occur when updating the name</string>
     <string name="delete_error_notice">Error occur when deleting the data</string>
+    <string name="delete_select_notice">No selection is made</string>
+    <string name="delete_select_notice_inaccessible">Delete isn\'t allowed since system is in work or engage</string>
 </resources>

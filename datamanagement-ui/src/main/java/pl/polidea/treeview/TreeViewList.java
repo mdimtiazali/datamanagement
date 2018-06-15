@@ -62,6 +62,8 @@ public class TreeViewList extends ListView {
    private boolean drawLine;
    private static Field fFirstPosition;
    private Rect mTempRect = new Rect();
+   //x coordinate of previous sibling's vertical centerline
+   private int[] prevVertLineByLevel = new int[20];
 
    static {
       try {
@@ -299,8 +301,6 @@ public class TreeViewList extends ListView {
       if (drawLine) {
          //y coordinate of previous sibling's horizontal centerline
          int[] prevHorizLineByLevel = new int[20];
-         //x coordinate of previous sibling's vertical centerline
-         int[] prevVertLineByLevel = new int[20];
          for (int i = 0; i < getChildCount(); i++) {
             View child = getChildAt(i);
 

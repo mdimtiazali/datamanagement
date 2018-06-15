@@ -8,76 +8,56 @@
  */
 package com.cnh.pf.android.data.management.service;
 
-import static android.os.Environment.MEDIA_BAD_REMOVAL;
-import static com.cnh.pf.data.management.service.ServiceConstants.ACTION_STOP;
-
 import android.app.Application;
 import android.app.NotificationManager;
-import android.content.SharedPreferences;
 import android.content.Intent;
-import android.database.ContentObserver;
-import android.graphics.drawable.BitmapDrawable;
-import android.net.Uri;
-import android.os.AsyncTask;
+import android.content.SharedPreferences;
 import android.os.Binder;
 import android.os.Environment;
 import android.os.Handler;
 import android.os.IBinder;
-import android.os.ParcelUuid;
-import android.os.RemoteException;
+import android.os.Looper;
 
-import com.android.annotations.NonNull;
-import com.cnh.android.status.Status;
 import com.cnh.jgroups.Datasource;
 import com.cnh.jgroups.Mediator;
 import com.cnh.jgroups.ObjectGraph;
 import com.cnh.jgroups.Operation;
-import com.cnh.pf.android.data.management.R;
 import com.cnh.pf.android.data.management.RoboModule;
-import com.cnh.pf.android.data.management.connection.DataServiceConnectionImpl.ErrorEvent;
 import com.cnh.pf.android.data.management.fault.DMFaultHandler;
 import com.cnh.pf.android.data.management.fault.FaultCode;
 import com.cnh.pf.android.data.management.helper.DatasourceHelper;
 import com.cnh.pf.android.data.management.parser.FormatManager;
-import com.cnh.pf.data.management.DataManagementSession;
-import com.cnh.pf.data.management.aidl.IDataManagementListenerAIDL;
-import com.cnh.pf.data.management.aidl.MediumDevice;
-import com.cnh.pf.data.management.service.DatasourceContentClient;
-import com.cnh.pf.data.management.service.DatasourceContract;
+import com.cnh.pf.android.data.management.session.CacheManager;
+import com.cnh.pf.android.data.management.session.ErrorCode;
+import com.cnh.pf.android.data.management.session.Session;
+import com.cnh.pf.android.data.management.session.SessionContract;
+import com.cnh.pf.android.data.management.session.SessionEventListener;
+import com.cnh.pf.android.data.management.session.SessionException;
+import com.cnh.pf.android.data.management.session.SessionNotifier;
+import com.cnh.pf.android.data.management.session.SessionUtil;
+import com.cnh.pf.android.data.management.session.StatusSender;
+import com.cnh.pf.android.data.management.session.resolver.Resolver;
+import com.cnh.pf.android.data.management.session.resolver.ResolverFactory;
+import com.cnh.pf.android.data.management.session.task.CancelTask;
+import com.cnh.pf.android.data.management.session.task.SessionOperationTask;
 import com.cnh.pf.data.management.service.ServiceConstants;
-import com.cnh.pf.datamng.Process;
 import com.cnh.pf.datamng.Process.Result;
 import com.cnh.pf.jgroups.ChannelModule;
-import com.google.common.base.Function;
-import com.google.common.base.Throwables;
-import com.google.common.collect.Collections2;
 import com.google.inject.name.Named;
 
 import org.jgroups.Address;
 import org.jgroups.Global;
 import org.jgroups.View;
-import org.jgroups.util.Rsp;
-import org.jgroups.util.UUID;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.io.File;
-import java.io.FileFilter;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
-import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.concurrent.atomic.AtomicReference;
 
-import javax.annotation.Nullable;
 import javax.inject.Inject;
 
 import roboguice.RoboGuiceHelper;
-import roboguice.config.DefaultRoboModule;
-import roboguice.event.EventManager;
-import roboguice.inject.InjectResource;
 import roboguice.service.RoboService;
 
 /**
@@ -86,80 +66,87 @@ import roboguice.service.RoboService;
  * Accepts operations from UI, and relays them to destination datasource.
  * @author oscar.salazar@cnhind.com
  */
-public class DataManagementService extends RoboService implements SharedPreferences.OnSharedPreferenceChangeListener {
+public class DataManagementService extends RoboService implements SharedPreferences.OnSharedPreferenceChangeListener, SessionNotifier {
    private static final Logger logger = LoggerFactory.getLogger(DataManagementService.class);
 
+   public static final String ACTION_RESET_CACHE = "com.cnh.pf.data.management.RESET_CACHE";
    public static final String ACTION_CANCEL = "com.cnh.pf.data.management.CANCEL";
 
-   private static final boolean SEND_NOTIFICATION = false;
    public static final int KILL_STATUS_DELAY = 5000;
 
-   private @Inject Mediator mediator;
-   private @Inject DatasourceHelper dsHelper;
-   @Named(DefaultRoboModule.GLOBAL_EVENT_MANAGER_NAME)
    @Inject
-   EventManager globalEventManager;
+   private Mediator mediator;
+   @Inject
+   private DatasourceHelper dsHelper;
    @Named("global")
    @Inject
    private SharedPreferences prefs;
-
    @Inject
    private FormatManager formatManager;
-
    @Inject
    private DMFaultHandler faultHandler;
-
-   @InjectResource(R.string.exporting_string)
-   private String exporting;
-   @InjectResource(R.string.importing_string)
-   private String importing;
-   @InjectResource(R.string.status_successful)
-   private String statusSuccessful;
-   @InjectResource(R.string.status_cancelled)
-   private String statusCancelled;
-   @InjectResource(R.string.status_cancelling)
-   private String statusCancelling;
-   @InjectResource(R.string.status_starting)
-   private String statusStarting;
-
    @Inject
-   NotificationManager notifyManager;
+   private NotificationManager notifyManager;
+   @Inject
+   private UsbServiceManager usbServiceManager;
+   @Inject
+   private CacheManager cacheManager;
 
-   boolean performCalled;
-   // This is to keep track of a session's STATUS and send broadcast message to STATUS UI.
-   private Map<DataManagementSession, Status> activeStatusUpdateSessions = new HashMap<DataManagementSession, Status>();
    // This is to maintain reference to current active session.
-   private AtomicReference<DataManagementSession> currentSession = new AtomicReference<DataManagementSession>();
+   private AtomicReference<Session> activeSessionRef = new AtomicReference<Session>();
+   // This is to maintain reference to current active session view.
+   private AtomicReference<SessionContract.SessionView> activeViewRef = new AtomicReference<SessionContract.SessionView>();
 
-   private void setCurrentSession(final DataManagementSession session) {
-      currentSession.set(session);
+   /**
+    * Setter for currently active session
+    *
+    * @param session    the session
+    */
+   public void setActiveSession(final Session session) {
+      activeSessionRef.set(session);
    }
 
-   private DataManagementSession getCurrentSession() {
-      return currentSession.get();
+   /**
+    * Getter for currently active session
+    * @return  active session
+    */
+   public Session getActiveSession() {
+      return activeSessionRef.get();
    }
 
    private boolean hasActiveSession() {
-      if (currentSession.get() != null) {
-         return currentSession.get().getSessionOperation() == DataManagementSession.SessionOperation.DISCOVERY ||
-                 currentSession.get().getSessionOperation() == DataManagementSession.SessionOperation.PERFORM_OPERATIONS ||
-                 currentSession.get().getSessionOperation() == DataManagementSession.SessionOperation.CALCULATE_CONFLICTS ||
-                 currentSession.get().getSessionOperation() == DataManagementSession.SessionOperation.CALCULATE_OPERATIONS;
+      if (getActiveSession() != null) {
+         final Session session = getActiveSession();
+         return SessionUtil.isDiscoveryTask(session) ||
+                 SessionUtil.isPerformOperationsTask(session) ||
+                 SessionUtil.isCalculateConflictsTask(session) ||
+                 SessionUtil.isCalculateOperationsTask(session);
       }
       return false;
    }
 
-   ConcurrentHashMap<String, IDataManagementListenerAIDL> listeners = new ConcurrentHashMap<String, IDataManagementListenerAIDL>();
+   /**
+    * Setter for currently active session view
+    *
+    * @param view session view
+    */
+   public void setActiveView(final SessionContract.SessionView view) {
+      activeViewRef.set(view);
+   }
+
+   /**
+    * Getter for currently active session view
+    * @return  session view
+    */
+   public SessionContract.SessionView getActiveView() {
+      return activeViewRef.get();
+   }
+
+   private List<SessionEventListener> sessionEventListeners = new CopyOnWriteArrayList<SessionEventListener>();
    private Handler handler = new Handler();
    private final IBinder localBinder = new LocalBinder();
 
-   /* Time to wait for USB Datasource to register if the usb has valid data*/
-   private static int usbDelay = 6000;
-
-   private BitmapDrawable statusDrawable;
-   private static Status dataStatus;
-
-   private boolean isScanningUsb;
+   private boolean useInternalFileSystem = false;
 
    @Override
    public int onStartCommand(Intent intent, int flags, int startId) {
@@ -168,18 +155,16 @@ public class DataManagementService extends RoboService implements SharedPreferen
       if (intent == null) { //happens after restart when service is sticky
          return START_STICKY;
       }
-
-      if (ACTION_CANCEL.equals(intent.getAction())) {
-         cancel(intent.<DataManagementSession> getParcelableExtra("session"));
+      else if (intent.getAction().equals(ACTION_RESET_CACHE)) {
+         if (cacheManager != null) {
+            logger.trace("Cache is requested to reset by ACTION_RESET_CACHE action.");
+            cacheManager.resetAll();
+         }
+         return START_STICKY;
       }
-      else if (Intent.ACTION_MEDIA_MOUNTED.equals(intent.getAction())) {
-         sendMediumUpdateEvent();
-         faultHandler.getFault(FaultCode.USB_REMOVED_DURING_EXPORT).reset();
-         faultHandler.getFault(FaultCode.USB_REMOVED_DURING_IMPORT).reset();
-         /*Uri mount = intent.getData();
-         File mountFile = new File(mount.getPath());
-         logger.info("Media has been mounted @{}: ", mountFile.getAbsolutePath());
-         scan(mountFile);*/
+
+      if (Intent.ACTION_MEDIA_MOUNTED.equals(intent.getAction())) {
+         notifyMediumUpdate();
       }
       else if (Intent.ACTION_MEDIA_UNMOUNTED.equals(intent.getAction()) || Intent.ACTION_MEDIA_BAD_REMOVAL.equals(intent.getAction())
             || Intent.ACTION_MEDIA_REMOVED.equals(intent.getAction()) || Intent.ACTION_MEDIA_EJECT.equals(intent.getAction())) {
@@ -188,28 +173,31 @@ public class DataManagementService extends RoboService implements SharedPreferen
             logger.debug("Bad USB removal during task");
             // If USB stick gets pulled out during the task (discovery, perform operation),
             // the current ongoing session needs to be cancelled and alert corresponding fault.
-            final DataManagementSession currentSession = getCurrentSession();
-            logger.debug("Current active session: {}", currentSession);
+            final Session curSession = getActiveSession();
+            logger.debug("Current active session: {}, {}", curSession.getType(), curSession.getAction());
 
-            if (currentSession.isProgress() && (isUsbImport(currentSession) || isUsbExport(currentSession))) {
+            if (SessionUtil.isInProgress(curSession) && (curSession.getExtra() != null && curSession.getExtra().isUsbExtra())) {
                logger.debug("USB unplugged while interacting with datasources. Cancel the current session.");
-               cancel(currentSession);
-               FaultCode faultCode = isUsbExport(currentSession) ? FaultCode.USB_REMOVED_DURING_EXPORT :
-                       FaultCode.USB_REMOVED_DURING_IMPORT;
-               faultHandler.getFault(faultCode).alert();
-            } else if (isUsbImport(currentSession) && currentSession.getObjectData() != null &&
-                    (currentSession.getSessionOperation() == DataManagementSession.SessionOperation.DISCOVERY ||
-                    currentSession.getSessionOperation() == DataManagementSession.SessionOperation.CALCULATE_CONFLICTS)) {
+               notifySessionError(curSession, ErrorCode.USB_REMOVED);
+               cancelSession(curSession);
+               FaultCode faultCode = SessionUtil.isExportAction(curSession) ? FaultCode.USB_REMOVED_DURING_EXPORT : FaultCode.USB_REMOVED_DURING_IMPORT;
+               DMFaultHandler.Fault fault = faultHandler.getFault(faultCode);
+               fault.reset();
+               fault.alert();
+            }
+            else if (SessionUtil.isImportAction(curSession) && curSession.getObjectData() != null && getActiveView() != null
+                  && (SessionUtil.isDiscoveryTask(curSession) || SessionUtil.isCalculateConflictsTask(curSession))) {
                logger.debug("USB unplugged while waiting for the user response (discovery/conflict resolution).");
-
-               currentSession.setResult(Result.CANCEL);
-               currentSession.setSessionOperation(DataManagementSession.SessionOperation.DISCOVERY);
-               faultHandler.getFault(FaultCode.USB_REMOVED_DURING_IMPORT).alert();
+               notifySessionError(curSession, ErrorCode.USB_REMOVED);
+               curSession.setResultCode(Result.CANCEL);
+               curSession.setType(Session.Type.DISCOVERY);
+               DMFaultHandler.Fault fault = faultHandler.getFault(FaultCode.USB_REMOVED_DURING_IMPORT);
+               fault.reset();
+               fault.alert();
             }
          }
 
-         sendMediumUpdateEvent();
-         removeUsbStatus();
+         notifyMediumUpdate();
       }
       return START_STICKY;
    }
@@ -229,27 +217,46 @@ public class DataManagementService extends RoboService implements SharedPreferen
 
    @Override
    public void onCreate() {
+      logger.debug("onCreate(): Create DM service");
       final Application app = getApplication();
       //Phoenix Workaround (phoenix sometimes cannot read the manifest)
       RoboGuiceHelper.help(app, new String[] { "com.cnh.pf.android.data.management", "com.cnh.pf.jgroups" }, new RoboModule(app), new ChannelModule(app));
       super.onCreate();
-      statusDrawable = (BitmapDrawable) getResources().getDrawable(R.drawable.ic_usb);
       try {
          prefs.registerOnSharedPreferenceChangeListener(this);
          mediator.setProgressListener(pListener);
+
+         new Thread(new Runnable() {
+            @Override
+            public void run() {
+               try {
+                  System.setProperty(Global.IPv4, "true");
+                  mediator.start();
+                  logger.debug("Mediator started, notify the listeners");
+               }
+               catch (Exception e) {
+                  logger.error("Failure at starting Mediator: ", e);
+               }
+            }
+         }).start();
       }
       catch (Exception e) {
          logger.error("error in onCreate", e);
       }
+      usbServiceManager.connect();
    }
 
    @Override
    public void onDestroy() {
-      stopUsbServices();
+      logger.debug("onDestroy(): Destroy DM service");
       sendBroadcast(new Intent(ServiceConstants.ACTION_INTERNAL_DATA_STOP).addFlags(Intent.FLAG_INCLUDE_STOPPED_PACKAGES));
-      removeUsbStatus();
-      listeners.clear();
+
+      sessionEventListeners.clear();
       prefs.unregisterOnSharedPreferenceChangeListener(this);
+
+      // Stop USB datasources if there are any running
+      usbServiceManager.stopAllDatasources();
+      usbServiceManager.disconnect();
       new Thread(new Runnable() {
          @Override
          public void run() {
@@ -259,317 +266,147 @@ public class DataManagementService extends RoboService implements SharedPreferen
       super.onDestroy();
    }
 
-   public DataManagementSession getSession() {
-      if (!activeStatusUpdateSessions.isEmpty()) {
-         return activeStatusUpdateSessions.keySet().iterator().next();
-      }
-      return null;
-   }
-
-   public void register(String name, IDataManagementListenerAIDL listener) {
-      logger.debug("Register: " + name);
-      if (listeners.isEmpty()) {
-         if (!mediator.getChannel().isConnected()) {
-            logger.debug("first listener comes in, do ConnectTask");
-            new ConnectTask().execute();
-         }
-      }
-      listeners.put(name, listener);
-   }
-
-   public void unregister(String name) {
-      logger.debug("Unegister: " + name);
-      listeners.remove(name);
-   }
-
-   protected void sendMediumUpdateEvent() {
-      try {
-         List<MediumDevice> mediums = dsHelper.getTargetDevices();
-         for (IDataManagementListenerAIDL listener : listeners.values()) {
-            try {
-               listener.onMediumsUpdated(mediums);
-            }
-            catch (RemoteException e) {
-               logger.error("", e);
-            }
-         }
-      }
-      catch (Exception e) {
-         logger.warn("Error sending medium update event, probably mediator isn't connected");
-      }
-   }
-
    /**
-    * Scan USB stick for data.
+    * Register a session event listener
     *
-    * Starts all USB datasources and checks to see how many found data.
-    * Passes all subfolders under the mountpoint.
-    * @param mount
+    * @param listener   listener to be registered
     */
-   protected void scan(File mount) {
-      logger.info("Checking for data");
-      isScanningUsb = true;
-      dataStatus = new Status(getResources().getString(R.string.usb_data_available), statusDrawable, getApplication().getPackageName());
-      sendStatus(dataStatus, getResources().getString(R.string.usb_scanning));
-      //Check if USB has any interesting data
-      File[] folders = mount.listFiles(new FileFilter() {
-         @Override
-         public boolean accept(File file) {
-            return file.isDirectory() && !file.getName().startsWith(".");
-         }
-      });
-      String[] paths = new String[folders.length];
-      for (int i = 0; i < folders.length; i++) {
-         paths[i] = folders[i].getAbsolutePath();
-      }
-      //Launch USB datasource broadcast for every root folder on USB
-      scanUsbServices(paths, false, null, new Runnable() {
-         @Override
-         public void run() {
-            logger.info("Found USB data!");
-            sendStatus(dataStatus, getResources().getString(R.string.usb_data_available));
-            isScanningUsb = false;
-         }
-      }, new Runnable() {
-         @Override
-         public void run() {
-            logger.info("No USB Data found");
-            sendStatus(dataStatus, getResources().getString(R.string.usb_no_data_available));
-            handler.postDelayed(new Runnable() {
-                  @Override
-                  public void run() {
-                     removeStatus(dataStatus);
-                  }
-               }, usbDelay);
-            isScanningUsb = false;
-         }
-      });
-   }
-
-   protected void removeUsbStatus() {
-      if (dataStatus != null) {
-         sendBroadcast(new Intent(Status.ACTION_STATUS_REMOVE).putExtra(Status.ID, ParcelUuid.fromString(dataStatus.getID().toString())));
-         dataStatus = null;
+   public void registerSessionEventListener(SessionEventListener listener) {
+      if (!sessionEventListeners.contains(listener)) {
+         sessionEventListeners.add(listener);
       }
    }
 
-   public DataManagementSession processOperation(final DataManagementSession session, DataManagementSession.SessionOperation sessionOperation) {
-      logger.debug("service.processOperation: {}", sessionOperation);
-      session.setSessionOperation(sessionOperation);
-      session.setProgress(true);
-      session.setResult(null);
-      setCurrentSession(session);
-      if (sessionOperation.equals(DataManagementSession.SessionOperation.DISCOVERY)) {
-         if (isUsbImport(session)) {
-            if(session.getSource() != null && session.getSource().getPath() != null && Environment.getExternalStorageState().equals(Environment.MEDIA_MOUNTED)) {
-               logger.debug("Starting USB Datasource: getSource():{}", session.getSource());
-               startUsbServices(new String[] { session.getSource().getPath().getPath() }, false, session.getFormat(), new Runnable() {
-                  @Override
-                  public void run() {
-                     logger.debug("Running discovery");
-                     new DiscoveryTask().executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR, session);
-                  }
-               }, new Runnable() {
-                  @Override
-                  public void run() {
-                     logger.debug("Unable to start USB services for USB import");
-                     session.setProgress(false);
-                     session.setResult(Process.Result.NO_DATASOURCE);
-                     globalEventManager.fire(new ErrorEvent(session, ErrorEvent.DataError.NO_SOURCE_DATASOURCE));
-                  }
-               });
-            }
-            else{
-               session.setProgress(false);
-               session.setResult(Process.Result.NO_DATASOURCE);
-               globalEventManager.fire(new ErrorEvent(session, ErrorEvent.DataError.NEED_DATA_PATH));
-            }
+   /**
+    * Unregister session event listener
+    *
+    * @param listener   listener to be unregistered
+    */
+   public void unregisterSessionEventListener(SessionEventListener listener) {
+      sessionEventListeners.remove(listener);
+   }
+
+   /**
+    * Execute a session.
+    *
+    * @param session    the session
+    */
+   private void executeSession(final Session session) {
+      Resolver resolver = ResolverFactory.createResolver(dsHelper, session);
+
+      try {
+         if (resolver != null) {
+            resolver.resolve(session);
          }
          else {
-            new DiscoveryTask().executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR, session);
+            logger.error("Unable to create proper Resolver for session {}.", session.getType());
+            return;
          }
-      }
-      else if (sessionOperation.equals(DataManagementSession.SessionOperation.CALCULATE_OPERATIONS)) {
-         new CalculateTargetsTask().executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR, session);
-      }
-      else if (sessionOperation.equals(DataManagementSession.SessionOperation.CALCULATE_CONFLICTS)) {
-         new CalculateConflictsTask().executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR, session);
-      }
-      else if (sessionOperation.equals(DataManagementSession.SessionOperation.PERFORM_OPERATIONS)) {
-         performOperations(session);
-      }
-      else if (sessionOperation.equals(DataManagementSession.SessionOperation.UPDATE)) {
-         updateOperations(session);
-      }
-      else if(sessionOperation.equals(DataManagementSession.SessionOperation.DELETE)){
-         deleteOperations(session);
-      }
-      else {
-         logger.error("Couldn't find op");
-      }
-      logger.debug("before return Datasource: getSource():{}", session.getSource());
-      return session;
-   }
 
-   /**
-    * Return whether an status-update required operation is currently executing.
-    * @return true executing, false otherwise;
-    */
-   public boolean hasActiveStatusUpdateSession() {
-      return !isScanningUsb && getActiveStatusUpdateSession() != null;
-   }
+         SessionOperationTask task = new SessionOperationTask.TaskBuilder().mediator(mediator).session(session).notifier(this)
+               .statusSender(new StatusSender(getApplicationContext())).formatManager(formatManager).faultHandler(faultHandler).build();
 
-   public DataManagementSession getActiveStatusUpdateSession() {
-      for (Map.Entry<DataManagementSession, Status> entry : activeStatusUpdateSessions.entrySet()) {
-         if (entry.getKey().getResult() == null && entry.getKey().getSessionOperation().equals(DataManagementSession.SessionOperation.PERFORM_OPERATIONS)) {
-            return entry.getKey();
-         }
-      }
-      return null;
-   }
-
-   /**
-    * Cancel a session.
-    * @param session the session to cancel.
-    */
-   public void cancel(DataManagementSession session) {
-      new CancelTask().executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR, session);
-   }
-
-   public List<MediumDevice> getMediums() {
-      return dsHelper.getTargetDevices();
-   }
-
-   public static boolean isUsbExport(DataManagementSession session) {
-      return session.getSourceTypes() != null && Arrays.binarySearch(session.getSourceTypes(), Datasource.Source.INTERNAL) > -1 && session.getTarget() != null
-            && session.getTarget().getType().equals(Datasource.Source.USB);
-   }
-
-   public static boolean isUsbImport(DataManagementSession session) {
-      return session.getSource() != null && session.getSource().getType().equals(Datasource.Source.USB) && session.getDestinationTypes() != null
-            && Arrays.binarySearch(session.getDestinationTypes(), Datasource.Source.INTERNAL) > -1;
-   }
-
-   /**
-    * Return whether DISPLAY or INTERNAL data source is available
-    * @return true if available, false otherwise;
-    */
-   public boolean hasLocalSources() {
-      return dsHelper.getLocalDatasources(new Datasource.Source[] {Datasource.Source.DISPLAY, Datasource.Source.INTERNAL}).size() > 0;
-   }
-
-   private void performOperations(final DataManagementSession session) {
-      try {
-         session.setResult(null);
-         performCalled = false;
-         Status status = new com.cnh.android.status.Status("", statusDrawable, getApplicationContext().getPackageName());
-         activeStatusUpdateSessions.put(session, status);
-         sendStatus(session, statusStarting);
-         if (isUsbExport(session)) {
-            File destinationFolder = new File(session.getTarget().getPath(), formatManager.getFormat(session.getFormat()).path);
-            startUsbServices(new String[] { destinationFolder.getPath() }, true, session.getFormat(), new Runnable() {
-               @Override public void run() {
-                  if (!hasActiveStatusUpdateSession()) {
-                     logger.debug("Operation cancelled before calling performOperations");
-                     return; //if cancel was pressed before datasource started
-                  }
-                  performCalled = true;
-                  new PerformOperationsTask().executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR, session);
-               }
-            }, new Runnable() {
-               @Override public void run() {
-                  logger.debug("Unable to start USB services for USB export");
-                  session.setProgress(false);
-                  session.setResult(Process.Result.NO_DATASOURCE);
-                  globalEventManager.fire(new ErrorEvent(session, ErrorEvent.DataError.NO_TARGET_DATASOURCE));
-               }
-            });
-         }
-         else if (isUsbImport(session) && Environment.getExternalStorageState().equals(MEDIA_BAD_REMOVAL)) {
-            logger.debug("Unable to continue PerformOperation for USB import");
-            session.setProgress(false);
-            session.setResult(Process.Result.NO_DATASOURCE);
-            globalEventManager.fire(new ErrorEvent(session, ErrorEvent.DataError.NO_SOURCE_DATASOURCE));
+         if (task != null) {
+            task.executeTask(session);
          }
          else {
-            performCalled = true;
-            new PerformOperationsTask().executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR, session);
+            logger.error("No session task has been created.");
          }
       }
-      catch (Exception e) {
-         logger.error("Could not find destination address for this type", e);
+      catch (SessionException e) {
+         logger.debug("Caught SessionException: {}", e.getErrorCode().toString());
+         session.setResultCode(Result.ERROR);
+         notifySessionError(session, e.getErrorCode());
+      }
+      catch (IllegalStateException e) {
+         logger.error("Failure at executeSession(): {}", e);
+         session.setResultCode(Result.ERROR);
+         notifySessionError(session, ErrorCode.NO_DATA);
       }
    }
 
-   private void updateOperations(final DataManagementSession session) {
-      try {
-         session.setResult(null);
-         new UpdateOperationsTask().executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR, session);
+   /**
+    * Process session object. Pre-configuration & session execution & notification will be processed.
+    *
+    * @param session    the session object.
+    */
+   public void processSession(final Session session) {
+      logger.debug("Service.processSession: {}", session.getType());
+
+      setActiveSession(session);
+      // Use cached data only for DISCOVERY task here
+      if (SessionUtil.isDiscoveryTask(session) && !SessionUtil.isImportAction(session) && cacheManager.cached(session)) {
+         logger.trace("Found cached data for session: {}, {}", session.getAction(), session.getType());
+         CacheManager.CacheItem cItem = cacheManager.retrieve(session);
+         List<ObjectGraph> objectGraphs = cItem.getObjectGraph();
+         List<Operation> operations = cItem.getOperations();
+
+         // Set the state & result code to get passed the notifier
+         session.setState(Session.State.COMPLETE);
+         session.setResultCode(Result.SUCCESS);
+         session.setObjectData(objectGraphs);
+         session.setOperations(operations);
+         notifySessionSuccessWithoutCaching(session);
+         return;
       }
-      catch (Exception e) {
-         logger.error("Could not find destination address for this type", e);
-      }
-   }
-   private void deleteOperations(final DataManagementSession session) {
-      try {
-         session.setResult(null);
-         new DeleteOperationsTask().executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR, session);
-      }
-      catch (Exception e) {
-         logger.error("Could not find destination address for this type", e);
-      }
-   }
 
-   private void scanUsbServices(String[] path, boolean create, String format, final Runnable onSuccess, final Runnable onFailure) {
-      startUsbServices(path, create, format, ServiceConstants.ACTION_SCAN, onSuccess, onFailure);
-   }
-
-   private void startUsbServices(String[] path, boolean create, String format, final Runnable onSuccess, final Runnable onFailure) {
-      startUsbServices(path, create, format, ServiceConstants.USB_ACTION_INTENT, onSuccess, onFailure);
-   }
-
-   private void startUsbServices(String[] path, boolean create, String format, String intent, final Runnable onSuccess, final Runnable onFailure) {
-      logger.debug("Starting USB datasource");
-      if(path.length > 0 && !Environment.getExternalStorageState().equals(MEDIA_BAD_REMOVAL)) {
-         final DatasourceContentClient dClient = new DatasourceContentClient(this);
-         getContentResolver().delete(DatasourceContract.Folder.CONTENT_URI, "", null);//clear to avoid previous error will block all following operation
-         dClient.addFolderRequest(path);
-         getContentResolver().registerContentObserver(DatasourceContract.Folder.CONTENT_URI, true, new ContentObserver(handler) {
-
-            @Override public void onChange(boolean selfChange) {
-               onChange(selfChange, null);
-            }
-
-            @Override public void onChange(boolean selfChange, Uri uri) {
-               //check if heard back from all datasources
-               if (dClient.isRequestProcessed()) {
-                  logger.info("Got responses from all datasources, continuing. selfchange {}", selfChange);
-                  getContentResolver().unregisterContentObserver(this);
-                  handler.postDelayed(dClient.hasValid() ? onSuccess : onFailure, 2000 );
-                  getContentResolver().delete(DatasourceContract.Folder.CONTENT_URI, "", null);
+      if ((SessionUtil.isExportAction(session) && SessionUtil.isPerformOperationsTask(session)) || (SessionUtil.isImportAction(session) && SessionUtil.isDiscoveryTask(session))) {
+         // Run USB service code in new thread to show UI change faster
+         new Thread(new Runnable() {
+            @Override
+            public void run() {
+               if (usbServiceManager.datasourceReady(session.getExtra())) {
+                  logger.trace("Found datasource for {}", session.getExtra());
+                  // For the usb datasource services, starting datasources is also considered to be
+                  // 'SESSION IN PROGRESS'.
+                  session.setState(Session.State.IN_PROGRESS);
+                  usbServiceManager.stopAllDatasourceBeforeStart();
+                  if (usbServiceManager.startUsbDatasource(session.getExtra(), SessionUtil.isExportAction(session))) {
+                     executeSession(session);
+                  }
+                  else {
+                     logger.debug("Unable to start datasource: {}, {}", session.getType(), session.getExtra());
+                     session.setResultCode(Result.CANCEL);
+                     session.setState(Session.State.COMPLETE);
+                     notifySessionCancel(session);
+                  }
                }
                else {
-                  logger.info("Got response from a datasource {}", uri);
+                  logger.error("No datasource has been found for {}", session.getExtra());
+                  session.setResultCode(Result.ERROR);
+                  session.setState(Session.State.COMPLETE);
+                  notifySessionError(session, ErrorCode.INVALID_FORMAT);
                }
             }
-         });
-         Intent i = new Intent(intent);
-         i.putExtra(ServiceConstants.USB_PATH, path);
-         i.putExtra(ServiceConstants.CREATE_PATH, create);
-         if (format != null) {
-            i.putExtra(ServiceConstants.FORMAT, format);
-         }
-         i.setFlags(Intent.FLAG_INCLUDE_STOPPED_PACKAGES);
-         getApplicationContext().sendBroadcast(i);
+         }).start();
       }
-      else { //if paths is empty
-         handler.postDelayed(onFailure, 1000);
+      else {
+         executeSession(session);
       }
    }
 
-   public void stopUsbServices() {
-      logger.debug("Stopping all USB datasources");
-      getApplicationContext().sendBroadcast(new Intent(ACTION_STOP));
+   /**
+    * Cancel a session operation.
+    * @param session the session to cancel.
+    */
+   public void cancelSession(Session session) {
+      logger.debug("cancelSession(): {}, {}", session.getType(), session.getAction());
+
+      final Session activeSession = getActiveSession();
+      if (activeSession != null && activeSession.getUuid().equals(session.getUuid())) {
+         new CancelTask(mediator).executeTask(activeSession);
+      }
+   }
+
+   /**
+    * Return true if PCM is online. If one of PCM datasources (pfdsd, vipd) is connected, then PCM is
+    * considered to be online.
+    *
+    * @return True if PCM is online
+    */
+   public boolean isPCMOnline() {
+      List<Address> internalAddresses = dsHelper.getAddressesForLocation(Datasource.LocationType.PCM);
+      return !internalAddresses.isEmpty();
    }
 
    @Override
@@ -579,7 +416,6 @@ public class DataManagementService extends RoboService implements SharedPreferen
    }
 
    public class LocalBinder extends Binder {
-
       public DataManagementService getService() {
          return DataManagementService.this;
       }
@@ -588,491 +424,146 @@ public class DataManagementService extends RoboService implements SharedPreferen
    private Mediator.ProgressListener pListener = new Mediator.ProgressListener() {
       @Override
       public void onProgressPublished(final String operation, final int progress, final int max) {
-         logger.debug(String.format("publishProgress(%s, %d, %d)", operation, progress, max));
+         logger.debug("publishProgress({}, {}, {})", operation, progress, max);
          handler.post(new Runnable() {
             @Override
             public void run() {
-               for (IDataManagementListenerAIDL listener : listeners.values()) {
-                  try {
-                     listener.onProgressUpdated(operation, progress, max);
-                  }
-                  catch (RemoteException e) {
-                     logger.error("", e);
-                  }
-               }
+               notifyProgressUpdate(operation, progress, max);
             }
          });
-         //dont update status
-//         if (hasActiveSession() && performCalled) {
-//            sendStatus(getActiveSession(), String.format("%s %d/%d", operation, progress, max));
-//
-//            if (SEND_NOTIFICATION) {
-//               notifyManager.notify(0,
-//                     new NotificationCompat.Builder(DataManagementService.this).setContentTitle("Data Operation").setContentText(operation)
-//                           .setSmallIcon(android.R.drawable.ic_dialog_info).setProgress(max, progress, false)
-//                           .setContentIntent(PendingIntent.getActivity(DataManagementService.this, 0, new Intent(DataManagementService.this, DataManagementActivity.class), 0))
-//                           .addAction(R.drawable.button_stop, "Stop", PendingIntent.getService(DataManagementService.this, 0, new Intent(ACTION_CANCEL), 0)).build());
-//            }
-//         }
       }
 
       @Override
       public void onSecondaryProgressPublished(String secondaryOperation, int secondaryProgress, int secondaryMax) {
+         logger.trace("onSecondaryProgressPublished()");
       }
 
       @Override
       public void onViewAccepted(View newView) {
          logger.debug("onViewAccepted {}", newView);
-         try {
-            dsHelper.setSourceMap(newView);
-         }
-         catch (Exception e) {
-            logger.error("Error in updating sourceMap", e);
-         }
+         dsHelper.updateView(newView, new DatasourceHelper.onConnectionChangeListener() {
+            @Override
+            public void onConnectionChange(Address[] left, Address[] join, boolean updateNeeded) {
+               notifyChannelConnectionChange(updateNeeded);
+            }
+         });
       }
    };
 
-   private class ConnectTask extends AsyncTask<Void, Void, Void> {
-
-      @Override
-      protected Void doInBackground(Void... params) {
-         try {
-            System.setProperty(Global.IPv4, "true");
-            mediator.start();
-            logger.debug("mediator started, notify the listeners");
-            sendMediumUpdateEvent();
-         }
-         catch (Exception e) {
-            logger.error("", e);
-         }
-         return null;
-      }
-   }
-
-   static String addressToString(Address[] addresses) {
-      return Collections2.transform(Arrays.asList(addresses), new Function<Address, String>() {
-         @Nullable
-         @Override
-         public String apply(@Nullable Address input) {
-            return UUID.get(input);
-         }
-      }).toString();
-   }
-
    /**
-    * Convert list of devices to array of addesses
-    * @param devices
-    * @return
+    * Notify session success to registered callbacks without caching session data.
+    *
+    * @param session    the session object
     */
-   private static Address[] getAddresses(List<MediumDevice> devices) throws NullPointerException {
-      return Collections2.transform(devices, new Function<MediumDevice, Address>() {
-         @Nullable
-         @Override
-         public Address apply(@Nullable MediumDevice input) {
-            return input.getAddress();
-         }
-      }).toArray(new Address[devices.size()]);
-   }
-
-   private class DiscoveryTask extends SessionOperationTask<Void> {
-      @Override
-      protected DataManagementSession doInBackground(DataManagementSession... params) {
-         DataManagementSession session = params[0];
-         session.setProgress(true);
-         try {
-            resolveSources(session);
-            Address[] addrs = getAddresses(session.getSources());
-            logger.debug("Discovery for {}, address: {}", Arrays.toString(session.getSourceTypes()), addressToString(addrs));
-            if (addrs == null || addrs.length > 0) {
-               session.setObjectData(mediator.discovery(addrs));
-               if (session.getObjectData() == null || session.getObjectData().isEmpty()) {
-                  session.setProgress(false);
-                  globalEventManager.fire(new ErrorEvent(session, ErrorEvent.DataError.NO_DATA));
-                  session.setResult(Result.NO_DATASOURCE);
-               }
-               else {
-                  session.setResult(Process.Result.SUCCESS);
-               }
-            }
-            else {
-               session.setProgress(false);
-               globalEventManager.fire(new ErrorEvent(session, ErrorEvent.DataError.NO_SOURCE_DATASOURCE));
-               session.setResult(Process.Result.NO_DATASOURCE);
-            }
-         }
-         catch (Throwable e) {
-            logger.debug("error in discovery", e);
-            session.setProgress(false);
-            globalEventManager.fire(new ErrorEvent(session, ErrorEvent.DataError.DISCOVERY_ERROR, Throwables.getRootCause(e).getMessage()));
-            session.setResult(Process.Result.ERROR);
-         }
-         return session;
+   private void notifySessionSuccessWithoutCaching(Session session) {
+      logger.debug("notifySessionSuccessWithoutCaching()");
+      for (SessionEventListener listener : this.sessionEventListeners) {
+         listener.onSessionSuccess(session);
       }
    }
 
    /**
-    * Resolve source addresses (MediumDevice) in session
-    * @param session    the data management session object
-    * @return true if resolving addresses is successful
+    * Notify session success to registered callbacks.
+    *
+    * @param session    the session object
     */
-   private boolean resolveSources(@NonNull DataManagementSession session) {
-      if (session.getSources() == null && session.getSourceTypes() != null) { //export
-         session.setSources(dsHelper.getLocalDatasources(session.getSourceTypes()));
-      } else if (session.getSource().getAddress() == null) { //if MediumDevice hasn't been resolved
-         session.setSources(dsHelper.getLocalDatasources(session.getSource().getType()));
-      } else if (session.getSource() == null) {
-         logger.debug("The source is null.");
-         return false;
+   public void notifySessionSuccess(Session session) {
+      logger.debug("notifySessionSuccess()");
+      // Cache session result so that it can be recycled later.
+      if (SessionUtil.isComplete(session) && SessionUtil.isSuccessful(session)) {
+         cacheManager.save(session);
+
+         if (SessionUtil.isImportAction(session) && SessionUtil.isPerformOperationsTask(session)) {
+            // Clear cached discovery data for EXPORT & MANAGE once IMPORT is performed successfully.
+            cacheManager.reset(Session.Action.EXPORT, Session.Type.DISCOVERY);
+            cacheManager.reset(Session.Action.MANAGE, Session.Type.DISCOVERY);
+         }
       }
-      return true;
+
+      notifySessionSuccessWithoutCaching(session);
    }
 
    /**
-    * Resolve target addresses (MediumDevice) in session
-    * @param session    the data management session object
-    * @return true if resolving addresses is successful
+    * Notify session error to registered callbacks.
+    *
+    * @param session    the session object
+    * @param errCode    error code
     */
-   private boolean resolveTargets(@NonNull DataManagementSession session) {
-      if (session.getTargets() == null && session.getDestinationTypes() != null) { //resolve by type
-         logger.debug("session.getTargets() is null and type isn't null");
-         session.setTargets(dsHelper.getLocalDatasources(session.getDestinationTypes()));
-      } else if (session.getTarget() != null && session.getTarget().getAddress() == null) { //if MediumDevice hasn't been resolved
-         session.setTargets(dsHelper.getLocalDatasources(session.getTarget().getType()));
-      } else if (session.getTarget() == null) {
-         logger.debug("the Target is null");
-         return false;
-      }
-      return true;
-   }
-
-   private class CalculateTargetsTask extends SessionOperationTask<Void> {
-      @Override
-      protected DataManagementSession doInBackground(DataManagementSession... params) {
-         logger.debug("Calculate Targets...");
-         DataManagementSession session = params[0];
-         session.setProgress(true);
-         try {
-            resolveTargets(session);
-            Address[] addresses = getAddresses(session.getTargets());
-            logger.debug("Calculate targets to address: {}", addressToString(addresses));
-            if (addresses == null || addresses.length > 0) {
-               session.setData(mediator.calculateOperations(session.getObjectData(), addresses));
-               logger.debug("Got operation: {}", session.getData());
-               session.setResult(Result.CANCEL.equals(session.getResult()) ? Result.CANCEL : Result.SUCCESS);
-            } else {
-               logger.warn("Skipping calculate targets");
-               session.setProgress(false);
-               globalEventManager.fire(new ErrorEvent(session, ErrorEvent.DataError.NO_TARGET_DATASOURCE));
-               session.setResult(Process.Result.NO_DATASOURCE);
-            }
-         }
-         catch (Throwable e) {
-            logger.error("Send exception in CalculateTargets: ", e);
-            session.setProgress(false);
-            globalEventManager.fire(new ErrorEvent(session, ErrorEvent.DataError.CALCULATE_TARGETS_ERROR, Throwables.getRootCause(e).getMessage()));
-            session.setResult(Process.Result.ERROR);
-         }
-         return session;
-      }
-   }
-
-   private class CalculateConflictsTask extends SessionOperationTask<Void> {
-      @Override
-      protected DataManagementSession doInBackground(DataManagementSession... params) {
-         logger.debug("Calculate Conflicts...");
-         DataManagementSession session = params[0];
-         session.setProgress(true);
-         try {
-            Address[] addresses = getAddresses(session.getTargets());
-            if (addresses == null || addresses.length > 0) {
-               session.setData(mediator.calculateConflicts(session.getData(), addresses));
-               session.setResult(Result.CANCEL.equals(session.getResult()) ? Result.CANCEL : Result.SUCCESS);
-            } else {
-               session.setResult(Process.Result.NO_DATASOURCE);
-            }
-         }
-         catch (Throwable e) {
-            logger.error("Send exception: ", e);
-            session.setProgress(false);
-            globalEventManager.fire(new ErrorEvent(session, ErrorEvent.DataError.CALCULATE_CONFLICT_ERROR, Throwables.getRootCause(e).getMessage()));
-            session.setResult(Process.Result.ERROR);
-         }
-         return session;
-      }
-   }
-
-   private class PerformOperationsTask extends SessionOperationTask<Void> {
-      @Override
-      protected DataManagementSession doInBackground(DataManagementSession... params) {
-         logger.debug("Performing Operations...");
-         DataManagementSession session = params[0];
-         session.setProgress(true);
-         try {
-            if (!resolveSources(session) || !resolveTargets(session)) {
-               logger.debug("Unable to resolve source/target addresses");
-               session.setResult(Result.CANCEL);
-               session.setProgress(false);
-               return session;
-            }
-            if (session.getData() == null) {
-               session.setData(new ArrayList<Operation>());
-               for (ObjectGraph obj : session.getObjectData()) {
-                  session.getData().add(new Operation(obj, null));
-               }
-            }
-            Address[] addresses = getAddresses(session.getTargets());
-            if (addresses != null && addresses.length > 0) {
-               session.setResults(mediator.performOperations(session.getData(), addresses));
-               boolean hasCancelled = Result.CANCEL.equals(session.getResult());
-               for (Rsp<Process> ret : session.getResults()) {
-                  if (ret.hasException()) throw ret.getException();
-                  if (ret.wasReceived() && ret.getValue() != null && ret.getValue().getResult() != null) {
-                     hasCancelled |= Result.CANCEL.equals(ret.getValue().getResult());
-                  } else {//suspect/unreachable
-                     session.setProgress(false);//possible fire will happen before view change
-                     globalEventManager.fire(new ErrorEvent(session, ErrorEvent.DataError.PERFORM_ERROR));
-                     session.setResult(Result.ERROR);
-                  }
-               }
-
-               session.setResult(hasCancelled ? Result.CANCEL : Result.SUCCESS);
-            } else {
-               session.setProgress(false);
-               globalEventManager.fire(new ErrorEvent(session, ErrorEvent.DataError.NO_TARGET_DATASOURCE));
-               session.setResult(Process.Result.NO_DATASOURCE);
-            }
-         }
-         catch (Throwable e) {
-            logger.error("Send exception in PerformOperation:", e);
-            session.setResult(Process.Result.ERROR);
-            session.setProgress(false);
-            globalEventManager.fire(new ErrorEvent(session, ErrorEvent.DataError.PERFORM_ERROR, Throwables.getRootCause(e).toString()));
-
-         }
-         return session;
-      }
-
-      @Override
-      protected void onPostExecute(DataManagementSession session) {
-         logger.debug("PerformTask calling completeOperation");
-         completeOperation(session);
-         super.onPostExecute(session);
-      }
-   }
-
-   private void completeOperation(final DataManagementSession session) {
-      logger.info("perform ops finished {}", session.getResult().name());
-      if (session.getResult().equals(Process.Result.ERROR)) {
-         sendStatus(session, "Error");
-      }
-      else if (session.getResult().equals(Process.Result.CANCEL)) {
-         sendStatus(session, statusCancelled);
-      }
-      else if (session.getResult().equals(Result.SUCCESS)) {
-         sendStatus(session, statusSuccessful);
-      }
-      if (isUsbExport(session)) {//stop USB datasources after export
-         new StopTask().execute(getAddresses(session.getTargets()));
-      }
-
-      final Status status = activeStatusUpdateSessions.remove(session);
-      handler.postDelayed(new Runnable() {
+   public void notifySessionError(final Session session, final ErrorCode errCode) {
+      logger.debug("notifySessionError()");
+      new Handler(Looper.getMainLooper()).post(new Runnable() {
          @Override
          public void run() {
-            if (status != null) {
-               removeStatus(status);
+            for (SessionEventListener listener : sessionEventListeners) {
+               listener.onSessionError(session, errCode);
             }
          }
-      }, KILL_STATUS_DELAY);
+      });
    }
 
-   private void sendStatus(DataManagementSession session, int res, Object... args) {
-      if (args != null) {
-         sendStatus(session, getResources().getString(res, args));
-      }
-      else {
-         sendStatus(session, getResources().getString(res));
-      }
-   }
-
-   private void sendStatus(DataManagementSession session, String message) {
-      sendStatus(session, activeStatusUpdateSessions.get(session), message);
-   }
-
-   private void sendStatus(DataManagementSession session, Status status, String message) {
-      if (status == null) return;
-      sendStatus(status, new StringBuffer(isUsbImport(session) ? importing : exporting).append(" ").append(message).toString());
-   }
-
-   private void sendStatus(Status s, String msg) {
-      if (s == null) return;
-      s.setMessage(msg);
-      removeStatus(s);
-      sendBroadcast(new Intent(Status.ACTION_STATUS_DISPLAY).putExtra(Status.NAME, s));
-   }
-
-   private void removeStatus(Status s) {
-      sendBroadcast(new Intent(Status.ACTION_STATUS_REMOVE).putExtra(Status.ID, ParcelUuid.fromString(s.getID().toString())));
-   }
-
-   private class CancelTask extends SessionOperationTask<Void> {
-      @Override
-      protected DataManagementSession doInBackground(DataManagementSession... params) {
-         logger.debug("Cancelling...");
-         DataManagementSession session = params[0];
-         session.setProgress(true);
-         try {
-            Address[] targetAddresses = getAddresses(session.getTargets());
-            Address[] sourceAddresses = getAddresses(session.getSources());
-            //if process already running tell it to cancel.
-            if (sourceAddresses.length > 0 && performCalled) {
-               logger.debug("Telling process to cancel");
-               mediator.cancel(sourceAddresses);
-               if (targetAddresses.length > 0) {
-                  mediator.cancel(targetAddresses);
-               }
-            }
-            else {
-               logger.debug("Perform not called yet setting result manually to cancel");
-               session.setResult(Process.Result.CANCEL);
-            }
-         }
-         catch (Exception e) {
-            logger.error("Send exception: ", e);
-            globalEventManager.fire(new ErrorEvent(session, ErrorEvent.DataError.PERFORM_ERROR, Throwables.getRootCause(e).getMessage()));
-         }
-         return session;
-      }
-
-      @Override
-      protected void onPostExecute(DataManagementSession session) {
-         //only call super and fire event if we caught the datasource before it started working.
-         //otherwise the performOperations call itself will return the canceled status.
-         if (Process.Result.CANCEL.equals(session.getResult()) && !performCalled) {
-            logger.debug("CancelTask calling completeOperation");
-            completeOperation(session);
-         }
-         else {
-            sendStatus(session, statusCancelling);
-         }
-         session.setProgress(false);
-      }
-   }
-   
-   private class DeleteOperationsTask extends SessionOperationTask<Void>{
-      @Override
-      protected DataManagementSession doInBackground(DataManagementSession... params) {
-         logger.debug("Deleting Operations...");
-         DataManagementSession session = params[0];
-         session.setProgress(true);
-         try {
-            if (session.getData() == null && session.getObjectData() != null) {
-               session.setData(new ArrayList<Operation>());
-               for (ObjectGraph obj : session.getObjectData()) {
-                  Operation operation = new Operation(obj, null);
-                  operation.setStatus(Operation.Status.NOT_DONE);
-                  session.getData().add(operation);
-               }
-            }
-
-            session.setResults(mediator.deleteOperations(session.getData(), null));
-            boolean error = false;
-            for (Rsp<Process> ret : session.getResults()) {
-               if (ret.hasException() || !ret.getValue().getResult().equals(Result.SUCCESS)){
-                  if(ret.hasException()){
-                     logger.error("exception occur in PCM when deleting;{}",ret.getException());
-                  }
-                  error = true;
-                  break;
-               }
-            }
-            session.setResult(error ? Result.ERROR : Result.SUCCESS);
-         }
-         catch (Throwable e) {
-            logger.error("exception occur when deleting;{}",e);
-            session.setResult(Result.ERROR);
-         }
-         return session;
-      }
-   }
-   private class UpdateOperationsTask extends SessionOperationTask<Void> {
-      @Override
-      protected DataManagementSession doInBackground(DataManagementSession... params) {
-         logger.debug("Update Operations...");
-         DataManagementSession session = params[0];
-         session.setProgress(true);
-         try {
-            if (session.getData().get(0).getData().getSource().size() > 0) {
-               session.setResults(mediator.updateOperations(session.getData(), session.getData().get(0).getData().getSource()));
-               boolean hasCancelled = Result.CANCEL.equals(session.getResult());
-               for (Rsp<Process> ret : session.getResults()) {
-                  if (ret.hasException()) throw ret.getException();
-                  if (ret.wasReceived() && ret.getValue() != null && ret.getValue().getResult() != null) {
-                     hasCancelled |= Result.CANCEL.equals(ret.getValue().getResult());
-                  }
-                  else {//suspect/unreachable
-                     globalEventManager.fire(new ErrorEvent(session, ErrorEvent.DataError.PERFORM_ERROR));
-                     session.setResult(Result.ERROR);
-                  }
-               }
-               if (hasCancelled) {
-                  session.setResult(Result.CANCEL);
-               }
-               else {
-                  session.setResult(Result.SUCCESS);
-               }
-            }
-            else {
-               globalEventManager.fire(new ErrorEvent(session, ErrorEvent.DataError.NO_TARGET_DATASOURCE));
-               session.setResult(Process.Result.NO_DATASOURCE);
-            }
-         }
-         catch (Throwable e) {
-            logger.error("Send exception in UpdateOperation:", e);
-            session.setResult(Process.Result.ERROR);
-            globalEventManager.fire(new ErrorEvent(session, ErrorEvent.DataError.PERFORM_ERROR, Throwables.getRootCause(e).toString()));
-
-         }
-         return session;
-      }
-
-      @Override
-      protected void onPostExecute(DataManagementSession session) {
-         logger.debug("PerformTask calling completeOperation");
-         completeOperation(session);
-         super.onPostExecute(session);
-      }
-   }
-   private class StopTask extends AsyncTask<Address, Void, Void> {
-      @Override
-      protected Void doInBackground(Address... params) {
-         logger.debug("Stopping...");
-         try {
-            mediator.stop(params);
-         }
-         catch (Exception e) {
-            logger.error("Stop exception", e);
-         }
-         return null;
+   /**
+    * Notify session cancellation to registered callbacks.
+    *
+    * @param session    the session object
+    */
+   public void notifySessionCancel(Session session) {
+      logger.debug("notifySessionCancel()");
+      for (SessionEventListener listener : this.sessionEventListeners) {
+         listener.onSessionCancelled(session);
       }
    }
 
-   private abstract class SessionOperationTask<Progress> extends AsyncTask<DataManagementSession, Progress, DataManagementSession> {
-      @Override
-      protected void onPostExecute(DataManagementSession session) {
-         super.onPostExecute(session);
-         session.setProgress(false);
-         logger.debug("onPostExecute: {}", this.getClass().getSimpleName());
-         if (session.getResult() != Result.ERROR) {
-            for (IDataManagementListenerAIDL listener : listeners.values()) {
-               try {
-                  listener.onDataSessionUpdated(session);
-               }
-               catch (RemoteException e) {
-                  logger.error("", e);
-               }
+   /**
+    * Notify progress update during session execution.
+    *
+    * @param operation  the current operation
+    * @param progress   current progress
+    * @param max        total progress
+    */
+   public void notifyProgressUpdate(String operation, int progress, int max) {
+      for (SessionEventListener listener : this.sessionEventListeners) {
+         listener.onProgressUpdate(operation, progress, max);
+      }
+   }
+
+   /**
+    * Notify change in the datasource channel.
+    *
+    * @param updateNeeded  True if view update is required.
+    */
+   public void notifyChannelConnectionChange(final boolean updateNeeded) {
+      logger.debug("notifyChannelConnectionChange()");
+      if (updateNeeded) {
+         // Cache needs to be reset since there is a change in datasource.
+         logger.trace("Reset cache upon the channel connection change.");
+         cacheManager.resetAll();
+      }
+
+      // Run the callback on the main UI thread to allow UI work.
+      new Handler(Looper.getMainLooper()).post(new Runnable() {
+         @Override
+         public void run() {
+            for (SessionEventListener listener : sessionEventListeners) {
+               listener.onChannelConnectionChange(updateNeeded);
             }
          }
+      });
+   }
+
+   /**
+    * Notify medium update event (ie: USB mount/unmount/bad removal)
+    */
+   public void notifyMediumUpdate() {
+      logger.debug("notifyMediumUpdate()");
+      if (Environment.getExternalStorageState().equals(Environment.MEDIA_MOUNTED)
+              || Environment.getExternalStorageState().equals(Environment.MEDIA_UNMOUNTED)
+              || Environment.getExternalStorageState().equals(Environment.MEDIA_BAD_REMOVAL)) {
+         // Reset cached item for import process when USB mounting status changes.
+         cacheManager.reset(Session.Action.IMPORT);
+      }
+
+      for (SessionEventListener listener : this.sessionEventListeners) {
+         listener.onMediumUpdate();
       }
    }
 }

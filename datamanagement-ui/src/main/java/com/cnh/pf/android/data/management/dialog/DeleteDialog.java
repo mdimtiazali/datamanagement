@@ -21,7 +21,7 @@ import com.google.inject.Inject;
 import roboguice.RoboGuice;
 
 /**
- * Created by f09953c on 4/11/2018.
+ * Dialog view to show delete confirmation and gets user feedback on OK/Cancel.
  */
 public class DeleteDialog extends DialogView {
    @Inject

@@ -46,6 +46,8 @@
                         cnh:searchIcon="false"
                         cnh:clearIcon="false"
                         android:singleLine="true"
+                        android:textColor="#000000"
+                        android:textCursorDrawable="@null"
                         android:inputType="textCapWords"
                         cnh:headerText="@string/product_mix_title_name"/>
 

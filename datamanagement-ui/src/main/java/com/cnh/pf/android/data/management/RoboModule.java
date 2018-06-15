@@ -90,7 +90,7 @@ public class RoboModule extends AbstractModule {
 
       @Override
       public DatasourceHelper get() {
-         return new DatasourceHelper(mediator, eventManager);
+         return new DatasourceHelper(mediator);
       }
    }
 }
