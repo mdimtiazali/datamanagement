@@ -13,8 +13,8 @@
               android:layout_height="wrap_content">
     <ImageView android:layout_width="wrap_content"
                android:layout_height="wrap_content"
-               android:src="@drawable/ic_alert_red"
-               android:layout_marginRight="@dimen/button_margin_right"/>
+               android:src="@drawable/ic_invalid_tab"
+               android:layout_marginEnd="@dimen/button_margin_right"/>
     <TextView
             android:id="@+id/delete_confirm_tv"
             android:layout_width="wrap_content"

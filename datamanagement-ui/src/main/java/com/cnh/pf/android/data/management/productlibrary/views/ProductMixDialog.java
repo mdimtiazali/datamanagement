@@ -138,6 +138,7 @@ public class ProductMixDialog extends DialogView implements DialogHandlerListene
    private DialogDensityHandler dialogDensityHandler;
    private DialogPackageSizeHandler dialogPackageSizeHandler;
    private DialogUsageAndCropTypeHandler dialogUsageAndCropTypeHandler;
+   private Widget.ErrorIndicator productMixNameErrorIndicator = Widget.ErrorIndicator.NONE;
 
    private CategoryButtonsEventListener eventListener = new CategoryButtonsEventListener() {
       @Override
@@ -256,11 +257,13 @@ public class ProductMixDialog extends DialogView implements DialogHandlerListene
    public ProductMixDialog(Context context, IVIPServiceAIDL vipService, ProductMixCallBack callback, List<ProductMix> productMixes) {
       this(context, DialogActionType.ADD, vipService, null, null, callback, productMixes);
    }
-   public ProductMixDialog(Context context, IVIPServiceAIDL vipService,IPVIPServiceAIDL pvipService, ProductMixCallBack callback, List<ProductMix> productMixes) {
-      this(context, DialogActionType.ADD, vipService, null, null, callback, productMixes);
+
+   public ProductMixDialog(Context context, IVIPServiceAIDL vipService, IPVIPServiceAIDL pvipService, ProductMixCallBack callback, List<ProductMix> productMixes) {
+      this(context, DialogActionType.ADD, vipService, pvipService, null, callback, productMixes);
    }
-   public ProductMixDialog(Context context, DialogActionType actionType, IVIPServiceAIDL vipService, IPVIPServiceAIDL pvipService, ProductMix productMix, ProductMixCallBack callBack,
-         List<ProductMix> productMixes) {
+
+   public ProductMixDialog(Context context, DialogActionType actionType, IVIPServiceAIDL vipService, IPVIPServiceAIDL pvipService, ProductMix productMix,
+         ProductMixCallBack callBack, List<ProductMix> productMixes) {
       super(context);
       this.actionType = actionType;
       this.productMix = productMix;
@@ -1449,6 +1452,20 @@ public class ProductMixDialog extends DialogView implements DialogHandlerListene
    }
 
    /**
+    * This method prevents scrolling issues!
+    * Whenever setErrorIndicator is called and the view it is called for is in focus,
+    * it will be scrolled to the position of this view. Thus this method prevents
+    * assigning the errorIndicator having the same one already assigned.
+    * @param errorIndicator New error indicator state
+    */
+   private void setProductMixNameErrorIndicator(Widget.ErrorIndicator errorIndicator) {
+      if (productMixNameErrorIndicator != errorIndicator) {
+         productMixNameErrorIndicator = errorIndicator;
+         productMixNameInputField.setErrorIndicator(errorIndicator);
+      }
+   }
+
+   /**
     * If all required data will set, the "add" button will enable
     */
    @Override
@@ -1458,7 +1475,7 @@ public class ProductMixDialog extends DialogView implements DialogHandlerListene
       if (productMixName.isEmpty()) {
          //disallow empty names (no indicator)
          this.setFirstButtonEnabled(false);
-         productMixNameInputField.setErrorIndicator(Widget.ErrorIndicator.NONE);
+         setProductMixNameErrorIndicator(Widget.ErrorIndicator.INVALID);
          return;
       }
       else {
@@ -1469,11 +1486,11 @@ public class ProductMixDialog extends DialogView implements DialogHandlerListene
          if (!ProductNameValidator.getInstance().productNameIsUsable(productMixName, productId)) {
             //disallow non unique names
             this.setFirstButtonEnabled(false);
-            productMixNameInputField.setErrorIndicator(Widget.ErrorIndicator.NEEDS_CHECKING);
+            setProductMixNameErrorIndicator(Widget.ErrorIndicator.NEEDS_CHECKING);
             return;
          }
          else {
-            productMixNameInputField.setErrorIndicator(Widget.ErrorIndicator.NONE);
+            setProductMixNameErrorIndicator(Widget.ErrorIndicator.NONE);
          }
       }
       if (!dialogUsageAndCropTypeHandler.isValidItemSelected()) {
@@ -1518,6 +1535,11 @@ public class ProductMixDialog extends DialogView implements DialogHandlerListene
    @Override
    public void applicationRatesChanged(float rate1value, float rate2value, ProductUnits currentProductUnit) {
       calculateNewApplicationRatePerProduct(rate1value, rate2value, currentProductUnit);
+   }
+
+   @Override
+   public void applicationDeltaRateChanged(final float deltaRatevalue, final ProductUnits productUnit) {
+      //TODO: Need to store the delta rate.
    }
 
    /**

@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  ~ Copyright (C) 2018 CNH Industrial NV. All rights reserved.
+  ~
+  ~ This software contains proprietary information of CNH Industrial NV. Neither
+  ~ receipt nor possession thereof confers any right to reproduce, use, or
+  ~ disclose in whole or in part any such information without written
+  ~ authorization from CNH Industrial NV.
+  -->
+
+<layer-list xmlns:android="http://schemas.android.com/apk/res/android">
+    <item android:drawable="@drawable/export_blue_bg_dark"/>
+    <item>
+        <shape>
+            <stroke
+                    android:dashGap="@dimen/dash_gap"
+                    android:dashWidth="@dimen/dash_length"
+                    android:width="@dimen/dash_width"
+                    android:color="@color/dash_border" />
+        </shape>
+    </item>
+</layer-list>

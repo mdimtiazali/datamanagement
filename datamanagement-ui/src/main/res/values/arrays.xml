@@ -32,6 +32,7 @@
         <item>BOUNDARY</item>
         <item>RX</item>
         <item>PRODUCT</item>
+        <item>PRODUCT_MIX</item>
         <item>GUIDANCE_CONFIGURATION</item>
         <item>GUIDANCE_GROUP</item>
         <item>GUIDANCE_PATTERN</item>
