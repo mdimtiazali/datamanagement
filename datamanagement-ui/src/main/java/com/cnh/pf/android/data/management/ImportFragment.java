@@ -110,7 +110,7 @@ public class ImportFragment extends BaseDataFragment {
 
    private final List<Session.Action> blockingActions = new ArrayList<Session.Action>(Arrays.asList(Session.Action.EXPORT));
    private final List<Session.Action> executableActions = new ArrayList<Session.Action>(Arrays.asList(Session.Action.IMPORT));
-   private final List<String> dataTreeRootNodesWithAutomaticParentSelection = new ArrayList<String>(Arrays.asList("Grower/Farm/Field/Task"));
+   private final int rootNodeNamesWithImplicitSelectionResourceId = R.array.rootnodenames_with_implicit_parent_selection_in_import;
 
    private static final int CANCEL_DIALOG_WIDTH = 550;
 
@@ -136,8 +136,8 @@ public class ImportFragment extends BaseDataFragment {
    }
 
    @Override
-   protected List<String> getRootNodeNamesWithAutomaticParentSelection() {
-      return dataTreeRootNodesWithAutomaticParentSelection;
+   protected int getRootNodeNamesWithImplicitSelectionResourceId() {
+      return rootNodeNamesWithImplicitSelectionResourceId;
    }
 
    @Override
