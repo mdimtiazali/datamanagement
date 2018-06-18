@@ -218,7 +218,7 @@ public class ImportFragment extends BaseDataFragment {
       startText.setVisibility(View.GONE);
       operationName.setText(R.string.importing_string);
       updateImportButton();
-
+      updateSelectAllState();
       importFinishedStatePanel.setVisibility(View.GONE);
    }
 
@@ -239,9 +239,9 @@ public class ImportFragment extends BaseDataFragment {
       else if (SessionUtil.isPerformOperationsTask(session)) {
          hideDisabledOverlay();
          showTreeList();
-         updateSelectAllState();
       }
       updateImportButton();
+      updateSelectAllState();
       processOverlay.setMode(DataExchangeProcessOverlay.MODE.HIDDEN);
    }
 
@@ -382,6 +382,7 @@ public class ImportFragment extends BaseDataFragment {
                   showProgressPanel();
                   processOverlay.setMode(DataExchangeProcessOverlay.MODE.IMPORT_PROCESS);
                   updateImportButton();
+                  updateSelectAllState();
                   performOperations(extra, operations);
                }
             });
@@ -392,8 +393,8 @@ public class ImportFragment extends BaseDataFragment {
             showProgressPanel();
             processOverlay.setMode(DataExchangeProcessOverlay.MODE.IMPORT_PROCESS);
             updateImportButton();
+            updateSelectAllState();
             performOperations(extra, session.getOperations());
-
          }
       }
       else if (SessionUtil.isPerformOperationsTask(session)) {
@@ -407,6 +408,7 @@ public class ImportFragment extends BaseDataFragment {
                getResources().getInteger(R.integer.toast_message_xoffset), getResources().getInteger(R.integer.toast_message_yoffset)).show();
          // Reset session data after completing PERFORM_OPERATIONS successfully.
          resetSession();
+         updateSelectAllState();
 
          //close cancel dialog if still open
          closeCancelDialog();
@@ -527,6 +529,7 @@ public class ImportFragment extends BaseDataFragment {
             resetSession();
             clearTreeSelection();
             updateImportButton();
+            updateSelectAllState();
          }
 
          if (SessionUtil.isDiscoveryTask(session) && (SessionUtil.isInProgress(session) || SessionUtil.isComplete(session))) {
@@ -562,6 +565,7 @@ public class ImportFragment extends BaseDataFragment {
             showStartMessage();
          }
          updateImportButton();
+         updateSelectAllState();
       }
    }
 
@@ -676,6 +680,7 @@ public class ImportFragment extends BaseDataFragment {
    public void onTreeItemSelected() {
       super.onTreeItemSelected();
       updateImportButton();
+      updateSelectAllState();
    }
 
    @Override

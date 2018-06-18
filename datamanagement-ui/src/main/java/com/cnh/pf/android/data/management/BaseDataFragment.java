@@ -834,15 +834,25 @@ public abstract class BaseDataFragment extends RoboFragment implements SessionCo
     * Given the current session state, chagne text & UI states for 'Select All'  button.
     */
    protected void updateSelectAllState() {
+      boolean allSelected = false;
+      boolean enable = false;
       final Session session = getSession();
-      boolean enable = !SessionUtil.isInProgress(session) && session.getObjectData() != null;
+      final ObjectTreeViewAdapter treeViewAdapter = getTreeAdapter();
+
+      if (treeViewAdapter != null && session != null) {
+         if (treeViewAdapter.getCount() > 0) {
+            if (SessionUtil.isImportAction(session)) {
+               enable = !SessionUtil.isInProgress(session) && session.getObjectData() != null && !session.getObjectData().isEmpty();
+            }
+            else {
+               enable = !SessionUtil.isInProgress(session) && session.getObjectData() != null;
+            }
+            allSelected = treeViewAdapter.areAllSelected();
+         }
+      }
 
       logger.debug("Enable Select All button: {}", enable);
       enableSelectAllButton(enable);
-      boolean allSelected = false;
-      if (getTreeAdapter() != null) {
-         allSelected = getTreeAdapter().areAllSelected();
-      }
       selectAllBtn.setText(allSelected ? R.string.deselect_all : R.string.select_all);
       selectAllBtn.setActivated(allSelected);
    }

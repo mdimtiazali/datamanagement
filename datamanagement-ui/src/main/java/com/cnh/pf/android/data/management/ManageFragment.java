@@ -551,6 +551,7 @@ public class ManageFragment extends BaseDataFragment implements DmAccessibleObse
       else {
          setHeaderAndDeleteButton(false);
       }
+      updateSelectAllState();
    }
 
    /**

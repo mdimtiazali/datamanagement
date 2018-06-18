@@ -748,6 +748,7 @@ public class ExportFragment extends BaseDataFragment {
    public void onTreeItemSelected() {
       super.onTreeItemSelected();
       updateExportButton();
+      updateSelectAllState();
    }
 
    private void updateProgressbar(ProgressValue progressVal) {
