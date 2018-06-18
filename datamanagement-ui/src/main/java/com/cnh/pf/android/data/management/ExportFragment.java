@@ -119,7 +119,7 @@ public class ExportFragment extends BaseDataFragment {
 
    private final List<Session.Action> blockingActions = new ArrayList<Session.Action>(Arrays.asList(Session.Action.IMPORT));
    private final List<Session.Action> executableActions = new ArrayList<Session.Action>(Arrays.asList(Session.Action.EXPORT));
-   private final List<String> dataTreeRootNodesWithAutomaticParentSelection = new ArrayList<String>(Arrays.asList("Grower/Farm/Field/Task"));
+   private final int rootNodeNamesWithImplicitSelectionResourceId = R.array.rootnodenames_with_implicit_parent_selection_in_export;
 
    private int transparentColor;
    private int whiteTextColor;
@@ -214,8 +214,8 @@ public class ExportFragment extends BaseDataFragment {
    }
 
    @Override
-   protected List<String> getRootNodeNamesWithAutomaticParentSelection() {
-      return dataTreeRootNodesWithAutomaticParentSelection;
+   protected int getRootNodeNamesWithImplicitSelectionResourceId() {
+      return rootNodeNamesWithImplicitSelectionResourceId;
    }
 
    @Override

@@ -15,7 +15,7 @@
     </string-array>
     <string-array name="edit">
         <item>VEHICLE</item>
-        <item>IMPLEMENT </item>
+        <item>IMPLEMENT</item>
         <!--item>VEHICLE_IMPLEMENT</item-->
         <item>VEHICLE_IMPLEMENT_CONFIG</item>
         <item>IMPLEMENT_PRODUCT_CONFIG</item>
@@ -64,6 +64,16 @@
         <item>GUIDANCE_CONFIGURATION</item>
         <item>GUIDANCE_GROUP</item>
         <item>GUIDANCE_PATTERN</item-->
+    </string-array>
+
+    <!--Definition of root nodes supporting implicit parent selection on selection of their child nodes-->
+    <string-array name="rootnodenames_with_implicit_parent_selection_in_management">
+    </string-array>
+    <string-array name="rootnodenames_with_implicit_parent_selection_in_import">
+        <item>@string/pfds</item>
+    </string-array>
+    <string-array name="rootnodenames_with_implicit_parent_selection_in_export">
+        <item>@string/pfds</item>
     </string-array>
 
 </resources>
