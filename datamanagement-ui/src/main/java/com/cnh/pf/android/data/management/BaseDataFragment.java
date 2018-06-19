@@ -9,64 +9,53 @@
 
 package com.cnh.pf.android.data.management;
 
-import android.app.ProgressDialog;
 import android.os.Bundle;
-import android.os.Handler;
-import android.os.IBinder;
-import android.os.Looper;
-import android.os.RemoteException;
+import android.view.Gravity;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.AbsListView;
 import android.widget.AdapterView;
 import android.widget.Button;
-import android.widget.ImageButton;
 import android.widget.LinearLayout;
-import android.widget.ProgressBar;
 import android.widget.TextView;
 
-import com.cnh.android.dialog.DialogView;
-import com.cnh.android.dialog.DialogViewInterface;
-import com.cnh.android.pf.widget.view.DisabledOverlay;
-import com.cnh.android.widget.activity.TabActivity;
-import com.cnh.jgroups.Datasource;
+import com.android.annotations.Nullable;
+import com.cnh.android.pf.widget.controls.ToastMessageCustom;
+import com.cnh.jgroups.DataTypes;
 import com.cnh.jgroups.ObjectGraph;
 import com.cnh.jgroups.Operation;
 import com.cnh.pf.android.data.management.adapter.ObjectTreeViewAdapter;
 import com.cnh.pf.android.data.management.adapter.SelectionTreeViewAdapter;
-import com.cnh.pf.android.data.management.connection.DataServiceConnection;
-import com.cnh.pf.android.data.management.connection.DataServiceConnectionImpl;
-import com.cnh.pf.android.data.management.connection.DataServiceConnectionImpl.ConnectionEvent;
-import com.cnh.pf.android.data.management.dialog.ErrorDialog;
 import com.cnh.pf.android.data.management.graph.GroupObjectGraph;
+import com.cnh.pf.android.data.management.helper.DataExchangeBlockedOverlay;
+import com.cnh.pf.android.data.management.helper.DataExchangeProcessOverlay;
 import com.cnh.pf.android.data.management.helper.TreeDragShadowBuilder;
-import com.cnh.pf.android.data.management.service.DataManagementService;
-import com.cnh.pf.data.management.DataManagementSession;
-import com.cnh.pf.data.management.DataManagementSession.SessionOperation;
-import com.cnh.pf.data.management.aidl.IDataManagementListenerAIDL;
-import com.google.inject.Inject;
-import com.google.inject.name.Named;
+import com.cnh.pf.android.data.management.session.ErrorCode;
+import com.cnh.pf.android.data.management.session.Session;
+import com.cnh.pf.android.data.management.session.SessionContract;
+import com.cnh.pf.android.data.management.session.SessionExtra;
+import com.cnh.pf.android.data.management.session.SessionUtil;
+import com.cnh.pf.datamng.Process;
 
+import org.jgroups.Address;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.util.ArrayList;
 import java.util.Comparator;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
+import pl.polidea.treeview.InMemoryTreeNode;
 import pl.polidea.treeview.InMemoryTreeStateManager;
 import pl.polidea.treeview.NodeAlreadyInTreeException;
+import pl.polidea.treeview.SortableChildrenTree;
 import pl.polidea.treeview.TreeBuilder;
 import pl.polidea.treeview.TreeStateManager;
 import pl.polidea.treeview.TreeViewList;
-import pl.polidea.treeview.InMemoryTreeNode;
-import pl.polidea.treeview.SortableChildrenTree;
-import roboguice.config.DefaultRoboModule;
-import roboguice.event.EventListener;
-import roboguice.event.EventManager;
 import roboguice.fragment.provided.RoboFragment;
-import roboguice.inject.InjectResource;
 import roboguice.inject.InjectView;
 
 /**
@@ -75,45 +64,39 @@ import roboguice.inject.InjectView;
  * to annotate and inflate layouts.
  * @author oscar.salazar@cnhind.com
  */
-public abstract class BaseDataFragment extends RoboFragment implements IDataManagementListenerAIDL {
+public abstract class BaseDataFragment extends RoboFragment implements SessionContract.SessionView {
    public static final String NAME = "MEDIATOR";
    private final Logger logger = LoggerFactory.getLogger(getClass());
 
-   @Inject
-   private DataServiceConnection dataServiceConnection;
-   @Inject
-   protected LayoutInflater layoutInflater;
-   /** Service shared global EventManager */
-   @Named(DefaultRoboModule.GLOBAL_EVENT_MANAGER_NAME)
-   @Inject
-   EventManager globalEventManager;
-   @InjectView(R.id.path_tv)
-   TextView pathText;
-   @InjectView(R.id.select_all_btn)
-   Button selectAllBtn;
    @InjectView(R.id.tree_view_list)
    TreeViewList treeViewList;
-   @InjectView(R.id.tree_progress)
-   protected ProgressBar treeProgress;
-   @InjectView(R.id.start_text)
-   protected TextView startText;
-   @InjectResource(R.string.done)
-   String doneStr;
-   @InjectView(R.id.dm_refresh)
-   protected ImageButton refreshBtn;
+   @InjectView(R.id.select_all_btn)
+   Button selectAllBtn;
+   @InjectView(R.id.header_text)
+   TextView headerTextView;
 
-   protected DisabledOverlay disabled = null;
-
+   protected DataExchangeBlockedOverlay disabledOverlay = null;
+   protected DataExchangeProcessOverlay processOverlay = null;
    protected TreeStateManager<ObjectGraph> manager;
    protected TreeBuilder<ObjectGraph> treeBuilder;
    protected ObjectTreeViewAdapter treeAdapter;
-   protected Handler handler = new Handler(Looper.getMainLooper());
-   protected boolean cancelled;
-   protected boolean hasLocalSource = false;
 
+   protected static boolean isConnectedToPcm = false;
+   protected static final int SHOWING_FEEDBACK_AFTER_PROGRESS_MS = 2000;
 
-   /** Current session */
-   protected volatile DataManagementSession session = null;
+   private SessionContract.SessionManager sessionManager;
+
+   @Override
+   public void setSessionManager(SessionContract.SessionManager sessionManager) {
+      this.sessionManager = sessionManager;
+   }
+
+   /**
+    * Expose session manager instance for child class.
+    */
+   protected SessionContract.SessionManager getSessionManager() {
+      return this.sessionManager;
+   }
 
    /**
     * Comparator to sort list items in alphabetical order. Depending on requirement this could
@@ -149,36 +132,137 @@ public abstract class BaseDataFragment extends RoboFragment implements IDataMana
    public abstract void inflateViews(LayoutInflater inflater, View leftPanel);
 
    /**
-    * Callback when new session is started.
+    * Callback when existing session is resumed.
     */
-   public void onNewSession() {
-      cancelled = false;
-      session = null;
-      hasLocalSource = getDataManagementService().hasLocalSources();
+   public abstract void onResumeSession();
+
+   /**
+    * Reset current session.
+    */
+   public void resetSession() {
+      Session session = getSession();
+
+      session.setType(Session.Type.DISCOVERY);
+      session.setResultCode(null);
+      session.setObjectData(new ArrayList<ObjectGraph>());
+      session.setOperations(new ArrayList<Operation>());
+      session.setSources(new ArrayList<Address>());
+      session.setDestinations(new ArrayList<Address>());
+      session.setState(Session.State.WAIT);
    }
 
    /**
-    * {@link SessionOperation} has completed.
-    *
-    * Useful to get user input and pass to next step in the process.
-    * Also to respond after process completion.
+    * Callback when PCM is disconnected. PCM datasources are not joined in the channel.
     */
-   public abstract void processOperations();
+   public abstract void onPCMDisconnected();
 
    /**
-    * Is this operation the one currently managed by this fragment.
-    * @param session the session
-    * @return  <code>true</code> if the session is the current one, <code>false</code> if this is background session.
+    * Callback when PCM is connected.
     */
-   public abstract boolean isCurrentOperation(DataManagementSession session);
+   public abstract void onPCMConnected();
+
+   /**
+    * Callback when a session is successfully finished.
+    *
+    * @param session the session
+    */
+   public abstract void onMyselfSessionSuccess(Session session);
+
+   /**
+    * Callback when as session is successfully finished, but a session doesn't belong to
+    * the current action.
+    *
+    * @param session the session
+    */
+   public void onOtherSessionSuccess(Session session) {
+      logger.debug("onOtherSessionSuccess(): {}", session.getType());
+      if (!requestAndUpdateBlockedOverlay(getBlockingActions())) {
+         onResumeSession();
+      }
+   }
+
+   /**
+    * Callback when a session is finished with an error
+    *
+    * @param session the session
+    * @param errorCode  error code
+    */
+   public abstract void onMyselfSessionError(Session session, ErrorCode errorCode);
+
+   /**
+    * Callback when a session is finished with an error, but a session doesn't belong to
+    * the current action.
+    *
+    * @param session the session
+    * @param errorCode  error code
+    */
+   public void onOtherSessionError(Session session, ErrorCode errorCode) {
+      logger.debug("onOtherSessionError(): {}, {}", session.getType(), errorCode);
+      if (!requestAndUpdateBlockedOverlay(getBlockingActions())) {
+         onResumeSession();
+      }
+   }
 
    /**
     * Progress update from datasource.
+    *
     * @param operation  the current operation
     * @param progress   current progress
     * @param max        total progress
     */
-   public abstract void onProgressPublished(String operation, int progress, int max);
+   @Override
+   public void onProgressUpdate(String operation, int progress, int max) {
+      logger.trace("onProgressUpdate(): {}, {}", progress, max);
+   }
+
+   @Override
+   public void onSessionCancelled(Session session) {
+      logger.trace("onSessionCancelled(): {}, {}", session.getType(), session.getAction());
+      if (getExecutableActions().contains(session.getAction())) {
+         onMyselfSessionCancelled(session);
+      }
+      else {
+         onOtherSessionCancelled(session);
+      }
+   }
+
+   /**
+    * The own session was cancelled (e.g. unplugging USB stick while process was running)
+    *
+    * @param session Session that was cancelled.
+    */
+   protected void onMyselfSessionCancelled(Session session) {
+      logger.debug("No further action performed as session was cancelled.");
+   }
+
+   /**
+    * Another session was cancelled (e.g. unplugging USB stick while process was running)
+    *
+    * @param session Session that was cancelled.
+    */
+   protected void onOtherSessionCancelled(Session session) {
+      //default behaviour on other session cancelled
+      if (getBlockingActions().contains(session.getAction()) && !requestAndUpdateBlockedOverlay(getBlockingActions())) {
+         onResumeSession();
+      }
+      //notify using a toast, which session has been cancelled
+      Session.Action action = session.getAction();
+      int cancelResourceId = R.string.cancel;
+      if (action != null) {
+         switch (action) {
+         case EXPORT:
+            cancelResourceId = R.string.export_cancel;
+            break;
+         case IMPORT:
+            cancelResourceId = R.string.import_cancel;
+            break;
+         default:
+            logger.error("Could not identify cancelled action!");
+         }
+         ToastMessageCustom.makeToastMessageText(getActivity().getApplicationContext(), getString(cancelResourceId), Gravity.TOP | Gravity.CENTER_HORIZONTAL,
+               getResources().getInteger(R.integer.toast_message_xoffset), getResources().getInteger(R.integer.toast_message_yoffset)).show();
+      }
+   }
 
    /**
     * Test whether a node is supported by the current format.
@@ -188,55 +272,38 @@ public abstract class BaseDataFragment extends RoboFragment implements IDataMana
    public abstract boolean supportedByFormat(ObjectGraph node);
 
    /**
-    * A background session has completed.
-    * @param session the session
+    * Defines actions which (if currently active) block / prohibit execution of fragment
+    *
+    * @return List of Session.Actions prohibiting fragments UI
     */
-   protected abstract void onOtherSessionUpdate(DataManagementSession session);
+   protected abstract List<Session.Action> getBlockingActions();
 
-   protected void onViewChange(org.jgroups.View oldView, org.jgroups.View newView) {
-      logger.debug("onViewChange", newView);
-      // new local sources appear
-      if (!hasLocalSource && getDataManagementService().hasLocalSources()) {
-         hasLocalSource = true;
-      }
-      // all local sources gone
-      else if (hasLocalSource && !getDataManagementService().hasLocalSources()) {
-         hasLocalSource = false;
-      }
-      // both case will trigger a discovery, if there is no session, create a new one
-      if(session == null){
-          session = createSession();
-      }
-      //only in initial or discovery, will trigger a discovery. like perform will also trigger a new datasource start
-      if(session != null && (session.getSessionOperation().equals(SessionOperation.DISCOVERY)||session.getSessionOperation().equals(SessionOperation.INITIAL))) {
-         configSession(session);
-         progressUI();
-         // if operation is in progress, do nothing since when operation complete, it will trigger a discovery
-         sessionOperate(session, SessionOperation.DISCOVERY);
-      }
+   /**
+    * Defines actions which can be executed by the current fragment
+    *
+    * @return List of Session.Actions prohibiting fragments UI
+    */
+   protected abstract List<Session.Action> getExecutableActions();
 
-      return;
+   @Override
+   public void onChannelConnectionChange(boolean updateNeeded) {
+      logger.trace("onChannelConnectionChange(): {}", updateNeeded);
    }
 
    /**
     * When user (de)selects a node in the tree
     */
    public void onTreeItemSelected() {
-      updateSelectAllState();
    }
 
    @Override
    public void onSaveInstanceState(Bundle outState) {
       super.onSaveInstanceState(outState);
-      outState.putParcelable("session", session);
    }
 
    @Override
    public void onCreate(Bundle savedInstanceState) {
       super.onCreate(savedInstanceState);
-      if (savedInstanceState != null) {
-         session = savedInstanceState.getParcelable("session");
-      }
    }
 
    @Override
@@ -244,32 +311,23 @@ public abstract class BaseDataFragment extends RoboFragment implements IDataMana
       View layout = inflater.inflate(R.layout.import_layout, container, false);
       LinearLayout leftPanel = (LinearLayout) layout.findViewById(R.id.left_panel_wrapper);
       inflateViews(inflater, leftPanel);
-      disabled = (DisabledOverlay)layout.findViewById(R.id.disabled_overlay);
+
+      disabledOverlay = (DataExchangeBlockedOverlay) layout.findViewById(R.id.disabled_overlay);
+      processOverlay = (DataExchangeProcessOverlay) layout.findViewById(R.id.process_overlay);
+      showLoadingOverlay();
       return layout;
    }
 
    @Override
    public void onViewCreated(View view, Bundle savedInstanceState) {
       super.onViewCreated(view, savedInstanceState);
-      disabled.setMode(DisabledOverlay.MODE.LOADING);
       selectAllBtn.setOnClickListener(new View.OnClickListener() {
          @Override
          public void onClick(View v) {
-            selectAll();
+            makeAllTreeSelection();
          }
       });
-      refreshBtn.setOnClickListener(new View.OnClickListener() {
-         @Override
-         public void onClick(View v) {
-            if(session == null){
-               session = createSession();
-            }
-            configSession(session);
-            progressUI();
-            sessionOperate(session, SessionOperation.DISCOVERY);
 
-         }
-      });
       treeViewList.setChoiceMode(AbsListView.CHOICE_MODE_NONE);
       treeViewList.setOnItemLongClickListener(new AdapterView.OnItemLongClickListener() {
          @Override
@@ -286,228 +344,205 @@ public abstract class BaseDataFragment extends RoboFragment implements IDataMana
    @Override
    public void onPause() {
       super.onPause();
-      if (dataServiceConnection.isConnected()) {
-         getDataManagementService().unregister(NAME);
-      }
-      globalEventManager.unregisterObserver(ConnectionEvent.class, connectionListener);
-      globalEventManager.unregisterObserver(DataServiceConnectionImpl.ErrorEvent.class, errorListener);
-      globalEventManager.unregisterObserver(DataServiceConnectionImpl.ViewChangeEvent.class, viewChangeListener);
+      logger.debug("onPause()");
+
+      sessionManager.resetView();
    }
 
    @Override
    public void onResume() {
       super.onResume();
-      globalEventManager.registerObserver(ConnectionEvent.class, connectionListener);
-      globalEventManager.registerObserver(DataServiceConnectionImpl.ErrorEvent.class, errorListener);
-      globalEventManager.registerObserver(DataServiceConnectionImpl.ViewChangeEvent.class, viewChangeListener);
-      if (dataServiceConnection.isConnected()) {
-         getDataManagementService().register(NAME, BaseDataFragment.this);
-         if (session == null){
-             session = createSession();
-         }
-         configSession(session);
-         treeViewList.setVisibility(View.GONE);
-         if (hasLocalSource) {
-            disabled.setVisibility(View.GONE);
-            treeProgress.setVisibility(View.VISIBLE);
-         } else {
-            disabled.setVisibility(View.VISIBLE);
-            disabled.setMode(DisabledOverlay.MODE.DISCONNECTED);
-            return;
-         }
-         sessionOperate(getSession(), SessionOperation.DISCOVERY);
+      logger.debug("onResume()");
 
+      sessionManager.setView(this);
+      if (sessionManager.isServiceConnected()) {
+         onResumeSession();
       }
+
       ((DataManagementActivity) getActivity()).hideSubheader();
    }
 
-   @Override
-   public void onProgressUpdated(String operation, int progress, int max) throws RemoteException {
-      onProgressPublished(operation, progress, max);
+   /**
+    * Return active session that belongs to the current action (fragment)
+    *
+    * @return  the session
+    */
+   protected Session getSession() {
+      return sessionManager.getCurrentSession(getAction());
    }
 
-   @Override
-   public void onDataSessionUpdated(DataManagementSession session) throws RemoteException {
-      if (isCurrentOperation(session)) {
-         // when operation is completed, data management service will callback to update status
-         // sub-class should override and take care the action for operation complete
-         sessionUpdated(session);
+   /**
+    * Helper function to invoke discovery on the session manager
+    */
+   protected void discovery() {
+      discovery(null);
+   }
+
+   /**
+    * Helper function to invoke discovery on the session manager
+    *
+    * @param extra      session extra (path, format, type)
+    */
+   protected void discovery(SessionExtra extra) {
+      if (sessionManager != null) {
+         sessionManager.discovery(extra);
       }
       else {
-         onOtherSessionUpdate(session);
+         logger.debug("discovery(): Session manager is null");
+      }
+   }
+
+   /**
+    * Helper function to invoke performOperations on the session manager
+    *
+    * @param extra   session extra (path, format, type)
+    * @param operations    list of operation
+    */
+   protected void performOperations(SessionExtra extra, List<Operation> operations) {
+      if (sessionManager != null) {
+         sessionManager.performOperations(extra, operations);
+      }
+      else {
+         logger.debug("performOperations(): Session manager is null");
+      }
+   }
+
+   /**
+    * Helper function to invoke calculateConflicts on the session manager
+    *
+    * @param operations    list of operation
+    */
+   protected void calculateConflicts(List<Operation> operations) {
+      if (sessionManager != null) {
+         sessionManager.calculateConflicts(operations);
+      }
+      else {
+         logger.debug("calculateConflicts(): Session manager is null");
+      }
+   }
+
+   /**
+    * Helper function to invoke calculateOperations on the session manager
+    *
+    * @param objectGraphs  list of object graph data
+    */
+   protected void calculateOperations(List<ObjectGraph> objectGraphs) {
+      if (sessionManager != null) {
+         sessionManager.calculateOperations(objectGraphs);
+      }
+      else {
+         logger.debug("calculateOperations(): Session manager is null");
+      }
+   }
+
+   /**
+    * Helper function to invoke update on the session manager
+    *
+    * @param operations    list of operation
+    */
+   protected void update(List<Operation> operations) {
+      if (sessionManager != null) {
+         sessionManager.update(operations);
+      }
+      else {
+         logger.debug("update(): Session manager is null");
+      }
+   }
+
+   /**
+    * Helper function to invoke delete on the session manager
+    *
+    * @param operations    list of operation
+    */
+   protected void delete(List<Operation> operations) {
+      if (sessionManager != null) {
+         sessionManager.delete(operations);
+      }
+      else {
+         logger.debug("delete(): Session manager is null");
+      }
+   }
+
+   /**
+    * Helper function to invoke cancel on the session manager
+    */
+   protected void cancel() {
+      if (sessionManager != null) {
+         sessionManager.cancel();
+      }
+      else {
+         logger.debug("cancel(): Session manager is null");
       }
    }
 
    @Override
-   public IBinder asBinder() {
-      return null;
+   public void onMediumUpdate() {
+      logger.trace("onMediumUpdate");
    }
 
    /**
-    * Enables all buttons in the layout when conncetion with data cluster is successful
-    * @param enable Enable when true, else disable
-    */
-   public void enableButtons(boolean enable) {
-      selectAllBtn.setEnabled(enable);
-   }
-
-   protected void onErrorOperation() {
-
-   }
-
-   /**Called when the service catches an exception during operation */
-   EventListener errorListener = new EventListener<DataServiceConnectionImpl.ErrorEvent>() {
-      @Override
-      public void onEvent(final DataServiceConnectionImpl.ErrorEvent event) {
-         logger.debug("onErrorEvent {}", event);
-         getActivity().runOnUiThread(new Runnable() {
-            @Override
-            public void run() {
-               if (isCurrentOperation(event.getSession())) {
-                  onErrorOperation(); // should sub-class to provide reset left panel or else operations
-                  //maybe we should show a dialog with two buttons, cancel and ok, cancel to stop discovery, ok will trigger a new one
-                  //   sessionOperate(getSession(),SessionOperation.DISCOVERY);//trigger a new discovery
-               }
-               else {
-                  onOtherSessionUpdate(event.getSession());
-               }
-
-               //suppress error message of need data path at import.
-               if(event.getSession().getSource() != null && event.getSession().getSource().getType().equals(Datasource.Source.USB)
-                     && (event.getType() != DataServiceConnectionImpl.ErrorEvent.DataError.NEED_DATA_PATH)) {
-                  DialogView errorDialog = new ErrorDialog(getActivity(), event);
-                  errorDialog.setOnButtonClickListener(new DialogViewInterface.OnButtonClickListener() {
-                     @Override
-                     public void onButtonClick(DialogViewInterface dialog, int which) {
-                        if (which == DialogViewInterface.BUTTON_FIRST) {
-                        }
-                     }
-                  });
-                  ((TabActivity) getActivity()).showPopup(errorDialog, true);
-               }
-            }
-         });
-      }
-   };
-
-   /** Called when a change in connection to backend happens */
-   EventListener connectionListener = new EventListener<ConnectionEvent>() {
-      @Override
-      public void onEvent(ConnectionEvent event) {
-         logger.debug("onConnected");
-         if (event.isConnected()) {
-            getDataManagementService().register(NAME, BaseDataFragment.this);
-            // when connect to backend, start a new query, if session is null, create a new one
-            if(getSession() == null){
-               progressUI();
-               setSession(createSession());
-            }
-            sessionOperate(getSession(), SessionOperation.DISCOVERY);
-         }
-         else {
-            //Disable all buttons for now
-            enableButtons(false);
-            getDataManagementService().unregister(NAME);
-         }
-      }
-   };
-
-   /** Called when group membership changes */
-   EventListener viewChangeListener = new EventListener<DataServiceConnectionImpl.ViewChangeEvent>() {
-      @Override
-      public void onEvent(final DataServiceConnectionImpl.ViewChangeEvent event) {
-         getActivity().runOnUiThread(new Runnable() {
-            @Override
-            public void run() {
-               onViewChange(event.getOldView(), event.getNewView());
-            }
-         });
-      }
-   };
-   /**reset UI*/
-   protected void idleUI(){
-      if (hasLocalSource) {
-         refreshBtn.setVisibility(View.VISIBLE);
-         disabled.setVisibility(View.GONE);
-         treeProgress.setVisibility(View.GONE);
-      } else {
-         disabled.setVisibility(View.VISIBLE);
-         disabled.setMode(DisabledOverlay.MODE.DISCONNECTED);
-      }
-   }
-
-   protected void postTreeUI(){
-      logger.debug("postTreeUI()");
-      if (hasLocalSource) {
-         startText.setVisibility(View.GONE);
-         refreshBtn.setVisibility(View.GONE);
-         disabled.setVisibility(View.GONE);
-         treeProgress.setVisibility(View.GONE);
-         treeViewList.setVisibility(View.VISIBLE);
-      } else {
-         disabled.setVisibility(View.VISIBLE);
-         disabled.setMode(DisabledOverlay.MODE.DISCONNECTED);
-      }
-   }
-   protected void progressUI(){
-
-      if (hasLocalSource) {
-         refreshBtn.setVisibility(View.GONE);
-         disabled.setVisibility(View.GONE);
-         treeViewList.setVisibility(View.GONE);
-         treeProgress.setVisibility(View.VISIBLE);
-      } else {
-         disabled.setVisibility(View.VISIBLE);
-         disabled.setMode(DisabledOverlay.MODE.DISCONNECTED);
-      }
-   }
-   /**
-    * Create an new Session for operation
-    * @return DataManagementSession a new data session
-    */
-   public DataManagementSession createSession(){
-      return null;
-   }
-
-   /**
-    * Config an Session for operation
+    * Change text string for the header UI element
     *
+    * @param text text string
     */
-   public void configSession(DataManagementSession session){
-
-   }
-   /**
-    * Operation over session
-    * @param  session session to operate
-    */
-   public void sessionOperate(DataManagementSession session, DataManagementSession.SessionOperation operation){
-      logger.trace("sessionOperate(): operation {} ",operation);
-      if(session != null && !session.isProgress()) {
-         getDataManagementService().processOperation(session, operation);
+   protected void setHeaderText(String text) {
+      if (headerTextView != null) {
+         headerTextView.setText(text);
       }
-      else{
-         logger.trace("sessionOperate(): just return");
-      }
-
    }
 
    /**
-    * session have a udpated status
-    * @param  session session that have an update
+    * Change text string for the header UI element
+    *
+    * @param id   resourcd ID
     */
-   public void sessionUpdated(DataManagementSession session){
-      DataManagementSession.SessionOperation op = session.getSessionOperation();
-      logger.debug("sessionUpdated() by {}", op.name());
-      if (op.equals(DataManagementSession.SessionOperation.DISCOVERY) && !session.isProgress()) {
-         initializeTree();
-         postTreeUI();
-         updateSelectAllState();
+   protected void setHeaderText(int id) {
+      setHeaderText(getResources().getString(id));
+   }
+
+   /**
+    * Make the tree list UI element visible
+    */
+   protected void showTreeList() {
+      if (treeViewList != null) {
+         treeViewList.setVisibility(View.VISIBLE);
       }
-      else if (op.equals(DataManagementSession.SessionOperation.CALCULATE_OPERATIONS)) {
-         //Import to existing parent if entity has parent
-         getSession().setData(processPartialImports(getSession().getData()));
+   }
+
+   /**
+    * Hide the tree list UI element
+    */
+   protected void hideTreeList() {
+      if (treeViewList != null) {
+         treeViewList.setVisibility(View.GONE);
       }
-      processOperations();
+   }
+
+   /**
+    * Make the disabled overlay UI element visible and switch its mode to LOADING
+    */
+   protected void showLoadingOverlay() {
+      if (disabledOverlay != null) {
+         disabledOverlay.setMode(DataExchangeBlockedOverlay.MODE.LOADING);
+      }
+   }
+
+   /**
+    * Make the disabled overlay UI element visible and switch its mode to DISCONNECTED
+    */
+   protected void showDisconnectedOverlay() {
+      if (disabledOverlay != null) {
+         disabledOverlay.setMode(DataExchangeBlockedOverlay.MODE.DISCONNECTED);
+      }
+   }
+
+   /**
+    * Hide the disabled overlay UI element
+    */
+   protected void hideDisabledOverlay() {
+      if (disabledOverlay != null) {
+         disabledOverlay.setMode(DataExchangeBlockedOverlay.MODE.HIDDEN);
+      }
    }
 
    private List<Operation> processPartialImports(List<Operation> operations) {
@@ -521,9 +556,13 @@ public abstract class BaseDataFragment extends RoboFragment implements IDataMana
       return operations;
    }
 
+   /**
+    * Create tree-adapter if no tree adapter is set
+    */
    protected void createTreeAdapter() {
-      if(treeAdapter == null) {
+      if (treeAdapter == null) {
          treeAdapter = new ObjectTreeViewAdapter(getActivity(), manager, 1) {
+
             @Override
             protected boolean isGroupableEntity(ObjectGraph node) {
                return TreeEntityHelper.obj2group.containsKey(node.getType()) || node.getParent() == null;
@@ -533,8 +572,30 @@ public abstract class BaseDataFragment extends RoboFragment implements IDataMana
             public boolean isSupportedEntitiy(ObjectGraph node) {
                return supportedByFormat(node);
             }
+
+            @Override
+            protected boolean childSelectionDoesImplicitSelectParentNodes(ObjectGraph rootNode) {
+               if (rootNode != null) {
+                  List<String> rootNodeNamesWithAutomaticParentSelection = getRootNodeNamesWithAutomaticParentSelection();
+                  if (rootNodeNamesWithAutomaticParentSelection != null) {
+                     return rootNodeNamesWithAutomaticParentSelection.contains(rootNode.getName());
+                  }
+               }
+               return false;
+            }
+
          };
       }
+   }
+
+   /**
+    * Returns the list of node names that should automatic select their parents
+    *
+    * @return List of node names that should automatic select their parents
+    */
+   @Nullable
+   protected List<String> getRootNodeNamesWithAutomaticParentSelection() {
+      return null;
    }
 
    /**
@@ -546,32 +607,37 @@ public abstract class BaseDataFragment extends RoboFragment implements IDataMana
       }
    }
 
-   protected void initializeTree() {
-      logger.debug("initializeTree");
-      //Discovery happened
-      enableButtons(true);
-      if(manager == null) {
+   /**
+    * Create and initialize tree manager, builder & adapter. Populate tree list with
+    * ObjectGraph data.
+    *
+    * @param objectGraphs  ObjectGraph data to populate the tree list
+    */
+   protected void initAndPopulateTree(List<ObjectGraph> objectGraphs) {
+      logger.debug("initAndPopulateTree()");
+
+      if (manager == null) {
          manager = new InMemoryTreeStateManager<ObjectGraph>();
       }
-      else{
+      else {
          manager.clear();
       }
-      if(treeBuilder == null) {
+
+      if (treeBuilder == null) {
          treeBuilder = new TreeBuilder<ObjectGraph>(manager);
       }
-      else{
+      else {
          treeBuilder.clear();
       }
-      List<ObjectGraph> data = session != null && session.getObjectData() != null ? session.getObjectData() : new ArrayList<ObjectGraph>();
-      addToTree(data);
+      addToTree(objectGraphs);
       sortTreeList();
       createTreeAdapter();
 
-      treeAdapter.setData(data);
+      treeAdapter.setData(objectGraphs);
       treeViewList.removeAllViewsInLayout();
       treeViewList.setVisibility(View.VISIBLE);//this is for UT
       treeViewList.setAdapter(treeAdapter);
-      treeAdapter.selectAll(treeViewList,false);//to clean all the previous selection
+      treeAdapter.selectAll(treeViewList, false);//to clean all the previous selection
       manager.collapseChildren(null);
       treeAdapter.setOnTreeItemSelectedListener(new SelectionTreeViewAdapter.OnTreeItemSelectedListener() {
          @Override
@@ -586,21 +652,22 @@ public abstract class BaseDataFragment extends RoboFragment implements IDataMana
     * adding object(s) to treeview
     * @param  objectGraphs objects to add
     */
-   protected void addToTree(List<ObjectGraph> objectGraphs){
+   protected void addToTree(List<ObjectGraph> objectGraphs) {
       boolean bVisible = false;
-      if(objectGraphs!=null && !objectGraphs.isEmpty()){
-         for(ObjectGraph o: objectGraphs){
-            if(bAddToTree(o.getParent(), o) && !bVisible){
+      if (objectGraphs != null && !objectGraphs.isEmpty()) {
+         for (ObjectGraph o : objectGraphs) {
+            if (bAddToTree(o.getParent(), o) && !bVisible) {
                bVisible = true;
             }
          }
-         if(bVisible){
+         if (bVisible) {
             dataChangedRefresh();
          }
       }
    }
+
    //notify the treeview data change
-   private void dataChangedRefresh(){
+   private void dataChangedRefresh() {
       manager.refresh();
    }
 
@@ -608,98 +675,199 @@ public abstract class BaseDataFragment extends RoboFragment implements IDataMana
    private boolean bAddToTree(ObjectGraph parent, ObjectGraph object) {
       boolean bVisible = false;
       try {
+         if (object.getType().equals(DataTypes.DDOP)) {
+            return bVisible;
+         }
          //Check if entity can be grouped
-         if (TreeEntityHelper.obj2group.containsKey(object.getType()) || object.getParent() == null) {
+         String objectType = object.getType();
+         if (TreeEntityHelper.isGroup(objectType) || object.getParent() == null) {
+            String gType = TreeEntityHelper.getGroupType(objectType);
+            String ggType = TreeEntityHelper.getGroupOfGroupType(objectType);
             GroupObjectGraph group = null;
+            GroupObjectGraph gGroup = null;
             for (ObjectGraph child : manager.getChildren(parent)) { //find the group node
-               if (child instanceof GroupObjectGraph){
-                  if(TreeEntityHelper.obj2group.containsKey(object.getType()) && child.getType().equals(TreeEntityHelper.obj2group.get(object.getType()))){
+               if (child instanceof GroupObjectGraph) {
+                  if (child.getType().equals(gType)) {
                      group = (GroupObjectGraph) child;
                      break;
                   }
-                  else if(TreeEntityHelper.group2group.containsKey(TreeEntityHelper.obj2group.get(object.getType()))){
-                     for(ObjectGraph cchild: manager.getChildren(child)){
-                        if(child instanceof GroupObjectGraph && child.getType().equals(TreeEntityHelper.group2group.get(TreeEntityHelper.obj2group.get(object.getType())))){
-                           group = (GroupObjectGraph)cchild;
+                  else if (TreeEntityHelper.isGroupOfGroup(objectType) && child.getType().equals(ggType)) {
+                     gGroup = (GroupObjectGraph) child;
+                     for (ObjectGraph cchild : manager.getChildren(child)) {
+                        if (child instanceof GroupObjectGraph && cchild.getType().equals(gType)) {
+                           group = (GroupObjectGraph) cchild;
                            break;
                         }
                      }
+                     break;
                   }
                }
             }
             if (group == null) { //if group node doesn't exist we gotta make it
-               if(TreeEntityHelper.group2group.containsKey(TreeEntityHelper.obj2group.get(object.getType()))){
-                  GroupObjectGraph ggroup = new GroupObjectGraph(null, TreeEntityHelper.group2group.get(TreeEntityHelper.obj2group.get(object.getType())), TreeEntityHelper.getGroupName(getActivity(), TreeEntityHelper.group2group.get(TreeEntityHelper.obj2group.get(object.getType()))),null, parent);
-                  group = new GroupObjectGraph(null, TreeEntityHelper.obj2group.get(object.getType()), TreeEntityHelper.getGroupName(getActivity(), TreeEntityHelper.obj2group.get(object.getType())), null, ggroup);
-                  if(treeBuilder.bAddRelation(parent,ggroup) && !bVisible){
-                     bVisible = true;
+               if (TreeEntityHelper.isGroupOfGroup(objectType)) {
+                  if (gGroup == null) {
+                     gGroup = new GroupObjectGraph(null, ggType, TreeEntityHelper.getGroupName(getActivity(), ggType), null, parent);
+                     if (treeBuilder.bAddRelation(parent, gGroup) && !bVisible) {
+                        bVisible = true;
+                     }
                   }
-                  if(treeBuilder.bAddRelation(ggroup, group) && !bVisible){
-                     bVisible = true;
-                  }
-               }
-               else{
-                  group = new GroupObjectGraph(null, TreeEntityHelper.obj2group.get(object.getType()), TreeEntityHelper.getGroupName(getActivity(), TreeEntityHelper.obj2group.get(object.getType())), null, parent);
-                  if(treeBuilder.bAddRelation(parent,group) && !bVisible){
+                  group = new GroupObjectGraph(null, gType, TreeEntityHelper.getGroupName(getActivity(), gType), null, gGroup);
+                  if (treeBuilder.bAddRelation(gGroup, group) && !bVisible) {
                      bVisible = true;
                   }
                }
-
+               else {
+                  group = new GroupObjectGraph(null, gType, TreeEntityHelper.getGroupName(getActivity(), gType), null, parent);
+                  if (treeBuilder.bAddRelation(parent, group) && !bVisible) {
+                     bVisible = true;
+                  }
+               }
             }
-            if(treeBuilder.bAddRelation(group, object) && !bVisible){
+            if (treeBuilder.bAddRelation(group, object) && !bVisible) {
                bVisible = true;
             }
          }
          //Else just add to parent
          else {
-            if(treeBuilder.bAddRelation(parent, object) && !bVisible){
+            if (treeBuilder.bAddRelation(parent, object) && !bVisible) {
                bVisible = true;
             }
          }
          for (ObjectGraph child : object.getChildren()) {
-            if(bAddToTree(object, child) && !bVisible){
+            if (bAddToTree(object, child) && !bVisible) {
                bVisible = true;
             }
          }
-      } catch(NodeAlreadyInTreeException e) {
+      }
+      catch (NodeAlreadyInTreeException e) {
          logger.warn("Caught NodeAlreadyInTree exception", e);
       }
       return bVisible;
    }
 
-   void updateSelectAllState() {
-      selectAllBtn.setEnabled(treeAdapter.getData() != null && !treeAdapter.getData().isEmpty());
-      boolean allSelected = getTreeAdapter().areAllSelected();
-      selectAllBtn.setText(allSelected ? R.string.deselect_all : R.string.select_all);
-      selectAllBtn.setActivated(allSelected);
-   }
-
-   void selectAll() {
-      treeAdapter.selectAll(treeViewList, !getTreeAdapter().areAllSelected());
-      updateSelectAllState();
-   }
-
-   public DataManagementSession getSession() {
-      return session;
-   }
-
-   public DataManagementService getDataManagementService() {
-      return dataServiceConnection.getService();
-   }
-
+   /**
+    * Return the tree adapter instance.
+    *
+    * @return  the tree adapter
+    */
    public ObjectTreeViewAdapter getTreeAdapter() {
       return treeAdapter;
    }
 
-   public void setSession(DataManagementSession session) {
-      this.session = session;
+   /**
+    * Count the number of selected items that have only valid records.
+    *
+    * @return  the number of selected items on the tree UI
+    */
+   protected int countSelectedItem() {
+      int sum = 0;
+
+      if (getTreeAdapter() != null) {
+         Set<ObjectGraph> parentSet = new HashSet<ObjectGraph>();
+         Set<ObjectGraph> selectedObjs = getTreeAdapter().getSelected();
+         for (ObjectGraph obj : selectedObjs) {
+            sum += obj.size();
+
+            ObjectGraph parent = obj.getParent();
+            while (parent != null) {
+               if (!parentSet.contains(parent)) {
+                  sum++;
+                  parentSet.add(parent);
+               }
+               parent = parent.getParent();
+            }
+         }
+      }
+      return sum;
    }
 
-   protected boolean isCancelled() {
-      return cancelled;
+   /**
+    * Select all items in the tree and update UI accordingly.
+    */
+   protected void makeAllTreeSelection() {
+      treeAdapter.selectAll(treeViewList, !getTreeAdapter().areAllSelected());
+      updateSelectAllState();
+      treeAdapter.refresh();
    }
 
-   protected void setCancelled(boolean cancelled) {
-      this.cancelled = cancelled;
+   /**
+    * Enable/Disable the 'Select All' UI button
+    *
+    * @param enable  flat to set enable/disable
+    */
+   protected void enableSelectAllButton(boolean enable) {
+      if (selectAllBtn != null) {
+         selectAllBtn.setEnabled(enable);
+      }
+   }
+
+   /**
+    * Given the current session state, chagne text & UI states for 'Select All'  button.
+    */
+   protected void updateSelectAllState() {
+      final Session session = getSession();
+      boolean enable = !SessionUtil.isInProgress(session) && session.getObjectData() != null;
+
+      logger.debug("Enable Select All button: {}", enable);
+      enableSelectAllButton(enable);
+      boolean allSelected = false;
+      if (getTreeAdapter() != null) {
+         allSelected = getTreeAdapter().areAllSelected();
+      }
+      selectAllBtn.setText(allSelected ? R.string.deselect_all : R.string.select_all);
+      selectAllBtn.setActivated(allSelected);
+   }
+
+   @Override
+   public void onDataServiceConnectionChange(boolean connected) {
+      logger.debug("onDataServiceConnectionChange(): {}", connected);
+      if (connected) {
+         onResumeSession();
+      }
+   }
+
+   /**
+    * Updates the blocked overlay, returns weather it is shown or not.
+    * @param blockingActions List of Actions that are allowed to block fragments
+    * @return True if blocking overlay is shown afterwards, False otherwise
+    */
+   protected boolean requestAndUpdateBlockedOverlay(@Nullable List<Session.Action> blockingActions) {
+      if (blockingActions != null && sessionManager != null && !DataExchangeBlockedOverlay.MODE.DISCONNECTED.equals(disabledOverlay.getMode())) {
+         for (Session.Action action : blockingActions) {
+            if (action != null) {
+               if (sessionManager.actionIsActive(action) && !Process.Result.CANCEL.equals(sessionManager.getCurrentSession(action).getResultCode())) {
+                  //found blocking session, determine reason
+                  final DataExchangeBlockedOverlay.MODE overlayMode;
+                  switch (action) {
+                  case IMPORT:
+                     overlayMode = DataExchangeBlockedOverlay.MODE.BLOCKED_BY_IMPORT;
+                     break;
+                  case EXPORT:
+                     overlayMode = DataExchangeBlockedOverlay.MODE.BLOCKED_BY_EXPORT;
+                     break;
+                  default:
+                     overlayMode = DataExchangeBlockedOverlay.MODE.HIDDEN;
+                     logger.error("Could not determine blocked-by state of data exchange fragment! Hiding blocked by overlay!");
+                     break;
+                  }
+                  disabledOverlay.setMode(overlayMode);
+                  return true; //true:enabled blocking overlay
+               }
+               else {
+                  if (!DataExchangeBlockedOverlay.MODE.HIDDEN.equals(disabledOverlay.getMode())) {
+                     //disable overlay is shown but should be hidden
+                     disabledOverlay.setMode(DataExchangeBlockedOverlay.MODE.HIDDEN);
+                     return false;
+                  }
+               }
+            }
+            else {
+               logger.warn("Got empty action in requestAndUpdateBlockedOverlay.");
+            }
+         }
+         //No blocking action found, hide overlay
+         disabledOverlay.setMode(DataExchangeBlockedOverlay.MODE.HIDDEN);
+      }
+      return false; //false:disabled blocking overlay
    }
 }

@@ -17,7 +17,6 @@ import android.view.View;
 import android.widget.EditText;
 import android.widget.TextView;
 import com.cnh.android.dialog.DialogView;
-import com.cnh.android.widget.control.InputField;
 import com.cnh.pf.android.data.management.R;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
