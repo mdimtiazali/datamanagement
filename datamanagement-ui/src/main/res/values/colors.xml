@@ -59,8 +59,15 @@
 
     <color name="list_item_text_color">#505050</color>
 
-   <!--Data Exchange overlay-->
-   <color name="data_exchange_overlay_background">#BBFFFFFF</color>
-   <color name="data_exchange_overlay_descriptiontext_color">#aeafaf</color>
+    <!--Data Exchange overlay-->
+    <color name="data_exchange_overlay_background">#BBFFFFFF</color>
+    <color name="data_exchange_overlay_descriptiontext_color">#aeafaf</color>
+
+    <!--Configuration for dimensions of the shadow representative of multiple items for drag and drop in DM-->
+    <color name="tree_drag_multiple_selection_shadow_box_background_color">@color/StandardWhiteColor</color>
+    <color name="tree_drag_multiple_selection_shadow_box_shadow_color">@color/StandardBlackColor</color>
+    <color name="tree_drag_multiple_selection_shadow_box_border_color">@color/color_grey</color>
+    <color name="tree_drag_multiple_selection_shadow_box_circle_color">@color/color_red</color>
+    <color name="tree_drag_multiple_selection_shadow_box_font_color">@color/StandardWhiteColor</color>
 
 </resources>

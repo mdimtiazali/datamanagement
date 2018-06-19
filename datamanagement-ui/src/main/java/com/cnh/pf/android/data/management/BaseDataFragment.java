@@ -30,6 +30,7 @@ import com.cnh.pf.android.data.management.adapter.SelectionTreeViewAdapter;
 import com.cnh.pf.android.data.management.graph.GroupObjectGraph;
 import com.cnh.pf.android.data.management.helper.DataExchangeBlockedOverlay;
 import com.cnh.pf.android.data.management.helper.DataExchangeProcessOverlay;
+import com.cnh.pf.android.data.management.helper.TreeDragMultipleSelectionShadowBuilder;
 import com.cnh.pf.android.data.management.helper.TreeDragShadowBuilder;
 import com.cnh.pf.android.data.management.session.ErrorCode;
 import com.cnh.pf.android.data.management.session.Session;
@@ -338,7 +339,17 @@ public abstract class BaseDataFragment extends RoboFragment implements SessionCo
             if (!treeAdapter.getSelectionMap().containsKey(view.getTag())) {
                treeAdapter.handleItemClick(parent, view, position, view.getTag()); //select it, and start the drag
             }
-            view.startDrag(null, new TreeDragShadowBuilder(view, treeViewList, treeAdapter), treeAdapter.getSelected(), 0);
+
+            //use different shadow builder depending on number of selected items
+            View.DragShadowBuilder shadowBuilder = null;
+            if (treeAdapter.getSelectionMap().size() == 1) {
+               shadowBuilder = new TreeDragShadowBuilder(view, treeViewList, treeAdapter);
+            }
+            else {
+               shadowBuilder = new TreeDragMultipleSelectionShadowBuilder(countSelectedItem(), getResources());
+            }
+            view.startDrag(null, shadowBuilder, treeAdapter.getSelected(), 0);
+
             return false;
          }
       });
