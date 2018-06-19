@@ -263,7 +263,7 @@ public class ImportFragment extends BaseDataFragment {
       logger.debug("onMyselfSessionSuccess()-Type:{}", session.getType());
 
       if (SessionUtil.isDiscoveryTask(session)) {
-         initAndPouplateTree(session.getObjectData());
+         initAndPopulateTree(session.getObjectData());
 
          hideDisabledOverlay();
          showTreeList();
@@ -532,7 +532,7 @@ public class ImportFragment extends BaseDataFragment {
          if (SessionUtil.isDiscoveryTask(session) && (SessionUtil.isInProgress(session) || SessionUtil.isComplete(session))) {
             logger.info("There is already active session. Continue on the previous active session.");
             if (session.getObjectData() != null && !session.getObjectData().isEmpty()) {
-               initAndPouplateTree(session.getObjectData());
+               initAndPopulateTree(session.getObjectData());
 
                showTreeList();
                hideDisabledOverlay();
