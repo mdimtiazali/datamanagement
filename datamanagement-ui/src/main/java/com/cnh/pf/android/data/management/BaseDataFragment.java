@@ -31,7 +31,6 @@ import com.cnh.pf.android.data.management.graph.GroupObjectGraph;
 import com.cnh.pf.android.data.management.helper.DataExchangeBlockedOverlay;
 import com.cnh.pf.android.data.management.helper.DataExchangeProcessOverlay;
 import com.cnh.pf.android.data.management.helper.TreeDragMultipleSelectionShadowBuilder;
-import com.cnh.pf.android.data.management.helper.TreeDragShadowBuilder;
 import com.cnh.pf.android.data.management.session.ErrorCode;
 import com.cnh.pf.android.data.management.session.Session;
 import com.cnh.pf.android.data.management.session.SessionContract;
@@ -333,13 +332,14 @@ public abstract class BaseDataFragment extends RoboFragment implements SessionCo
          @Override
          public boolean onItemLongClick(AdapterView<?> parent, View view, int position, long id) {
             if (!treeAdapter.getSelectionMap().containsKey(view.getTag())) {
-               treeAdapter.handleItemClick(parent, view, position, view.getTag()); //select it, and start the drag
+               treeAdapter.handleItemClick(parent, view, position, view.getTag()); //update selection
+               view.setPressed(false); //Item would be shown/marked as pressed while in OnItemLongClickListener
             }
 
             //use different shadow builder depending on number of selected items
             View.DragShadowBuilder shadowBuilder = null;
             if (treeAdapter.getSelectionMap().size() == 1) {
-               shadowBuilder = new TreeDragShadowBuilder(view, treeViewList, treeAdapter);
+               shadowBuilder = new View.DragShadowBuilder(view);
             }
             else {
                shadowBuilder = new TreeDragMultipleSelectionShadowBuilder(countSelectedItem(), getResources());

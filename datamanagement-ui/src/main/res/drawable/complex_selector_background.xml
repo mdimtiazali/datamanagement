@@ -6,37 +6,20 @@
   ~ disclose in whole or in part any such information without written
   ~ authorization from CNH Industrial NV.
   -->
+<selector xmlns:android="http://schemas.android.com/apk/res/android"
+          xmlns:cnh="http://schemas.android.com/apk/res/com.cnh.pf.android.data.management">
 
-<selector xmlns:android="http://schemas.android.com/apk/res/android" xmlns:cnh="http://schemas.android.com/apk/res/com.cnh.pf.android.data.management">
+    <item android:state_selected="true" cnh:state_supported="false"
+          android:drawable="@drawable/complex_selector_background_selected_unsupported"/>
 
-   <item android:state_selected="true" cnh:state_supported="false">
-      <shape android:shape="rectangle">
-         <corners android:radius="@dimen/selected_corner_radius"/>
-         <solid android:color="@color/bg_notsupported_fill"/>
-      </shape>
-   </item>
+    <item cnh:state_implicit="true" cnh:state_supported="false"
+          android:drawable="@drawable/complex_selector_background_selected_unsupported"/>
 
-    <item cnh:state_implicit="true" cnh:state_supported="false">
-        <shape android:shape="rectangle">
-            <corners android:radius="@dimen/selected_corner_radius" />
-            <solid android:color="@color/bg_notsupported_fill" />
-        </shape>
-    </item>
+    <item android:state_selected="true" cnh:state_supported="true" android:state_pressed="false"
+          android:drawable="@drawable/complex_selector_background_selected_supported"/>
 
-    <item android:state_selected="true" cnh:state_supported="true" android:state_pressed="false">
-        <shape android:shape="rectangle">
-            <corners android:radius="@dimen/selected_corner_radius" />
-            <solid android:color="@color/bg_selected" />
-        </shape>
-    </item>
+    <item cnh:state_implicit="true" cnh:state_supported="true" android:state_pressed="false"
+          android:drawable="@drawable/complex_selector_background_implicit_selected_supported"/>
 
-    <item cnh:state_implicit="true" cnh:state_supported="true" android:state_pressed="false">
-        <shape android:shape="rectangle">
-            <corners android:radius="@dimen/selected_corner_radius" />
-            <solid android:color="@color/bg_implicit_fill" />
-            <stroke android:color="@color/bg_implicit_stroke" android:width="2dp" />
-        </shape>
-    </item>
-
-    <item android:drawable="@android:color/transparent" />
+    <item android:drawable="@android:color/transparent"/>
 </selector>
