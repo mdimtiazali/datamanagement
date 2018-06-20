@@ -157,20 +157,16 @@ public final class VarietyAdapter extends BaseAdapter implements Filterable {
       cropTypeTextView.setText(getCropTypeText(variety));
       UiHelper.setAlternatingTableItemBackground(context, position, convertView);
       final ImageButton editButton = (ImageButton) convertView.findViewById(R.id.variety_edit_button);
-      if (variety.isUsed()){
-         editButton.setEnabled(false);
-         editButton.setClickable(false);
-      } else {
-         editButton.setTag(variety);
-         editButton.setEnabled(true);
-         editButton.setClickable(true);
-         editButton.setOnClickListener(onEditButtonClickListener);
-      }
+      editButton.setTag(variety);
+      editButton.setEnabled(true);
+      editButton.setClickable(true);
+      editButton.setOnClickListener(onEditButtonClickListener);
       final ImageButton deleteButton = (ImageButton) convertView.findViewById(R.id.variety_delete_button);
-      if (variety.isUsed()){
+      if (variety.isUsed()) {
          deleteButton.setEnabled(false);
          deleteButton.setClickable(false);
-      } else {
+      }
+      else {
          deleteButton.setTag(variety);
          deleteButton.setEnabled(true);
          deleteButton.setClickable(true);
