@@ -25,6 +25,13 @@ public class TreeEntityHelper {
 
    private static final Map<String, Integer> TYPE_ICONS = new HashMap<String, Integer>();
 
+   /**
+    * Map lists all entities which are groupable in ui, entities with types specified in this lists will be grouped in ui.
+    */
+   protected static final Map<String, Integer> group2name = new HashMap<String, Integer>();
+   protected static final Map<String, String> obj2group = new HashMap<String, String>();
+   protected static final Map<String, String> group2group = new HashMap<String, String>();
+
    public static final String GROWERS = "GROWERS";
    public static final String TASKS = "TASKS";
    public static final String RXS = "RXS";
@@ -80,74 +87,75 @@ public class TreeEntityHelper {
       TYPE_ICONS.put(DataTypes.VARIETY, R.drawable.ic_data_management_varieties);
       TYPE_ICONS.put(DataTypes.USB, R.drawable.ic_data_tree_usb_active);
       TYPE_ICONS.put(DataTypes.CLOUD,R.drawable.ic_data_tree_cloud_active);
+
+      group2name.put(GROWERS, R.string.pfds);
+      group2name.put(GROWERS, R.string.pfds);
+      group2name.put(TASKS, R.string.tasks);
+      group2name.put(RXS, R.string.prescriptions);
+      group2name.put(BOUNDARIES, R.string.boundaries);
+      group2name.put(GUIDANCE_GROUPS, R.string.guidance_groups);
+      group2name.put(LANDMARKS, R.string.obstacles);
+      group2name.put(PRODUCTS, R.string.products);
+      group2name.put(PRODUCT_MIXS, R.string.product_mixes);
+      group2name.put(VARIETIES, R.string.varieties);
+      group2name.put(VEHICLES, R.string.vehicles);
+      group2name.put(IMPLEMENTS, R.string.imps);
+      group2name.put(NOTES, R.string.notes);
+      group2name.put(GUIDANCE_CONFIGURATIONS, R.string.guidance_configurations);
+      group2name.put(PRODUCT_MIX_VARIETY, R.string.product_mix_variety);
+
+      obj2group.put(DataTypes.GROWER, GROWERS);
+      obj2group.put(DataTypes.TASK, TASKS);
+      obj2group.put(DataTypes.RX, RXS);
+      obj2group.put(DataTypes.BOUNDARY, BOUNDARIES);
+      obj2group.put(DataTypes.GUIDANCE_GROUP, GUIDANCE_GROUPS);
+      obj2group.put(DataTypes.LANDMARK, LANDMARKS);
+      obj2group.put(DataTypes.PRODUCT, PRODUCTS);
+      obj2group.put(DataTypes.PRODUCT_MIX, PRODUCT_MIXS);
+      obj2group.put(DataTypes.VARIETY, VARIETIES);
+      obj2group.put(DataTypes.VEHICLE, VEHICLES);
+      obj2group.put(DataTypes.IMPLEMENT, IMPLEMENTS);
+      obj2group.put(DataTypes.NOTE, NOTES);
+      obj2group.put(DataTypes.GUIDANCE_CONFIGURATION, GUIDANCE_CONFIGURATIONS);
+      obj2group.put(DataTypes.DDOP, DDOP);
+
+      group2group.put(PRODUCTS, PRODUCT_MIX_VARIETY);
+      group2group.put(PRODUCT_MIXS, PRODUCT_MIX_VARIETY);
+      group2group.put(VARIETIES, PRODUCT_MIX_VARIETY);
    }
-   /* Map lists all entities which are groupable in ui, entities with types specified in
-   this list will be grouped in ui.
+
+   private TreeEntityHelper() {
+      //prevent instantiation
+   }
+
+   /**
+    * Returns if a given type is representing a groupType
+    * @param type Type in question to be a groupType
+    * @return True if type is a groupType, false otherwise
     */
-   public static Map<String, Integer> group2name = new HashMap<String, Integer>() {
-      {
-         put(GROWERS, R.string.pfds);
-         put(TASKS, R.string.tasks);
-         put(RXS, R.string.prescriptions);
-         put(BOUNDARIES, R.string.boundaries);
-         put(GUIDANCE_GROUPS, R.string.guidance_groups);
-         put(LANDMARKS, R.string.obstacles);
-         put(PRODUCTS, R.string.products);
-         put(PRODUCT_MIXS, R.string.product_mixes);
-         put(VARIETIES, R.string.varieties);
-         put(VEHICLES, R.string.vehicles);
-         put(IMPLEMENTS, R.string.imps);
-         put(NOTES, R.string.notes);
-         put(GUIDANCE_CONFIGURATIONS, R.string.guidance_configurations);
-         put(PRODUCT_MIX_VARIETY, R.string.product_mix_variety);
-      }
-   };
-   public static boolean isGroupType(String type){
+   public static boolean isGroupType(String type) {
       return group2name.containsKey(type);
    }
-   public static Map<String, String> obj2group = new HashMap<String, String>() {
-      {
-         put(DataTypes.GROWER, GROWERS);
-         put(DataTypes.TASK, TASKS);
-         put(DataTypes.RX, RXS);
-         put(DataTypes.BOUNDARY, BOUNDARIES);
-         put(DataTypes.GUIDANCE_GROUP, GUIDANCE_GROUPS);
-         put(DataTypes.LANDMARK, LANDMARKS);
-         put(DataTypes.PRODUCT, PRODUCTS);
-         put(DataTypes.PRODUCT_MIX,PRODUCT_MIXS);
-         put(DataTypes.VARIETY, VARIETIES);
-         put(DataTypes.VEHICLE,VEHICLES);
-         put(DataTypes.IMPLEMENT,IMPLEMENTS);
-         put(DataTypes.NOTE,NOTES);
-         put(DataTypes.GUIDANCE_CONFIGURATION,GUIDANCE_CONFIGURATIONS);
-         put(DataTypes.DDOP,DDOP);
-      }
-   };
-   public static Map<String, String> group2group = new HashMap<String, String>() {
-      {
-         put(PRODUCTS, PRODUCT_MIX_VARIETY);
-         put(PRODUCT_MIXS, PRODUCT_MIX_VARIETY);
-         put(VARIETIES, PRODUCT_MIX_VARIETY);
-      }
-   };
+
    /**
     * get a its group type, return origin type if there is no config
     * @param type the ObjectGraph type
-    * @return  group's data type
+    * @return group's data type
     */
-   public static String getGroupType(String type){
-      if(obj2group.containsKey(type)){
+   public static String getGroupType(String type) {
+      if (obj2group.containsKey(type)) {
          return obj2group.get(type);
       }
       return type;
    }
+
    /**
     * get a its group's group type, return origin type if there is no config
     * @param type the ObjectGraph type
-    * @return  group's group data type
+    * @return group's group data type
     */
-   public static String getGroupOfGroupType(String type){
-      if(group2group.containsKey(obj2group.get(type))) {
+   public static String getGroupOfGroupType(String type) {
+      if (group2group.containsKey(obj2group.get(type))) {
          return group2group.get(obj2group.get(type));
       }
       return type;
@@ -156,24 +164,32 @@ public class TreeEntityHelper {
    /**
     * check if the data type has a parent group
     * @param type the ObjectGraph type
-    * @return  true if it has a parent group, false for no
+    * @return true if it has a parent group, false for no
     */
-   public static boolean isGroup(String type){
+   public static boolean isGroup(String type) {
       return obj2group.containsKey(type);
    }
+
    /**
     * check if the data type has a group's group
     * @param type the ObjectGraph type
-    * @return  true if it has a group's group, false for no
+    * @return true if it has a group's group, false for no
     */
-   public static boolean isGroupOfGroup(String type){
-      if(isGroup(type)){
+   public static boolean isGroupOfGroup(String type) {
+      if (isGroup(type)) {
          return group2group.containsKey(getGroupType(type));
       }
       return false;
    }
+
+   /**
+    * Returns the group name of a given type
+    * @param context Context string of GroupName should be loaded from
+    * @param type Type of whose GroupName should be loaded from
+    * @return GroupName of the given type
+    */
    public static String getGroupName(Context context, String type) {
-      if (group2name.containsKey(type)){
+      if (group2name.containsKey(type)) {
          return context.getString(group2name.get(type));
       }
       String name = type.substring(type.lastIndexOf('.') + 1);
@@ -182,7 +198,7 @@ public class TreeEntityHelper {
 
    /**
     * @param type the ObjectGraph type
-    * @return  the icon resource id
+    * @return the icon resource id
     */
    public static int getIcon(String type) {
       return TYPE_ICONS.get(type);

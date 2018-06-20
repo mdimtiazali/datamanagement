@@ -307,7 +307,7 @@ public class ProductMixDialog extends DialogView implements DialogHandlerListene
          }
       }
 
-      if (DialogActionType.COPY.equals(actionType) || DialogActionType.EDIT.equals(actionType)) {
+      if (productMix != null && (DialogActionType.COPY.equals(actionType) || DialogActionType.EDIT.equals(actionType))) {
          dialogUsageAndCropTypeHandler.setValuesToUi(productMix.getProductMixParameters());
       }
 
@@ -430,11 +430,11 @@ public class ProductMixDialog extends DialogView implements DialogHandlerListene
                   else {
                      dialogUsageAndCropTypeHandler.setValuesToUi(productMixForm);
                   }
+                  dialogPackageSizeHandler.setUnitsOptions(productMix.getProductMixParameters(), productMixForm, productUnitsList);
                }
                else {
                   dialogUsageAndCropTypeHandler.setValuesToUi(productMixForm);
                }
-               dialogPackageSizeHandler.setUnitsOptions(productMix.getProductMixParameters(), productMixForm, productUnitsList);
                initializeDensityUnits();
                resetCarrierProduct();
             }

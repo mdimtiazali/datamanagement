@@ -52,23 +52,29 @@ public class DmAccessibleObserver implements OnConnectionChangeListener, Consume
     }
 
 
-    @Override
-    public void onUpdate(String s, @Nonnull Signal.Header header, @Nullable Message message) {
-        synchronized (this) {
+   @Override
+   public void onUpdate(String s, @Nonnull Signal.Header header, @Nullable Message message) {
+      synchronized (this) {
+         if (message != null) {
             if (s.equals(SignalUri.WORK_SYSTEM)) {
-                Signal.SystemWork systemWork = (Signal.SystemWork) message;
-                isWorking = systemWork.getState() == Signal.WorkState.IN_WORK;
-                logger.debug("Work system update : {}", isWorking);
-            } else if (s.equals(SignalUri.GUIDANCE_MODULARGUIDANCE_ENGAGEMANAGER_ENGAGED)) {
-                Signal.Boolean engageState = (Signal.Boolean) message;
-                isEngage = engageState.getValue();
-                logger.debug("Engage update : {}", isEngage);
+               Signal.SystemWork systemWork = (Signal.SystemWork) message;
+               isWorking = systemWork.getState() == Signal.WorkState.IN_WORK;
+               logger.debug("Work system update : {}", isWorking);
             }
-            if(listener != null){
-                listener.onAccessStatus(isDmAccessable());
+            else if (s.equals(SignalUri.GUIDANCE_MODULARGUIDANCE_ENGAGEMANAGER_ENGAGED)) {
+               Signal.Boolean engageState = (Signal.Boolean) message;
+               isEngage = engageState.getValue();
+               logger.debug("Engage update : {}", isEngage);
             }
-        }
-    }
+            if (listener != null) {
+               listener.onAccessStatus(isDmAccessable());
+            }
+         }
+         else {
+            logger.debug("Received invalid message: Message is null!");
+         }
+      }
+   }
 
     private boolean isDmAccessable(){
         synchronized (this){

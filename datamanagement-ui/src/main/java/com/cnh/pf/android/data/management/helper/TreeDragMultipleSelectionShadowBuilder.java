@@ -42,7 +42,6 @@ public class TreeDragMultipleSelectionShadowBuilder extends View.DragShadowBuild
    private static Paint circlePaint = null;
    private static float minimumCircleRadius = 0f;
    private static Paint numberPaint = null;
-   private static int fontSize;
 
    /**
     * Constructor generating instance of TreeDragMultipleSelectionShadowBuilder
@@ -55,7 +54,7 @@ public class TreeDragMultipleSelectionShadowBuilder extends View.DragShadowBuild
       loadResources(resources);
    }
 
-   private void loadResources(Resources resources) {
+   private static void loadResources(Resources resources) {
       //load image
       if (folderImage == null) {
          folderImage = BitmapFactory.decodeResource(resources, R.drawable.ic_datatree_copy);
@@ -98,7 +97,7 @@ public class TreeDragMultipleSelectionShadowBuilder extends View.DragShadowBuild
       }
       //define number of selected items
       if (numberPaint == null) {
-         fontSize = resources.getInteger(R.integer.tree_drag_multiple_selection_shadow_box_selected_number_font_size);
+         int fontSize = resources.getInteger(R.integer.tree_drag_multiple_selection_shadow_box_selected_number_font_size);
          numberPaint = new Paint(Paint.ANTI_ALIAS_FLAG);
          numberPaint.setTextAlign(Paint.Align.CENTER);
          numberPaint.setTypeface(Typeface.DEFAULT_BOLD);
@@ -137,7 +136,7 @@ public class TreeDragMultipleSelectionShadowBuilder extends View.DragShadowBuild
       float circleDiameter = getCircleRadius() * 2f;
       shadowSize.set((int) (backgroundBox.width() + circleDiameter), (int) (backgroundBox.height() + circleDiameter));
       //set touch point to the lower right corner of the representative
-      shadowTouchPoint.set((int) (shadowSize.x / 2 + backgroundBox.right), (int) (shadowSize.y / 2 + backgroundBox.bottom));
+      shadowTouchPoint.set((int) (shadowSize.x / 2f + backgroundBox.right), (int) (shadowSize.y / 2f + backgroundBox.bottom));
    }
 
    @Override

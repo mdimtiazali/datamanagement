@@ -12,8 +12,8 @@ import android.app.Activity;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.widget.AdapterView;
-
 import android.widget.TextView;
+
 import com.android.annotations.VisibleForTesting;
 import com.cnh.android.dialog.DialogView;
 import com.cnh.android.dialog.DialogViewInterface;
@@ -77,20 +77,23 @@ public class ImportSourceDialog extends DialogView {
    private SessionExtra cloudExtra;
    private String filePath;
    public int getCurrentSessionExtra;
-   public boolean isUSBType =  false;
-   private Set<String> file2Support = new HashSet<String>(){{
-      add("TASKDATA.XML");
-      add("vip.xml");
-      add("shp");
-      add("SHP");
-      add("shx");
-      add("SHX");
-      add("dbf");
-      add("DBF");
-   }};
+   public boolean isUSBType = false;
+   private Set<String> file2Support = new HashSet<String>();
+
+   private void initSupportedFiles() {
+      file2Support.add("TASKDATA.XML");
+      file2Support.add("vip.xml");
+      file2Support.add("shp");
+      file2Support.add("SHP");
+      file2Support.add("shx");
+      file2Support.add("SHX");
+      file2Support.add("dbf");
+      file2Support.add("DBF");
+   }
 
    public ImportSourceDialog(Activity context, List<SessionExtra> extras) {
       super(context);
+      initSupportedFiles();
       RoboGuice.getInjector(context).injectMembers(this);
       setDialogWidth(getResources().getInteger(R.integer.import_source_dialog_width));
       init(extras);
@@ -138,7 +141,7 @@ public class ImportSourceDialog extends DialogView {
                extras.put(importSourceId, extra);
                cloudExtra = extra;
                File cloudFile = new File(getContext().getResources().getString(R.string.cloud_string));
-//               cloudImportSource(cloudFile, importSourceId, cloudExtra);//TODO needs Implementation
+               //cloudImportSource(cloudFile, importSourceId, cloudExtra);//TODO needs Implementation
             }
             else if (extra.isDisplayExtra()) {
                if (hosts.add(extra.getDescription())) { //one button per host
@@ -191,12 +194,12 @@ public class ImportSourceDialog extends DialogView {
       }
 
       File[] files = dir.listFiles(new FileFilter() {
-         private boolean isDirAccept(File file){
-            if(file.isDirectory()){
+         private boolean isDirAccept(File file) {
+            if (file.isDirectory()) {
                File[] fs = file.listFiles();
-               if(fs != null){
-                  for(File f: fs){
-                     if((f.isDirectory() && isDirAccept(f)) || (file2Support.contains(Files.getFileExtension(f.getName())) || file2Support.contains(f.getName()))){
+               if (fs != null) {
+                  for (File f : fs) {
+                     if ((f.isDirectory() && isDirAccept(f)) || (file2Support.contains(Files.getFileExtension(f.getName())) || file2Support.contains(f.getName()))) {
                         return true;
                      }
                   }
@@ -204,13 +207,14 @@ public class ImportSourceDialog extends DialogView {
             }
             return false;
          }
+
          @Override
          public boolean accept(File file) {
             boolean ret = false;
-            if(file.isDirectory()) {
+            if (file.isDirectory()) {
                ret = isDirAccept(file);
             }
-            else if (file2Support.contains(Files.getFileExtension(file.getName()))){
+            else if (file2Support.contains(Files.getFileExtension(file.getName()))) {
                ret = true;
             }
             return ret;
@@ -218,7 +222,7 @@ public class ImportSourceDialog extends DialogView {
       });
       if (files != null) {
          for (File file : files) {
-            populateTree(treeBuilder,dir, file);
+            populateTree(treeBuilder, dir, file);
          }
       }
    }
@@ -252,7 +256,7 @@ public class ImportSourceDialog extends DialogView {
          for (SessionExtra ex : extras.values()) {
             if (currentHost.equals(ex.getDescription())) {
                log.trace("Adding device {}", ex);
-//               displayPicklist.addItem(new ObjectPickListItem<MediumDevice>(id++, ex.getAddress().toString(), md));
+               //displayPicklist.addItem(new ObjectPickListItem<MediumDevice>(id++, ex.getAddress().toString(), md));
             }
          }
          displayPicklist.setOnItemSelectedListener(new PickListEditable.OnItemSelectedListener() {
@@ -308,6 +312,7 @@ public class ImportSourceDialog extends DialogView {
    public int getCurrentExtra() {
       return getCurrentSessionExtra;
    }
+
    /**
     * getter for checking currentExtra Type. Used for Testing
     *

@@ -301,16 +301,6 @@ public abstract class BaseDataFragment extends RoboFragment implements SessionCo
    }
 
    @Override
-   public void onSaveInstanceState(Bundle outState) {
-      super.onSaveInstanceState(outState);
-   }
-
-   @Override
-   public void onCreate(Bundle savedInstanceState) {
-      super.onCreate(savedInstanceState);
-   }
-
-   @Override
    public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
       View layout = inflater.inflate(R.layout.import_layout, container, false);
       LinearLayout leftPanel = (LinearLayout) layout.findViewById(R.id.left_panel_wrapper);
@@ -563,17 +553,6 @@ public abstract class BaseDataFragment extends RoboFragment implements SessionCo
       if (disabledOverlay != null) {
          disabledOverlay.setMode(DataExchangeBlockedOverlay.MODE.HIDDEN);
       }
-   }
-
-   private List<Operation> processPartialImports(List<Operation> operations) {
-      if (operations == null) {
-         logger.warn("calculate operations returned No operations");
-         return null;
-      }
-      for (Operation operation : operations) {
-         operation.setTarget(operation.getData().getParent());
-      }
-      return operations;
    }
 
    /**

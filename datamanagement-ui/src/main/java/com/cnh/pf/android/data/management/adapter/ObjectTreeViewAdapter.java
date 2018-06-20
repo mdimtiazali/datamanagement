@@ -280,18 +280,18 @@ public abstract class ObjectTreeViewAdapter extends SelectionTreeViewAdapter<Obj
                      return true;
                   }
                });
-               if(objs.size() > 0){
+               if (objs.size() > 0) {
                   break;
                }
             }
          }
       }
-      if(!objs.isEmpty()){
+      if (!objs.isEmpty()) {
          ObjectGraph parent = objs.get(0).getParent();
-         if(parent != null){
+         if (parent != null) {
             parent.getChildren().remove(objectGraph);
          }
-         else if(objectGraphs.contains(objectGraph)){
+         else if (objectGraphs != null && objectGraphs.contains(objectGraph)) {
             objectGraphs.remove(objectGraph);
          }
       }
