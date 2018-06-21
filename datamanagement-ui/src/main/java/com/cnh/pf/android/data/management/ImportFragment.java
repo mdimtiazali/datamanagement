@@ -164,6 +164,7 @@ public class ImportFragment extends BaseDataFragment {
    @Override
    public void onViewCreated(View view, Bundle savedInstanceState) {
       super.onViewCreated(view, savedInstanceState);
+      enableDragAndDropForTreeView();
       importSelectedBtn.setOnClickListener(new View.OnClickListener() {
          @Override
          public void onClick(View v) {
