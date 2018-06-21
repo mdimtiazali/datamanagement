@@ -76,6 +76,25 @@ public abstract class ObjectTreeViewAdapter extends SelectionTreeViewAdapter<Obj
       return node;
    }
 
+   private boolean filterPredicate(ObjectGraph obj, SelectionType... types) {
+      return getSelectionMap().containsKey(obj) && isSupportedEntitiy(obj) && (Arrays.binarySearch(types, getSelectionMap().get(obj)) >= 0);
+   }
+
+   // Check input node itself and children nodes recursively for selection type
+   private boolean filterPredicateRecursive(ObjectGraph obj, SelectionType... types) {
+      if (filterPredicate(obj, types)) return true;
+      else {
+         if (obj.getChildren() == null) return false;
+
+         for (ObjectGraph child : obj.getChildren()) {
+            if (filterPredicateRecursive(child, types)) {
+               return true;
+            }
+         }
+      }
+      return false;
+   }
+
    /**
     * Make a copy of this object traversing down (parent is not copied)
     * Filter only selected objects
@@ -88,7 +107,7 @@ public abstract class ObjectTreeViewAdapter extends SelectionTreeViewAdapter<Obj
       return filter(obj, new Predicate<ObjectGraph>() {
          @Override
          public boolean apply(@Nullable ObjectGraph input) {
-            return getSelectionMap().containsKey(input) && isSupportedEntitiy(input) && (Arrays.binarySearch(types, getSelectionMap().get(input)) >= 0);
+            return filterPredicateRecursive(input, types);
          }
       });
    }
