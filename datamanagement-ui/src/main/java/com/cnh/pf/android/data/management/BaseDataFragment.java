@@ -333,6 +333,12 @@ public abstract class BaseDataFragment extends RoboFragment implements SessionCo
       });
 
       treeViewList.setChoiceMode(AbsListView.CHOICE_MODE_NONE);
+   }
+
+   /**
+    * This method enables drag and drop for treeViewList
+    */
+   protected void enableDragAndDropForTreeView() {
       treeViewList.setOnItemLongClickListener(new AdapterView.OnItemLongClickListener() {
          @Override
          public boolean onItemLongClick(AdapterView<?> parent, View view, int position, long id) {
