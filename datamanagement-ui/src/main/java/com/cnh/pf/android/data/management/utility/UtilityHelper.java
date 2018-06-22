@@ -331,4 +331,34 @@ public class UtilityHelper {
        }
        return fullPath.substring(lastPath + 1);
     }
+
+   /**
+    * deletes file/folder and its content recursively
+    * @param path target to delete - if it is a folder - the content will be deleted recursively
+    * @return true if successful
+    */
+   public static boolean deleteRecursively(File path) {
+
+      boolean retValue = true;
+
+      if (path.exists()) {
+         if (path.isDirectory()) {
+            File[] fileList = path.listFiles();
+            if((null != fileList)&&(fileList.length > 0)) {
+               for (File file : path.listFiles()) {
+                  retValue &= deleteRecursively(file);
+               }
+            }
+         }
+         retValue &= path.delete();
+         if(!retValue){
+            logger.error("unable to delete: {}", path.getPath());
+         }
+      }
+      else {
+         logger.error("unable to delete not existing path: {}", path.getPath());
+         retValue = false;
+      }
+      return retValue;
+   }
 }

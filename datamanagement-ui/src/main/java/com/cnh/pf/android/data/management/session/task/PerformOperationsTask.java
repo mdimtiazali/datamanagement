@@ -130,27 +130,24 @@ public class PerformOperationsTask extends SessionOperationTask<Void> {
 
                         logger.info("finished moving files");
 
-                        if (moveWasSuccessfull) {
-                           session.setResultCode(Process.Result.SUCCESS);
-                        }
-                        else {
-                           session.setResultCode(Process.Result.ERROR);
-                           throw new SessionException(ErrorCode.PERFORM_ERROR);
-                        }
+                        session.setResultCode( (moveWasSuccessfull) ? Process.Result.SUCCESS : Process.Result.ERROR);
                      }
                      else {
                         logger.info("Either USB is not mounted or temporary folder doesn't exist.");
                         faultHandler.getFault(FaultCode.USB_REMOVED_DURING_EXPORT).reset();
                         faultHandler.getFault(FaultCode.USB_REMOVED_DURING_EXPORT).alert();
                         session.setResultCode(Process.Result.ERROR);
-                        throw new SessionException(ErrorCode.PERFORM_ERROR);
                      }
                   }
 
                   if (tmpFolder.exists()) {
-                     if (!deleteRecursively(tmpFolder)){
+                     if (!UtilityHelper.deleteRecursively(tmpFolder)){
                         logger.error("unable to delete temporary folder:{}", tmpFolder.getPath());
                      }
+                  }
+
+                  if (SessionUtil.isErroneous(session)) {
+                     throw new SessionException(ErrorCode.PERFORM_ERROR);
                   }
                }
                else {
@@ -194,36 +191,6 @@ public class PerformOperationsTask extends SessionOperationTask<Void> {
       // Call super.onPostExecute() after finishing status notification.
       // Session data get resets in the super.onPostExecute() call.
       super.onPostExecute(session);
-   }
-
-   /**
-    * deletes file/folder and its content recursively
-    * @param path target to delete - if it is a folder - the content will be deleted recursively
-    * @return true if successful
-    */
-   protected boolean deleteRecursively(File path) {
-
-      boolean retValue = true;
-
-      if (path.exists()) {
-         if (path.isDirectory()) {
-            File[] fileList = path.listFiles();
-            if((null != fileList)&&(fileList.length > 0)) {
-               for (File file : path.listFiles()) {
-                  retValue &= deleteRecursively(file);
-               }
-            }
-         }
-         retValue &= path.delete();
-         if(!retValue){
-            logger.error("unable to delete: {}", path.getPath());
-         }
-      }
-      else {
-         logger.error("unable to delete not existing path: {}", path.getPath());
-         retValue = false;
-      }
-      return retValue;
    }
 
    private boolean moveFiles(String sourceDir, String destRoot, String destDir) {
