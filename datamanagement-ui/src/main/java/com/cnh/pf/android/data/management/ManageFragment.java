@@ -26,6 +26,7 @@ import com.cnh.android.pf.widget.controls.ToastMessageCustom;
 import com.cnh.android.widget.activity.TabActivity;
 import com.cnh.jgroups.ObjectGraph;
 import com.cnh.jgroups.Operation;
+import com.cnh.pf.android.data.management.adapter.BaseTreeViewAdapter;
 import com.cnh.pf.android.data.management.adapter.ObjectTreeViewAdapter;
 import com.cnh.pf.android.data.management.dialog.DeleteDialog;
 import com.cnh.pf.android.data.management.dialog.EditDialog;
@@ -582,7 +583,7 @@ public class ManageFragment extends BaseDataFragment implements DmAccessibleObse
             }
 
             @Override
-            public boolean isSupportedEntitiy(ObjectGraph node) {
+            public boolean isSupportedEntity(ObjectGraph node) {
                return supportedByFormat(node);
             }
 
@@ -675,13 +676,13 @@ public class ManageFragment extends BaseDataFragment implements DmAccessibleObse
                   ObjectGraph node = (ObjectGraph) child.getTag(); //tree associates ObjectGraph with each view
                   if (node != null) {
                      ImplicitSelectLinearLayout layout = (ImplicitSelectLinearLayout) child;
-                     layout.setSupported(isSupportedEntitiy(node));
+                     layout.setSupported(isSupportedEntity(node));
 
                      final ImageButton cpButton = (ImageButton) child.findViewById(R.id.mng_copy_button);
                      final ImageButton editButton = (ImageButton) child.findViewById(R.id.mng_edit_button);
 
                      if (getSelectionMap().containsKey(node)) {
-                        SelectionType type = getSelectionMap().get(node);
+                        BaseTreeViewAdapter.SelectionType type = getSelectionMap().get(node);
                         layout.setSelected(SelectionType.FULL.equals(type));
                         layout.setImplicitlySelected(SelectionType.IMPLICIT.equals(type));
                      }

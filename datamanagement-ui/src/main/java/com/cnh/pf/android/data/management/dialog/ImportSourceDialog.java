@@ -303,7 +303,6 @@ public class ImportSourceDialog extends DialogView {
 
    /**
     * getter for currentExtra. Used for Testing
-    *
     * @return getCurrentSessionExtra the current sessionExtra
     */
    public int getCurrentExtra() {
@@ -312,7 +311,6 @@ public class ImportSourceDialog extends DialogView {
 
    /**
     * getter for checking currentExtra Type. Used for Testing
-    *
     * @return isUSBType
     */
 

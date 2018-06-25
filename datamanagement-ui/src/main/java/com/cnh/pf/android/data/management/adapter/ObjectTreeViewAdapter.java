@@ -77,7 +77,7 @@ public abstract class ObjectTreeViewAdapter extends SelectionTreeViewAdapter<Obj
    }
 
    private boolean filterPredicate(ObjectGraph obj, SelectionType... types) {
-      return getSelectionMap().containsKey(obj) && isSupportedEntitiy(obj) && (Arrays.binarySearch(types, getSelectionMap().get(obj)) >= 0);
+      return getSelectionMap().containsKey(obj) && isSupportedEntity(obj) && (Arrays.binarySearch(types, getSelectionMap().get(obj)) >= 0);
    }
 
    // Check input node itself and children nodes recursively for selection type
@@ -107,7 +107,7 @@ public abstract class ObjectTreeViewAdapter extends SelectionTreeViewAdapter<Obj
       return filter(obj, new Predicate<ObjectGraph>() {
          @Override
          public boolean apply(@Nullable ObjectGraph input) {
-            return filterPredicateRecursive(input, types);
+            return getSelectionMap().containsKey(input) && isSupportedEntity(input) && (Arrays.binarySearch(types, getSelectionMap().get(input)) >= 0) && filterPredicateRecursive(input, types);
          }
       });
    }
@@ -216,7 +216,7 @@ public abstract class ObjectTreeViewAdapter extends SelectionTreeViewAdapter<Obj
       Set<ObjectGraph> set = new HashSet<ObjectGraph>();
       Map<ObjectGraph, SelectionType> allSelectedObj = getSelectionMap();
       if(!allSelectedObj.isEmpty()){
-         Iterator<Map.Entry<ObjectGraph,SelectionType>> it = allSelectedObj.entrySet().iterator();
+         Iterator<Map.Entry<ObjectGraph, SelectionType>> it = allSelectedObj.entrySet().iterator();
          while(it.hasNext()){
             ObjectGraph objectGraph = it.next().getKey();
             if(objectGraph.getParent() == null || !allSelectedObj.containsKey(objectGraph.getParent())){

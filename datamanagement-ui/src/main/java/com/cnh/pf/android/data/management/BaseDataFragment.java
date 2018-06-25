@@ -568,7 +568,7 @@ public abstract class BaseDataFragment extends RoboFragment implements SessionCo
             }
 
             @Override
-            public boolean isSupportedEntitiy(ObjectGraph node) {
+            public boolean isSupportedEntity(ObjectGraph node) {
                return supportedByFormat(node);
             }
 

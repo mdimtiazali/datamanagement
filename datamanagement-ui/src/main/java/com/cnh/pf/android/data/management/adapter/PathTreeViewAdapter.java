@@ -34,10 +34,8 @@ import pl.polidea.treeview.TreeViewList;
  * Adapter feeds dir to TreeView
  * @author oscar.salazar@cnhind.com
  */
-public class PathTreeViewAdapter extends AbstractTreeViewAdapter<IconizedFile> {
+public class PathTreeViewAdapter extends BaseTreeViewAdapter<IconizedFile> {
    private static final Logger logger = LoggerFactory.getLogger(PathTreeViewAdapter.class);
-   private boolean isSetListener = false;
-   private TreeNodeInfo selectedNode;
    private OnPathSelectedListener listener;
 
    public PathTreeViewAdapter(Activity activity, TreeStateManager treeStateManager, int numberOfLevels) {
@@ -47,15 +45,12 @@ public class PathTreeViewAdapter extends AbstractTreeViewAdapter<IconizedFile> {
    @Override
    public void handleItemClick(final AdapterView<?> parent, final View view, final int position, final Object id) {
       super.handleItemClick(parent, view, position, id);
+      setListeners(parent);
+      this.selectionImpl(id);
+      this.updateViewSelection(parent);
       if (listener != null) {
          listener.onPathSelected((IconizedFile) id);
       }
-      if (!isSetListener) {
-         setListeners(parent);
-         isSetListener = true;
-      }
-      selectedNode = getTreeNodeInfo(position);
-      updateViewSelection(parent);
    }
 
    @Override
@@ -82,38 +77,12 @@ public class PathTreeViewAdapter extends AbstractTreeViewAdapter<IconizedFile> {
    }
 
    @Override
-   public Drawable getBackgroundDrawable(TreeNodeInfo<IconizedFile> treeNodeInfo) {
-      return getActivity().getResources().getDrawable(R.drawable.path_item_selector);
-   }
-
-   @Override
    public long getItemId(int position) {
       return position;
    }
 
    public void setOnPathSelectedListener(OnPathSelectedListener listener) {
       this.listener = listener;
-   }
-
-   public interface OnPathSelectedListener {
-      /**
-       * Invokes when user has selected a path
-       * @param path String Absolute Path
-       */
-      void onPathSelected(IconizedFile path);
-   }
-
-   public void updateViewSelection(final AdapterView<?> parent) {
-      for (int i = 0; i < parent.getChildCount(); i++) {
-         View child = parent.getChildAt(i);
-         IconizedFile node = (IconizedFile) child.getTag(); //tree associates ObjectGraph with each view
-         if (selectedNode != null && node != null && node.toString().equals(selectedNode.getId().toString())) {
-            child.setSelected(true);
-         }
-         else {
-            child.setSelected(false);
-         }
-      }
    }
 
    private void setListeners(final AdapterView<?> parent) {
@@ -139,5 +108,16 @@ public class PathTreeViewAdapter extends AbstractTreeViewAdapter<IconizedFile> {
             updateViewSelection(view);
          }
       });
+   }
+
+   /**
+    * Interface to handle listener when a path is selected
+    */
+   public interface OnPathSelectedListener {
+      /**
+       * Invokes when user has selected a path
+       * @param path String Absolute Path
+       */
+      void onPathSelected(IconizedFile path);
    }
 }

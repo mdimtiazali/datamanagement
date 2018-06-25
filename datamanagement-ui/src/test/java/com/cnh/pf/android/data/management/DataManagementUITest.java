@@ -181,9 +181,9 @@ public class DataManagementUITest {
       when(fragment.exportFormatPicklist.getSelectedItemValue()).thenReturn("ISOXML");
       //Select non-supported format from tree to export, check to make sure its supported state is false
       ObjectTreeViewAdapter adapter = (ObjectTreeViewAdapter) fragment.treeViewList.getAdapter();
-      assertTrue("isoxml does not support com.cnh.prescription.Shapefile type", !adapter.isSupportedEntitiy(testObject));
+      assertTrue("isoxml does not support com.cnh.prescription.Shapefile type", !adapter.isSupportedEntity(testObject));
       //Now check supported format
-      assertTrue("isoxml supports customer type", adapter.isSupportedEntitiy(customer));
+      assertTrue("isoxml supports customer type", adapter.isSupportedEntity(customer));
    }
 
    /** Test to make sure that the data sent to destination datasource only has supported types */
