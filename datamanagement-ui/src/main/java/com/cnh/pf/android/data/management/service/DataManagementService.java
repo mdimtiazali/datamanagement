@@ -224,6 +224,7 @@ public class DataManagementService extends RoboService implements SharedPreferen
       super.onCreate();
       try {
          prefs.registerOnSharedPreferenceChangeListener(this);
+         faultHandler.setMediator(mediator);
          mediator.setProgressListener(pListener);
 
          new Thread(new Runnable() {
