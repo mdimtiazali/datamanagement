@@ -359,6 +359,9 @@ public class DataManagementActivity extends TabActivity implements RoboContext {
          catch (RemoteException e) {
             logger.error("failed to load vehicle current", e);
          }
+         catch (NullPointerException e) {
+            logger.error("failed to load vehicle current", e);
+         }
          return null;
       }
 
