@@ -43,6 +43,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Comparator;
 import java.util.HashSet;
 import java.util.List;
@@ -85,6 +86,8 @@ public abstract class BaseDataFragment extends RoboFragment implements SessionCo
    protected static final int SHOWING_FEEDBACK_AFTER_PROGRESS_MS = 2000;
 
    private SessionContract.SessionManager sessionManager;
+
+   private List<String> dataTreeRootNodesWithAutomaticParentSelection = null;
 
    @Override
    public void setSessionManager(SessionContract.SessionManager sessionManager) {
@@ -595,8 +598,23 @@ public abstract class BaseDataFragment extends RoboFragment implements SessionCo
     */
    @Nullable
    protected List<String> getRootNodeNamesWithAutomaticParentSelection() {
-      return null;
+      if (dataTreeRootNodesWithAutomaticParentSelection == null) {
+         try {
+            dataTreeRootNodesWithAutomaticParentSelection = Arrays.asList(getResources().getStringArray(getRootNodeNamesWithImplicitSelectionResourceId()));
+         }
+         catch (IllegalStateException e) {
+            logger.error("Could not load Resources, since ExportFragment is not attached to activity!");
+         }
+      }
+      return dataTreeRootNodesWithAutomaticParentSelection;
    }
+
+   /**
+    * Returns the resource-id of the array of root node names that support implicit selection in the specific fragment
+    *
+    * @return An integer representing the list of root node names that support implicit selection
+    */
+   protected abstract int getRootNodeNamesWithImplicitSelectionResourceId();
 
    /**
     * Clear selection on the tree items.

@@ -73,6 +73,7 @@ public class ManageFragment extends BaseDataFragment implements DmAccessibleObse
 
    private final List<Session.Action> blockingActions = new ArrayList<Session.Action>(Arrays.asList(Session.Action.IMPORT, Session.Action.EXPORT));
    private final List<Session.Action> executableActions = new ArrayList<Session.Action>();
+   private final int rootNodeNamesWithImplicitSelectionResourceId = R.array.rootnodenames_with_implicit_parent_selection_in_management;
 
    @Override
    protected List<Session.Action> getBlockingActions() {
@@ -82,6 +83,11 @@ public class ManageFragment extends BaseDataFragment implements DmAccessibleObse
    @Override
    protected List<Session.Action> getExecutableActions() {
       return executableActions;
+   }
+
+   @Override
+   protected int getRootNodeNamesWithImplicitSelectionResourceId() {
+      return rootNodeNamesWithImplicitSelectionResourceId;
    }
 
    @Override
