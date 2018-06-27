@@ -877,13 +877,6 @@ public abstract class BaseDataFragment extends RoboFragment implements SessionCo
                   disabledOverlay.setMode(overlayMode);
                   return true; //true:enabled blocking overlay
                }
-               else {
-                  if (!DataExchangeBlockedOverlay.MODE.HIDDEN.equals(disabledOverlay.getMode())) {
-                     //disable overlay is shown but should be hidden
-                     disabledOverlay.setMode(DataExchangeBlockedOverlay.MODE.HIDDEN);
-                     return false;
-                  }
-               }
             }
             else {
                logger.warn("Got empty action in requestAndUpdateBlockedOverlay.");
