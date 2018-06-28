@@ -433,7 +433,7 @@ public class SessionManager implements SessionContract.SessionManager, SessionEv
     * @param session
     */
    private void updateSession(Session session) {
-      if (sessionMap.containsKey(session.getAction()) && SessionUtil.isCalculateOperationsTask(session)) {
+      if (sessionMap.containsKey(session.getAction())) {
          Session storedSession = sessionMap.get(session.getAction());
 
          storedSession.setResultCode(session.getResultCode());
