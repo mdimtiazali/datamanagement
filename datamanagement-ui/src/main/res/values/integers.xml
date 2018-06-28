@@ -20,6 +20,7 @@
 
     <!--Import Source Dialog-->
     <integer name="import_source_dialog_width">585</integer>
+    <integer name="import_source_dialog_height">400</integer>
 
 
     <!--Configuration for dimensions of the shadow representative of multiple items for drag and drop in DM-->

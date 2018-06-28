@@ -59,8 +59,8 @@
     <string name="export_drag_and_drop"><![CDATA[Drag & Drop \nto Export]]></string>
     <string name="select_all">Select All</string>
     <string formatted="false" name="x_of_y_format">%d of %d</string>
-    <string name="usb_string">\t\tUSB</string>
-    <string name="cloud_string">\t\tCloud</string>
+    <string name="usb_string">USB</string>
+    <string name="cloud_string">Cloud</string>
     <string name="display_string">Display</string>
     <string name="display_numbered">Display %d</string>
     <string name="display_named">Display %s</string>

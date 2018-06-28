@@ -36,6 +36,7 @@ import com.cnh.jgroups.ObjectGraph;
 import com.cnh.pf.android.data.management.adapter.ObjectTreeViewAdapter;
 import com.cnh.pf.android.data.management.adapter.SelectionTreeViewAdapter;
 import com.cnh.pf.android.data.management.dialog.ImportSourceDialog;
+import com.cnh.pf.android.data.management.misc.IconizedFile;
 import com.cnh.pf.android.data.management.parser.FormatManager;
 import com.cnh.pf.android.data.management.productlibrary.views.AddOrEditVarietyDialog;
 import com.cnh.pf.android.data.management.service.DataManagementService;
@@ -267,7 +268,8 @@ public class DataManagementUITest {
    private ImportSourceDialog createImportSourceDialog() {
       ImportSourceDialog mockImportSource = mock(ImportSourceDialog.class);
       File mockFile = new File("USB");
-      mockImportSource.usbImportSource(mockFile, 0, createCurrentSessionExtra());
+      IconizedFile mockUsbRootFile = new IconizedFile(mockFile, TreeEntityHelper.getIcon("USB"));
+      mockImportSource.usbImportSource(mockUsbRootFile, 0, createCurrentSessionExtra());
       when(mockImportSource.getCurrentExtra()).thenReturn(SessionExtra.USB);
       when(mockImportSource.checkUSBType()).thenReturn(true);
       return mockImportSource;
