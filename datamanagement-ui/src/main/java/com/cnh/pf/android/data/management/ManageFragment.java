@@ -65,8 +65,7 @@ public class ManageFragment extends BaseDataFragment implements DmAccessibleObse
    private TextView header;
    private Set<String> copySet;
    private Set<String> editSet;
-   private ProgressDialog updatingProg;
-   private ProgressDialog deletingProg;
+   private ProgressDialog progress;
    private volatile boolean isAccessable = true;
    @Inject
    private DmAccessibleObserver statusHelper;
@@ -138,13 +137,14 @@ public class ManageFragment extends BaseDataFragment implements DmAccessibleObse
                   operations.add(op);
                   update(operations);
 
-                  if (updatingProg == null) {
-                     updatingProg = new ProgressDialog(getActivity(), ProgressDialog.THEME_HOLO_LIGHT);
-                     updatingProg.setIndeterminateDrawable(getResources().getDrawable(R.drawable.progress_circle));
-                     updatingProg.setMessage(getString(R.string.edit_update_content));
+                  if (progress == null) {
+                     progress = new ProgressDialog(getActivity(), ProgressDialog.THEME_HOLO_LIGHT);
+                     progress.setIndeterminateDrawable(getResources().getDrawable(R.drawable.progress_circle));
+                     progress.setCanceledOnTouchOutside(false);
                   }
+                  progress.setMessage(getString(R.string.edit_update_content));
                   setHeaderAndDeleteButton(false);
-                  updatingProg.show();
+                  progress.show();
                }
             });
             final TabActivity useModal = (DataManagementActivity) getActivity();
@@ -242,12 +242,13 @@ public class ManageFragment extends BaseDataFragment implements DmAccessibleObse
                            delOperations.add(operation);
                         }
                         delete(delOperations);
-                        if (deletingProg == null) {
-                           deletingProg = new ProgressDialog(getActivity(), ProgressDialog.THEME_HOLO_LIGHT);
-                           deletingProg.setIndeterminateDrawable(getResources().getDrawable(R.drawable.progress_circle));
-                           deletingProg.setMessage(getString(R.string.delete_progress_content));
+                        if (progress == null) {
+                           progress = new ProgressDialog(getActivity(), ProgressDialog.THEME_HOLO_LIGHT);
+                           progress.setIndeterminateDrawable(getResources().getDrawable(R.drawable.progress_circle));
+                           progress.setCanceledOnTouchOutside(false);
                         }
-                        deletingProg.show();
+                        progress.setMessage(getString(R.string.delete_progress_content));
+                        progress.show();
                      }
                      else {
                         ToastMessageCustom
@@ -339,8 +340,8 @@ public class ManageFragment extends BaseDataFragment implements DmAccessibleObse
       }
       else if (SessionUtil.isUpdateTask(session)) {
          if (session.getResultCode() != null) {
-            if (updatingProg != null) {
-               updatingProg.dismiss();
+            if (progress != null) {
+               progress.dismiss();
             }
             RspList<Process> rsps = session.getResults();
             for (Process process : rsps.getResults()) {
@@ -364,8 +365,8 @@ public class ManageFragment extends BaseDataFragment implements DmAccessibleObse
       }
       else if (SessionUtil.isDeleteTask(session)) {
          if (session.getResultCode() != null) {
-            if (deletingProg != null) {
-               deletingProg.dismiss();
+            if (progress != null) {
+               progress.dismiss();
             }
             RspList<Process> rsps = session.getResults();
             final List<ObjectGraph> removedObjects = new LinkedList<ObjectGraph>();
@@ -503,8 +504,8 @@ public class ManageFragment extends BaseDataFragment implements DmAccessibleObse
       logger.debug("onMyselfSessionError(): {}, {}", session.getType(), errorCode);
 
       if (SessionUtil.isDeleteTask(session)) {
-         if (deletingProg != null) {
-            deletingProg.dismiss();
+         if (progress != null) {
+            progress.dismiss();
          }
          setHeaderAndDeleteButton(false);
          ToastMessageCustom.makeToastMessageText(getActivity().getApplicationContext(), getString(R.string.delete_error_notice), Gravity.TOP | Gravity.CENTER_HORIZONTAL,
@@ -512,8 +513,8 @@ public class ManageFragment extends BaseDataFragment implements DmAccessibleObse
          discovery();
       }
       else if (SessionUtil.isUpdateTask(session)) {
-         if (updatingProg != null) {
-            updatingProg.dismiss();
+         if (progress != null) {
+            progress.dismiss();
          }
          ToastMessageCustom.makeToastMessageText(getActivity().getApplicationContext(), getString(R.string.update_error_notice), Gravity.TOP | Gravity.CENTER_HORIZONTAL,
                getResources().getInteger(R.integer.toast_message_xoffset), getResources().getInteger(R.integer.toast_message_yoffset)).show();
