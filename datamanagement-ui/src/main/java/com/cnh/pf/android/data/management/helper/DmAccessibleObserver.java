@@ -14,6 +14,7 @@ import com.cnh.pf.signal.Signal;
 import com.cnh.pf.signal.SignalUri;
 import com.google.common.net.HostAndPort;
 import com.google.inject.Inject;
+import com.google.inject.Singleton;
 import com.google.inject.name.Named;
 import com.google.protobuf.Message;
 import org.slf4j.Logger;
@@ -21,25 +22,25 @@ import org.slf4j.LoggerFactory;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
-import java.util.LinkedList;
-import java.util.List;
+
 /**
  * to provide monitor the working and engage status
  * @author Lifeng Liang
  */
-public class SystemStatusHelper implements OnConnectionChangeListener, Consumer.Listener{
-    private static final Logger logger = LoggerFactory.getLogger(SystemStatusHelper.class);
+@Singleton
+public class DmAccessibleObserver implements OnConnectionChangeListener, Consumer.Listener{
+    private static final Logger logger = LoggerFactory.getLogger(DmAccessibleObserver.class);
     private Consumer consumer;
-    private List<Listener> listeners = new LinkedList<Listener>();
+    private Listener listener;
     private boolean isWorking = false;
     private boolean isEngage = false;
 
     public interface Listener{
         /**
          * listener for when status change
-         * @param status true for accessible for dm and false for no
+         * @param status true for accessible for dm EDC operations and false for not
          */
-        void onSystemStatus(boolean status);
+        void onAccessStatus(boolean status);
     }
     @Inject
     @Named("daemon")
@@ -50,30 +51,21 @@ public class SystemStatusHelper implements OnConnectionChangeListener, Consumer.
         logger.debug("Consumer connectted: {}", b);
     }
 
-    /**
-     * constructor
-     *@param listener listener for callback
-     */
-    public SystemStatusHelper(Listener listener) {
-        this.listeners.add(listener);
-        listener.onSystemStatus(isDmAccessable());
-    }
 
     @Override
     public void onUpdate(String s, @Nonnull Signal.Header header, @Nullable Message message) {
-        synchronized (this){
-            if(s.equals(SignalUri.WORK_SYSTEM)){
+        synchronized (this) {
+            if (s.equals(SignalUri.WORK_SYSTEM)) {
                 Signal.SystemWork systemWork = (Signal.SystemWork) message;
-                isWorking = systemWork.getState()== Signal.WorkState.IN_WORK;
-                logger.debug("Work system update : {}",isWorking);
-            }
-            else if(s.equals(SignalUri.GUIDANCE_MODULARGUIDANCE_ENGAGEMANAGER_ENGAGED)){
+                isWorking = systemWork.getState() == Signal.WorkState.IN_WORK;
+                logger.debug("Work system update : {}", isWorking);
+            } else if (s.equals(SignalUri.GUIDANCE_MODULARGUIDANCE_ENGAGEMANAGER_ENGAGED)) {
                 Signal.Boolean engageState = (Signal.Boolean) message;
                 isEngage = engageState.getValue();
                 logger.debug("Engage update : {}", isEngage);
             }
-            for(Listener l: listeners){
-                l.onSystemStatus(isDmAccessable());
+            if(listener != null){
+                listener.onAccessStatus(isDmAccessable());
             }
         }
     }
@@ -88,34 +80,13 @@ public class SystemStatusHelper implements OnConnectionChangeListener, Consumer.
      *
      */
     public void start(){
-        if(consumer != null) {
-            logger.debug("start()");
+        if(consumer == null) {
             consumer = new Consumer(signalDeamonAddress);
+            consumer.subscribe(SignalUri.WORK_SYSTEM, this);
+            consumer.subscribe(SignalUri.GUIDANCE_MODULARGUIDANCE_ENGAGEMANAGER_ENGAGED, this);
             consumer.start();
         }
 
-    }
-    /**
-     * subscribe to listen to system work and engage channel
-     *
-     */
-    public void subscribe(){
-        if(consumer != null){
-            logger.debug("subscribe()");
-            consumer.subscribe(SignalUri.WORK_SYSTEM, this);
-            consumer.subscribe(SignalUri.GUIDANCE_MODULARGUIDANCE_ENGAGEMANAGER_ENGAGED, this);
-        }
-    }
-    /**
-     * unsubscribe to listen to system work and engage channel
-     *
-     */
-    public void unsubscribe(){
-        if(consumer != null){
-            logger.debug("unsubscribe()");
-            consumer.unsubscribe(SignalUri.WORK_SYSTEM);
-            consumer.unsubscribe(SignalUri.GUIDANCE_MODULARGUIDANCE_ENGAGEMANAGER_ENGAGED);
-        }
     }
     /**
      * stop the system status monitor.
@@ -131,10 +102,10 @@ public class SystemStatusHelper implements OnConnectionChangeListener, Consumer.
      * set callback to the system status monitor, so it will callback when there is status change
      *@param listener listener for callback
      */
-    public void setListeners(Listener listener){
+    public void setListener(Listener listener){
         synchronized (this) {
-            listeners.add(listener);
+            this.listener = listener;
+            listener.onAccessStatus(isDmAccessable());
         }
-        listener.onSystemStatus(isDmAccessable());
     }
 }

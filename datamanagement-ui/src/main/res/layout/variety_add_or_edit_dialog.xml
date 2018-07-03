@@ -25,6 +25,8 @@
                 cnh:clearIcon="false"
                 android:singleLine="true"
                 android:inputType="textCapWords"
+                android:textColor="#000000"
+                android:textCursorDrawable="@null"
                 cnh:headerText="@string/variety_add_or_edit_dialog_name_header_text">
         </com.cnh.android.widget.control.InputField>
         <com.cnh.android.widget.control.PickList

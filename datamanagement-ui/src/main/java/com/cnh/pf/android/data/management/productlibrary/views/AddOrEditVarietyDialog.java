@@ -208,6 +208,9 @@ public class AddOrEditVarietyDialog extends DialogView {
                if (modifiedVariety.getCropType().equals(cropType)) {
                   selectedId = i;
                }
+               if(currentVariety.isUsed()) {
+                  pickList.setReadOnly(true);
+               }
             }
          }
       }
