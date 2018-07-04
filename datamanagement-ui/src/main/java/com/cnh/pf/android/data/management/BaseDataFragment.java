@@ -88,6 +88,7 @@ public abstract class BaseDataFragment extends RoboFragment implements SessionCo
    private SessionContract.SessionManager sessionManager;
 
    private List<String> dataTreeRootNodesWithAutomaticParentSelection = null;
+   public static boolean dsPerfFlag = false;
 
    @Override
    public void setSessionManager(SessionContract.SessionManager sessionManager) {
@@ -655,7 +656,13 @@ public abstract class BaseDataFragment extends RoboFragment implements SessionCo
       else {
          treeBuilder.clear();
       }
-      addToTree(objectGraphs);
+      if(dsPerfFlag) {
+         TreeEntityHelper.LoadDMTreeFromJson(this.getActivity(), treeBuilder);
+         jsonAddToTree(objectGraphs);
+      }
+      else {
+         addToTree(objectGraphs);
+      }
       sortTreeList();
       createTreeAdapter();
 
@@ -695,6 +702,32 @@ public abstract class BaseDataFragment extends RoboFragment implements SessionCo
    //notify the treeview data change
    private void dataChangedRefresh() {
       manager.refresh();
+   }
+
+   /**
+    * adding object(s) to treeview using json.
+    * @param  objectGraphs objects to add
+    */
+   private void jsonAddToTree(List<ObjectGraph> objectGraphs) {
+      for (ObjectGraph objectGraph : objectGraphs) {
+         GroupObjectGraph gNode = TreeEntityHelper.findGroupNode(objectGraph.getType());
+         if(gNode != null){
+            addOneObjectGraph(gNode, objectGraph);
+         }
+      }
+   }
+
+   /**
+    * add object to treeview using json.
+    * @param  objectGraph objects to add
+    */
+   private void addOneObjectGraph(ObjectGraph parent, ObjectGraph objectGraph) {
+      if(objectGraph != null) {
+         treeBuilder.bAddRelation(parent, objectGraph);
+         for(ObjectGraph children : objectGraph.getChildren()){
+            addOneObjectGraph(objectGraph, children);
+         }
+      }
    }
 
    //Put the object into tree item list and return true for it is visible and false for invisible
