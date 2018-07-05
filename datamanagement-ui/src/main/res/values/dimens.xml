@@ -10,6 +10,8 @@
 <resources>
 
     <dimen name="minimum_padding">2dp</dimen>
+    <dimen name="minimum_text_size">18sp</dimen>
+    <dimen name="decrease_text_size">2sp</dimen>
 
     <dimen name="list_item_height">48dp</dimen>
     <dimen name="list_item_large_text_size">22sp</dimen>
@@ -61,11 +63,11 @@
     <dimen name="header_indent_width">28dp</dimen>
     <dimen name="button_margin_top">4dp</dimen>
     <dimen name="button_margin_bottom">4dp</dimen>
+    <dimen name="button_margin_right">16dp</dimen>
     <dimen name="select_button_width">136dp</dimen>
     <dimen name="del_button_width">96dp</dimen>
     <dimen name="button_height">48dp</dimen>
     <dimen name="header_height">56dp</dimen>
-    <dimen name="button_margin_right">8dp</dimen>
     <dimen name="edit_input_padding">4dp</dimen>
     <dimen name="edit_dialog_input_field_height">48dp</dimen>
     <dimen name="edit_item_button_padding">12dp</dimen>
@@ -82,9 +84,21 @@
     <dimen name="dataexchange_perform_box_import_height">380dp</dimen>
     <dimen name="dataexchange_perform_left_box_top_spacing_to_text">50dp</dimen>
     <dimen name="dataexchange_perform_left_box_spacing_from_top_image_to_text">50dp</dimen>
+    <dimen name="no_device_layout_image_view_margin_top">20dp</dimen>
+    <dimen name="no_device_layout_text_view_text_size">18dp</dimen>
+    <dimen name="left_layout_background_start_margin">1dp</dimen>
+    <dimen name="left_layout_background_end_margin">2dp</dimen>
+    <dimen name="button_default_text_size">22sp</dimen>
+    <dimen name="info_image_button_padding">8dp</dimen>
+    <dimen name="import_left_layout_background_bottom_margin">50dp</dimen>
 
-    <dimen name="delete_dialog_width">560dp</dimen>
     <dimen name="undelete_dialog_edge_margin">24dp</dimen>
     <dimen name="progress_circle_diameter">48dp</dimen>
+    <dimen name="delete_dialog_width">592dp</dimen>
+    <dimen name="min_select_all_btn_width">175dp</dimen>
+
+   <!-- Import/Export Overlays-->
+   <dimen name="dataexchange_blocked_overlay_spacing_between_lines">10dp</dimen>
+   <dimen name="dataexchange_blocked_overlay_image_padding">40dp</dimen>
 
 </resources>

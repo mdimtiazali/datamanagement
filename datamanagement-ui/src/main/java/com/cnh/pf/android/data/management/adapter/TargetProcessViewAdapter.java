@@ -30,6 +30,7 @@ import org.slf4j.LoggerFactory;
 
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -63,59 +64,69 @@ public class TargetProcessViewAdapter extends DataManagementBaseAdapter {
       final LayoutInflater inflater = context.getLayoutInflater();
       final Operation operation = operationList.get(position);
       final TViewHolder viewHolder = new TViewHolder(inflater.inflate(R.layout.select_target, null));
-      ObjectGraph firstTarget = operation.getPotentialTargets().iterator().next();
-      ObjectGraph current = firstTarget.getRoot();
-      //make the target picklists
-      while(current != null) {
-         final PickListEditable pl = (PickListEditable) inflater.inflate(R.layout.select_target_picklist, (ViewGroup)viewHolder.getRoot(), false);
-         pl.setAddButtonEnabled(false);
-         pl.setAdapter(new PickListAdapter(pl, context));
-         pl.setOnItemSelectedListener(new PickListEditable.OnItemSelectedListener() {
-            @Override public void onItemSelected(AdapterView<?> parent, View view, int position, long id, boolean b) {
-               if (id != PickListEditable.NO_ID) {
-                  ExportFragment.ObjectPickListItem<ObjectGraph> pickItem = (ExportFragment.ObjectPickListItem<ObjectGraph>) pl.getAdapter().getItem(position);
-                  if(pickItem.getObject().getChildren().isEmpty()) {
-                     operationList.get(TargetProcessViewAdapter.this.position).setTarget(pickItem.getObject());
-                  }
-                  else {
-                     //populate next picklist
-                     ObjectGraph firstChild =  pickItem.getObject().getChildren().get(0);
-                     PickListEditable nextPicklist = viewHolder.targetLists.get(firstChild.getType());
-                     nextPicklist.clearList();
-                     int i = 0;
-                     for (ObjectGraph child : pickItem.getObject().getChildren()) {
-                        nextPicklist.addItem(new ExportFragment.ObjectPickListItem<ObjectGraph>(i++, child.getName(), child));
+      Collection<ObjectGraph> potentialTargets = operation.getPotentialTargets();
+      if (potentialTargets != null && potentialTargets.size() > 0) {
+         ObjectGraph firstTarget = potentialTargets.iterator().next();
+         ObjectGraph current = firstTarget.getRoot();
+         //make the target picklists
+         while (current != null) {
+            final PickListEditable pl = (PickListEditable) inflater.inflate(R.layout.select_target_picklist, (ViewGroup) viewHolder.getRoot(), false);
+            pl.setAddButtonEnabled(false);
+            pl.setAdapter(new PickListAdapter(pl, context));
+            pl.setOnItemSelectedListener(new PickListEditable.OnItemSelectedListener() {
+               @Override
+               public void onItemSelected(AdapterView<?> parent, View view, int position, long id, boolean b) {
+                  if (id != PickListEditable.NO_ID) {
+                     ExportFragment.ObjectPickListItem<ObjectGraph> pickItem = (ExportFragment.ObjectPickListItem<ObjectGraph>) pl.getAdapter().getItem(position);
+                     if (pickItem.getObject().getChildren().isEmpty()) {
+                        operationList.get(TargetProcessViewAdapter.this.position).setTarget(pickItem.getObject());
+                     }
+                     else {
+                        //populate next picklist
+                        ObjectGraph firstChild = pickItem.getObject().getChildren().get(0);
+                        PickListEditable nextPicklist = viewHolder.targetLists.get(firstChild.getType());
+                        nextPicklist.clearList();
+                        int i = 0;
+                        for (ObjectGraph child : pickItem.getObject().getChildren()) {
+                           nextPicklist.addItem(new ExportFragment.ObjectPickListItem<ObjectGraph>(i++, child.getName(), child));
+                        }
                      }
                   }
                }
-            }
 
-            @Override public void onNothingSelected(AdapterView<?> parent) {
-            }
-         });
-         viewHolder.targetLists.put(current.getType(), pl);
-         TextView typeText = new TextView(context);
-         typeText.setText(current.getType());
-         ((ViewGroup) viewHolder.getRoot()).addView(typeText, ViewGroup.LayoutParams.WRAP_CONTENT, ViewGroup.LayoutParams.WRAP_CONTENT);
-         ((ViewGroup) viewHolder.getRoot()).addView(pl, ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT);
-         current = current.getChildren().isEmpty() ? null : current.getChildren().get(0);
-      }
-
-      if (operation.getData() instanceof MultiSetObjectGraph) {
-         viewHolder.optionList = (PickListEditable) inflater.inflate(R.layout.select_target_picklist, (ViewGroup)viewHolder.getRoot(), false);
-         viewHolder.optionList.setAdapter(new PickListAdapter(viewHolder.optionList, context));
-         viewHolder.optionList.setOnItemSelectedListener(new PickListEditable.OnItemSelectedListener() {
-            @Override public void onItemSelected(AdapterView<?> parent, View view, int position, long id, boolean b) {
-               if (id != PickListEditable.NO_ID) {
-                  ExportFragment.ObjectPickListItem<String> pickItem = (ExportFragment.ObjectPickListItem<String>) viewHolder.optionList.getAdapter().getItem(position);
-                  ((MultiSetObjectGraph) operationList.get(TargetProcessViewAdapter.this.position).getData()).setSelectedOption(pickItem.getObject());
+               @Override
+               public void onNothingSelected(AdapterView<?> parent) {
                }
-            }
+            });
+            viewHolder.targetLists.put(current.getType(), pl);
+            TextView typeText = new TextView(context);
+            typeText.setText(current.getType());
+            ((ViewGroup) viewHolder.getRoot()).addView(typeText, ViewGroup.LayoutParams.WRAP_CONTENT, ViewGroup.LayoutParams.WRAP_CONTENT);
+            ((ViewGroup) viewHolder.getRoot()).addView(pl, ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT);
+            current = current.getChildren().isEmpty() ? null : current.getChildren().get(0);
+         }
 
-            @Override public void onNothingSelected(AdapterView<?> parent) {
-            }
-         });
-         ((ViewGroup) viewHolder.getRoot()).addView(viewHolder.optionList, ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT);
+         if (operation.getData() instanceof MultiSetObjectGraph) {
+            viewHolder.optionList = (PickListEditable) inflater.inflate(R.layout.select_target_picklist, (ViewGroup) viewHolder.getRoot(), false);
+            viewHolder.optionList.setAdapter(new PickListAdapter(viewHolder.optionList, context));
+            viewHolder.optionList.setOnItemSelectedListener(new PickListEditable.OnItemSelectedListener() {
+               @Override
+               public void onItemSelected(AdapterView<?> parent, View view, int position, long id, boolean b) {
+                  if (id != PickListEditable.NO_ID) {
+                     ExportFragment.ObjectPickListItem<String> pickItem = (ExportFragment.ObjectPickListItem<String>) viewHolder.optionList.getAdapter().getItem(position);
+                     ((MultiSetObjectGraph) operationList.get(TargetProcessViewAdapter.this.position).getData()).setSelectedOption(pickItem.getObject());
+                  }
+               }
+
+               @Override
+               public void onNothingSelected(AdapterView<?> parent) {
+               }
+            });
+            ((ViewGroup) viewHolder.getRoot()).addView(viewHolder.optionList, ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT);
+         }
+      }
+      else {
+         logger.debug("No potential target found! Skipped extension of view!");
       }
       return viewHolder;
    }
@@ -131,10 +142,13 @@ public class TargetProcessViewAdapter extends DataManagementBaseAdapter {
          ObjectGraph.merge(Arrays.asList(target.getRoot()), targets, null);
       }
       int i = 0;
-      PickListEditable rootTargetPickList = viewHolder.targetLists.get(targets.get(0).getType());
-      rootTargetPickList.clearList();
-      for (ObjectGraph target : targets) {
-         rootTargetPickList.addItem(new ExportFragment.ObjectPickListItem<ObjectGraph>(i++, target.getName(), target));
+
+      if (viewHolder.targetLists.size() > 0) {
+         PickListEditable rootTargetPickList = viewHolder.targetLists.get(targets.get(0).getType());
+         rootTargetPickList.clearList();
+         for (ObjectGraph target : targets) {
+            rootTargetPickList.addItem(new ExportFragment.ObjectPickListItem<ObjectGraph>(i++, target.getName(), target));
+         }
       }
 
       if (operation.getData() instanceof MultiSetObjectGraph) {
@@ -150,7 +164,7 @@ public class TargetProcessViewAdapter extends DataManagementBaseAdapter {
 
    @Override
    protected boolean shouldShowView() {
-      return  operationList.get(position).getPotentialTargets() != null && operationList.get(position).getData().getParent() == null;
+      return operationList.get(position).getPotentialTargets() != null && operationList.get(position).getData().getParent() == null;
    }
 
    private OnActionSelectedListener actionListener = new OnActionSelectedListener() {

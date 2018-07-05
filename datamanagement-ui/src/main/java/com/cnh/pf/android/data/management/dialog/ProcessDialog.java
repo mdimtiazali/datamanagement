@@ -21,7 +21,6 @@ import com.cnh.android.dialog.DialogView;
 import com.cnh.android.dialog.DialogViewInterface;
 import com.cnh.android.widget.activity.TabActivity;
 import com.cnh.android.widget.control.ProgressBarView;
-import com.cnh.jgroups.Operation;
 import com.cnh.pf.android.data.management.R;
 import com.cnh.pf.android.data.management.adapter.DataConflictViewAdapter;
 import com.cnh.pf.android.data.management.adapter.DataManagementBaseAdapter;

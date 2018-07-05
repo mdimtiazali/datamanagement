@@ -16,7 +16,7 @@ import android.widget.TextView;
 
 import com.cnh.android.dialog.DialogView;
 import com.cnh.pf.android.data.management.R;
-import com.cnh.pf.android.data.management.connection.DataServiceConnectionImpl;
+import com.cnh.pf.android.data.management.session.ErrorCode;
 import com.google.common.base.Strings;
 import com.google.inject.Inject;
 
@@ -35,14 +35,14 @@ public class ErrorDialog extends DialogView {
    @Bind(R.id.error_string)
    TextView errorString;
 
-   public ErrorDialog(Context context, DataServiceConnectionImpl.ErrorEvent event) {
+   public ErrorDialog(Context context, ErrorCode errCode) {
       super(context);
       RoboGuice.getInjector(context).injectMembers(this);
       View view = layoutInflater.inflate(R.layout.error_layout, null);
       ButterKnife.bind(this, view);
 
-      this.setTitle(context.getString(event.getType().resource()));
-      errorString.setText(Strings.isNullOrEmpty(event.getError()) ? "No Details" : event.getError());
+      this.setTitle(context.getString(errCode.resource()));
+      errorString.setText(Strings.isNullOrEmpty(errCode.value()) ? "No Details" : errCode.value());
       setBodyView(view);
       setFirstButtonText(getResources().getString(R.string.done));
       showFirstButton(true);

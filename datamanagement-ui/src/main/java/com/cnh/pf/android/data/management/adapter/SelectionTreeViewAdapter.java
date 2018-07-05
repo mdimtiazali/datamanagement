@@ -15,6 +15,8 @@ import android.view.ViewGroup;
 import android.widget.AbsListView;
 import android.widget.AdapterView;
 
+import com.android.annotations.Nullable;
+
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
@@ -103,18 +105,17 @@ public abstract class SelectionTreeViewAdapter<T> extends AbstractTreeViewAdapte
    }
 
    public void selectionImpl(Object id) {
-      if (!selectionMap.containsKey(id)) {
+      if (!selectionMap.containsKey(id) || SelectionType.IMPLICIT.equals(selectionMap.get(id))) {
          //Traverse down, select everything
          traverseTree((T) id, TRAVERSE_DOWN, new Visitor<T>() {
             @Override
             public boolean visit(T node) {
-               //               itemSelectionChange(node, SelectionType.FULL);
                selectionMap.put(node, SelectionType.FULL);
                return true;
             }
          });
          //Traverse up, implicitly select everything, check for full selections
-         if (getManager().getParent((T) id) != null) {
+         if (getManager().getParent((T) id) != null && childSelectionDoesImplicitSelectParentNodes(getRootNode((T) id))) {
             traverseTree(getManager().getParent((T) id), TRAVERSE_UP, new Visitor<T>() {
                @Override
                public boolean visit(T node) {
@@ -131,8 +132,9 @@ public abstract class SelectionTreeViewAdapter<T> extends AbstractTreeViewAdapte
          }
       }
       else {
-         //unselect everything below
+         //unselect self and everything below
          traverseTree((T) id, TRAVERSE_DOWN, new Visitor<T>() {
+
             @Override
             public boolean visit(T node) {
                selectionMap.remove(node);
@@ -147,21 +149,84 @@ public abstract class SelectionTreeViewAdapter<T> extends AbstractTreeViewAdapte
             traverseTree(getManager().getParent((T) id), TRAVERSE_UP, new Visitor<T>() {
                @Override
                public boolean visit(T node) {
-                  boolean hasOtherSelectedChildren = false;
+                  boolean useImplicitSelection = childSelectionDoesImplicitSelectParentNodes(getRootNode((T) node));
+                  //Determine state of child nodes
+                  boolean hasSelectedChildren = false;
+                  boolean hasImplicitSelectedChildren = false;
+                  //Note: At least one child (or child of child..) is not selected
+                  //      since this traversal is a result of an deselect event.
                   for (T child : getManager().getChildren(node)) {
                      if (selectionMap.containsKey(child)) {
-                        hasOtherSelectedChildren = true;
-                        break;
+                        if (SelectionType.FULL.equals(selectionMap.get(child))) {
+                           hasSelectedChildren = true;
+                        }
+                        else {
+                           hasImplicitSelectedChildren = true;
+                        }
+                        //break loop if possible (performance only)
+                        if (hasSelectedChildren && hasImplicitSelectedChildren) {
+                           break;
+                        }
                      }
                   }
-                  if (!hasOtherSelectedChildren && SelectionType.IMPLICIT.equals(selectionMap.get(node))) {
+                  //modify selection state depending on the state of the childnodes
+                  boolean modificationDone = false;
+                  if (!hasSelectedChildren && !hasImplicitSelectedChildren) {
+                     //no children is selected at all: unselect node
                      selectionMap.remove(node);
-                     return true;
+                     modificationDone = true;
                   }
-                  return false;
+                  else {
+                     //at least one child is selected (full or implicit)
+                     if (SelectionType.FULL.equals(selectionMap.get(node))) {
+                        //if at least one of the children is not fully selected (type!=full) an update is required
+                        modificationDone = true;
+                        if (useImplicitSelection) {
+                           //update from full to implicit
+                           selectionMap.put(node, SelectionType.IMPLICIT);
+                        }
+                        else {
+                           //remove selection in total
+                           selectionMap.remove(node);
+                        }
+                     }
+                  }
+                  return modificationDone;
                }
             });
+
          }
+      }
+
+   }
+
+   /**
+    * This method defines, if the selection of one child node of the given root node
+    * results in the selection of all parent nodes of the selected child node
+    *
+    * @param rootNode Root node of all affected child nodes
+    * @return True: Selection of one random child node of root node will select all of its root nodes, False: no parent node will be selected
+    */
+   protected boolean childSelectionDoesImplicitSelectParentNodes(@Nullable T rootNode) {
+      return false;
+   }
+
+   /**
+    * This function returns the root node of any given node. This is calculated recursively.
+    *
+    * @param currentNode Node of which the root node should be found.
+    * @return The root node of the currentNode. May be null if currentNode itself is null!
+    */
+   @Nullable
+   protected T getRootNode(@Nullable T currentNode) {
+      T parentNode = getManager().getParent(currentNode);
+      if (parentNode == null) {
+         //if no parent node is available, the current node must be the root node
+         return currentNode;
+      }
+      else {
+         //if there is a parent node, its parent node may be the root node
+         return getRootNode(parentNode);
       }
    }
 

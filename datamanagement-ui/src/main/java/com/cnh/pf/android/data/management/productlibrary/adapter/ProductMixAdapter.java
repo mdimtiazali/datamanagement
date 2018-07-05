@@ -110,6 +110,7 @@ public final class ProductMixAdapter extends SearchableSortableExpandableListAda
    public void setPVIPService(final IPVIPServiceAIDL pvipService) {
       this.pvipService = pvipService;
    }
+
    @Override
    public Filter getFilter() {
       Filter filter = super.getFilter();
@@ -367,7 +368,7 @@ public final class ProductMixAdapter extends SearchableSortableExpandableListAda
 
       @Override
       public void onClick(View view) {
-         ProductMixDialog editProductMixDialog = new ProductMixDialog(context, DialogActionType.EDIT, vipService,pvipService, productMixDetail,
+         ProductMixDialog editProductMixDialog = new ProductMixDialog(context, DialogActionType.EDIT, vipService, pvipService, productMixDetail,
                productLibraryFragment, getCopyOfUnfilteredItemList());
          editProductMixDialog.setFirstButtonText(activity.getResources().getString(R.string.save))
                .setSecondButtonText(activity.getResources().getString(R.string.product_dialog_cancel_button)).showThirdButton(false).showThirdButton(false)
@@ -393,7 +394,7 @@ public final class ProductMixAdapter extends SearchableSortableExpandableListAda
 
       @Override
       public void onClick(View view) {
-         ProductMixDialog copyProductMixDialog = new ProductMixDialog(context, DialogActionType.COPY, vipService,pvipService, productMixDetail,
+         ProductMixDialog copyProductMixDialog = new ProductMixDialog(context, DialogActionType.COPY, vipService, pvipService, productMixDetail,
                productLibraryFragment, new ArrayList<ProductMix>(getCopyOfUnfilteredItemList()));
          copyProductMixDialog.setFirstButtonText(activity.getResources().getString(R.string.product_dialog_add_button))
                .setSecondButtonText(activity.getResources().getString(R.string.product_dialog_cancel_button)).showThirdButton(false).showThirdButton(false)
