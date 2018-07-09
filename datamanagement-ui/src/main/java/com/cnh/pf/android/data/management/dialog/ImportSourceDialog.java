@@ -9,10 +9,10 @@
 package com.cnh.pf.android.data.management.dialog;
 
 import android.app.Activity;
+import android.content.Context;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.widget.AdapterView;
-import android.widget.TextView;
 
 import com.android.annotations.VisibleForTesting;
 import com.cnh.android.dialog.DialogView;
@@ -24,9 +24,9 @@ import com.cnh.android.widget.control.PickListItem;
 import com.cnh.pf.android.data.management.R;
 import com.cnh.pf.android.data.management.TreeEntityHelper;
 import com.cnh.pf.android.data.management.adapter.PathTreeViewAdapter;
+import com.cnh.pf.android.data.management.misc.IconizedFile;
 import com.cnh.pf.android.data.management.session.SessionExtra;
 import com.google.common.io.Files;
-import com.google.inject.Inject;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -38,7 +38,6 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
-import butterknife.Bind;
 import butterknife.ButterKnife;
 import pl.polidea.treeview.InMemoryTreeStateManager;
 import pl.polidea.treeview.TreeBuilder;
@@ -54,28 +53,19 @@ import roboguice.event.EventManager;
 public class ImportSourceDialog extends DialogView {
    private static final Logger log = LoggerFactory.getLogger(ImportSourceDialog.class);
 
-   @Inject
    private EventManager eventManager;
-   @Inject
-   LayoutInflater layoutInflater;
-   @Bind(R.id.usb_import_source_text_view)
-   TextView usbImportSourceTextView;
-   @Bind(R.id.cloud_import_source_text_view)
-   TextView cloudImportSourceTextView;
-   @Bind(R.id.source_path_tree_view)
-   TreeViewList sourcePathTreeView;
-   @Bind(R.id.display_picklist)
-   PickListEditable displayPicklist;
-   private TreeStateManager<File> usbManager;
-   private TreeStateManager<File> cloudManager;
+   private PickListEditable displayPicklist;
+   private LayoutInflater layoutInflater;
+   private TreeStateManager<IconizedFile> usbManager;
+   private TreeStateManager<IconizedFile> cloudManager;
    private PathTreeViewAdapter usbTreeAdapter;
    private PathTreeViewAdapter cloudTreeAdapter;
-   private TreeBuilder<File> usbTreeBuilder;
-   private TreeBuilder<File> cloudTreeBuilder;
+   private TreeBuilder<IconizedFile> usbTreeBuilder;
+   private TreeBuilder<IconizedFile> cloudTreeBuilder;
+   private TreeViewList sourcePathTreeView;
    private HashMap<Integer, SessionExtra> extras;
    private SessionExtra currentExtra;
    private SessionExtra cloudExtra;
-   private String filePath;
    public int getCurrentSessionExtra;
    public boolean isUSBType = false;
    private Set<String> file2Support = new HashSet<String>();
@@ -96,6 +86,11 @@ public class ImportSourceDialog extends DialogView {
       initSupportedFiles();
       RoboGuice.getInjector(context).injectMembers(this);
       setDialogWidth(getResources().getInteger(R.integer.import_source_dialog_width));
+      //TODO: Height should be dynamic! The following line is only a fix for DialogView loosing buttons if
+      //      height is too great. This should be verified to be necessary with each core update!
+      setBodyHeight(getResources().getInteger(R.integer.import_source_dialog_height));
+      layoutInflater= (LayoutInflater) context.getSystemService(Context.LAYOUT_INFLATER_SERVICE);
+      eventManager = RoboGuice.getInjector(context).getInstance(EventManager.class);
       init(extras);
    }
 
@@ -118,30 +113,31 @@ public class ImportSourceDialog extends DialogView {
       }
       else {
          View view = layoutInflater.inflate(R.layout.import_source_layout, null);
-         usbImportSourceTextView = (TextView) view.findViewById(R.id.usb_import_source_text_view);
-         cloudImportSourceTextView = (TextView) view.findViewById(R.id.cloud_import_source_text_view);
+         sourcePathTreeView = (TreeViewList) view.findViewById(R.id.source_path_tree_view);
+         displayPicklist = (PickListEditable) view.findViewById(R.id.display_picklist);
          ButterKnife.bind(this, view);
          extras = new HashMap<Integer, SessionExtra>();
          int importSourceId = 0;
          Set<String> hosts = new HashSet<String>();
-         usbManager = new InMemoryTreeStateManager<File>();
-         usbTreeBuilder = new TreeBuilder<File>(usbManager);
-         cloudManager = new InMemoryTreeStateManager<File>();
-         cloudTreeBuilder = new TreeBuilder<File>(cloudManager);
+         usbManager = new InMemoryTreeStateManager<IconizedFile>();
+         usbTreeBuilder = new TreeBuilder<IconizedFile>(usbManager);
+         cloudManager = new InMemoryTreeStateManager<IconizedFile>();
+         cloudTreeBuilder = new TreeBuilder<IconizedFile>(cloudManager);
          for (SessionExtra extra : extrasIn) {
             if (extra.isUsbExtra()) {
                extras.put(importSourceId, extra);
                currentExtra = extra;
                File usbFile = new File(getContext().getResources().getString(R.string.usb_string));
-               usbImportSource(usbFile, importSourceId, currentExtra);
+               IconizedFile usbRootFile = new IconizedFile(usbFile, TreeEntityHelper.getIcon("USB"));
+               usbImportSource(usbRootFile, importSourceId, currentExtra);
                getCurrentSessionExtra = currentExtra.getType();
-               cloudImportSourceTextView.setVisibility(INVISIBLE);
             }
             else if (extra.isCloudExtra()) {
                extras.put(importSourceId, extra);
                cloudExtra = extra;
                File cloudFile = new File(getContext().getResources().getString(R.string.cloud_string));
-               //cloudImportSource(cloudFile, importSourceId, cloudExtra);//TODO needs Implementation
+               IconizedFile cloudRootFile = new IconizedFile(cloudFile, TreeEntityHelper.getIcon("CLOUD"));
+               cloudImportSource(cloudRootFile, importSourceId, cloudExtra);//TODO needs Implementation
             }
             else if (extra.isDisplayExtra()) {
                if (hosts.add(extra.getDescription())) { //one button per host
@@ -170,22 +166,21 @@ public class ImportSourceDialog extends DialogView {
    }
 
    @VisibleForTesting
-   public void usbImportSource(File usbFile, int importSourceId, SessionExtra currentExtra) {
+   public void usbImportSource(IconizedFile usbFile, int importSourceId, SessionExtra currentExtra) {
       usbTreeBuilder.sequentiallyAddNextNode(usbFile, 0);
-      populateTree(usbTreeBuilder, usbFile, new File(currentExtra.getPath()));
-      usbImportSourceTextView.setCompoundDrawablesWithIntrinsicBounds(TreeEntityHelper.getIcon("USB"), 0, 0, 0);
+      File usbRootFile = new File(currentExtra.getPath());
+      populateTree(usbTreeBuilder, usbFile, new IconizedFile(usbRootFile));
       onImportSourceSelected(importSourceId);
       isUSBType = true; //for Testing
    }
 
-   private void cloudImportSource(File cloudFile, int importSourceId, SessionExtra cloudExtra) {
+   private void cloudImportSource(IconizedFile cloudFile, int importSourceId, SessionExtra cloudExtra) {
       cloudTreeBuilder.sequentiallyAddNextNode(cloudFile, 0);
       //TODO need to implement populateTree
-      cloudImportSourceTextView.setCompoundDrawablesWithIntrinsicBounds(TreeEntityHelper.getIcon("CLOUD"), 0, 0, 0);
       onImportSourceSelected(importSourceId);
    }
 
-   private void populateTree(TreeBuilder<File> treeBuilder, File parent, File dir) {
+   private void populateTree(TreeBuilder<IconizedFile> treeBuilder, IconizedFile parent, IconizedFile dir) {
       if (parent == null) {
          treeBuilder.sequentiallyAddNextNode(dir, 0);
       }
@@ -193,7 +188,7 @@ public class ImportSourceDialog extends DialogView {
          treeBuilder.addRelation(parent, dir);
       }
 
-      File[] files = dir.listFiles(new FileFilter() {
+      File[] files = dir.getFile().listFiles(new FileFilter() {
          private boolean isDirAccept(File file) {
             if (file.isDirectory()) {
                File[] fs = file.listFiles();
@@ -222,7 +217,8 @@ public class ImportSourceDialog extends DialogView {
       });
       if (files != null) {
          for (File file : files) {
-            populateTree(treeBuilder, dir, file);
+            IconizedFile tmpIconizedFile = new IconizedFile(file);
+            populateTree(treeBuilder, dir, tmpIconizedFile);
          }
       }
    }
@@ -240,8 +236,9 @@ public class ImportSourceDialog extends DialogView {
          usbManager.collapseChildren(null); //Collapse all children
          usbTreeAdapter.setOnPathSelectedListener(new PathTreeViewAdapter.OnPathSelectedListener() {
             @Override
-            public void onPathSelected(File path) {
-               currentExtra.setPath(path.getPath());
+            public void onPathSelected(IconizedFile iconizedFile) {
+               File file = iconizedFile.getFile();
+               currentExtra.setPath(file.getPath());
                setFirstButtonEnabled(true);
             }
          });

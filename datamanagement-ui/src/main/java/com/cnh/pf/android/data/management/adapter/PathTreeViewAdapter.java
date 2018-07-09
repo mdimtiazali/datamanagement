@@ -18,6 +18,7 @@ import android.widget.AdapterView;
 import android.widget.TextView;
 
 import com.cnh.pf.android.data.management.R;
+import com.cnh.pf.android.data.management.misc.IconizedFile;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -33,7 +34,7 @@ import pl.polidea.treeview.TreeViewList;
  * Adapter feeds dir to TreeView
  * @author oscar.salazar@cnhind.com
  */
-public class PathTreeViewAdapter extends AbstractTreeViewAdapter<File> {
+public class PathTreeViewAdapter extends AbstractTreeViewAdapter<IconizedFile> {
    private static final Logger logger = LoggerFactory.getLogger(PathTreeViewAdapter.class);
    private boolean isSetListener = false;
    private TreeNodeInfo selectedNode;
@@ -47,9 +48,9 @@ public class PathTreeViewAdapter extends AbstractTreeViewAdapter<File> {
    public void handleItemClick(final AdapterView<?> parent, final View view, final int position, final Object id) {
       super.handleItemClick(parent, view, position, id);
       if (listener != null) {
-         listener.onPathSelected((File) id);
+         listener.onPathSelected((IconizedFile) id);
       }
-      if(!isSetListener){
+      if (!isSetListener) {
          setListeners(parent);
          isSetListener = true;
       }
@@ -67,13 +68,21 @@ public class PathTreeViewAdapter extends AbstractTreeViewAdapter<File> {
    @Override
    public View updateView(View view, TreeNodeInfo treeNodeInfo) {
       final TextView nameView = (TextView) view;
-      File path = (File) treeNodeInfo.getId();
-      nameView.setText(path.getName());
+      IconizedFile iconizedFile = (IconizedFile) treeNodeInfo.getId();
+      File file = iconizedFile.getFile();
+      nameView.setText(file.getName());
+      if (iconizedFile.hasIcon()) {
+         int iconResourceID = iconizedFile.getIconResourceId();
+         nameView.setCompoundDrawablesWithIntrinsicBounds(iconResourceID, 0, 0, 0);
+      }
+      else {
+         nameView.setCompoundDrawablesWithIntrinsicBounds(0, 0, 0, 0);
+      }
       return nameView;
    }
 
    @Override
-   public Drawable getBackgroundDrawable(TreeNodeInfo<File> treeNodeInfo) {
+   public Drawable getBackgroundDrawable(TreeNodeInfo<IconizedFile> treeNodeInfo) {
       return getActivity().getResources().getDrawable(R.drawable.path_item_selector);
    }
 
@@ -91,20 +100,22 @@ public class PathTreeViewAdapter extends AbstractTreeViewAdapter<File> {
        * Invokes when user has selected a path
        * @param path String Absolute Path
        */
-      void onPathSelected(File path);
+      void onPathSelected(IconizedFile path);
    }
+
    public void updateViewSelection(final AdapterView<?> parent) {
       for (int i = 0; i < parent.getChildCount(); i++) {
          View child = parent.getChildAt(i);
-         File node = (File) child.getTag(); //tree associates ObjectGraph with each view
-         if(selectedNode != null && node != null && node.toString().equals(selectedNode.getId().toString())){
+         IconizedFile node = (IconizedFile) child.getTag(); //tree associates ObjectGraph with each view
+         if (selectedNode != null && node != null && node.toString().equals(selectedNode.getId().toString())) {
             child.setSelected(true);
          }
-         else{
+         else {
             child.setSelected(false);
          }
       }
    }
+
    private void setListeners(final AdapterView<?> parent) {
       parent.setOnHierarchyChangeListener(new ViewGroup.OnHierarchyChangeListener() {
          @Override

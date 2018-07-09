@@ -8,61 +8,48 @@
   ~ authorization from CNH Industrial NV.
   -->
 
-<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<ScrollView
+        xmlns:android="http://schemas.android.com/apk/res/android"
         xmlns:cnh="http://schemas.android.com/apk/res/com.cnh.pf.android.data.management"
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:orientation="vertical">
+        android:layout_height="wrap_content">
 
-    <com.cnh.android.widget.control.PickListEditable
-            android:id="@+id/display_picklist"
+    <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:imeOptions="actionDone|flagNoExtractUi"
-            android:visibility="gone"
-            android:background="#FFFF00"
-            cnh:allowItemCopying="false"
-            cnh:allowItemDeletion="false"
-            cnh:allowItemCreation="false"
-            cnh:allowItemEditing="false"
-            cnh:allowItemManagement="false" />
+            android:orientation="vertical">
 
-    <TextView
-            android:id="@+id/usb_import_source_text_view"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_marginLeft="@dimen/import_source_layout_text_view_margin_left"
-            android:textSize="@dimen/import_source_layout_text_view_text_size"
-            android:fontFamily="sans-seriff"
-            android:textColor="@color/StandardBlackColor"/>
+        <com.cnh.android.widget.control.PickListEditable
+                android:id="@+id/display_picklist"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:imeOptions="actionDone|flagNoExtractUi"
+                android:visibility="gone"
+                android:background="#FFFF00"
+                cnh:allowItemCopying="false"
+                cnh:allowItemDeletion="false"
+                cnh:allowItemCreation="false"
+                cnh:allowItemEditing="false"
+                cnh:allowItemManagement="false"/>
 
-    <TextView
-            android:id="@+id/cloud_import_source_text_view"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_below="@+id/usb_import_source_text_view"
-            android:layout_marginLeft="@dimen/import_source_layout_text_view_margin_left"
-            android:textSize="@dimen/import_source_layout_text_view_text_size"
-            android:fontFamily="sans-seriff"
-            android:textColor="@color/StandardBlackColor"/>
+        <pl.polidea.treeview.TreeViewList
+                android:id="@+id/source_path_tree_view"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:visibility="gone"
+                android:divider="#80ffffff"
+                android:dividerHeight="@dimen/import_source_layout_tree_view_divider_height"
+                android:choiceMode="none"
+                android:listSelector="#00000000"
+                cnh:collapsible="true"
+                cnh:draw_line="true"
+                cnh:indent_width="@dimen/import_source_layout_tree_view_cnh_indent_width"
+                cnh:indicator_background="@android:color/transparent"
+                cnh:indicator_gravity="center_vertical|right"
+                cnh:line_color="@color/tree_line"
+                cnh:line_width="@dimen/import_source_layout_tree_view_cnh_line_width"
+                cnh:src_collapsed="@drawable/ic_action_expand"
+                cnh:src_expanded="@drawable/ic_action_collapse"/>
 
-    <pl.polidea.treeview.TreeViewList
-            android:id="@+id/source_path_tree_view"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:visibility="gone"
-            android:divider="#80ffffff"
-            android:dividerHeight="@dimen/import_source_layout_tree_view_divider_height"
-            android:choiceMode="none"
-            android:listSelector="#00000000"
-            cnh:collapsible="true"
-            cnh:draw_line="true"
-            cnh:indent_width="@dimen/import_source_layout_tree_view_cnh_indent_width"
-            cnh:indicator_background="@android:color/transparent"
-            cnh:indicator_gravity="center_vertical|right"
-            cnh:line_color="@color/tree_line"
-            cnh:line_width="@dimen/import_source_layout_tree_view_cnh_line_width"
-            cnh:src_collapsed="@drawable/ic_action_expand"
-            cnh:src_expanded="@drawable/ic_action_collapse"/>
-
-</RelativeLayout>
+    </LinearLayout>
+</ScrollView>
