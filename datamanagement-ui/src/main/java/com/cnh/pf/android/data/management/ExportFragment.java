@@ -83,6 +83,7 @@ public class ExportFragment extends BaseDataFragment {
    private static final String SAVED_MEDIUM = "medium";
    private static final String SAVED_FORMAT = "format";
    private static final String ISOXML_FORMAT = "ISOXML";
+   private static final String TASKDATA_FILE = "TASKDATA.XML";
 
    @Inject
    protected FormatManager formatManager;
@@ -819,14 +820,31 @@ public class ExportFragment extends BaseDataFragment {
          final String tempPath = UtilityHelper.CommonPaths.PATH_TMP.getPathString();
          File tmpFolder = new File(tempPath);
 
+         if (tmpFolder.exists() && !UtilityHelper.deleteRecursively(tmpFolder)) {
+            // Delete the temporary folder and files in it before EXPORT starts.
+            logger.debug("unable to delete temporary folder before EXPORT:{}", tmpFolder.getPath());
+         }
+
          if (!tmpFolder.exists()) {
             logger.info("creating temporary folder:{}", tmpFolder.getPath());
 
             // The DM service will notify error with the fault alert if the temp dir isn't created.
-            tmpFolder.mkdirs();
-            tmpFolder.setReadable(true, false);
-            tmpFolder.setExecutable(true, false);
-            tmpFolder.setWritable(true, false);
+            boolean res;
+            res = tmpFolder.mkdirs();
+            res &= tmpFolder.setReadable(true, false);
+            res &= tmpFolder.setExecutable(true, false);
+            res &= tmpFolder.setWritable(true, false);
+
+            if (!res) logger.error("There was an issue with the temporary folder handling.");
+         }
+
+         // This should not happen but make sure the process doens't proceed knowing it will fail.
+         File taskFile = new File(tempPath, TASKDATA_FILE);
+         if (taskFile.exists()) {
+            logger.error("Unexpected taskdata file detected. Stop the process.");
+            ToastMessageCustom.makeToastMessageText(getActivity().getApplicationContext(), getString(R.string.export_cancel), Gravity.TOP | Gravity.CENTER_HORIZONTAL,
+                    getResources().getInteger(R.integer.toast_message_xoffset), getResources().getInteger(R.integer.toast_message_yoffset)).show();
+            return;
          }
 
          ObjectPickListItem<SessionExtra> item = (ObjectPickListItem<SessionExtra>) exportMediumPicklist.getSelectedItem();

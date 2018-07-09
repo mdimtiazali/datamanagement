@@ -130,27 +130,24 @@ public class PerformOperationsTask extends SessionOperationTask<Void> {
 
                         logger.info("finished moving files");
 
-                        if (moveWasSuccessfull) {
-                           session.setResultCode(Process.Result.SUCCESS);
-                        }
-                        else {
-                           session.setResultCode(Process.Result.ERROR);
-                           throw new SessionException(ErrorCode.PERFORM_ERROR);
-                        }
+                        session.setResultCode( (moveWasSuccessfull) ? Process.Result.SUCCESS : Process.Result.ERROR);
                      }
                      else {
                         logger.info("Either USB is not mounted or temporary folder doesn't exist.");
                         faultHandler.getFault(FaultCode.USB_REMOVED_DURING_EXPORT).reset();
                         faultHandler.getFault(FaultCode.USB_REMOVED_DURING_EXPORT).alert();
                         session.setResultCode(Process.Result.ERROR);
-                        throw new SessionException(ErrorCode.PERFORM_ERROR);
                      }
                   }
 
                   if (tmpFolder.exists()) {
-                     if (!deleteRecursively(tmpFolder)){
+                     if (!UtilityHelper.deleteRecursively(tmpFolder)){
                         logger.error("unable to delete temporary folder:{}", tmpFolder.getPath());
                      }
+                  }
+
+                  if (SessionUtil.isErroneous(session)) {
+                     throw new SessionException(ErrorCode.PERFORM_ERROR);
                   }
                }
                else {
@@ -196,90 +193,62 @@ public class PerformOperationsTask extends SessionOperationTask<Void> {
       super.onPostExecute(session);
    }
 
-   /**
-    * deletes file/folder and its content recursively
-    * @param path target to delete - if it is a folder - the content will be deleted recursively
-    * @return true if successful
-    */
-   protected boolean deleteRecursively(File path) {
-
-      boolean retValue = true;
-
-      if (path.exists()) {
-         if (path.isDirectory()) {
-            File[] fileList = path.listFiles();
-            if((null != fileList)&&(fileList.length > 0)) {
-               for (File file : path.listFiles()) {
-                  retValue &= deleteRecursively(file);
-               }
-            }
-         }
-         retValue &= path.delete();
-         if(!retValue){
-            logger.error("unable to delete: {}", path.getPath());
-         }
-      }
-      else {
-         logger.error("unable to delete not existing path: {}", path.getPath());
-         retValue = false;
-      }
-      return retValue;
-   }
-
    private boolean moveFiles(String sourceDir, String destRoot, String destDir) {
 
       boolean retValue = false;
 
-      File source = new File(sourceDir);
-      ArrayDeque<File> fileList = new ArrayDeque<File>();
+      try {
+         File source = new File(sourceDir);
+         ArrayDeque<File> fileList = new ArrayDeque<File>();
 
-      File dest = new File(destRoot + destDir);
-      long exportSize = 0;
+         File dest = new File(destRoot + destDir);
+         long exportSize = 0;
 
-      if ((null != source) && source.exists()) {
+         if ((null != source) && source.exists()) {
 
-         File[] paths = source.listFiles();
-         if (null != paths) {
-            for (File path : paths) {
-               fileList.push(path);
-               exportSize += path.length();
+            File[] paths = source.listFiles();
+            if (null != paths) {
+               for (File path : paths) {
+                  fileList.push(path);
+                  exportSize += path.length();
+               }
             }
-         }
-         logger.debug("exporting source: ", source.getPath());
-         logger.debug("exporting destination: ", dest.getPath());
+            logger.debug("exporting source: ", source.getPath());
+            logger.debug("exporting destination: ", dest.getPath());
 
-         StatFs stat = new StatFs(destRoot);
-         long bytesFree = (long) stat.getAvailableBlocksLong() * (long) stat.getBlockCount();
+            StatFs stat = new StatFs(destRoot);
+            long bytesFree = stat.getAvailableBytes();
 
-         boolean isMounted = Environment.getExternalStorageState().equals(MEDIA_MOUNTED);
+            final long SAFETY_BUFFER_BYTE = 2 * 1024 * 1024; // 2MByte safety buffer to prevent crashes caused by logging
 
-         if (exportSize == 0) {
-            logger.info("no source file found");
-         }
-         else if (bytesFree < exportSize) {
-            // reset before showing again
-            faultHandler.getFault(FaultCode.USB_NOT_ENOUGH_MEMORY).reset();
-            faultHandler.getFault(FaultCode.USB_NOT_ENOUGH_MEMORY).alert();
-            logger.info("not enough space on USB stick");
-         }
-         else if (!isMounted) {
-            // if the USB does not exist anymore, drop a USB removed alert
-            faultHandler.getFault(FaultCode.USB_REMOVED_DURING_EXPORT).reset();
-            faultHandler.getFault(FaultCode.USB_REMOVED_DURING_EXPORT).alert();
-            logger.info("USB stick is not mounted or has been removed");
-         }
-         else {
-            // check, if the folder on the USB stick is still existing and rename the old folder
-            if (dest.exists()) {
-               logger.info("Renaming existing export destination folder");
-               File copy = new File(dest.getAbsolutePath());
-               copy.renameTo(new File(String.format("%s.%s", dest.getAbsolutePath(), new SimpleDateFormat("yyyyMMddHHmmss").format(new Date(dest.lastModified())))));
+            boolean isMounted = Environment.getExternalStorageState().equals(MEDIA_MOUNTED);
+
+            if (exportSize == 0) {
+               logger.info("no source file found");
             }
-            dest.mkdirs();
+            else if (bytesFree < (exportSize + SAFETY_BUFFER_BYTE)) {
+               // reset before showing again
+               faultHandler.getFault(FaultCode.USB_NOT_ENOUGH_MEMORY).reset();
+               faultHandler.getFault(FaultCode.USB_NOT_ENOUGH_MEMORY).alert();
+               logger.info("not enough space on USB stick");
+            }
+            else if (!isMounted) {
+               // if the USB does not exist anymore, drop a USB removed alert
+               faultHandler.getFault(FaultCode.USB_REMOVED_DURING_EXPORT).reset();
+               faultHandler.getFault(FaultCode.USB_REMOVED_DURING_EXPORT).alert();
+               logger.info("USB stick is not mounted or has been removed");
+            }
+            else {
+               // check, if the folder on the USB stick is still existing and rename the old folder
+               if (dest.exists()) {
+                  logger.info("Renaming existing export destination folder");
+                  File copy = new File(dest.getAbsolutePath());
+                  copy.renameTo(new File(String.format("%s.%s", dest.getAbsolutePath(), new SimpleDateFormat("yyyyMMddHHmmss").format(new Date(dest.lastModified())))));
+               }
+               dest.mkdirs();
 
-            String root;
+               String root;
 
-            try {
                root = source.toString();
                File[] temppath = source.listFiles();
                File next;
@@ -289,6 +258,7 @@ public class PerformOperationsTask extends SessionOperationTask<Void> {
 
                File destFolder = new File(destRoot);
 
+               retValue = true;
                while (!fileList.isEmpty()) {
                   next = fileList.pop();
                   logger.info("copy:{}", next.getPath());
@@ -296,35 +266,39 @@ public class PerformOperationsTask extends SessionOperationTask<Void> {
                      destination = new File(String.format("%s%s", dest, next.toString().substring(root.length())));
                      parent = destination.getCanonicalFile().getParentFile();
                      if (!parent.exists()) {
-                        parent.mkdirs();
+                        retValue &= parent.mkdirs();
                      }
                      Files.move(next, destination);
-                     retValue = true;
                   }
                   else if (next.isDirectory()) {
                      if (null != next.listFiles()) {
                         for (File file : next.listFiles()) {
                            fileList.push(file);
                         }
-                        retValue = true;
+                     }
+                     else {
+                        retValue = false;
                      }
                   }
                }
                logger.info("finished copy files");
             }
-            catch (Exception e) {
-               if (!Environment.getExternalStorageState().equals(MEDIA_MOUNTED)) {
-                  faultHandler.getFault(FaultCode.USB_REMOVED_DURING_EXPORT).reset();
-                  faultHandler.getFault(FaultCode.USB_REMOVED_DURING_EXPORT).alert();
-               }
-               logger.error("", e);
-            }
+         }
+         else {
+            logger.error("no source folder found");
          }
       }
-      else {
-         logger.error("no source folder found");
+      catch (Exception e) {
+         if (!Environment.getExternalStorageState().equals(MEDIA_MOUNTED)) {
+            faultHandler.getFault(FaultCode.USB_REMOVED_DURING_EXPORT).reset();
+            faultHandler.getFault(FaultCode.USB_REMOVED_DURING_EXPORT).alert();
+         }
+         logger.error("aborted moving files to USB, casued by:", e);
+         retValue = false;
       }
-      return retValue;
+      finally {
+         return retValue;
+      }
    }
 
    private boolean moveFilesToInternalFlash(SessionExtra extra) {

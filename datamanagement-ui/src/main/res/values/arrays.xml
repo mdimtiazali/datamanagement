@@ -52,4 +52,14 @@
         <item>@string/pfds</item>
     </string-array>
 
+    <!--Definition of root nodes supporting implicit parent selection on selection of their child nodes-->
+    <string-array name="rootnodenames_with_implicit_parent_selection_in_management">
+    </string-array>
+    <string-array name="rootnodenames_with_implicit_parent_selection_in_import">
+        <item>@string/pfds</item>
+    </string-array>
+    <string-array name="rootnodenames_with_implicit_parent_selection_in_export">
+        <item>@string/pfds</item>
+    </string-array>
+
 </resources>

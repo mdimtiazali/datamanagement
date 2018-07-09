@@ -351,6 +351,13 @@ public class DataManagementService extends RoboService implements SharedPreferen
          return;
       }
 
+      if (SessionUtil.isImportAction(session) && SessionUtil.isPerformOperationsTask(session)) {
+         // Clear cached discovery data for EXPORT & MANAGE. This is to defend any data change in
+         // IMPORT process even if the process is not successfully finished.
+         cacheManager.reset(Session.Action.EXPORT, Session.Type.DISCOVERY);
+         cacheManager.reset(Session.Action.MANAGE, Session.Type.DISCOVERY);
+      }
+
       if ((SessionUtil.isExportAction(session) && SessionUtil.isPerformOperationsTask(session)) || (SessionUtil.isImportAction(session) && SessionUtil.isDiscoveryTask(session))) {
          // Run USB service code in new thread to show UI change faster
          new Thread(new Runnable() {
@@ -473,12 +480,6 @@ public class DataManagementService extends RoboService implements SharedPreferen
       // Cache session result so that it can be recycled later.
       if (SessionUtil.isComplete(session) && SessionUtil.isSuccessful(session)) {
          cacheManager.save(session);
-
-         if (SessionUtil.isImportAction(session) && SessionUtil.isPerformOperationsTask(session)) {
-            // Clear cached discovery data for EXPORT & MANAGE once IMPORT is performed successfully.
-            cacheManager.reset(Session.Action.EXPORT, Session.Type.DISCOVERY);
-            cacheManager.reset(Session.Action.MANAGE, Session.Type.DISCOVERY);
-         }
       }
 
       notifySessionSuccessWithoutCaching(session);
