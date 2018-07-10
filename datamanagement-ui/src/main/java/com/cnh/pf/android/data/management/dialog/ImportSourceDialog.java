@@ -72,13 +72,12 @@ public class ImportSourceDialog extends DialogView {
 
    private void initSupportedFiles() {
       file2Support.add("TASKDATA.XML");
-      file2Support.add("vip.xml");
+      file2Support.add("dbf");
+      file2Support.add("DBF");
       file2Support.add("shp");
       file2Support.add("SHP");
       file2Support.add("shx");
       file2Support.add("SHX");
-      file2Support.add("dbf");
-      file2Support.add("DBF");
    }
 
    public ImportSourceDialog(Activity context, List<SessionExtra> extras) {
