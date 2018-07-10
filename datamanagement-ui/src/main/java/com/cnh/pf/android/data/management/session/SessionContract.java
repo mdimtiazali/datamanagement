@@ -84,7 +84,12 @@ public interface SessionContract {
        * @param operations  list of operation data to be used in the session
        */
       void update(List<Operation> operations);
-
+      /**
+       * Execute PASTE
+       *
+       * @param operations  list of operation data to be used in the session
+       */
+      void paste(List<Operation> operations);
       /**
        * Execute DELETE
        *

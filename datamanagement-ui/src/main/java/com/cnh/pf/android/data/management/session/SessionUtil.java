@@ -123,7 +123,15 @@ public class SessionUtil {
    public static boolean isUpdateTask(final Session session) {
       return session != null && Session.Type.UPDATE.equals(session.getType());
    }
-
+   /**
+    * Return true if the current session type is PASTE
+    *
+    * @param session the session
+    * @return  true if the current session type is PASTE
+    */
+   public static boolean isPasteTask(final Session session) {
+      return session != null && Session.Type.PASTE.equals(session.getType());
+   }
    /**
     * Return true if the current session type is DELETE
     *

@@ -38,6 +38,9 @@
     <color name="data_panel_border">#80bee9</color>
     <color name="data_header_background">#e8e8e8</color>
 
+    <!--data management-->
+    <color name="grower_item_bg">#7d333333</color>
+
     <color name="drag_accept">#FFFF00</color>
     <color name="drag_reject">#FF0000</color>
     <color name="drag_enter">#00FF00</color>

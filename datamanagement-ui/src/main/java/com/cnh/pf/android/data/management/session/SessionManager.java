@@ -280,6 +280,25 @@ public class SessionManager implements SessionContract.SessionManager, SessionEv
       }
    }
 
+   @Override
+   public void paste(List<Operation> operations) {
+      if (view != null) {
+         Session.Action action = view.getAction();
+         logger.trace("paste(): {}", action);
+
+         Session session = getCurrentSession(action);
+
+         session.setType(Session.Type.PASTE);
+         session.setResultCode(null);
+         session.setObjectData(new ArrayList<ObjectGraph>());
+         session.setOperations(operations);
+         executeSession(session);
+      }
+      else {
+         logger.debug("paste(): Session view is null");
+      }
+   }
+
    /**
     * Request DM service to execute DELETE task.
     *

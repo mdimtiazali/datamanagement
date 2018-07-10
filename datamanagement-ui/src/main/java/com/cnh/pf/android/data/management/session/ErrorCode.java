@@ -26,7 +26,8 @@ public enum ErrorCode {
    DELETE_ERROR(R.string.error_delete, "Delete Error"),
    NEED_DATA_PATH(R.string.error_no_source, "Please Specify A Valid Data Path To Start"),
    INVALID_FORMAT(R.string.error_perform_ops, "Invalid Format."),
-   USB_REMOVED(R.string.error_perform_ops, "USB Removal During Process");
+   USB_REMOVED(R.string.error_perform_ops, "USB Removal During Process"),
+   PASTE_ERROR(R.string.error_paste, "Paste Error");
 
 
    private String value;

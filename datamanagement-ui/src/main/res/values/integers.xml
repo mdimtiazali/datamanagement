@@ -18,6 +18,10 @@
     <integer name="toast_message_xoffset">0</integer>
     <integer name="max_tree_selections_before_text_adjustment">999</integer>
 
+    <integer name="copy_paste_dialog_high_threld">5</integer>
+    <integer name="copy_paste_dialog_height_low">240</integer>
+    <integer name="copy_paste_dialog_height_high">420</integer>
+
     <!--Import Source Dialog-->
     <integer name="import_source_dialog_width">585</integer>
     <integer name="import_source_dialog_height">400</integer>

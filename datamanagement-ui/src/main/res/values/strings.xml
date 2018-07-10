@@ -133,6 +133,7 @@
     <string name="error_no_target">No Destination Datasource</string>
     <string name="error_perform_ops">Perform Operations Error</string>
     <string name="error_update">Update Error</string>
+    <string name="error_paste">Paste Error</string>
     <string name="error_calculate_conflicts">Calculate Conflicts Error</string>
     <string name="error_calculate_operations">Calculate Targets Error</string>
     <string name="error_discovery">Discovery Error</string>
@@ -301,6 +302,7 @@
     <string name="edit_name_warning">The item with this name already exists. Please choose a different name</string>
     <string name="edit_update_title">Updating item</string>
     <string name="edit_update_content">In progress ...</string>
+    <string name="copy_paste_update_content">In progress ...</string>
 
     <string name="unknown_vehicle">Unknown Vehicle</string>
 
@@ -343,8 +345,12 @@
     <string name="generic_tractor_internal">Internal</string>
 
     <string name="no_data_for_delete">No selected data right for deletion</string>
+    <string name="no_data_for_paste">No selected data for paste</string>
     <string name="update_error_notice">Error occur when updating the name</string>
     <string name="delete_error_notice">Error occur when deleting the data</string>
+
     <string name="delete_select_notice">No selection is made</string>
     <string name="delete_select_notice_inaccessible">Delete isn\'t allowed since system is in work or engage</string>
+    <string name="copy_paste_header">Copying <![CDATA[<b><font color=#006ab1>&quot;%1$s&quot;</font></b>]]><![CDATA[<br/>]]> Please select a desired destination.</string>
 </resources>
+

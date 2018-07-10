@@ -24,12 +24,14 @@ import android.widget.TextView;
 import com.cnh.android.dialog.DialogViewInterface;
 import com.cnh.android.pf.widget.controls.ToastMessageCustom;
 import com.cnh.android.widget.activity.TabActivity;
+import com.cnh.jgroups.DataTypes;
 import com.cnh.jgroups.ObjectGraph;
 import com.cnh.jgroups.Operation;
 import com.cnh.pf.android.data.management.adapter.BaseTreeViewAdapter;
 import com.cnh.pf.android.data.management.adapter.ObjectTreeViewAdapter;
 import com.cnh.pf.android.data.management.dialog.DeleteDialog;
 import com.cnh.pf.android.data.management.dialog.EditDialog;
+import com.cnh.pf.android.data.management.dialog.GFFSelectionView;
 import com.cnh.pf.android.data.management.dialog.UndeleteObjectDialog;
 import com.cnh.pf.android.data.management.graph.GroupObjectGraph;
 import com.cnh.pf.android.data.management.helper.DataExchangeBlockedOverlay;
@@ -38,6 +40,8 @@ import com.cnh.pf.android.data.management.misc.DeleteButton;
 import com.cnh.pf.android.data.management.session.ErrorCode;
 import com.cnh.pf.android.data.management.session.Session;
 import com.cnh.pf.android.data.management.session.SessionUtil;
+import com.cnh.pf.android.data.management.graph.GFFObject;
+import com.cnh.pf.android.data.management.utility.UtilityHelper;
 import com.cnh.pf.datamng.Process;
 import com.google.inject.Inject;
 
@@ -48,6 +52,7 @@ import org.slf4j.LoggerFactory;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashSet;
+import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Set;
@@ -68,6 +73,10 @@ public class ManageFragment extends BaseDataFragment implements DmAccessibleObse
    private Set<String> editSet;
    private ProgressDialog progress;
    private volatile boolean isAccessable = true;
+   private int threshold = 8;
+   private int copy_paste_dialog_height_short = 320;
+   private int copy_paste_dialog_height_tall = 480;
+   private ObjectGraph lastDestinationObj;
    @Inject
    private DmAccessibleObserver statusHelper;
 
@@ -104,7 +113,12 @@ public class ManageFragment extends BaseDataFragment implements DmAccessibleObse
       }
       isAccessable = status;
    }
-
+   private ProgressDialog getProgress(){
+      progress = new ProgressDialog(getActivity(), ProgressDialog.THEME_HOLO_LIGHT);
+      progress.setIndeterminateDrawable(getResources().getDrawable(R.drawable.progress_circle));
+      progress.setCanceledOnTouchOutside(false);
+      return progress;
+   }
    final View.OnClickListener optListener = new View.OnClickListener() {
       @Override
       public void onClick(View v) {
@@ -139,9 +153,7 @@ public class ManageFragment extends BaseDataFragment implements DmAccessibleObse
                   update(operations);
 
                   if (progress == null) {
-                     progress = new ProgressDialog(getActivity(), ProgressDialog.THEME_HOLO_LIGHT);
-                     progress.setIndeterminateDrawable(getResources().getDrawable(R.drawable.progress_circle));
-                     progress.setCanceledOnTouchOutside(false);
+                     progress = getProgress();
                   }
                   progress.setMessage(getString(R.string.edit_update_content));
                   setHeaderAndDeleteButton(false);
@@ -153,22 +165,71 @@ public class ManageFragment extends BaseDataFragment implements DmAccessibleObse
             break;
          }
          case R.id.mng_copy_button: {
-            ObjectGraph nodeInfo = (ObjectGraph) v.getTag();
-            //Todo: need to support delete
-            ToastMessageCustom.makeToastMessageText(getActivity().getApplicationContext(), getString(R.string.copy_click_string) + nodeInfo.toString(),
-                  Gravity.TOP | Gravity.CENTER_HORIZONTAL, getResources().getInteger(R.integer.toast_message_xoffset), getResources().getInteger(R.integer.toast_message_yoffset))
-                  .show();
+            final ObjectGraph copyObj = (ObjectGraph) v.getTag();
+            List<ObjectGraph> growers = new LinkedList<ObjectGraph>();
+            Iterator<ObjectGraph> iterator = getTreeAdapter().getData().iterator();
+            ObjectGraph grower;
+            if (progress == null) {
+               progress = getProgress();
+            }
+            progress.setMessage(getString(R.string.copy_paste_update_content));
+            while (iterator.hasNext()) {
+               grower = iterator.next();
+               if (grower.getType().equals(DataTypes.GROWER)) {
+                  growers.add(grower);
+               }
+            }
+            final List<GFFObject> gffObjects = UtilityHelper.getGffObjects(growers,copyObj.getParent());
+            final GFFSelectionView gffSelectionView = new GFFSelectionView(getActivity(),gffObjects,copyObj);
+            int dialogHeight = gffObjects.size()>threshold?copy_paste_dialog_height_tall:copy_paste_dialog_height_short;
+            gffSelectionView.setBodyHeight(dialogHeight);
+
+            gffSelectionView.setOnButtonClickListener(new DialogViewInterface.OnButtonClickListener() {
+               @Override
+               public void onButtonClick(DialogViewInterface dialogViewInterface, int buttonNumber) {
+                  if (buttonNumber == DialogViewInterface.BUTTON_FIRST) {
+                     GFFObject gffObject = gffSelectionView.getSelected();
+                     if(gffObject != null) {
+                        lastDestinationObj = gffObject.getDataObj();
+                        List<Operation> operations = composeCopyPasteOpt(copyObj, lastDestinationObj);
+                        paste(operations);
+                        gffSelectionView.dismiss();
+                        progress.show();
+                     }
+                     else{
+                        ToastMessageCustom.makeToastMessageText(getActivity(), getString(R.string.no_data_for_paste), Gravity.TOP|Gravity.CENTER_HORIZONTAL,
+                                getResources().getInteger(R.integer.toast_message_xoffset),getResources().getInteger(R.integer.toast_message_yoffset)).show();
+                     }
+                  }
+                  else if(buttonNumber == DialogViewInterface.BUTTON_SECOND) {
+                     gffSelectionView.dismiss();
+                  }
+               }
+            });
+            final TabActivity useModal = (DataManagementActivity) getActivity();
+            useModal.showModalPopup(gffSelectionView);
          }
          }
       }
    };
-
+   private List<Operation> composeCopyPasteOpt(ObjectGraph cpObj, ObjectGraph targetParent){
+      List<ObjectGraph> targets = new ArrayList<ObjectGraph>();
+      List<Operation> operations = new ArrayList<Operation>(1);
+      targets.add(targetParent);
+      Operation operation = new Operation(cpObj.copy(),null);
+      operation.setTarget(targetParent);
+      operations.add(operation);
+      return operations;
+   }
    @Override
    public void onCreate(Bundle savedInstanceState) {
       logger.debug("onCreate()");
       super.onCreate(savedInstanceState);
       copySet = new HashSet<String>(Arrays.asList(getResources().getStringArray(R.array.copy)));
       editSet = new HashSet<String>(Arrays.asList(getResources().getStringArray(R.array.edit)));
+      threshold = getResources().getInteger(R.integer.copy_paste_dialog_high_threld);
+      copy_paste_dialog_height_short = getResources().getInteger(R.integer.copy_paste_dialog_height_low);
+      copy_paste_dialog_height_tall = getResources().getInteger(R.integer.copy_paste_dialog_height_high);
       statusHelper.setListener(this);
    }
 
@@ -244,18 +305,14 @@ public class ManageFragment extends BaseDataFragment implements DmAccessibleObse
                         }
                         delete(delOperations);
                         if (progress == null) {
-                           progress = new ProgressDialog(getActivity(), ProgressDialog.THEME_HOLO_LIGHT);
-                           progress.setIndeterminateDrawable(getResources().getDrawable(R.drawable.progress_circle));
-                           progress.setCanceledOnTouchOutside(false);
+                           progress = getProgress();
                         }
                         progress.setMessage(getString(R.string.delete_progress_content));
                         progress.show();
                      }
                      else {
-                        ToastMessageCustom
-                              .makeToastMessageText(getActivity().getApplicationContext(), getString(R.string.no_data_for_delete), Gravity.TOP | Gravity.CENTER_HORIZONTAL,
-                                    getResources().getInteger(R.integer.toast_message_xoffset), getResources().getInteger(R.integer.toast_message_yoffset))
-                              .show();
+                        ToastMessageCustom.makeToastMessageText(getActivity(), getString(R.string.no_data_for_delete), Gravity.TOP|Gravity.CENTER_HORIZONTAL,
+                                getResources().getInteger(R.integer.toast_message_xoffset),getResources().getInteger(R.integer.toast_message_yoffset)).show();
                      }
                   }
                }
@@ -364,6 +421,34 @@ public class ManageFragment extends BaseDataFragment implements DmAccessibleObse
             }
          }
       }
+      else if (SessionUtil.isPasteTask(session)) {
+         if (session.getResultCode() != null) {
+            if (progress != null) {
+               progress.dismiss();
+            }
+            final List<ObjectGraph> pasteObjects = new LinkedList<ObjectGraph>();
+            RspList<Process> rsps = session.getResults();
+            ObjectGraph newObj;
+            for (Process process : rsps.getResults()) {
+               if (process.getOperations() != null) {
+                  for (Operation operation : process.getOperations()) {
+                     if (operation != null && operation.getStatus() == Operation.Status.DONE && (newObj = operation.getGeneral()) != null) {
+                        if(lastDestinationObj != null){
+                           lastDestinationObj.addChild(newObj);
+                           newObj.setParent(lastDestinationObj);
+                           pasteObjects.add(newObj);
+                           lastDestinationObj = null;
+                        }
+                        else{
+                           logger.error("Something wrong with pasted object parent; returned: {}, cachedObj:{}",newObj.getParent(), lastDestinationObj);
+                        }
+                     }
+                  }
+               }
+            }
+            addToTree(pasteObjects);
+         }
+      }
       else if (SessionUtil.isDeleteTask(session)) {
          if (session.getResultCode() != null) {
             if (progress != null) {
@@ -376,9 +461,9 @@ public class ManageFragment extends BaseDataFragment implements DmAccessibleObse
                if (process.getOperations() != null) {
                   for (Operation operation : process.getOperations()) {
                      if (operation != null && operation.getStatus() == Operation.Status.DONE) {
-                        removedObjects.addAll(findRemovedObjects(operation.getData(), operation.getUnprocessedData()));
-                        if (operation.getUnprocessedData() != null) {
-                           undeletedObjects.add(operation.getUnprocessedData());
+                        removedObjects.addAll(findRemovedObjects(operation.getData(), operation.getGeneral()));
+                        if (operation.getGeneral() != null) {
+                           undeletedObjects.add(operation.getGeneral());
                         }
                      }
                   }

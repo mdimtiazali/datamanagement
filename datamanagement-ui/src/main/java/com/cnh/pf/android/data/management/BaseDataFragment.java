@@ -458,7 +458,19 @@ public abstract class BaseDataFragment extends RoboFragment implements SessionCo
          logger.debug("update(): Session manager is null");
       }
    }
-
+   /**
+    * Helper function to invoke copy paste on the session manager
+    *
+    * @param operations    list of operation
+    */
+   protected void paste(List<Operation> operations) {
+      if (sessionManager != null) {
+         sessionManager.paste(operations);
+      }
+      else {
+         logger.debug("paste(): Session manager is null");
+      }
+   }
    /**
     * Helper function to invoke delete on the session manager
     *
