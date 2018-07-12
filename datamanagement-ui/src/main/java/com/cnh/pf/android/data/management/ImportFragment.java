@@ -462,9 +462,16 @@ public class ImportFragment extends BaseDataFragment {
             defaultButtonText = false;
             Resources resources = getResources();
             importSelectedBtn.setText(resources.getString(R.string.import_selected) + " (" + selectedItemCount + ")");
-            importSelectedBtn.setTextSize(selectedItemCount > MAX_TREE_SELECTIONS_FOR_DEFAULT_TEXT_SIZE
-                  ? resources.getDimension(R.dimen.button_default_text_size) - resources.getDimension(R.dimen.decrease_text_size)
-                  : resources.getDimension(R.dimen.button_default_text_size));
+            if (selectedItemCount > MAX_TREE_SELECTIONS_FOR_DEFAULT_TEXT_SIZE) {
+               importSelectedBtn.setTextSize(resources.getDimension(R.dimen.button_default_text_size) - resources.getDimension(R.dimen.decrease_text_size));
+               importSelectedBtn.setPadding(resources.getInteger(R.integer.button_minimum_padding_left), resources.getInteger(R.integer.button_minimum_padding_top),
+                       resources.getInteger(R.integer.button_minimum_padding_right), resources.getInteger(R.integer.button_minimum_padding_bottom));
+            }
+            else {
+               importSelectedBtn.setTextSize(resources.getDimension(R.dimen.button_default_text_size));
+               importSelectedBtn.setPadding(resources.getInteger(R.integer.button_default_padding_left), resources.getInteger(R.integer.button_default_padding_top),
+                       resources.getInteger(R.integer.button_default_padding_right), resources.getInteger(R.integer.button_default_padding_bottom));
+            }
          }
       }
       if (defaultButtonText == true) {
