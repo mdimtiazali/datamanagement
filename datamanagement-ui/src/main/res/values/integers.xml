@@ -26,6 +26,15 @@
     <integer name="import_source_dialog_width">585</integer>
     <integer name="import_source_dialog_height">400</integer>
 
+    <!-- Import/Export Button Values -->
+    <integer name="button_default_padding_left">12</integer>
+    <integer name="button_default_padding_right">12</integer>
+    <integer name="button_default_padding_top">4</integer>
+    <integer name="button_default_padding_bottom">4</integer>
+    <integer name="button_minimum_padding_left">2</integer>
+    <integer name="button_minimum_padding_right">2</integer>
+    <integer name="button_minimum_padding_top">0</integer>
+    <integer name="button_minimum_padding_bottom">0</integer>
 
     <!--Configuration for dimensions of the shadow representative of multiple items for drag and drop in DM-->
     <integer name="tree_drag_multiple_selection_shadow_box_corner_radius">9</integer>
