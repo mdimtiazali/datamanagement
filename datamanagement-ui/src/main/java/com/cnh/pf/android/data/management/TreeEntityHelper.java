@@ -9,12 +9,29 @@
 
 package com.cnh.pf.android.data.management;
 
+import com.cnh.pf.android.data.management.graph.GroupObjectGraph;
+import com.google.gson.Gson;
+
 import android.content.Context;
 
+import com.cnh.android.util.describer.GSONContentDescriber;
 import com.cnh.jgroups.DataTypes;
+import com.cnh.jgroups.ObjectGraph;
+import com.cnh.pf.android.data.management.helper.DMTreeJsonData;
 import com.google.common.base.CaseFormat;
+import com.google.gson.JsonIOException;
+import com.google.gson.JsonSyntaxException;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import pl.polidea.treeview.TreeBuilder;
 
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.InputStreamReader;
+import java.nio.charset.Charset;
+import java.security.acl.Group;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 /**
@@ -23,7 +40,11 @@ import java.util.Map;
  */
 public class TreeEntityHelper {
 
+   private static final Logger logger = LoggerFactory.getLogger(TreeEntityHelper.class);
    private static final Map<String, Integer> TYPE_ICONS = new HashMap<String, Integer>();
+
+   private static final Map<String, GroupObjectGraph> GroupObjectGraphMap =
+      new HashMap<String, GroupObjectGraph>();
 
    /**
     * Map lists all entities which are groupable in ui, entities with types specified in this lists will be grouped in ui.
@@ -210,5 +231,66 @@ public class TreeEntityHelper {
     */
    public static boolean hasIcon(String type) {
       return TYPE_ICONS.containsKey(type);
+   }
+
+   /**
+    * Create UI Tree using json file.
+    * @param context
+    * @param builder
+    */
+   public static void LoadDMTreeFromJson(Context context, TreeBuilder<ObjectGraph> builder) {
+      try {
+         GroupObjectGraphMap.clear();
+         InputStream inputStream = context.getAssets().open(("dmtree.json"));
+         InputStreamReader inputStreamReader = new InputStreamReader(inputStream, Charset.defaultCharset());
+         DMTreeJsonData[] jsondata = new Gson().fromJson(inputStreamReader, DMTreeJsonData[].class);
+         inputStream.close();
+
+         for(DMTreeJsonData entry : jsondata){
+            addToTree(entry, null, builder);
+         }
+      }
+      catch (IOException ioex) {
+         logger.error("Unable to read the json file " + ioex.getMessage());
+      }
+      catch (JsonSyntaxException syexp) {
+         logger.error("Syntax error in json file " + syexp.getMessage());
+      }
+      catch (JsonIOException jioexp) {
+         logger.error("JSON IO Exception " + jioexp.getMessage());
+      }
+   }
+
+   /**
+    * Helper function to add objects in tree.
+    * @param entry
+    * @param parent
+    * @param builder
+    */
+   public static void addToTree(DMTreeJsonData  entry, GroupObjectGraph parent, TreeBuilder<ObjectGraph> builder) {
+      if(entry != null) {
+         GroupObjectGraph gGroup = new GroupObjectGraph(null, entry.DataType,
+            entry.Title, null, parent);
+         GroupObjectGraphMap.put(entry.DataType, gGroup);
+         builder.bAddRelation(gGroup.getParent(), gGroup);
+         if(entry.Children != null) {
+            for (DMTreeJsonData childEntry : entry.Children) {
+               addToTree(childEntry, gGroup, builder);
+            }
+         }
+      }
+   }
+
+   /**
+    * Get group object when provided with data type.
+    * @param dataType
+    * @return  group object graph
+    */
+   public static GroupObjectGraph findGroupNode(String dataType) {
+      GroupObjectGraph retNode = null;
+      if(GroupObjectGraphMap.containsKey(dataType)){
+         retNode = GroupObjectGraphMap.get(dataType);
+      }
+      return retNode;
    }
 }

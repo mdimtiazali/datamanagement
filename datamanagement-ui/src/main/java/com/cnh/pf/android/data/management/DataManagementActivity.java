@@ -75,6 +75,7 @@ public class DataManagementActivity extends TabActivity implements RoboContext {
    private static final String TAG = DataManagementActivity.class.getName();
    private static final String PACKAGE_FILE_SYSTEM = "FILE_SYSTEM";
    private static final String PACKAGE_FILE_SYSTEM_LOCATION = "FILE_SYSTEM_LOCATION";
+   private static final String PACKAGE_DS_PERF_FLAG = "DATASOURCE_PERF_FLAG";
    public static final String PRODUCT_LIBRARY_TAB = "product_library_tab";
 
    protected HashMap<Key<?>, Object> scopedObjects = new HashMap<Key<?>, Object>();
@@ -431,6 +432,11 @@ public class DataManagementActivity extends TabActivity implements RoboContext {
          if ((storageType != null) && (storageLocation != null)) {
             UtilityHelper.setPreference(UtilityHelper.STORAGE_LOCATION_TYPE, storageType, this);
             UtilityHelper.setPreference(UtilityHelper.STORAGE_LOCATION, storageLocation, this);
+         }
+         String dsPerfFlag = bundle.getString(PACKAGE_DS_PERF_FLAG);
+         BaseDataFragment.dsPerfFlag = false;
+         if((dsPerfFlag != null) && dsPerfFlag.equals("Enabled")) {
+            BaseDataFragment.dsPerfFlag = true;
          }
       }
       catch (NameNotFoundException e) {
