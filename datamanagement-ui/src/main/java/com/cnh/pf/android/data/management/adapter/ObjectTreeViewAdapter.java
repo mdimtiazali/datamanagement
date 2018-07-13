@@ -84,7 +84,6 @@ public abstract class ObjectTreeViewAdapter extends SelectionTreeViewAdapter<Obj
    private boolean filterPredicateRecursive(ObjectGraph obj, SelectionType... types) {
       if (filterPredicate(obj, types)) return true;
       else {
-         if (null != obj) {
             if (obj.getChildren() == null) return false;
 
             for (ObjectGraph child : obj.getChildren()) {
@@ -92,7 +91,6 @@ public abstract class ObjectTreeViewAdapter extends SelectionTreeViewAdapter<Obj
                   return true;
                }
             }
-         }
       }
       return false;
    }
