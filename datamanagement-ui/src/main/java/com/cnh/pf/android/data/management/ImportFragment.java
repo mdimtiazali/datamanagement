@@ -500,6 +500,20 @@ public class ImportFragment extends BaseDataFragment {
       hideStartMessage();
       showLoadingOverlay();
 
+      // TODO: this creates the temporary folder on import from datamanagement, so it can be deleted from datamanagement as well.
+      // this workaround prevents some trouble on a later export when datamanagement will try deleting the temporary folder that has been created by isoservice
+      // it would be nice if we would find a cleaner solution for this
+      // unfortunately setting permissions to 777 doesn't make a difference - data management is still unable to delete this folder if it has been created by isoservice
+      final String tempPath = UtilityHelper.CommonPaths.PATH_TMP.getPathString();
+      File tmpFolder = new File(tempPath);
+      if (!tmpFolder.exists())
+      {
+         if(!tmpFolder.mkdirs())
+         {
+            logger.error("unable to create tmp folder");
+         }
+      }
+
       discovery(extra);
    }
 
