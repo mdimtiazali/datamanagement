@@ -219,7 +219,7 @@ public class PerformOperationsTask extends SessionOperationTask<Void> {
             StatFs stat = new StatFs(destRoot);
             long bytesFree = stat.getAvailableBytes();
 
-            final long SAFETY_BUFFER_BYTE = 2 * 1024 * 1024; // 2MByte safety buffer to prevent crashes caused by logging
+            final long SAFETY_BUFFER_BYTE = (long)(2 * 1024 * 1024); // 2MByte safety buffer to prevent crashes caused by logging
 
             boolean isMounted = Environment.getExternalStorageState().equals(MEDIA_MOUNTED);
 
@@ -296,9 +296,7 @@ public class PerformOperationsTask extends SessionOperationTask<Void> {
          logger.error("aborted moving files to USB, casued by:", e);
          retValue = false;
       }
-      finally {
-         return retValue;
-      }
+      return retValue;
    }
 
    private boolean moveFilesToInternalFlash(SessionExtra extra) {
