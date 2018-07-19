@@ -14,7 +14,6 @@ import com.google.gson.Gson;
 
 import android.content.Context;
 
-import com.cnh.android.util.describer.GSONContentDescriber;
 import com.cnh.jgroups.DataTypes;
 import com.cnh.jgroups.ObjectGraph;
 import com.cnh.pf.android.data.management.helper.DMTreeJsonData;
@@ -29,9 +28,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.nio.charset.Charset;
-import java.security.acl.Group;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 
 /**
@@ -269,12 +266,12 @@ public class TreeEntityHelper {
     */
    public static void addToTree(DMTreeJsonData  entry, GroupObjectGraph parent, TreeBuilder<ObjectGraph> builder) {
       if(entry != null) {
-         GroupObjectGraph gGroup = new GroupObjectGraph(null, entry.DataType,
-            entry.Title, null, parent);
-         GroupObjectGraphMap.put(entry.DataType, gGroup);
+         GroupObjectGraph gGroup = new GroupObjectGraph(null, entry.getDataType(),
+                 entry.getTitle(), null, parent);
+         GroupObjectGraphMap.put(entry.getDataType(), gGroup);
          builder.bAddRelation(gGroup.getParent(), gGroup);
-         if(entry.Children != null) {
-            for (DMTreeJsonData childEntry : entry.Children) {
+         if(entry.getChildren() != null) {
+            for (DMTreeJsonData childEntry : entry.getChildren()) {
                addToTree(childEntry, gGroup, builder);
             }
          }

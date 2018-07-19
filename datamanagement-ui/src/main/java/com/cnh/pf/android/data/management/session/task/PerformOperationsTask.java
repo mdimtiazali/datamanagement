@@ -109,10 +109,10 @@ public class PerformOperationsTask extends SessionOperationTask<Void> {
                      final String USB_EXPORT_PATH = UtilityHelper.CommonPaths.PATH_USB_PORT.getPathString();
 
                      final String PFDATABASE_FOLDER =
-                        UtilityHelper.CommonPaths.PATH_DESIGNATOR.getPathString() + formatManager.getFormat(UtilityHelper.CommonFormats.PFDATABASEFORMAT.getName()).path + UtilityHelper.CommonPaths.PATH_DESIGNATOR.getPathString();
+                        UtilityHelper.CommonPaths.PATH_DESIGNATOR.getPathString() + formatManager.getFormat(UtilityHelper.CommonFormats.PFDATABASEFORMAT.getName()).getPath() + UtilityHelper.CommonPaths.PATH_DESIGNATOR.getPathString();
 
                      final String ISOXML_FOLDER =
-                        UtilityHelper.CommonPaths.PATH_DESIGNATOR.getPathString() + formatManager.getFormat(UtilityHelper.CommonFormats.ISOXMLFORMAT.getName()).path + UtilityHelper.CommonPaths.PATH_DESIGNATOR.getPathString();
+                        UtilityHelper.CommonPaths.PATH_DESIGNATOR.getPathString() + formatManager.getFormat(UtilityHelper.CommonFormats.ISOXMLFORMAT.getName()).getPath() + UtilityHelper.CommonPaths.PATH_DESIGNATOR.getPathString();
 
                      if (Environment.getExternalStorageState().equals(MEDIA_MOUNTED) && tmpFolder.exists()) {
 
@@ -304,9 +304,9 @@ public class PerformOperationsTask extends SessionOperationTask<Void> {
       File source = new File(tempPath);
       File dest = new File(extra.getPath());
       final String PFDATABASE_FOLDER =
-         UtilityHelper.CommonPaths.PATH_DESIGNATOR.getPathString() + formatManager.getFormat(UtilityHelper.CommonFormats.PFDATABASEFORMAT.getName()).path +
+         UtilityHelper.CommonPaths.PATH_DESIGNATOR.getPathString() + formatManager.getFormat(UtilityHelper.CommonFormats.PFDATABASEFORMAT.getName()).getPath() +
             UtilityHelper.CommonPaths.PATH_DESIGNATOR.getPathString();
-      final String ISOXML_FOLDER = UtilityHelper.CommonPaths.PATH_DESIGNATOR.getPathString() + formatManager.getFormat(UtilityHelper.CommonFormats.ISOXMLFORMAT.getName()).path
+      final String ISOXML_FOLDER = UtilityHelper.CommonPaths.PATH_DESIGNATOR.getPathString() + formatManager.getFormat(UtilityHelper.CommonFormats.ISOXMLFORMAT.getName()).getPath()
          + UtilityHelper.CommonPaths.PATH_DESIGNATOR.getPathString();
 
       if (dest.exists()) {

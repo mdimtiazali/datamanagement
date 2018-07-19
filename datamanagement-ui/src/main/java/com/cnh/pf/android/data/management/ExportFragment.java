@@ -850,7 +850,7 @@ public class ExportFragment extends BaseDataFragment {
          ObjectPickListItem<SessionExtra> item = (ObjectPickListItem<SessionExtra>) exportMediumPicklist.getSelectedItem();
          SessionExtra extra = new SessionExtra(item.getObject());
          String format = exportFormatPicklist.getSelectedItemValue();
-         String path = new File(extra.getBasePath(), formatManager.getFormat(format).path).getPath();
+         String path = new File(extra.getBasePath(), formatManager.getFormat(format).getPath()).getPath();
 
          extra.setFormat(format);
          // Based on PickList selections, set appropriate location type and file path.

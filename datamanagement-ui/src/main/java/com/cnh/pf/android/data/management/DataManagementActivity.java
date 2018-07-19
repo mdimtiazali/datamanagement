@@ -434,9 +434,9 @@ public class DataManagementActivity extends TabActivity implements RoboContext {
             UtilityHelper.setPreference(UtilityHelper.STORAGE_LOCATION, storageLocation, this);
          }
          String dsPerfFlag = bundle.getString(PACKAGE_DS_PERF_FLAG);
-         BaseDataFragment.dsPerfFlag = false;
+         BaseDataFragment.setDsPerfFlag(false);
          if((dsPerfFlag != null) && dsPerfFlag.equals("Enabled")) {
-            BaseDataFragment.dsPerfFlag = true;
+            BaseDataFragment.setDsPerfFlag(true);
          }
       }
       catch (NameNotFoundException e) {

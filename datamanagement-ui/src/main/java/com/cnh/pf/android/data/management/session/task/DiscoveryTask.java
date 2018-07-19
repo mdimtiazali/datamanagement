@@ -10,9 +10,7 @@
 package com.cnh.pf.android.data.management.session.task;
 
 import com.cnh.jgroups.Mediator;
-import com.cnh.jgroups.ObjectGraph;
 import com.cnh.pf.android.data.management.BaseDataFragment;
-import com.cnh.pf.android.data.management.TreeEntityHelper;
 import com.cnh.pf.android.data.management.session.ErrorCode;
 import com.cnh.pf.android.data.management.session.Session;
 import com.cnh.pf.android.data.management.session.SessionException;
@@ -46,7 +44,7 @@ public class DiscoveryTask extends SessionOperationTask<Void> {
          if (addrs != null && addrs.length > 0) {
             logger.debug("Discovery-Src Addresses: {}", SessionUtil.addressToString(addrs));
 
-            if(BaseDataFragment.dsPerfFlag) {
+            if(BaseDataFragment.isDsPerfFlag()) {
                session.setObjectData(getMediator().discoveryNoMerge(addrs));
             }
             else {
