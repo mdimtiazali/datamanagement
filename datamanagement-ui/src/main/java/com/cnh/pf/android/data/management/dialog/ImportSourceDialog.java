@@ -66,8 +66,8 @@ public class ImportSourceDialog extends DialogView {
    private HashMap<Integer, SessionExtra> extras;
    private SessionExtra currentExtra;
    private SessionExtra cloudExtra;
-   public int getCurrentSessionExtra;
-   public boolean isUSBType = false;
+   private int getCurrentSessionExtra;
+   private boolean isUSBType = false;
    private Set<String> file2Support = new HashSet<String>();
 
    private void initSupportedFiles() {

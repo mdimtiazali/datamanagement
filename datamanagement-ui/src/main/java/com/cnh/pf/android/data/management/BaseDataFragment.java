@@ -88,7 +88,15 @@ public abstract class BaseDataFragment extends RoboFragment implements SessionCo
    private SessionContract.SessionManager sessionManager;
 
    private List<String> dataTreeRootNodesWithAutomaticParentSelection = null;
-   public static boolean dsPerfFlag = false;
+   private static boolean dsPerfFlag = false;
+
+   public static boolean isDsPerfFlag() {
+      return dsPerfFlag;
+   }
+
+   public static void setDsPerfFlag(boolean dsPerfFlag) {
+      BaseDataFragment.dsPerfFlag = dsPerfFlag;
+   }
 
    @Override
    public void setSessionManager(SessionContract.SessionManager sessionManager) {
@@ -656,7 +664,7 @@ public abstract class BaseDataFragment extends RoboFragment implements SessionCo
       else {
          treeBuilder.clear();
       }
-      if(dsPerfFlag) {
+      if(isDsPerfFlag()) {
          TreeEntityHelper.LoadDMTreeFromJson(this.getActivity(), treeBuilder);
          jsonAddToTree(objectGraphs);
       }
