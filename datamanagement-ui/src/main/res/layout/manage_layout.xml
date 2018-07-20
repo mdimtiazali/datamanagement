@@ -14,107 +14,92 @@
               android:layout_width="match_parent"
               android:layout_height="match_parent">
 
-    <LinearLayout
-        android:id="@+id/left_panel_wrapper"
-        android:layout_width="0dp"
-        android:layout_height="0dp"
-        android:orientation="vertical">
-    </LinearLayout>
+   <com.cnh.pf.android.data.management.helper.DataExchangeBlockedOverlay
+           android:id="@+id/disabled_overlay"
+           android:layout_width="match_parent"
+           android:layout_height="fill_parent"/>
 
-    <LinearLayout
-        android:layout_width="match_parent"
-        android:layout_height="match_parent"
-        android:orientation="vertical">
-        <com.cnh.android.pf.widget.view.DisabledOverlay
-            android:id="@+id/disabled_overlay"
-            android:layout_width="match_parent"
-            android:layout_height="match_parent"/>
+   <LinearLayout
+           android:id="@+id/left_panel_wrapper"
+           android:layout_width="0dp"
+           android:layout_height="0dp"
+           android:orientation="vertical">
+   </LinearLayout>
 
+   <LinearLayout
+           android:layout_width="match_parent"
+           android:layout_height="match_parent"
+           android:orientation="vertical">
+      <RelativeLayout
+              android:layout_width="match_parent"
+              android:layout_height="@dimen/header_height"
+              android:background="@color/data_header_background"
+              android:id="@+id/header">
 
-        <RelativeLayout
-            android:layout_width="match_parent"
-            android:layout_height="@dimen/header_height"
-            android:background="@color/data_header_background">
+         <TextView
+                 android:id="@+id/header_text"
+                 android:layout_width="match_parent"
+                 android:layout_height="match_parent"
+                 android:layout_marginLeft="@dimen/header_indent_width"
+                 android:layout_weight="1"
+                 android:gravity="center_vertical|left"
+                 style="@style/TextAppearance.Import.Entity"/>
+            <com.cnh.pf.android.data.management.misc.DeleteButton
+                    android:id="@+id/dm_delete_button"
+                    android:layout_width="@dimen/del_button_width"
+                    android:layout_height="@dimen/button_height"
+                    android:src="@drawable/mng_del_button_states"
+                    style="@style/Button"
+                    android:layout_marginRight ="16dp"
+                    android:layout_marginBottom="@dimen/button_margin_bottom"
+                    android:layout_marginTop="@dimen/button_margin_top"
+                    android:layout_toLeftOf="@id/select_all_btn"/>
+         <Button
+                 android:id="@+id/select_all_btn"
+                 android:layout_width="@dimen/min_select_all_btn_width"
+                 android:minWidth="@dimen/min_select_all_btn_width"
+                 android:layout_height="@dimen/button_height"
+                 style="@style/Button"
+                 android:enabled="false"
+                 android:layout_alignParentEnd="true"
+                 android:layout_centerVertical="true"
+                 android:layout_marginTop="@dimen/button_margin_top"
+                 android:layout_marginBottom="@dimen/button_margin_bottom"
+                 android:layout_marginEnd="@dimen/button_margin_right"
+                 android:text="@string/select_all"
+                 android:textSize="@dimen/button_default_text_size"/>
+      </RelativeLayout>
 
-            <TextView
-                android:id="@+id/path_tv"
-                android:layout_width="match_parent"
-                android:layout_height="match_parent"
-                android:layout_marginLeft="@dimen/header_indent_width"
-                android:layout_weight="1"
-                android:gravity="center_vertical|left"
-                style="@style/TextAppearance.Import.Entity" />
-            <ImageButton
-                android:id="@+id/dm_delete_button"
-                android:layout_width="@dimen/del_button_width"
-                android:layout_height="@dimen/button_height"
-                android:src="@drawable/mng_del_button_states"
-                style="@style/Button"
-                android:enabled="false"
-                android:layout_marginRight ="16dp"
-                android:layout_marginBottom="@dimen/button_margin_bottom"
-                android:layout_marginTop="@dimen/button_margin_top"
-                android:layout_toLeftOf="@id/select_all_btn"/>
-            <Button
-                android:id="@+id/select_all_btn"
-                android:layout_width="wrap_content"
-                android:layout_height="@dimen/button_height"
-                style="@style/Button"
-                android:enabled="false"
-                android:layout_alignParentRight="true"
-                android:layout_centerVertical="true"
-                android:layout_marginTop="@dimen/button_margin_top"
-                android:layout_marginBottom ="@dimen/button_margin_bottom"
-                android:layout_marginRight="8dp"
-                android:text="@string/select_all"
-                android:textSize="22dp"/>
-        </RelativeLayout>
-
-        <TextView
-            android:id="@+id/start_text"
-            android:layout_width="match_parent"
-            android:layout_height="match_parent"
-            android:gravity="center"
-            style="@style/TextAppearance.Import.Entity"
-            android:text="@string/select_source_first" />
-
-        <ProgressBar
-            android:id="@+id/tree_progress"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_gravity="center|center_vertical"
-            style="@style/IndeterminateProgressLargeBlue"
-            android:visibility="gone" />
-        <ImageButton android:id="@+id/dm_refresh"
-                     android:layout_height="wrap_content"
-                     android:layout_width="wrap_content"
-                     android:padding="16dp"
-                     android:layout_weight="1"
-                     android:layout_gravity="center"
-                     android:src="@drawable/refresh"
-                     android:background="@android:color/transparent"
-                     android:visibility="gone"/>
-        <pl.polidea.treeview.TreeViewList
-                android:listSelector="#00000000"
-            android:id="@+id/tree_view_list"
-            android:layout_width="match_parent"
-            android:layout_height="match_parent"
-            android:layout_marginLeft="10dp"
-            android:layout_marginTop="16dp"
-            android:layout_marginRight="10dp"
-            android:visibility="gone"
-            android:choiceMode="none"
-            android:dividerHeight="8dp"
-            android:divider="@android:color/transparent"
-            cnh:indent_width="18dp"
-            cnh:row_background="@drawable/complex_selector_background"
-            cnh:indicator_background="@android:color/transparent"
-            cnh:indicator_gravity="center_vertical|right"
-            cnh:src_collapsed="@drawable/ic_action_expand"
-            cnh:src_expanded="@drawable/ic_action_collapse"
-            cnh:collapsible="true"
-            cnh:draw_line="true"
-            cnh:line_color="@color/tree_line"
-            cnh:line_width="2dp" />
-    </LinearLayout>
+      <ImageButton android:id="@+id/dm_refresh"
+                   android:layout_height="wrap_content"
+                   android:layout_width="wrap_content"
+                   android:padding="16dp"
+                   android:layout_weight="1"
+                   android:layout_gravity="center"
+                   android:src="@drawable/refresh"
+                   android:background="@android:color/transparent"
+                   android:visibility="gone"/>
+      <pl.polidea.treeview.TreeViewList
+              android:listSelector="#00000000"
+              android:id="@+id/tree_view_list"
+              android:layout_width="match_parent"
+              android:layout_height="match_parent"
+              android:layout_marginLeft="10dp"
+              android:layout_marginTop="16dp"
+              android:layout_marginRight="10dp"
+              android:visibility="gone"
+              android:choiceMode="none"
+              android:dividerHeight="8dp"
+              android:divider="@android:color/transparent"
+              cnh:indent_width="18dp"
+              cnh:row_background="@drawable/complex_selector_background"
+              cnh:indicator_background="@android:color/transparent"
+              cnh:indicator_gravity="center_vertical|right"
+              cnh:src_collapsed="@drawable/ic_action_expand"
+              cnh:src_expanded="@drawable/ic_action_collapse"
+              cnh:collapsible="true"
+              cnh:draw_line="true"
+              cnh:line_color="@color/tree_line"
+              cnh:line_width="2dp"/>
+   </LinearLayout>
 </LinearLayout>

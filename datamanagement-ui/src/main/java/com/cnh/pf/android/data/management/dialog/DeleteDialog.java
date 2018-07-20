@@ -1,3 +1,11 @@
+/*
+ * Copyright (C) 2018 CNH Industrial NV. All rights reserved.
+ *
+ * This software contains proprietary information of CNH Industrial NV. Neither
+ * receipt nor possession thereof confers any right to reproduce, use, or
+ * disclose in whole or in part any such information without written
+ * authorization from CNH Industrial NV.
+ */
 package com.cnh.pf.android.data.management.dialog;
 
 import android.content.Context;
@@ -13,7 +21,7 @@ import com.google.inject.Inject;
 import roboguice.RoboGuice;
 
 /**
- * Created by f09953c on 4/11/2018.
+ * Dialog view to show delete confirmation and gets user feedback on OK/Cancel.
  */
 public class DeleteDialog extends DialogView {
    @Inject

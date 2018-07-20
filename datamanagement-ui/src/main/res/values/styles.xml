@@ -42,8 +42,7 @@
     <style name="DmAppTheme" parent="@android:style/Theme.NoTitleBar.Fullscreen">
 
             <!-- Android default styles -->
-            <!--         <item name="android:windowBackground">@color/defaultWindowBackground</item> -->
-            <item name="android:windowBackground">@drawable/launching_bg</item>
+            <item name="android:windowBackground">@android:color/background_dark</item>
             <item name="android:textColor">@color/defaultTextColor</item>
             <item name="android:textSize">@dimen/default_text_size</item>
 
