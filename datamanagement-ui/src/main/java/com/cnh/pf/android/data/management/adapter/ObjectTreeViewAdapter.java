@@ -107,7 +107,7 @@ public abstract class ObjectTreeViewAdapter extends SelectionTreeViewAdapter<Obj
       return filter(obj, new Predicate<ObjectGraph>() {
          @Override
          public boolean apply(@Nullable ObjectGraph input) {
-            return getSelectionMap().containsKey(input) && isSupportedEntity(input) && (Arrays.binarySearch(types, getSelectionMap().get(input)) >= 0) && filterPredicateRecursive(input, types);
+            return filterPredicateRecursive(input, types);
          }
       });
    }
