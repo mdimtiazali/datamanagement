@@ -173,7 +173,9 @@ public final class ProductMixAdapter extends SearchableSortableExpandableListAda
       carrierProductApplicationRateTableData.setRate2(calculateApplicationRate(recipe.getAmount(), productMixRate2, productMixTotalAmount));
       ProductUnits productRateUnits = ProductHelperMethods.retrieveProductRateUnits(product,
             ProductHelperMethods.queryApplicationRateMeasurementSystemForProductForm(product.getForm(), measurementSystemCache));
-      carrierProductApplicationRateTableData.setUnit(productRateUnits.deepCopy());
+      if (null != productRateUnits) {
+         carrierProductApplicationRateTableData.setUnit(productRateUnits.deepCopy());
+      }
       return carrierProductApplicationRateTableData;
    }
 

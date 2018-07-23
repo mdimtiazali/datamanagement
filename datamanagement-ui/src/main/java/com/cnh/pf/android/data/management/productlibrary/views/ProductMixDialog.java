@@ -406,6 +406,9 @@ public class ProductMixDialog extends DialogView implements DialogHandlerListene
          productMixFormPickList.setOnItemSelectedListener(new PickListEditable.OnItemSelectedListener() {
             @Override
             public void onItemSelected(AdapterView<?> adapterView, View view, int position, long id, boolean fromUser) {
+               if (position < 0) {
+                  position = ProductForm.GRANULAR.getValue();
+               }
                productMixForm = ProductForm.values()[position];
                initializeApplicationRatesSegmentedToggleButtonGroup(productMixForm);
                if (productList == null) {
@@ -1600,8 +1603,11 @@ public class ProductMixDialog extends DialogView implements DialogHandlerListene
       applicationRateTableData.setProductName(product.getName());
       applicationRateTableData.setProductForm(product.getForm());
       // defined in System Units Spec 5.2. that mass or volume should be used for application rates
-      applicationRateTableData.setUnit(ProductHelperMethods
-            .retrieveProductRateUnits(product, ProductHelperMethods.queryApplicationRateMeasurementSystemForProductForm(product.getForm(), getContext())).deepCopy());
+      ProductUnits pu = ProductHelperMethods
+              .retrieveProductRateUnits(product, ProductHelperMethods.queryApplicationRateMeasurementSystemForProductForm(product.getForm(), getContext()));
+      if (null != pu) {
+         applicationRateTableData.setUnit(pu.deepCopy());
+      }
       return applicationRateTableData;
    }
 
