@@ -243,7 +243,9 @@ public class PerformOperationsTask extends SessionOperationTask<Void> {
                if (dest.exists()) {
                   logger.info("Renaming existing export destination folder");
                   File copy = new File(dest.getAbsolutePath());
-                  copy.renameTo(new File(String.format("%s.%s", dest.getAbsolutePath(), new SimpleDateFormat("yyyyMMddHHmmss").format(new Date(dest.lastModified())))));
+                  if(!copy.renameTo(new File(String.format("%s.%s", dest.getAbsolutePath(), new SimpleDateFormat("yyyyMMddHHmmss").format(new Date(dest.lastModified())))))) {
+                     logger.info("Failed Renaming {} with last modified date suffix", dest.getAbsolutePath());
+                  }
                }
                dest.mkdirs();
 
@@ -312,7 +314,9 @@ public class PerformOperationsTask extends SessionOperationTask<Void> {
       if (dest.exists()) {
          logger.info("Renaming existing export destination folder");
          File copy = new File(dest.getAbsolutePath());
-         copy.renameTo(new File(String.format("%s.%s", dest.getAbsolutePath(), new SimpleDateFormat("yyyyMMddHHmmss").format(new Date(dest.lastModified())))));
+         if(!copy.renameTo(new File(String.format("%s.%s", dest.getAbsolutePath(), new SimpleDateFormat("yyyyMMddHHmmss").format(new Date(dest.lastModified())))))) {
+            logger.info("Failed Renaming {} with last modified date suffix", dest.getAbsolutePath());
+         }
       }
       dest.mkdirs();
 
