@@ -108,15 +108,15 @@ public class SessionManager implements SessionContract.SessionManager, SessionEv
          sessionMap.put(action, newSession);
          retSession = newSession;
       }
-
       return retSession;
    }
 
    @Override
    public boolean actionIsActive(Session.Action action) {
       if (action != Session.Action.UNKNOWN && sessionMap.containsKey(action) && sessionMap.get(action) != null) {
-         //TODO: determine, if WAIT is different on initial loading and waiting for user input / conflict solving.
-         return sessionMap.get(action).getState() != Session.State.COMPLETE && sessionMap.get(action).getState() != Session.State.WAIT;
+         final Session session = sessionMap.get(action);
+         //Action is active if: State of session is neither complete nor waiting
+         return session.getState() != Session.State.COMPLETE && session.getState() != Session.State.WAIT;
       }
       else {
          return false;
