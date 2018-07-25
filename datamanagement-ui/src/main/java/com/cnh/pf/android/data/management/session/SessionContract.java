@@ -14,6 +14,8 @@ import com.cnh.jgroups.Operation;
 
 import java.util.List;
 
+import javax.validation.constraints.NotNull;
+
 /**
  * Interfaces for session manager & session view.
  *
@@ -27,6 +29,7 @@ public interface SessionContract {
        * @param action  session action (MANAGE, IMPORT & EXPORT)
        * @return  currently active session
        */
+      @NotNull
       Session getCurrentSession(Session.Action action);
 
       /**
@@ -84,12 +87,14 @@ public interface SessionContract {
        * @param operations  list of operation data to be used in the session
        */
       void update(List<Operation> operations);
+
       /**
        * Execute PASTE
        *
        * @param operations  list of operation data to be used in the session
        */
       void paste(List<Operation> operations);
+
       /**
        * Execute DELETE
        *
