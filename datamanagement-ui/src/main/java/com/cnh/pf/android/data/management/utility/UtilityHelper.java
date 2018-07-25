@@ -43,7 +43,7 @@ public class UtilityHelper {
    /**
     * Map for returning the correct strings based on the vehicle make and data sources available
     */
-   public static final Map<VehicleBrand, Map<MediumVariant, Integer>> destinationNamesHashMap;
+   private static final Map<VehicleBrand, Map<MediumVariant, Integer>> destinationNamesHashMap;
    static {
       destinationNamesHashMap = new EnumMap<VehicleBrand, Map<MediumVariant, Integer>>(VehicleBrand.class);
       /**

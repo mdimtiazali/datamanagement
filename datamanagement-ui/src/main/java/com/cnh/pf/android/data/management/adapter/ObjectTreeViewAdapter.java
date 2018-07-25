@@ -82,6 +82,11 @@ public abstract class ObjectTreeViewAdapter extends SelectionTreeViewAdapter<Obj
 
    // Check input node itself and children nodes recursively for selection type
    private boolean filterPredicateRecursive(ObjectGraph obj, SelectionType... types) {
+
+      if (obj == null) {
+         return false;
+      }
+
       if (filterPredicate(obj, types)) return true;
       else {
             if (obj.getChildren() == null) return false;

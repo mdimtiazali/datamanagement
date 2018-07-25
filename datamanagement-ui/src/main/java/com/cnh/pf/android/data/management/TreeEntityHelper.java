@@ -24,6 +24,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import pl.polidea.treeview.TreeBuilder;
 
+import java.io.Closeable;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
@@ -235,15 +236,16 @@ public class TreeEntityHelper {
     * @param context
     * @param builder
     */
-   public static void LoadDMTreeFromJson(Context context, TreeBuilder<ObjectGraph> builder) {
+   public static void LoadDMTreeFromJson(Context context, TreeBuilder<ObjectGraph> builder)  {
+      InputStream inputStream = null;
+      InputStreamReader inputStreamReader = null;
       try {
          GroupObjectGraphMap.clear();
-         InputStream inputStream = context.getAssets().open(("dmtree.json"));
-         InputStreamReader inputStreamReader = new InputStreamReader(inputStream, Charset.defaultCharset());
+         inputStream = context.getAssets().open(("dmtree.json"));
+         inputStreamReader = new InputStreamReader(inputStream, Charset.defaultCharset());
          DMTreeJsonData[] jsondata = new Gson().fromJson(inputStreamReader, DMTreeJsonData[].class);
-         inputStream.close();
 
-         for(DMTreeJsonData entry : jsondata){
+         for (DMTreeJsonData entry : jsondata) {
             addToTree(entry, null, builder);
          }
       }
@@ -255,6 +257,24 @@ public class TreeEntityHelper {
       }
       catch (JsonIOException jioexp) {
          logger.error("JSON IO Exception " + jioexp.getMessage());
+      }
+      finally {
+         closeQuietly(inputStream);
+         closeQuietly(inputStreamReader);
+      }
+   }
+
+   /**
+    * Quietly Close Resource
+    * @param closeable  Resource to close
+    */
+   private static void closeQuietly(Closeable closeable) {
+      try {
+         if(closeable != null) {
+            closeable.close();
+         }
+      } catch( Exception ex ) {
+         logger.error("Exception during Resource.close()", ex );
       }
    }
 
