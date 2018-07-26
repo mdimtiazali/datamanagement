@@ -23,6 +23,7 @@ import android.view.DragEvent;
 import android.view.Gravity;
 import android.view.LayoutInflater;
 import android.view.View;
+import android.view.ViewGroup;
 import android.widget.Button;
 import android.widget.ImageButton;
 import android.widget.ImageView;
@@ -110,15 +111,14 @@ public class ImportFragment extends BaseDataFragment {
 
    private final List<Session.Action> blockingActions = new ArrayList<Session.Action>(Arrays.asList(Session.Action.EXPORT));
    private final List<Session.Action> executableActions = new ArrayList<Session.Action>(Arrays.asList(Session.Action.IMPORT));
-   private final int rootNodeNamesWithImplicitSelectionResourceId = R.array.rootnodenames_with_implicit_parent_selection_in_import;
+   private static final int ROOTNODENAMES_WITH_IMPLICIT_PARENT_SELECTION_IN_IMPORT = R.array.rootnodenames_with_implicit_parent_selection_in_import;
 
    private static final int CANCEL_DIALOG_WIDTH = 550;
 
    private TextDialogView lastCancelDialogView; //used to keep track of the cancel dialog (should be closed if open if process is finished)
 
-   private String importing_data;
-   private String loading_string;
-   private String x_of_y_format;
+   private String loadingString;
+   private String xOfYFormat;
    private int whiteTextColor;
    private int defaultTextColor;
 
@@ -137,7 +137,7 @@ public class ImportFragment extends BaseDataFragment {
 
    @Override
    protected int getRootNodeNamesWithImplicitSelectionResourceId() {
-      return rootNodeNamesWithImplicitSelectionResourceId;
+      return ROOTNODENAMES_WITH_IMPLICIT_PARENT_SELECTION_IN_IMPORT;
    }
 
    @Override
@@ -145,9 +145,8 @@ public class ImportFragment extends BaseDataFragment {
       super.onCreate(savedInstanceState);
 
       final Resources resources = getResources();
-      importing_data = resources.getString(R.string.importing_data);
-      loading_string = resources.getString(R.string.loading_string);
-      x_of_y_format = resources.getString(R.string.x_of_y_format);
+      loadingString = resources.getString(R.string.loading_string);
+      xOfYFormat = resources.getString(R.string.x_of_y_format);
 
       whiteTextColor = resources.getColor(R.color.drag_drop_white_text_color);
       defaultTextColor = resources.getColor(R.color.drag_drop_default_text_color);
@@ -211,8 +210,9 @@ public class ImportFragment extends BaseDataFragment {
                setImportDragDropArea(DragEvent.ACTION_DROP);
                runImport();
                return true;
+            default:
+               return false;
             }
-            return false;
          }
       });
       processDialog = new ProcessDialog(getActivity());
@@ -308,7 +308,7 @@ public class ImportFragment extends BaseDataFragment {
             adapter.setOnTargetsSelectedListener(new TargetProcessViewAdapter.OnTargetsSelectedListener() {
                @Override
                public void onCompletion(List<Operation> operations) {
-                  logger.debug("onCompletion: {}", operations.toString());
+                  logger.debug("onCompletion: {}", operations);
                   showConflictDialog();
 
                   logger.debug("Going to Calculate Conflicts");
@@ -335,6 +335,11 @@ public class ImportFragment extends BaseDataFragment {
          }
          if (hasConflicts) {
             DataConflictViewAdapter adapter = new DataConflictViewAdapter(getActivity(), session.getOperations());
+            final android.widget.LinearLayout.LayoutParams dialogContentLayoutParams = new android.widget.LinearLayout.LayoutParams(processDialog.getContentLayoutParameter());
+            Resources resources = getResources();
+            final int conflictDialogWidth = resources.getDimensionPixelSize(R.dimen.import_conflict_width);
+            final int conflictDialogHeight = resources.getDimensionPixelSize(R.dimen.import_conflict_height);
+            processDialog.setDimensionsNoPadding(conflictDialogWidth, conflictDialogHeight);
             processDialog.setAdapter(adapter);
             processDialog.setTitle(dataConflictStr);
             processDialog.showFirstButton(true);
@@ -361,7 +366,7 @@ public class ImportFragment extends BaseDataFragment {
                         @Override
                         public void onButtonClick(DialogViewInterface dialog, int buttonId) {
                            if (buttonId == TextDialogView.BUTTON_FIRST) {
-                              processDialog.dismiss();
+                              hideAndDismissProcessDialog();
                               ToastMessageCustom
                                     .makeToastMessageText(getActivity().getApplicationContext(), getString(R.string.import_cancel), Gravity.TOP | Gravity.CENTER_HORIZONTAL,
                                           getResources().getInteger(R.integer.toast_message_xoffset), getResources().getInteger(R.integer.toast_message_yoffset))
@@ -379,7 +384,7 @@ public class ImportFragment extends BaseDataFragment {
                @Override
                public void onCompletion(List<Operation> operations) {
                   logger.debug("onCompletion {}", operations);
-                  processDialog.hide();
+                  hideAndDismissProcessDialog();
                   showProgressPanel();
                   processOverlay.setMode(DataExchangeProcessOverlay.MODE.IMPORT_PROCESS);
                   updateImportButton();
@@ -387,10 +392,26 @@ public class ImportFragment extends BaseDataFragment {
                   performOperations(extra, operations);
                }
             });
+            processDialog.setOnDismissListener(new DialogViewInterface.OnDismissListener() {
+               @Override
+               public void onDismiss(DialogViewInterface dialogViewInterface) {
+                  //reset layout dimensions
+                  processDialog.setDimensionsNoPadding(ViewGroup.LayoutParams.WRAP_CONTENT, ViewGroup.LayoutParams.WRAP_CONTENT);
+                  //reset margin
+                  processDialog.setContentLayoutParameter(dialogContentLayoutParams);
+                  //reset padding
+                  Resources resources = getActivity().getResources();
+                  int paddingTop = resources.getDimensionPixelSize(R.dimen.dialog_view_content_top_padding);
+                  int paddingBottom = resources.getDimensionPixelSize(R.dimen.dialog_view_content_bottom_padding);
+                  int paddingLeft = resources.getDimensionPixelSize(R.dimen.dialog_view_content_left_padding);
+                  int paddingRight = resources.getDimensionPixelSize(R.dimen.dialog_view_content_right_padding);
+                  processDialog.setContentPaddings(paddingLeft, paddingTop, paddingRight, paddingBottom);
+               }
+            });
          }
          else {
             logger.debug("No conflicts found");
-            processDialog.hide();
+            hideAndDismissProcessDialog();
             showProgressPanel();
             processOverlay.setMode(DataExchangeProcessOverlay.MODE.IMPORT_PROCESS);
             updateImportButton();
@@ -414,6 +435,14 @@ public class ImportFragment extends BaseDataFragment {
          //close cancel dialog if still open
          closeCancelDialog();
       }
+   }
+
+   /**
+    * This method is necessary since hide does not automatically dismiss the dialog
+    */
+   private void hideAndDismissProcessDialog() {
+      processDialog.hide();
+      processDialog.dismiss();
    }
 
    @Override
@@ -444,6 +473,8 @@ public class ImportFragment extends BaseDataFragment {
             showTreeList();
          }
       }
+      updateSelectAllState();
+      updateImportButton();
    }
 
    /**
@@ -451,8 +482,8 @@ public class ImportFragment extends BaseDataFragment {
     */
    private void updateImportButton() {
       Session s = getSession();
-      boolean isActiveOperation = (SessionUtil.isCalculateConflictsTask(s) || SessionUtil.isCalculateOperationsTask(s)
-            || SessionUtil.isPerformOperationsTask(s) && s.getResultCode() == null);
+      boolean isActiveOperation = ((SessionUtil.isCalculateConflictsTask(s) || SessionUtil.isCalculateOperationsTask(s)) && Session.State.COMPLETE.equals(s.getState()))
+            || (SessionUtil.isPerformOperationsTask(s) && s.getResultCode() == null);
       boolean connected = getSessionManager().isServiceConnected();
       boolean hasSelection = getTreeAdapter() != null && getTreeAdapter().hasSelection();
       boolean defaultButtonText = true;
@@ -465,16 +496,16 @@ public class ImportFragment extends BaseDataFragment {
             if (selectedItemCount > MAX_TREE_SELECTIONS_FOR_DEFAULT_TEXT_SIZE) {
                importSelectedBtn.setTextSize(resources.getDimension(R.dimen.button_default_text_size) - resources.getDimension(R.dimen.decrease_text_size));
                importSelectedBtn.setPadding(resources.getInteger(R.integer.button_minimum_padding_left), resources.getInteger(R.integer.button_minimum_padding_top),
-                       resources.getInteger(R.integer.button_minimum_padding_right), resources.getInteger(R.integer.button_minimum_padding_bottom));
+                     resources.getInteger(R.integer.button_minimum_padding_right), resources.getInteger(R.integer.button_minimum_padding_bottom));
             }
             else {
                importSelectedBtn.setTextSize(resources.getDimension(R.dimen.button_default_text_size));
                importSelectedBtn.setPadding(resources.getInteger(R.integer.button_default_padding_left), resources.getInteger(R.integer.button_default_padding_top),
-                       resources.getInteger(R.integer.button_default_padding_right), resources.getInteger(R.integer.button_default_padding_bottom));
+                     resources.getInteger(R.integer.button_default_padding_right), resources.getInteger(R.integer.button_default_padding_bottom));
             }
          }
       }
-      if (defaultButtonText == true) {
+      if (defaultButtonText) {
          importSelectedBtn.setText(getResources().getString(R.string.import_selected));
          float defaultButtonSize = getResources().getDimension(R.dimen.button_default_text_size);
          if (importSelectedBtn.getTextSize() < defaultButtonSize) importSelectedBtn.setTextSize(defaultButtonSize);
@@ -506,12 +537,8 @@ public class ImportFragment extends BaseDataFragment {
       // unfortunately setting permissions to 777 doesn't make a difference - data management is still unable to delete this folder if it has been created by isoservice
       final String tempPath = UtilityHelper.CommonPaths.PATH_TMP.getPathString();
       File tmpFolder = new File(tempPath);
-      if (!tmpFolder.exists())
-      {
-         if(!tmpFolder.mkdirs())
-         {
-            logger.error("unable to create tmp folder");
-         }
+      if (!tmpFolder.exists() && !tmpFolder.mkdirs()) {
+         logger.error("unable to create tmp folder");
       }
 
       discovery(extra);
@@ -593,7 +620,7 @@ public class ImportFragment extends BaseDataFragment {
 
    /** Shows conflict resolution dialog */
    private void showConflictDialog() {
-      processDialog.hide();
+      hideAndDismissProcessDialog();
       processDialog.init();
       processDialog.setTitle(getResources().getString(R.string.checking_conflicts));
       processDialog.setProgress(0);
@@ -624,7 +651,7 @@ public class ImportFragment extends BaseDataFragment {
    private void cancelProcess() {
       logger.debug("Cancel current import process.");
       cancel();
-      processDialog.hide();
+      hideAndDismissProcessDialog();
       processOverlay.setMode(DataExchangeProcessOverlay.MODE.HIDDEN);
       getSession().setType(Session.Type.DISCOVERY);
       clearTreeSelection();
@@ -640,7 +667,7 @@ public class ImportFragment extends BaseDataFragment {
       //only update UI if no visual success/failure feedback is currently active
       if (!visualFeedbackActive) {
          importDropZone.setVisibility(View.GONE);
-         progressBar.setSecondText(true, loading_string, null, true);
+         progressBar.setSecondText(true, loadingString, null, true);
          progressBar.setProgress(0);
          importFinishedStatePanel.setVisibility(View.GONE);
          leftStatus.setVisibility(View.VISIBLE);
@@ -709,7 +736,7 @@ public class ImportFragment extends BaseDataFragment {
    public void onProgressUpdate(String operation, int progress, int max) {
       final Double percent = ((progress * 1.0) / max) * 100;
       progressBar.setProgress(percent.intValue());
-      progressBar.setSecondText(true, loading_string, String.format(x_of_y_format, progress, max), true);
+      progressBar.setSecondText(true, loadingString, String.format(xOfYFormat, progress, max), true);
    }
 
    @Override
@@ -787,7 +814,7 @@ public class ImportFragment extends BaseDataFragment {
                      @Override
                      public void onButtonClick(DialogViewInterface dialog, int buttonId) {
                         if (buttonId == TextDialogView.BUTTON_FIRST) {
-                           processDialog.dismiss();
+                           hideAndDismissProcessDialog();
                            ToastMessageCustom
                                  .makeToastMessageText(getActivity().getApplicationContext(), getString(R.string.import_cancel), Gravity.TOP | Gravity.CENTER_HORIZONTAL,
                                        getResources().getInteger(R.integer.toast_message_xoffset), getResources().getInteger(R.integer.toast_message_yoffset))
@@ -868,7 +895,7 @@ public class ImportFragment extends BaseDataFragment {
       if (Environment.getExternalStorageState().equals(MEDIA_BAD_REMOVAL)) {
          logger.debug("onMediumUpdate() - Reset the import screen and session state.");
 
-         processDialog.hide();
+         hideAndDismissProcessDialog();
          showDragAndDropZone();
          setHeaderText("");
          showStartMessage();
