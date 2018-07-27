@@ -73,4 +73,11 @@
     <color name="tree_drag_multiple_selection_shadow_box_circle_color">@color/color_red</color>
     <color name="tree_drag_multiple_selection_shadow_box_font_color">@color/StandardWhiteColor</color>
 
+    <!--Conflict Dialog-->
+    <color name="import_conflict_dialog_field_table_border">#1172A3</color>
+    <color name="import_conflict_dialog_field_table_header_background">#eeeded</color>
+    <color name="import_conflict_dialog_textual_process_background">#eeeded</color>
+    <color name="import_conflict_dialog_field_text_color">#535353</color>
+    <color name="import_conflict_dialog_textual_process_feedback_box_background">#eeeded</color>
+    <color name="import_conflict_dialog_textual_process_feedback_text_color">#1172A3</color>
 </resources>
