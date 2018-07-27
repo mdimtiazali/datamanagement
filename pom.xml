@@ -7,7 +7,7 @@
     <parent>
         <groupId>com.cnh.pf</groupId>
         <artifactId>parent</artifactId>
-        <version>16.0.0-dev-SNAPSHOT</version>
+        <version>b9.0.0-lift4.5-SNAPSHOT</version>
     </parent>
 
     <artifactId>datamanagement-parent</artifactId>
