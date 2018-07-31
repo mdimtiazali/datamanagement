@@ -747,7 +747,7 @@ public abstract class BaseDataFragment extends RoboFragment implements SessionCo
    private boolean bAddToTree(ObjectGraph parent, ObjectGraph object) {
       boolean bVisible = false;
       try {
-         if (object.getType().equals(DataTypes.DDOP)) {
+         if (DataTypes.DDOP.equals(object.getType()) || DataTypes.GUIDANCE_PATTERN.equals(object.getType())) {
             return bVisible;
          }
          //Check if entity can be grouped

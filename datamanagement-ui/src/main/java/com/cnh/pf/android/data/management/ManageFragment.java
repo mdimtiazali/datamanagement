@@ -745,12 +745,12 @@ public class ManageFragment extends BaseDataFragment implements DmAccessibleObse
                updateButtonVisible(graph, cpButton, editButton);
                nameView.setText(graph.getName());
                nameView.setTextColor(getActivity().getResources().getColorStateList(R.color.tree_text_color));
-               if (TreeEntityHelper.hasIcon(graph.getType()) && (graph instanceof GroupObjectGraph || !isGroupableEntity(graph))) {
-                  nameView.setCompoundDrawablesWithIntrinsicBounds(TreeEntityHelper.getIcon(graph.getType()), 0, 0, 0);
+               int resId = 0;
+               if (TreeEntityHelper.hasIcon(graph.getType()) && (TreeEntityHelper.hasSubtype(graph) || graph instanceof GroupObjectGraph || !isGroupableEntity(graph))) {
+                  resId = TreeEntityHelper.getIcon(graph);
+                  resId = (resId < 0) ? 0 : resId;
                }
-               else {
-                  nameView.setCompoundDrawablesWithIntrinsicBounds(0, 0, 0, 0);
-               }
+               nameView.setCompoundDrawablesWithIntrinsicBounds(resId, 0, 0, 0);
                return view;
             }
 

@@ -9,6 +9,7 @@
 
 package com.cnh.pf.android.data.management;
 
+import com.cnh.autoguidance.shared.SwathType;
 import com.cnh.pf.android.data.management.graph.GroupObjectGraph;
 import com.google.gson.Gson;
 
@@ -29,6 +30,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.nio.charset.Charset;
+import java.util.EnumMap;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -40,6 +42,7 @@ public class TreeEntityHelper {
 
    private static final Logger logger = LoggerFactory.getLogger(TreeEntityHelper.class);
    private static final Map<String, Integer> TYPE_ICONS = new HashMap<String, Integer>();
+   private static final Map<SwathType, Integer> SWATH_ICONS = new EnumMap<SwathType, Integer>(SwathType.class);
 
    private static final Map<String, GroupObjectGraph> GroupObjectGraphMap =
       new HashMap<String, GroupObjectGraph>();
@@ -51,6 +54,7 @@ public class TreeEntityHelper {
    protected static final Map<String, String> obj2group = new HashMap<String, String>();
    protected static final Map<String, String> group2group = new HashMap<String, String>();
 
+   public static final String SUB_TYPE = "_subtype";
    public static final String GROWERS = "GROWERS";
    public static final String TASKS = "TASKS";
    public static final String RXS = "RXS";
@@ -104,6 +108,12 @@ public class TreeEntityHelper {
       TYPE_ICONS.put(DataTypes.VARIETY, R.drawable.dt_icon_varieties);
       TYPE_ICONS.put(DataTypes.USB, R.drawable.ic_data_tree_usb_active);
       TYPE_ICONS.put(DataTypes.CLOUD,R.drawable.ic_data_tree_cloud_active);
+
+      SWATH_ICONS.put(SwathType.STRAIGHT, R.drawable.dt_icon_swath_straight);
+      SWATH_ICONS.put(SwathType.HEADING, R.drawable.dt_icon_swath_heading);
+      SWATH_ICONS.put(SwathType.CURVE, R.drawable.dt_icon_swath_curve);
+      SWATH_ICONS.put(SwathType.PIVOT, R.drawable.ic_data_tree_pivot);
+      SWATH_ICONS.put(SwathType.SPIRAL_PIVOT, R.drawable.ic_data_tree_spiral_swath);
 
       group2name.put(GROWERS, R.string.pfds);
       group2name.put(GROWERS, R.string.pfds);
@@ -219,6 +229,44 @@ public class TreeEntityHelper {
     */
    public static int getIcon(String type) {
       return TYPE_ICONS.get(type);
+   }
+
+   /**
+    * Return the icon resource id representing ObjectGraph data type.
+    *
+    * @param objectGraph   the object graph
+    * @return  the icon resource id
+    */
+   public static int getIcon(ObjectGraph objectGraph) {
+      if (hasSubtype(objectGraph)) {
+         return getSubtypeIcon(objectGraph);
+      }
+
+      return getIcon(objectGraph.getType());
+   }
+
+   /**
+    * Return true if ObjectGraph has sub type defined in its map data.
+    *
+    * @param objectGraph   the object graph
+    * @return  true if ObjectGraph has sub type defined in its map data.
+    */
+   public static boolean hasSubtype(ObjectGraph objectGraph) {
+      return objectGraph.getData() != null && objectGraph.hasData(SUB_TYPE);
+   }
+
+   /**
+    * If ObjectGraph has sub type, return icon resource id assigned to sub type.
+    *
+    * @param objectGraph   the object graph
+    * @return  resource id for icon. 0 if no sub type icon found.
+    */
+   public static int getSubtypeIcon(ObjectGraph objectGraph) {
+      if (DataTypes.GUIDANCE_GROUP.equals(objectGraph.getType())) {
+         int subType = objectGraph.getDataInt(SUB_TYPE);
+         return SWATH_ICONS.get(SwathType.findByValue(subType));
+      }
+      return 0;
    }
 
    /**
