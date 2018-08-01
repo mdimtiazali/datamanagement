@@ -136,6 +136,24 @@ public class SessionExtra implements Parcelable {
       this.path = path;
    }
 
+   /**
+    * Setter for sessionExtra Type
+    *
+    * @param type
+    */
+   public void setType(int type) {
+      this.type = type;
+   }
+
+   /**
+    * Getter for sessionExtra Type
+    *
+    * @return sessionExtra type
+    */
+   public int getType() {
+      return this.type;
+   }
+
    public String getBasePath() {
       return this.basePath;
    }

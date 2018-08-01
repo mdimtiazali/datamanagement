@@ -83,14 +83,14 @@ public class ApplicationRateTableFactory {
 
          int tableRowBackgroundId = getAlternatingTableRowBackgroundId(productMixTable);
          TextView productNameTextView = (TextView) tableRow.findViewById(R.id.product_name_text_view);
-         productNameTextView.setText(applicationRateTableData.productName);
+         productNameTextView.setText(applicationRateTableData.getProductName());
          if (forDialog) {
-            productNameTextView.setCompoundDrawablesWithIntrinsicBounds(ControllerTypeOrProductFormIconHelper.retrieveProductFormIconId(applicationRateTableData.productForm), 0, 0, 0);
+            productNameTextView.setCompoundDrawablesWithIntrinsicBounds(ControllerTypeOrProductFormIconHelper.retrieveProductFormIconId(applicationRateTableData.getProductForm()), 0, 0, 0);
          }
          productNameTextView.setBackgroundResource(tableRowBackgroundId);
 
-         configureApplicationRateTextView(tableRow, applicationRateTableData.unit, tableRowBackgroundId, R.id.application_rate1_text_view, applicationRateTableData.defaultRate);
-         configureApplicationRateTextView(tableRow, applicationRateTableData.unit, tableRowBackgroundId, R.id.application_rate2_text_view, applicationRateTableData.rate2);
+         configureApplicationRateTextView(tableRow, applicationRateTableData.getUnit(), tableRowBackgroundId, R.id.application_rate1_text_view, applicationRateTableData.getDefaultRate());
+         configureApplicationRateTextView(tableRow, applicationRateTableData.getUnit(), tableRowBackgroundId, R.id.application_rate2_text_view, applicationRateTableData.getRate2());
       }
       return tableRow;
    }
@@ -134,10 +134,50 @@ public class ApplicationRateTableFactory {
     * Container object for factory methods and to hold regarding temporary values.
     */
    public final static class ApplicationRateTableData {
-      public ProductForm productForm;
-      public String productName;
-      public ProductUnits unit;
-      public double defaultRate;
-      public double rate2;
+      private ProductForm productForm;
+      private String productName;
+      private ProductUnits unit;
+      private double defaultRate;
+      private double rate2;
+
+      public ProductForm getProductForm() {
+         return productForm;
+      }
+
+      public void setProductForm(ProductForm productForm) {
+         this.productForm = productForm;
+      }
+
+      public String getProductName() {
+         return productName;
+      }
+
+      public void setProductName(String productName) {
+         this.productName = productName;
+      }
+
+      public ProductUnits getUnit() {
+         return unit;
+      }
+
+      public void setUnit(ProductUnits unit) {
+         this.unit = unit;
+      }
+
+      public double getDefaultRate() {
+         return defaultRate;
+      }
+
+      public void setDefaultRate(double defaultRate) {
+         this.defaultRate = defaultRate;
+      }
+
+      public double getRate2() {
+         return rate2;
+      }
+
+      public void setRate2(double rate2) {
+         this.rate2 = rate2;
+      }
    }
 }

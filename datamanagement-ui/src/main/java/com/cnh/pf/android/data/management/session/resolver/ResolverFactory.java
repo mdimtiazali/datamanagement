@@ -35,7 +35,7 @@ public class ResolverFactory {
       else if (SessionUtil.isCalculateConflictsTask(session)) {
          newResolver = new CalculateConflictsResolver(dsHelper);
       }
-      else if (SessionUtil.isUpdateTask(session) || SessionUtil.isDeleteTask(session)) {
+      else if (SessionUtil.isUpdateTask(session) || SessionUtil.isDeleteTask(session) || SessionUtil.isPasteTask(session)) {
          // UPDATE & DELETE tasks don't need to resolve addresses for source & destination. They pull
          // address from object itself.
          newResolver = new DummyResolver();

@@ -168,12 +168,14 @@ public final class ProductMixAdapter extends SearchableSortableExpandableListAda
    private ApplicationRateTableFactory.ApplicationRateTableData createApplicationRateTableData(ProductMixRecipe recipe, Product product, double productMixDefaultRate,
          double productMixRate2, double productMixTotalAmount) {
       ApplicationRateTableFactory.ApplicationRateTableData carrierProductApplicationRateTableData = new ApplicationRateTableFactory.ApplicationRateTableData();
-      carrierProductApplicationRateTableData.productName = product.getName();
-      carrierProductApplicationRateTableData.defaultRate = calculateApplicationRate(recipe.getAmount(), productMixDefaultRate, productMixTotalAmount);
-      carrierProductApplicationRateTableData.rate2 = calculateApplicationRate(recipe.getAmount(), productMixRate2, productMixTotalAmount);
+      carrierProductApplicationRateTableData.setProductName(product.getName());
+      carrierProductApplicationRateTableData.setDefaultRate(calculateApplicationRate(recipe.getAmount(), productMixDefaultRate, productMixTotalAmount));
+      carrierProductApplicationRateTableData.setRate2(calculateApplicationRate(recipe.getAmount(), productMixRate2, productMixTotalAmount));
       ProductUnits productRateUnits = ProductHelperMethods.retrieveProductRateUnits(product,
             ProductHelperMethods.queryApplicationRateMeasurementSystemForProductForm(product.getForm(), measurementSystemCache));
-      carrierProductApplicationRateTableData.unit = productRateUnits.deepCopy();
+      if (null != productRateUnits) {
+         carrierProductApplicationRateTableData.setUnit(productRateUnits.deepCopy());
+      }
       return carrierProductApplicationRateTableData;
    }
 
@@ -203,22 +205,22 @@ public final class ProductMixAdapter extends SearchableSortableExpandableListAda
          viewHolder = (ProductMixGroupHolder) view.getTag();
       }
 
-      viewHolder.productMix = productDetail;
-      Product parameters = viewHolder.productMix.getProductMixParameters();
+      viewHolder.setProductMix(productDetail);
+      Product parameters = viewHolder.getProductMix().getProductMixParameters();
       if (parameters != null) {
-         viewHolder.nameText.setText(parameters.getName());
+         viewHolder.getNameText().setText(parameters.getName());
          if (parameters.getForm() != null) {
-            viewHolder.formText.setText(EnumValueToUiStringUtility.getUiStringForProductForm(parameters.getForm(), context));
+            viewHolder.getFormText().setText(EnumValueToUiStringUtility.getUiStringForProductForm(parameters.getForm(), context));
          }
          else {
             // maybe "unknown" would be better - but form should be never null ...
             log.error("productForm was null - this should never happen" );
-            viewHolder.formText.setText(EnumValueToUiStringUtility.getUiStringForProductForm(ProductForm.ANY, context));
+            viewHolder.getFormText().setText(EnumValueToUiStringUtility.getUiStringForProductForm(ProductForm.ANY, context));
          }
-         viewHolder.rateText.setText(UnitUtility.formatRateUnits(parameters, parameters.getDefaultRate(),
+         viewHolder.getRateText().setText(UnitUtility.formatRateUnits(parameters, parameters.getDefaultRate(),
                  ProductHelperMethods.queryApplicationRateMeasurementSystemForProductForm(parameters.getForm(), measurementSystemCache)));
       }
-      viewHolder.groupIndicator.setImageDrawable(expanded ? arrowOpenDetails : arrowCloseDetails);
+      viewHolder.getGroupIndicator().setImageDrawable(expanded ? arrowOpenDetails : arrowCloseDetails);
       view.setOnClickListener(listener);
    }
 
@@ -270,26 +272,26 @@ public final class ProductMixAdapter extends SearchableSortableExpandableListAda
 
       if (view.getTag() == null) {
          viewHolder = new ProductMixChildHolder(view);
-         viewHolder.productMix = productDetail;
+         viewHolder.setProductMix(productDetail);
          view.setTag(viewHolder);
       }
       else {
          viewHolder = (ProductMixChildHolder) view.getTag();
       }
 
-      viewHolder.productMix = productDetail;
-      if (viewHolder.productMix != null) {
-         Product productMixParameter = viewHolder.productMix.getProductMixParameters();
-         viewHolder.appRate1Text.setText(UnitUtility.formatRateUnits(productMixParameter, productMixParameter.getDefaultRate(),
+      viewHolder.setProductMix(productDetail);
+      if (viewHolder.getProductMix() != null) {
+         Product productMixParameter = viewHolder.getProductMix().getProductMixParameters();
+         viewHolder.getAppRate1Text().setText(UnitUtility.formatRateUnits(productMixParameter, productMixParameter.getDefaultRate(),
                  ProductHelperMethods.queryApplicationRateMeasurementSystemForProductForm(productMixParameter.getForm(), measurementSystemCache)));
-         viewHolder.appRate2Text.setText(UnitUtility.formatRateUnits(productMixParameter, productMixParameter.getRate2(),
+         viewHolder.getAppRate2Text().setText(UnitUtility.formatRateUnits(productMixParameter, productMixParameter.getRate2(),
                  ProductHelperMethods.queryApplicationRateMeasurementSystemForProductForm(productMixParameter.getForm(), measurementSystemCache)));
-         addProductsToTableLayout(viewHolder.productRecipeTable, viewHolder.productMix);
+         addProductsToTableLayout(viewHolder.getProductRecipeTable(), viewHolder.getProductMix());
       }
-      viewHolder.alertIcon.setOnClickListener(alertButtonClickListener);
-      viewHolder.editButton.setOnClickListener(editButtonClickListener);
-      viewHolder.copyButton.setOnClickListener(copyButtonClickListener);
-      viewHolder.deleteButton.setOnClickListener(deleteButtonClickListener);
+      viewHolder.getAlertIcon().setOnClickListener(alertButtonClickListener);
+      viewHolder.getEditButton().setOnClickListener(editButtonClickListener);
+      viewHolder.getCopyButton().setOnClickListener(copyButtonClickListener);
+      viewHolder.getDeleteButton().setOnClickListener(deleteButtonClickListener);
    }
 
    @Override
@@ -320,42 +322,146 @@ public final class ProductMixAdapter extends SearchableSortableExpandableListAda
    }
 
    private static class ProductMixGroupHolder {
-      public TextView nameText;
-      public TextView formText;
-      public TextView rateText;
-      public ImageView groupIndicator;
-      public ProductMix productMix;
+      private TextView nameText;
+      private TextView formText;
+      private TextView rateText;
+      private ImageView groupIndicator;
+      private ProductMix productMix;
 
       public ProductMixGroupHolder(View view) {
          if (view != null) {
-            this.nameText = (TextView) view.findViewById(R.id.product_mix_name_text);
-            this.formText = (TextView) view.findViewById(R.id.product_mix_form_text);
-            this.rateText = (TextView) view.findViewById(R.id.product_mix_rate_text);
-            this.groupIndicator = (ImageView) view.findViewById(R.id.product_mix_group_indicator);
+            this.setNameText((TextView) view.findViewById(R.id.product_mix_name_text));
+            this.setFormText((TextView) view.findViewById(R.id.product_mix_form_text));
+            this.setRateText((TextView) view.findViewById(R.id.product_mix_rate_text));
+            this.setGroupIndicator((ImageView) view.findViewById(R.id.product_mix_group_indicator));
          }
+      }
+
+      public TextView getNameText() {
+         return nameText;
+      }
+
+      public void setNameText(TextView nameText) {
+         this.nameText = nameText;
+      }
+
+      public TextView getFormText() {
+         return formText;
+      }
+
+      public void setFormText(TextView formText) {
+         this.formText = formText;
+      }
+
+      public TextView getRateText() {
+         return rateText;
+      }
+
+      public void setRateText(TextView rateText) {
+         this.rateText = rateText;
+      }
+
+      public ImageView getGroupIndicator() {
+         return groupIndicator;
+      }
+
+      public void setGroupIndicator(ImageView groupIndicator) {
+         this.groupIndicator = groupIndicator;
+      }
+
+      public ProductMix getProductMix() {
+         return productMix;
+      }
+
+      public void setProductMix(ProductMix productMix) {
+         this.productMix = productMix;
       }
    }
 
    private static class ProductMixChildHolder {
-      public TextView appRate1Text;
-      public TextView appRate2Text;
-      public ImageButton editButton;
-      public ImageButton copyButton;
-      public ImageButton deleteButton;
-      public TableLayout productRecipeTable;
-      public ImageView alertIcon;
-      public ProductMix productMix;
+      private TextView appRate1Text;
+      private TextView appRate2Text;
+      private ImageButton editButton;
+      private ImageButton copyButton;
+      private ImageButton deleteButton;
+      private TableLayout productRecipeTable;
+      private ImageView alertIcon;
+      private ProductMix productMix;
 
       public ProductMixChildHolder(View view) {
          if (view != null) {
-            this.appRate1Text = (TextView) view.findViewById(R.id.app_rate1_text);
-            this.appRate2Text = (TextView) view.findViewById(R.id.app_rate2_text);
-            this.productRecipeTable = (TableLayout) view.findViewById(R.id.product_mix_recipe_list);
-            this.editButton = (ImageButton) view.findViewById(R.id.edit_button);
-            this.copyButton = (ImageButton) view.findViewById(R.id.copy_button);
-            this.deleteButton = (ImageButton) view.findViewById(R.id.delete_button);
-            this.alertIcon = (ImageView) view.findViewById(R.id.alert_icon);
+            this.setAppRate1Text((TextView) view.findViewById(R.id.app_rate1_text));
+            this.setAppRate2Text((TextView) view.findViewById(R.id.app_rate2_text));
+            this.setProductRecipeTable((TableLayout) view.findViewById(R.id.product_mix_recipe_list));
+            this.setEditButton((ImageButton) view.findViewById(R.id.edit_button));
+            this.setCopyButton((ImageButton) view.findViewById(R.id.copy_button));
+            this.setDeleteButton((ImageButton) view.findViewById(R.id.delete_button));
+            this.setAlertIcon((ImageView) view.findViewById(R.id.alert_icon));
          }
+      }
+
+      public TextView getAppRate1Text() {
+         return appRate1Text;
+      }
+
+      public void setAppRate1Text(TextView appRate1Text) {
+         this.appRate1Text = appRate1Text;
+      }
+
+      public ImageButton getEditButton() {
+         return editButton;
+      }
+
+      public void setEditButton(ImageButton editButton) {
+         this.editButton = editButton;
+      }
+
+      public ImageButton getCopyButton() {
+         return copyButton;
+      }
+
+      public void setCopyButton(ImageButton copyButton) {
+         this.copyButton = copyButton;
+      }
+
+      public ImageButton getDeleteButton() {
+         return deleteButton;
+      }
+
+      public void setDeleteButton(ImageButton deleteButton) {
+         this.deleteButton = deleteButton;
+      }
+
+      public TableLayout getProductRecipeTable() {
+         return productRecipeTable;
+      }
+
+      public void setProductRecipeTable(TableLayout productRecipeTable) {
+         this.productRecipeTable = productRecipeTable;
+      }
+
+      public ImageView getAlertIcon() {
+         return alertIcon;
+      }
+
+      public void setAlertIcon(ImageView alertIcon) {
+         this.alertIcon = alertIcon;
+      }
+
+      public ProductMix getProductMix() {
+         return productMix;
+      }
+
+      public void setProductMix(ProductMix productMix) {
+         this.productMix = productMix;
+      }
+
+      public TextView getAppRate2Text() {
+         return appRate2Text;
+      }
+
+      public void setAppRate2Text(TextView appRate2Text) {
+         this.appRate2Text = appRate2Text;
       }
    }
 
@@ -425,7 +531,7 @@ public final class ProductMixAdapter extends SearchableSortableExpandableListAda
       @Override
       public void onClick(View v) {
          if (productLibraryFragment.validateDeleteProduct(parameters)) {
-            productMixChildHolder.alertIcon.setVisibility(View.GONE);
+            productMixChildHolder.getAlertIcon().setVisibility(View.GONE);
             final TextDialogView deleteDialog = new TextDialogView(context);
             deleteDialog.setBodyText(activity.getString(R.string.delete_product_dialog_body_text));
             deleteDialog.setFirstButtonText(activity.getString(R.string.delete_dialog_confirm_button_text));
@@ -450,7 +556,7 @@ public final class ProductMixAdapter extends SearchableSortableExpandableListAda
             activity.showModalPopup(deleteDialog);
          }
          else {
-            productMixChildHolder.alertIcon.setVisibility(View.VISIBLE);
+            productMixChildHolder.getAlertIcon().setVisibility(View.VISIBLE);
          }
       }
    }
