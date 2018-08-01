@@ -489,7 +489,7 @@ public class ProductLibraryFragment extends RoboFragment implements ProductMixCa
 
          @Override
          public void onClick(View view) {
-            ProductDialog addProductDialog = new ProductDialog(getActivity().getApplicationContext(), vipService, pvipService, productUnitsList, new ProductDialog.productListCallback() {
+            ProductDialog addProductDialog = new ProductDialog(getActivity(), vipService, pvipService, productUnitsList, new ProductDialog.productListCallback() {
                @Override
                public void productList(Product product) {
                   productList.add(product);
@@ -513,7 +513,7 @@ public class ProductLibraryFragment extends RoboFragment implements ProductMixCa
       btnAddProductMix.setOnClickListener(new OnClickListener() {
          @Override
          public void onClick(View view) {
-            ProductMixDialog addProductMixDialog = new ProductMixDialog(getActivity().getApplicationContext(), vipService, pvipService, ProductLibraryFragment.this, productMixList);
+            ProductMixDialog addProductMixDialog = new ProductMixDialog(getActivity(), vipService, pvipService, ProductLibraryFragment.this, productMixList);
             addProductMixDialog.setFirstButtonText(getResources().getString(R.string.product_dialog_add_button))
                   .setSecondButtonText(getResources().getString(R.string.product_dialog_cancel_button)).showThirdButton(false)
                   .setTitle(getResources().getString(R.string.product_mix_title_dialog_add_product_mix)).setBodyHeight(DIALOG_HEIGHT).setBodyView(R.layout.product_mix_dialog);
@@ -531,7 +531,7 @@ public class ProductLibraryFragment extends RoboFragment implements ProductMixCa
       btnAddVariety.setOnClickListener(new OnClickListener() {
          @Override
          public void onClick(View view) {
-            addVarietyDialog = new AddOrEditVarietyDialog(getActivity().getApplicationContext());
+            addVarietyDialog = new AddOrEditVarietyDialog(getActivity());
             addVarietyDialog.setFirstButtonText(getResources().getString(R.string.variety_dialog_save_button_text))
                   .setSecondButtonText(getResources().getString(R.string.variety_dialog_cancel_button_text))
                   .setTitle(getResources().getString(R.string.variety_add_dialog_title_text))
@@ -705,13 +705,13 @@ public class ProductLibraryFragment extends RoboFragment implements ProductMixCa
 
             switch (v.getId()) {
             case R.id.varieties_list_header_name:
-               varietyComparator = new VarietyByNameComparator(getActivity().getApplicationContext());
+               varietyComparator = new VarietyByNameComparator(getActivity());
                break;
             case R.id.varieties_list_header_crop_type:
-               varietyComparator = new VarietyByCropTypeComparator(getActivity().getApplicationContext());
+               varietyComparator = new VarietyByCropTypeComparator(getActivity());
                break;
             default:
-               varietyComparator = new VarietyByNameComparator(getActivity().getApplicationContext());
+               varietyComparator = new VarietyByNameComparator(getActivity());
                break;
             }
             varietySortAscending = (button.getState() == ListHeaderSortView.STATE_SORT_ASC);
@@ -725,7 +725,7 @@ public class ProductLibraryFragment extends RoboFragment implements ProductMixCa
       }
 
       //Setup initial sort
-      varietyComparator = new VarietyByNameComparator(getActivity().getApplicationContext());
+      varietyComparator = new VarietyByNameComparator(getActivity());
       varietySortAscending = true;
       if (varietyAdapter != null) {
          varietyAdapter.sort(varietyComparator, varietySortAscending);
@@ -774,7 +774,7 @@ public class ProductLibraryFragment extends RoboFragment implements ProductMixCa
          this.varietyList = new ArrayList<Variety>(varietyList);
          populateVarieties(varietyList.size());
          if (varietyAdapter == null) {
-            varietyAdapter = new VarietyAdapter(getActivity().getApplicationContext(), varietyList, (TabActivity) getActivity(), vipService);
+            varietyAdapter = new VarietyAdapter(getActivity(), varietyList, (TabActivity) getActivity(), vipService);
             varietiesSearch.setFilterable(varietyAdapter);
             if (varietyComparator != null) {
                varietyAdapter.sort(varietyComparator, varietySortAscending);
@@ -806,7 +806,7 @@ public class ProductLibraryFragment extends RoboFragment implements ProductMixCa
          this.productMixList = new ArrayList<ProductMix>(incomingProductMixList);
          populateProductMixes(productMixList.size());
          if (productMixAdapter == null) {
-            productMixAdapter = new ProductMixAdapter(getActivity().getApplicationContext(), incomingProductMixList, (TabActivity) getActivity(), vipService, pvipService,
+            productMixAdapter = new ProductMixAdapter(getActivity(), incomingProductMixList, (TabActivity) getActivity(), vipService, pvipService,
                   this, measurementSystemCache);
             productMixSearch.setFilterable(productMixAdapter);
             if (productMixComparator != null) {
@@ -848,7 +848,7 @@ public class ProductLibraryFragment extends RoboFragment implements ProductMixCa
             currentProduct = productList.get((int) productListView.getSelectedId());
          }
          if (productAdapter == null) {
-            productAdapter = new ProductAdapter(getActivity().getApplicationContext(), incomingProductList, (TabActivity) getActivity(), vipService, pvipService,
+            productAdapter = new ProductAdapter(getActivity(), incomingProductList, (TabActivity) getActivity(), vipService, pvipService,
                   this, productUnitsList, currentImplement, measurementSystemCache);
             productSearch.setFilterable(productAdapter);
             if (productComparator != null) {

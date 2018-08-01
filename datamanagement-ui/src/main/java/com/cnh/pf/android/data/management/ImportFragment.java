@@ -110,7 +110,7 @@ public class ImportFragment extends BaseDataFragment {
 
    private final List<Session.Action> blockingActions = new ArrayList<Session.Action>(Arrays.asList(Session.Action.EXPORT));
    private final List<Session.Action> executableActions = new ArrayList<Session.Action>(Arrays.asList(Session.Action.IMPORT));
-   private final List<String> dataTreeRootNodesWithAutomaticParentSelection = new ArrayList<String>(Arrays.asList("Grower/Farm/Field/Task"));
+   private final int rootNodeNamesWithImplicitSelectionResourceId = R.array.rootnodenames_with_implicit_parent_selection_in_import;
 
    private static final int CANCEL_DIALOG_WIDTH = 550;
 
@@ -136,8 +136,8 @@ public class ImportFragment extends BaseDataFragment {
    }
 
    @Override
-   protected List<String> getRootNodeNamesWithAutomaticParentSelection() {
-      return dataTreeRootNodesWithAutomaticParentSelection;
+   protected int getRootNodeNamesWithImplicitSelectionResourceId() {
+      return rootNodeNamesWithImplicitSelectionResourceId;
    }
 
    @Override
@@ -489,6 +489,20 @@ public class ImportFragment extends BaseDataFragment {
       hideTreeList();
       hideStartMessage();
       showLoadingOverlay();
+
+      // TODO: this creates the temporary folder on import from datamanagement, so it can be deleted from datamanagement as well.
+      // this workaround prevents some trouble on a later export when datamanagement will try deleting the temporary folder that has been created by isoservice
+      // it would be nice if we would find a cleaner solution for this
+      // unfortunately setting permissions to 777 doesn't make a difference - data management is still unable to delete this folder if it has been created by isoservice
+      final String tempPath = UtilityHelper.CommonPaths.PATH_TMP.getPathString();
+      File tmpFolder = new File(tempPath);
+      if (!tmpFolder.exists())
+      {
+         if(!tmpFolder.mkdirs())
+         {
+            logger.error("unable to create tmp folder");
+         }
+      }
 
       discovery(extra);
    }
