@@ -59,7 +59,6 @@ public class ImportSourceDialog extends DialogView {
    private TreeStateManager<IconizedFile> usbManager;
    private TreeStateManager<IconizedFile> cloudManager;
    private PathTreeViewAdapter usbTreeAdapter;
-   private PathTreeViewAdapter cloudTreeAdapter;
    private TreeBuilder<IconizedFile> usbTreeBuilder;
    private TreeBuilder<IconizedFile> cloudTreeBuilder;
    private TreeViewList sourcePathTreeView;

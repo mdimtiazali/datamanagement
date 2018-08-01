@@ -10,7 +10,6 @@
 package com.cnh.pf.android.data.management.adapter;
 
 import android.app.Activity;
-import android.graphics.drawable.Drawable;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.AbsListView;
@@ -20,12 +19,8 @@ import android.widget.TextView;
 import com.cnh.pf.android.data.management.R;
 import com.cnh.pf.android.data.management.misc.IconizedFile;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 import java.io.File;
 
-import pl.polidea.treeview.AbstractTreeViewAdapter;
 import pl.polidea.treeview.TreeNodeInfo;
 import pl.polidea.treeview.TreeStateManager;
 import pl.polidea.treeview.TreeViewList;
@@ -35,7 +30,6 @@ import pl.polidea.treeview.TreeViewList;
  * @author oscar.salazar@cnhind.com
  */
 public class PathTreeViewAdapter extends BaseTreeViewAdapter<IconizedFile> {
-   private static final Logger logger = LoggerFactory.getLogger(PathTreeViewAdapter.class);
    private OnPathSelectedListener listener;
 
    public PathTreeViewAdapter(Activity activity, TreeStateManager treeStateManager, int numberOfLevels) {
