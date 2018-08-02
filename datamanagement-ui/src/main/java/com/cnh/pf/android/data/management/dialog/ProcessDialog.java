@@ -9,9 +9,6 @@
  */
 package com.cnh.pf.android.data.management.dialog;
 
-import java.util.HashMap;
-import java.util.Map;
-
 import android.app.Activity;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -27,6 +24,11 @@ import com.cnh.pf.android.data.management.adapter.DataManagementBaseAdapter;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import java.util.HashMap;
+import java.util.Map;
+
+import javax.annotation.Nullable;
 
 import roboguice.RoboGuice;
 import roboguice.inject.InjectResource;
@@ -116,7 +118,7 @@ public class ProcessDialog extends DialogView {
    private void updateView() {
       final String nextType = adapter.getType(adapter.getPosition());
       DataManagementBaseAdapter.ViewHolder targetView = null;
-      if(viewCache.containsKey(nextType)) {
+      if (viewCache.containsKey(nextType)) {
          targetView = adapter.getView(viewCache.get(nextType));
       }
       else {
@@ -126,7 +128,7 @@ public class ProcessDialog extends DialogView {
       if (targetView == null) {
          hide();
       }
-      else if (targetView.getRoot() != body){
+      else if (targetView.getRoot() != body) {
          setBodyView(targetView.getRoot());
       }
    }
@@ -168,5 +170,29 @@ public class ProcessDialog extends DialogView {
    public DialogView setTitle(String text) {
       pbBar.setTitle(text);
       return super.setTitle(text);
+   }
+
+   /**
+    * Returns the LayoutParams of the dialogs content view
+    * @return
+    */
+   @Nullable
+   public ViewGroup.LayoutParams getContentLayoutParameter() {
+      if (super.mFlContent != null) {
+         return super.mFlContent.getLayoutParams();
+      }
+      else {
+         return null;
+      }
+   }
+
+   /**
+    * This method allows to modify the layout parameter of the content view of the dialog
+    * @param contentLayoutParams LayoutParams to be applied to dialogs content view
+    */
+   public void setContentLayoutParameter(ViewGroup.LayoutParams contentLayoutParams) {
+      if (super.mFlContent != null) {
+         super.mFlContent.setLayoutParams(contentLayoutParams);
+      }
    }
 }

@@ -38,6 +38,9 @@
     <color name="data_panel_border">#80bee9</color>
     <color name="data_header_background">#e8e8e8</color>
 
+    <!--data management-->
+    <color name="grower_item_bg">#7d333333</color>
+
     <color name="drag_accept">#FFFF00</color>
     <color name="drag_reject">#FF0000</color>
     <color name="drag_enter">#00FF00</color>
@@ -59,8 +62,22 @@
 
     <color name="list_item_text_color">#505050</color>
 
-   <!--Data Exchange overlay-->
-   <color name="data_exchange_overlay_background">#BBFFFFFF</color>
-   <color name="data_exchange_overlay_descriptiontext_color">#aeafaf</color>
+    <!--Data Exchange overlay-->
+    <color name="data_exchange_overlay_background">#BBFFFFFF</color>
+    <color name="data_exchange_overlay_descriptiontext_color">#aeafaf</color>
 
+    <!--Configuration for dimensions of the shadow representative of multiple items for drag and drop in DM-->
+    <color name="tree_drag_multiple_selection_shadow_box_background_color">@color/StandardWhiteColor</color>
+    <color name="tree_drag_multiple_selection_shadow_box_shadow_color">@color/StandardBlackColor</color>
+    <color name="tree_drag_multiple_selection_shadow_box_border_color">@color/color_grey</color>
+    <color name="tree_drag_multiple_selection_shadow_box_circle_color">@color/color_red</color>
+    <color name="tree_drag_multiple_selection_shadow_box_font_color">@color/StandardWhiteColor</color>
+
+    <!--Conflict Dialog-->
+    <color name="import_conflict_dialog_field_table_border">#1172A3</color>
+    <color name="import_conflict_dialog_field_table_header_background">#eeeded</color>
+    <color name="import_conflict_dialog_textual_process_background">#eeeded</color>
+    <color name="import_conflict_dialog_field_text_color">#535353</color>
+    <color name="import_conflict_dialog_textual_process_feedback_box_background">#eeeded</color>
+    <color name="import_conflict_dialog_textual_process_feedback_text_color">#1172A3</color>
 </resources>

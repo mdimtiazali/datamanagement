@@ -10,6 +10,7 @@
 package com.cnh.pf.android.data.management.fault;
 
 import android.app.Service;
+import com.cnh.jgroups.Mediator;
 import com.cnh.pf.fault.FaultHandler;
 import com.cnh.pf.signal.OnConnectionChangeListener;
 import com.cnh.pf.signal.Producer;
@@ -44,6 +45,8 @@ public class DMFaultHandler implements OnConnectionChangeListener {
 
    private Producer producer;
    private FaultHandler faultHandler;
+   private Mediator mediator;
+   private boolean recoverConnection = false;
 
    @Override
    public void onConnectionChanged(boolean connected) {
@@ -57,6 +60,20 @@ public class DMFaultHandler implements OnConnectionChangeListener {
          for (FaultCode code : FaultCode.values()) {
             getFault(code).reset();
          }
+
+         // only reconnect, if there was disconnect before and if this is not the first time connection event.
+         if(recoverConnection) {
+            try {
+               mediator.reconnectChannel();
+               recoverConnection = false;
+            }
+            catch (Exception e) {
+               logger.error("Exception in recovering the connection", e);
+            }
+         }
+      }
+      else {
+         recoverConnection = true;
       }
    }
 
@@ -150,4 +167,13 @@ public class DMFaultHandler implements OnConnectionChangeListener {
 
       return fault;
    }
+
+   /**
+    * Store mediator for error recovery.
+    * @param mediator mediator
+    */
+   public void setMediator(Mediator mediator) {
+      this.mediator = mediator;
+   }
+
 }

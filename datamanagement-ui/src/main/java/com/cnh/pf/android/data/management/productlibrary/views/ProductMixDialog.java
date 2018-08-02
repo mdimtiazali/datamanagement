@@ -307,7 +307,7 @@ public class ProductMixDialog extends DialogView implements DialogHandlerListene
          }
       }
 
-      if (DialogActionType.COPY.equals(actionType) || DialogActionType.EDIT.equals(actionType)) {
+      if (productMix != null && (DialogActionType.COPY.equals(actionType) || DialogActionType.EDIT.equals(actionType))) {
          dialogUsageAndCropTypeHandler.setValuesToUi(productMix.getProductMixParameters());
       }
 
@@ -406,6 +406,9 @@ public class ProductMixDialog extends DialogView implements DialogHandlerListene
          productMixFormPickList.setOnItemSelectedListener(new PickListEditable.OnItemSelectedListener() {
             @Override
             public void onItemSelected(AdapterView<?> adapterView, View view, int position, long id, boolean fromUser) {
+               if (position < 0) {
+                  position = ProductForm.GRANULAR.getValue();
+               }
                productMixForm = ProductForm.values()[position];
                initializeApplicationRatesSegmentedToggleButtonGroup(productMixForm);
                if (productList == null) {
@@ -414,10 +417,10 @@ public class ProductMixDialog extends DialogView implements DialogHandlerListene
                else if (productList.isEmpty()) {
                   log.warn("ProductList is empty");
                }
-               if (carrierProductHolder.productPickList != null) {
-                  PickListAdapter productListAdapter = new PickListAdapter(carrierProductHolder.productPickList, getContext());
+               if (carrierProductHolder.getProductPickList() != null) {
+                  PickListAdapter productListAdapter = new PickListAdapter(carrierProductHolder.getProductPickList(), getContext());
                   fillPickListAdapterWithProducts(productListAdapter, ProductHelperMethods.filterProductList(productList, productMixForm));
-                  carrierProductHolder.productPickList.setAdapter(productListAdapter);
+                  carrierProductHolder.getProductPickList().setAdapter(productListAdapter);
                }
                isProductMixFormSet = true;
 
@@ -430,11 +433,11 @@ public class ProductMixDialog extends DialogView implements DialogHandlerListene
                   else {
                      dialogUsageAndCropTypeHandler.setValuesToUi(productMixForm);
                   }
+                  dialogPackageSizeHandler.setUnitsOptions(productMix.getProductMixParameters(), productMixForm, productUnitsList);
                }
                else {
                   dialogUsageAndCropTypeHandler.setValuesToUi(productMixForm);
                }
-               dialogPackageSizeHandler.setUnitsOptions(productMix.getProductMixParameters(), productMixForm, productUnitsList);
                initializeDensityUnits();
                resetCarrierProduct();
             }
@@ -462,12 +465,12 @@ public class ProductMixDialog extends DialogView implements DialogHandlerListene
       }
       //Add Carrier Data to UI
       {
-         carrierProductHolder.currentRecipe = new ProductMixRecipe(productMix.getProductCarrier());
+         carrierProductHolder.setCurrentRecipe(new ProductMixRecipe(productMix.getProductCarrier()));
          if (actionType == DialogActionType.COPY) {
-            carrierProductHolder.currentRecipe.setId(PersistenceClient.NEW_OBJECT_ID);
+            carrierProductHolder.getCurrentRecipe().setId(PersistenceClient.NEW_OBJECT_ID);
          }
          List<Product> filteredProduct = ProductHelperMethods.filterProductList(productList, productMixForm);
-         addDataToProductElement(carrierProductHolder.currentRecipe, carrierProductHolder, filteredProduct);
+         addDataToProductElement(carrierProductHolder.getCurrentRecipe(), carrierProductHolder, filteredProduct);
       }
 
       //Add Product Mix element Data to UI
@@ -482,7 +485,7 @@ public class ProductMixDialog extends DialogView implements DialogHandlerListene
          ProductMixElementHolder element = this.productMixElementHolderList.get(i);
          if (element != null) {
             addDataToProductElement(recipeElement, element, productList);
-            element.currentRecipe = recipeElement;
+            element.setCurrentRecipe(recipeElement);
          }
       }
 
@@ -526,18 +529,18 @@ public class ProductMixDialog extends DialogView implements DialogHandlerListene
          Product product = recipeElement.getProduct();
          if (product != null) {
             log.info("beforeSetUnitToSegmentedToggleButtonGroup");
-            setUnitToSegmentedToggleButtonGroup(element.productUnit, product.getForm(),
+            setUnitToSegmentedToggleButtonGroup(element.getProductUnit(), product.getForm(),
                   ProductHelperMethods.queryAmountMeasurementSystemForProductForm(product.getForm(), getContext()), ProductDisplayItem.AMOUNT);
-            UnitsToggleHolder unitHolder = (UnitsToggleHolder) element.productUnit.getTag();
+            UnitsToggleHolder unitHolder = (UnitsToggleHolder) element.getProductUnit().getTag();
             if (unitHolder == null) {
                log.warn("unitHolder is null ");
                unitHolder = new UnitsToggleHolder();
             }
             unitHolder.currentChoice = ProductMixRecipeHelper.retrieveAmountUnitsFromProductMixRecipe(recipeElement, getContext());
-            element.currentRecipe = recipeElement;
-            PickListAdapter productListAdapter = new PickListAdapter(element.productPickList, getContext());
+            element.setCurrentRecipe(recipeElement);
+            PickListAdapter productListAdapter = new PickListAdapter(element.getProductPickList(), getContext());
             fillPickListAdapterWithProducts(productListAdapter, products);
-            element.productPickList.setAdapter(productListAdapter);
+            element.getProductPickList().setAdapter(productListAdapter);
             if (products != null) {
                int productIndex = -1;
                for (Product tempProduct : products) {
@@ -546,13 +549,13 @@ public class ProductMixDialog extends DialogView implements DialogHandlerListene
                      break;
                   }
                }
-               element.productPickList.setSelectionByPosition(productIndex);
+               element.getProductPickList().setSelectionByPosition(productIndex);
                if (unitHolder.currentChoice != null && unitHolder.unitChoices != null) {
-                  element.productUnit.setEnabled(true);
+                  element.getProductUnit().setEnabled(true);
                   int unitIndex = unitHolder.unitChoices.indexOf(unitHolder.currentChoice);
-                  element.productUnit.setSelectionById((long) unitIndex);
-                  element.productAmountStepper.setEnabled(true);
-                  setUnitToStepper(element.productAmountStepper, unitHolder.currentChoice.getName());
+                  element.getProductUnit().setSelectionById((long) unitIndex);
+                  element.getProductAmountStepper().setEnabled(true);
+                  setUnitToStepper(element.getProductAmountStepper(), unitHolder.currentChoice.getName());
 
                   // the stepper is not able to handle NaN so it's need to be replaced with 0f.
                   double amountAsDouble = recipeElement.getAmount();
@@ -561,7 +564,7 @@ public class ProductMixDialog extends DialogView implements DialogHandlerListene
                   float multiplyFactorFromBaseUnits = Double.isNaN(multiplyFactorFromBaseUnitsAsDouble) || Double.isInfinite(multiplyFactorFromBaseUnitsAsDouble) ? 0f
                         : (float) multiplyFactorFromBaseUnitsAsDouble;
                   log.debug("addDataToProductElement - amount: {}, multiplyFactorFromBaseUnits: {}", amount, multiplyFactorFromBaseUnits);
-                  element.productAmountStepper.setValue(amount * multiplyFactorFromBaseUnits);
+                  element.getProductAmountStepper().setValue(amount * multiplyFactorFromBaseUnits);
                }
             }
          }
@@ -587,7 +590,7 @@ public class ProductMixDialog extends DialogView implements DialogHandlerListene
          if (mixProductsLayout != null) {
             mixProductsLayout.addView(productElementLayout);
             productMixElementHolderList.add(productElement);
-            productElement.productUnit.setEnabled(false);
+            productElement.getProductUnit().setEnabled(false);
          }
       }
       catch (Exception e) {
@@ -606,37 +609,37 @@ public class ProductMixDialog extends DialogView implements DialogHandlerListene
       }
 
       if (productElement != null) {
-         productElement.removeButton.setOnClickListener(new OnClickListener() {
+         productElement.getRemoveButton().setOnClickListener(new OnClickListener() {
             @Override
             public void onClick(View view) {
                removeProduct(productElement);
             }
          });
 
-         if (productElement.productPickList != null) {
-            productElement.productPickList.setHeaderText(getResources().getString(R.string.product_mix_title_product, productMixElementHolderList.size() + 1));
-            PickListAdapter productListAdapter = new PickListAdapter(productElement.productPickList, getContext());
+         if (productElement.getProductPickList() != null) {
+            productElement.getProductPickList().setHeaderText(getResources().getString(R.string.product_mix_title_product, productMixElementHolderList.size() + 1));
+            PickListAdapter productListAdapter = new PickListAdapter(productElement.getProductPickList(), getContext());
             fillPickListAdapterWithProducts(productListAdapter, productList);
-            productElement.productPickList.setAdapter(productListAdapter);
-            productElement.productPickList.setWidgetHandlesAddNewMode(false);
+            productElement.getProductPickList().setAdapter(productListAdapter);
+            productElement.getProductPickList().setWidgetHandlesAddNewMode(false);
             createNewProductDialog(productElementView, productElement);
-            productElement.productPickList.setOnItemSelectedListener(new PickListEditable.OnItemSelectedListener() {
+            productElement.getProductPickList().setOnItemSelectedListener(new PickListEditable.OnItemSelectedListener() {
                @Override
                public void onItemSelected(AdapterView<?> adapterView, View view, int position, long id, boolean fromUser) {
-                  productElement.productAmountStepper.setEnabled(true);
-                  productElement.productUnit.setEnabled(true);
-                  if (productElement.productPickList.getItemByPosition(position) != null) {
-                     Product product = getProductByName(productElement.productPickList.getItemByPosition(position).getValue());
+                  productElement.getProductAmountStepper().setEnabled(true);
+                  productElement.getProductUnit().setEnabled(true);
+                  if (productElement.getProductPickList().getItemByPosition(position) != null) {
+                     Product product = getProductByName(productElement.getProductPickList().getItemByPosition(position).getValue());
                      if (product != null) {
-                        if (productElement.currentRecipe == null) {
-                           productElement.currentRecipe = new ProductMixRecipe();
+                        if (productElement.getCurrentRecipe() == null) {
+                           productElement.setCurrentRecipe(new ProductMixRecipe());
                         }
-                        productElement.currentRecipe.setProduct(product);
-                        productElement.productPickList.setTag(product);
+                        productElement.getCurrentRecipe().setProduct(product);
+                        productElement.getProductPickList().setTag(product);
 
-                        setUnitToSegmentedToggleButtonGroup(productElement.productUnit, product.getForm(),
+                        setUnitToSegmentedToggleButtonGroup(productElement.getProductUnit(), product.getForm(),
                               ProductHelperMethods.queryAmountMeasurementSystemForProductForm(product.getForm(), getContext()), ProductDisplayItem.AMOUNT);
-                        productElement.productUnit.setToggleListSelectionListener(new SegmentedTogglePickListListener() {
+                        productElement.getProductUnit().setToggleListSelectionListener(new SegmentedTogglePickListListener() {
                            @Override
                            public void onToggleButtonCheckedChanged(RadioGroup radioGroup, int position) {
                               updateHolderAndStepper(position);
@@ -648,12 +651,12 @@ public class ProductMixDialog extends DialogView implements DialogHandlerListene
                            }
 
                            private void updateHolderAndStepper(int position) {
-                              UnitsToggleHolder unit = (UnitsToggleHolder) productElement.productUnit.getTag();
+                              UnitsToggleHolder unit = (UnitsToggleHolder) productElement.getProductUnit().getTag();
                               if (unit.unitChoices.size() > position) {
                                  unit.currentChoice = unit.unitChoices.get(position);
                               }
                               if (unit.currentChoice != null) {
-                                 setUnitToStepper(productElement.productAmountStepper, unit.currentChoice.getName());
+                                 setUnitToStepper(productElement.getProductAmountStepper(), unit.currentChoice.getName());
                               }
                               calculateTotalAmountForProductMix();
                            }
@@ -663,7 +666,7 @@ public class ProductMixDialog extends DialogView implements DialogHandlerListene
 
                            }
                         });
-                        productElement.productAmountStepper.setOnAdjustableBarChangedListener(new ExtendedOnAdjustableBarChangedListener() {
+                        productElement.getProductAmountStepper().setOnAdjustableBarChangedListener(new ExtendedOnAdjustableBarChangedListener() {
                            @Override
                            public void onAdjustableBarChanged(AbstractStepperView abstractStepperView, double value, boolean fromUser) {
                               if (fromUser) {
@@ -675,7 +678,7 @@ public class ProductMixDialog extends DialogView implements DialogHandlerListene
                   }
                   if (productMixElementHolderList.size() > 1) {
                      addRemoveButtonToFirstProduct();
-                     productElement.removeButton.setVisibility(VISIBLE);
+                     productElement.getRemoveButton().setVisibility(VISIBLE);
                   }
                   calculateNewApplicationRatePerProduct(new Float(productDialogsApplicationRateHandler.getStepperRate1Value()),
                         new Float(productDialogsApplicationRateHandler.getStepperRate2Value()), productDialogsApplicationRateHandler.getSelectedRateUnits());
@@ -683,9 +686,9 @@ public class ProductMixDialog extends DialogView implements DialogHandlerListene
                   if (mixProductCategoryButton.isExpanded()) {
                      mixProductCategoryButton.resizeContent(false);
                   }
-                  UnitsToggleHolder unit = (UnitsToggleHolder) productElement.productUnit.getTag();
+                  UnitsToggleHolder unit = (UnitsToggleHolder) productElement.getProductUnit().getTag();
                   if (unit != null && unit.currentChoice != null) {
-                     setUnitToStepper(productElement.productAmountStepper, unit.currentChoice.getName());
+                     setUnitToStepper(productElement.getProductAmountStepper(), unit.currentChoice.getName());
                   }
                }
 
@@ -694,7 +697,7 @@ public class ProductMixDialog extends DialogView implements DialogHandlerListene
                }
             });
             // this is a guess - as long as there is no form for the product selected it is not possible to choose the correct measurement system
-            setUnitToSegmentedToggleButtonGroup(productElement.productUnit, productMixForm,
+            setUnitToSegmentedToggleButtonGroup(productElement.getProductUnit(), productMixForm,
                   ProductHelperMethods.queryAmountMeasurementSystemForProductForm(productMixForm, getContext()), ProductDisplayItem.AMOUNT);
          }
       }
@@ -722,13 +725,13 @@ public class ProductMixDialog extends DialogView implements DialogHandlerListene
    }
 
    private void createNewProductDialog(final LinearLayout productElementView, final ProductMixElementHolder productElement) {
-      productElement.productPickList.setOnItemActionListener(new OnPickListItemActionListener() {
+      productElement.getProductPickList().setOnItemActionListener(new OnPickListItemActionListener() {
          private boolean isTitleValid = false;
          private boolean isFormSet = false;
 
          //instance initializer
          {
-            productElement.productPickList.setAllowNewItemsCreation(!isAddNewProductOpen);
+            productElement.getProductPickList().setAllowNewItemsCreation(!isAddNewProductOpen);
          }
 
          private void updateAddButtonState(Button saveButton) {
@@ -836,10 +839,10 @@ public class ProductMixDialog extends DialogView implements DialogHandlerListene
                      @Override
                      public void handleEvent(Product product) {
                         productList.add(product);
-                        PickListAdapter adapter = productElement.productPickList.getAdapter();
+                        PickListAdapter adapter = productElement.getProductPickList().getAdapter();
                         adapter.add(new PickListItem(adapter.getCount() - 1, product.getName()));
-                        productElement.productPickList.setAdapter(adapter);
-                        productElement.productPickList.setSelectionByPosition(adapter.getCount() - 1);
+                        productElement.getProductPickList().setAdapter(adapter);
+                        productElement.getProductPickList().setSelectionByPosition(adapter.getCount() - 1);
                         selectProductView.setVisibility(VISIBLE);
                         newProductView.setVisibility(GONE);
                         enableAddNewProductButtons(true);
@@ -914,16 +917,16 @@ public class ProductMixDialog extends DialogView implements DialogHandlerListene
          productDialogsApplicationRateHandler.setValuesToProduct(productMixParameters);
 
          ProductUnits carrierUnit = null;
-         if (carrierProductHolder.productPickList.getTag() != null) {
-            UnitsToggleHolder holder = (UnitsToggleHolder) carrierProductHolder.productUnit.getTag();
+         if (carrierProductHolder.getProductPickList().getTag() != null) {
+            UnitsToggleHolder holder = (UnitsToggleHolder) carrierProductHolder.getProductUnit().getTag();
             carrierUnit = holder.currentChoice;
          }
 
          ProductMixHelper.bindMixTotalUnits(tempProductMix, carrierUnit, ProductHelperMethods.queryAmountMeasurementSystemForProductForm(productMixForm, getContext()));
-         ProductMixRecipeHelper.setAmountAndUnitsToProductMixRecipe(carrierProductHolder.currentRecipe, ((UnitsToggleHolder) carrierProductHolder.productUnit.getTag()).currentChoice,
-               carrierProductHolder.productAmountStepper.getValue(), getContext());
+         ProductMixRecipeHelper.setAmountAndUnitsToProductMixRecipe(carrierProductHolder.getCurrentRecipe(), ((UnitsToggleHolder) carrierProductHolder.getProductUnit().getTag()).currentChoice,
+               carrierProductHolder.getProductAmountStepper().getValue(), getContext());
          tempProductMix.setMixType(MixType.FORMULA);
-         tempProductMix.setProductCarrier(carrierProductHolder.currentRecipe);
+         tempProductMix.setProductCarrier(carrierProductHolder.getCurrentRecipe());
          tempProductMix.setRecipe(createProductRecipeList());
          // this is a bit nasty here - because the productMix object to save is created in this method, there is no place to save the trimmed string in the TextWatcher...
          // if the product object would be created earlier we could save the trimmed string there.
@@ -961,10 +964,10 @@ public class ProductMixDialog extends DialogView implements DialogHandlerListene
    private List<ProductMixRecipe> createProductRecipeList() {
       List<ProductMixRecipe> productMixRecipeList = new ArrayList<ProductMixRecipe>();
       for (ProductMixElementHolder productElementHolder : productMixElementHolderList) {
-         if (productElementHolder.currentRecipe != null) {
-            ProductMixRecipe recipe = productElementHolder.currentRecipe;
-            ProductMixRecipeHelper.setAmountAndUnitsToProductMixRecipe(recipe, ((UnitsToggleHolder) productElementHolder.productUnit.getTag()).currentChoice,
-                  productElementHolder.productAmountStepper.getValue(), getContext());
+         if (productElementHolder.getCurrentRecipe() != null) {
+            ProductMixRecipe recipe = productElementHolder.getCurrentRecipe();
+            ProductMixRecipeHelper.setAmountAndUnitsToProductMixRecipe(recipe, ((UnitsToggleHolder) productElementHolder.getProductUnit().getTag()).currentChoice,
+                  productElementHolder.getProductAmountStepper().getValue(), getContext());
             productMixRecipeList.add(recipe);
          }
       }
@@ -978,16 +981,16 @@ public class ProductMixDialog extends DialogView implements DialogHandlerListene
    private void initializeCarrierProduct() {
       final LinearLayout productElement = (LinearLayout) inflate(getContext(), R.layout.product_mix_dialog_mix_products_element_view, null);
       carrierProductHolder = new ProductMixElementHolder(productElement);
-      carrierProductHolder.productPickList.setHeaderText(R.string.product_mix_title_carrier);
-      if (carrierProductHolder.productPickList != null) {
-         carrierProductHolder.productPickList.setWidgetHandlesAddNewMode(false);
-         carrierProductHolder.productPickList.setOnItemActionListener(new OnProductPickListItemActionListener(productElement));
-         carrierProductHolder.productPickList.setOnItemSelectedListener(new OnCarrierProductPickListItemSelectedListener());
+      carrierProductHolder.getProductPickList().setHeaderText(R.string.product_mix_title_carrier);
+      if (carrierProductHolder.getProductPickList() != null) {
+         carrierProductHolder.getProductPickList().setWidgetHandlesAddNewMode(false);
+         carrierProductHolder.getProductPickList().setOnItemActionListener(new OnProductPickListItemActionListener(productElement));
+         carrierProductHolder.getProductPickList().setOnItemSelectedListener(new OnCarrierProductPickListItemSelectedListener());
       }
       if (actionType == DialogActionType.ADD) {
-         setUnitToSegmentedToggleButtonGroup(carrierProductHolder.productUnit, productMixForm,
+         setUnitToSegmentedToggleButtonGroup(carrierProductHolder.getProductUnit(), productMixForm,
                ProductHelperMethods.queryAmountMeasurementSystemForProductForm(productMixForm, getContext()), ProductDisplayItem.AMOUNT);
-         carrierProductHolder.productUnit.setEnabled(false);
+         carrierProductHolder.getProductUnit().setEnabled(false);
       }
       mixProductsLayout.addView(productElement);
    }
@@ -995,7 +998,7 @@ public class ProductMixDialog extends DialogView implements DialogHandlerListene
    private class OnCarrierProductPickListItemSelectedListener implements PickListEditable.OnItemSelectedListener {
       @Override
       public void onItemSelected(AdapterView<?> adapterView, View view, int position, long id, boolean fromUser) {
-         carrierProductHolder.productAmountStepper.setOnAdjustableBarChangedListener(new ExtendedOnAdjustableBarChangedListener() {
+         carrierProductHolder.getProductAmountStepper().setOnAdjustableBarChangedListener(new ExtendedOnAdjustableBarChangedListener() {
             @Override
             public void onAdjustableBarChanged(AbstractStepperView abstractStepperView, double v, boolean fromUser) {
                if (fromUser) {
@@ -1004,20 +1007,20 @@ public class ProductMixDialog extends DialogView implements DialogHandlerListene
                }
             }
          });
-         carrierProductHolder.productAmountStepper.setEnabled(true);
-         carrierProductHolder.productUnit.setEnabled(true);
+         carrierProductHolder.getProductAmountStepper().setEnabled(true);
+         carrierProductHolder.getProductUnit().setEnabled(true);
          if (position >= 0) {
-            Product product = getProductByName(carrierProductHolder.productPickList.getItemByPosition(position).getValue());
-            carrierProductHolder.productPickList.setTag(product);
-            if (carrierProductHolder.currentRecipe == null) {
-               carrierProductHolder.currentRecipe = new ProductMixRecipe();
+            Product product = getProductByName(carrierProductHolder.getProductPickList().getItemByPosition(position).getValue());
+            carrierProductHolder.getProductPickList().setTag(product);
+            if (carrierProductHolder.getCurrentRecipe() == null) {
+               carrierProductHolder.setCurrentRecipe(new ProductMixRecipe());
             }
-            carrierProductHolder.currentRecipe.setProduct(product);
+            carrierProductHolder.getCurrentRecipe().setProduct(product);
             if (product != null) {
-               setUnitToSegmentedToggleButtonGroup(carrierProductHolder.productUnit, product.getForm(),
+               setUnitToSegmentedToggleButtonGroup(carrierProductHolder.getProductUnit(), product.getForm(),
                      ProductHelperMethods.queryAmountMeasurementSystemForProductForm(productMixForm, getContext()), ProductDisplayItem.AMOUNT);
             }
-            carrierProductHolder.productUnit.setToggleListSelectionListener(new SegmentedTogglePickListListener() {
+            carrierProductHolder.getProductUnit().setToggleListSelectionListener(new SegmentedTogglePickListListener() {
                @Override
                public void onToggleButtonCheckedChanged(RadioGroup radioGroup, int position) {
                   updateHolder(position);
@@ -1029,14 +1032,14 @@ public class ProductMixDialog extends DialogView implements DialogHandlerListene
                }
 
                private void updateHolder(int position) {
-                  UnitsToggleHolder unit = (UnitsToggleHolder) carrierProductHolder.productUnit.getTag();
+                  UnitsToggleHolder unit = (UnitsToggleHolder) carrierProductHolder.getProductUnit().getTag();
                   if (unit != null) {
                      if (unit.currentChoice != null) {
                         if (unit.unitChoices.size() > position) {
                            unit.currentChoice = unit.unitChoices.get(position);
                         }
-                        setUnitToStepper(carrierProductHolder.productAmountStepper, unit.currentChoice.getName());
-                        carrierProductHolder.productUnit.setTag(unit);
+                        setUnitToStepper(carrierProductHolder.getProductAmountStepper(), unit.currentChoice.getName());
+                        carrierProductHolder.getProductUnit().setTag(unit);
                         calculateTotalAmountForProductMix();
                      }
                   }
@@ -1050,9 +1053,9 @@ public class ProductMixDialog extends DialogView implements DialogHandlerListene
 
             isCarrierSet = true;
             updateSaveButtonState();
-            UnitsToggleHolder unit = (UnitsToggleHolder) carrierProductHolder.productUnit.getTag();
+            UnitsToggleHolder unit = (UnitsToggleHolder) carrierProductHolder.getProductUnit().getTag();
             if (unit != null && unit.currentChoice != null) {
-               setUnitToStepper(carrierProductHolder.productAmountStepper, unit.currentChoice.getName());
+               setUnitToStepper(carrierProductHolder.getProductAmountStepper(), unit.currentChoice.getName());
             }
             calculateNewApplicationRatePerProduct(new Float(productDialogsApplicationRateHandler.getStepperRate1Value()),
                   new Float(productDialogsApplicationRateHandler.getStepperRate2Value()), productDialogsApplicationRateHandler.getSelectedRateUnits());
@@ -1199,9 +1202,9 @@ public class ProductMixDialog extends DialogView implements DialogHandlerListene
                      productMixFormPickList.setSelectionByPosition(newProductFormPickList.getSelectedItemPosition());
                      productMixFormPickList.setEnabled(true);
                      productList.add(product);
-                     PickListAdapter adapter = carrierProductHolder.productPickList.getAdapter();
+                     PickListAdapter adapter = carrierProductHolder.getProductPickList().getAdapter();
                      adapter.add(new PickListItem(adapter.getCount() - 1, product.getName()));
-                     carrierProductHolder.productPickList.setSelectionByPosition(adapter.getCount() - 1);
+                     carrierProductHolder.getProductPickList().setSelectionByPosition(adapter.getCount() - 1);
                      selectProductView.setVisibility(VISIBLE);
                      newProductView.setVisibility(GONE);
                      enableAddNewProductButtons(true);
@@ -1274,9 +1277,9 @@ public class ProductMixDialog extends DialogView implements DialogHandlerListene
     */
    private void resetCarrierProduct() {
       if (carrierProductHolder != null) {
-         carrierProductHolder.productUnit.setEnabled(false);
-         carrierProductHolder.productAmountStepper.setEnabled(false);
-         carrierProductHolder.productAmountStepper.setValue(0);
+         carrierProductHolder.getProductUnit().setEnabled(false);
+         carrierProductHolder.getProductAmountStepper().setEnabled(false);
+         carrierProductHolder.getProductAmountStepper().setValue(0);
          isCarrierSet = false;
          updateSaveButtonState();
       }
@@ -1305,7 +1308,7 @@ public class ProductMixDialog extends DialogView implements DialogHandlerListene
       if (!productMixElementHolderList.isEmpty()) {
          ProductMixElementHolder firstProduct = productMixElementHolderList.get(0);
          if (firstProduct != null) {
-            firstProduct.removeButton.setVisibility(VISIBLE);
+            firstProduct.getRemoveButton().setVisibility(VISIBLE);
          }
       }
    }
@@ -1317,7 +1320,7 @@ public class ProductMixDialog extends DialogView implements DialogHandlerListene
       if (!productMixElementHolderList.isEmpty()) {
          ProductMixElementHolder firstProduct = productMixElementHolderList.get(0);
          if (firstProduct != null) {
-            firstProduct.removeButton.setVisibility(GONE);
+            firstProduct.getRemoveButton().setVisibility(GONE);
          }
       }
    }
@@ -1333,8 +1336,8 @@ public class ProductMixDialog extends DialogView implements DialogHandlerListene
             if (!productMixElementHolderList.remove(productElement)) {
                log.warn("Could not Remove " + productElement);
             }
-            ProductMixRecipe recipe = productElement.currentRecipe;
-            mixProductsLayout.removeView(productElement.elementView);
+            ProductMixRecipe recipe = productElement.getCurrentRecipe();
+            mixProductsLayout.removeView(productElement.getElementView());
             updateProductViewList();
             if (recipe != null) {
                applicationRateTableDataMap.remove(recipe.getProduct());
@@ -1356,8 +1359,8 @@ public class ProductMixDialog extends DialogView implements DialogHandlerListene
          isOneProductMixSet = false;
          for (int i = 0; i < productMixElementHolderList.size(); i++) {
             ProductMixElementHolder productElement = productMixElementHolderList.get(i);
-            productElement.productPickList.setHeaderText(getResources().getString(R.string.product_mix_title_product, i + 1));
-            if (!isOneProductMixSet && productElement.productPickList.getSelectedItemPosition() >= 0) {
+            productElement.getProductPickList().setHeaderText(getResources().getString(R.string.product_mix_title_product, i + 1));
+            if (!isOneProductMixSet && productElement.getProductPickList().getSelectedItemPosition() >= 0) {
                isOneProductMixSet = true;
             }
          }
@@ -1392,8 +1395,8 @@ public class ProductMixDialog extends DialogView implements DialogHandlerListene
          int viewCounter = 1;
 
          //Add Carrier to table
-         if (carrierProductHolder != null && carrierProductHolder.currentRecipe != null) {
-            TableRow tableRow = ApplicationRateTableFactory.createTableRowForProductMixDialog(applicationRateTableDataMap.get(carrierProductHolder.currentRecipe.getProduct()),
+         if (carrierProductHolder != null && carrierProductHolder.getCurrentRecipe() != null) {
+            TableRow tableRow = ApplicationRateTableFactory.createTableRowForProductMixDialog(applicationRateTableDataMap.get(carrierProductHolder.getCurrentRecipe().getProduct()),
                   getContext(), productMixTable);
             if (tableRow != null) {
                productMixTable.addView(tableRow, viewCounter++);
@@ -1402,9 +1405,9 @@ public class ProductMixDialog extends DialogView implements DialogHandlerListene
 
          if (!productMixElementHolderList.isEmpty()) {
             for (ProductMixElementHolder productElement : productMixElementHolderList) {
-               if (productElement.currentRecipe != null) {
-                  if (productElement.currentRecipe.getProduct() != null) {
-                     Product product = productElement.currentRecipe.getProduct();
+               if (productElement.getCurrentRecipe() != null) {
+                  if (productElement.getCurrentRecipe().getProduct() != null) {
+                     Product product = productElement.getCurrentRecipe().getProduct();
                      TableRow tableRow = ApplicationRateTableFactory.createTableRowForProductMixDialog(applicationRateTableDataMap.get(product), getContext(), productMixTable);
                      if (tableRow != null) {
                         productMixTable.addView(tableRow, viewCounter++);
@@ -1429,17 +1432,17 @@ public class ProductMixDialog extends DialogView implements DialogHandlerListene
    private void calculateTotalAmountForProductMix() {
       float totalAmount = 0;
 
-      UnitsToggleHolder carrierUnitHolder = (UnitsToggleHolder) carrierProductHolder.productUnit.getTag();
+      UnitsToggleHolder carrierUnitHolder = (UnitsToggleHolder) carrierProductHolder.getProductUnit().getTag();
       if (carrierUnitHolder != null && carrierUnitHolder.currentChoice != null) {
-         totalAmount += (carrierProductHolder.productAmountStepper.getValue() / carrierUnitHolder.currentChoice.getMultiplyFactorFromBaseUnits());
-         ProductMixRecipe carrierRecipe = carrierProductHolder.currentRecipe;
+         totalAmount += (carrierProductHolder.getProductAmountStepper().getValue() / carrierUnitHolder.currentChoice.getMultiplyFactorFromBaseUnits());
+         ProductMixRecipe carrierRecipe = carrierProductHolder.getCurrentRecipe();
          if (carrierRecipe != null && carrierRecipe.getProduct() != null) {
             Product carrierProduct = carrierRecipe.getProduct();
             if (carrierProduct != null) {
                for (ProductMixElementHolder productElement : productMixElementHolderList) {
-                  if (productElement.currentRecipe != null && productElement.currentRecipe.getProduct().getForm() == carrierProduct.getForm()) {
-                     UnitsToggleHolder unitHolder = (UnitsToggleHolder) productElement.productUnit.getTag();
-                     totalAmount += (productElement.productAmountStepper.getValue() / unitHolder.currentChoice.getMultiplyFactorFromBaseUnits());
+                  if (productElement.getCurrentRecipe() != null && productElement.getCurrentRecipe().getProduct().getForm() == carrierProduct.getForm()) {
+                     UnitsToggleHolder unitHolder = (UnitsToggleHolder) productElement.getProductUnit().getTag();
+                     totalAmount += (productElement.getProductAmountStepper().getValue() / unitHolder.currentChoice.getMultiplyFactorFromBaseUnits());
                   }
                }
             }
@@ -1498,7 +1501,7 @@ public class ProductMixDialog extends DialogView implements DialogHandlerListene
          return;
       }
       if (this.productDialogsApplicationRateHandler.getStepperRate1Value() > 0 && isCarrierSet && isOneProductMixSet && isProductMixFormSet && this.carrierProductHolder != null
-            && this.carrierProductHolder.productAmountStepper.getValue() > 0) {
+            && this.carrierProductHolder.getProductAmountStepper().getValue() > 0) {
          this.setFirstButtonEnabled(true);
       }
       else {
@@ -1513,9 +1516,9 @@ public class ProductMixDialog extends DialogView implements DialogHandlerListene
 
    private static double getNewRate(double applicationRate, ProductMixElementHolder productElement, double totalAmount) {
       if (productElement != null) {
-         UnitsToggleHolder amountUnitHolder = (UnitsToggleHolder) productElement.productUnit.getTag();
+         UnitsToggleHolder amountUnitHolder = (UnitsToggleHolder) productElement.getProductUnit().getTag();
          if (amountUnitHolder != null && amountUnitHolder.currentChoice != null) {
-            double amount = productElement.productAmountStepper.getValue() / amountUnitHolder.currentChoice.getMultiplyFactorFromBaseUnits();
+            double amount = productElement.getProductAmountStepper().getValue() / amountUnitHolder.currentChoice.getMultiplyFactorFromBaseUnits();
             return calculateApplicationRate(amount, applicationRate, totalAmount);
          }
       }
@@ -1549,28 +1552,28 @@ public class ProductMixDialog extends DialogView implements DialogHandlerListene
     */
    private void calculateNewApplicationRatePerProduct(Float updateRate1, Float updateRate2, ProductUnits currentProductUnit) {
       if (currentProductUnit != null) {
-         if (carrierProductHolder.currentRecipe != null) {
+         if (carrierProductHolder.getCurrentRecipe() != null) {
             double applicationRate1 = Double.NaN;
             double applicationRate2 = Double.NaN;
-            Product carrierProduct = carrierProductHolder.currentRecipe.getProduct();
+            Product carrierProduct = carrierProductHolder.getCurrentRecipe().getProduct();
             ApplicationRateTableFactory.ApplicationRateTableData carrierApplicationRateTableData = getCreateAndPutApplicationRateTableData(carrierProduct);
             if (updateRate1 != null) {
                applicationRate1 = updateRate1 / currentProductUnit.getMultiplyFactorFromBaseUnits();
-               carrierApplicationRateTableData.defaultRate = getNewRate(applicationRate1, carrierProductHolder, totalAmount);
+               carrierApplicationRateTableData.setDefaultRate(getNewRate(applicationRate1, carrierProductHolder, totalAmount));
             }
             if (updateRate2 != null) {
                applicationRate2 = updateRate2 / currentProductUnit.getMultiplyFactorFromBaseUnits();
-               carrierApplicationRateTableData.rate2 = getNewRate(applicationRate2, carrierProductHolder, totalAmount);
+               carrierApplicationRateTableData.setRate2(getNewRate(applicationRate2, carrierProductHolder, totalAmount));
             }
             for (ProductMixElementHolder productElement : productMixElementHolderList) {
-               if (productElement != null && productElement.currentRecipe != null) {
-                  Product product = productElement.currentRecipe.getProduct();
+               if (productElement != null && productElement.getCurrentRecipe() != null) {
+                  Product product = productElement.getCurrentRecipe().getProduct();
                   ApplicationRateTableFactory.ApplicationRateTableData productApplicationRateTableData = getCreateAndPutApplicationRateTableData(product);
                   if (updateRate1 != null) {
-                     productApplicationRateTableData.defaultRate = getNewRate(applicationRate1, productElement, totalAmount);
+                     productApplicationRateTableData.setDefaultRate(getNewRate(applicationRate1, productElement, totalAmount));
                   }
                   if (updateRate2 != null) {
-                     productApplicationRateTableData.rate2 = getNewRate(applicationRate2, productElement, totalAmount);
+                     productApplicationRateTableData.setRate2(getNewRate(applicationRate2, productElement, totalAmount));
                   }
                }
             }
@@ -1597,11 +1600,14 @@ public class ProductMixDialog extends DialogView implements DialogHandlerListene
          applicationRateTableData = new ApplicationRateTableFactory.ApplicationRateTableData();
          applicationRateTableDataMap.put(product, applicationRateTableData);
       }
-      applicationRateTableData.productName = product.getName();
-      applicationRateTableData.productForm = product.getForm();
+      applicationRateTableData.setProductName(product.getName());
+      applicationRateTableData.setProductForm(product.getForm());
       // defined in System Units Spec 5.2. that mass or volume should be used for application rates
-      applicationRateTableData.unit = ProductHelperMethods
-            .retrieveProductRateUnits(product, ProductHelperMethods.queryApplicationRateMeasurementSystemForProductForm(product.getForm(), getContext())).deepCopy();
+      ProductUnits pu = ProductHelperMethods
+              .retrieveProductRateUnits(product, ProductHelperMethods.queryApplicationRateMeasurementSystemForProductForm(product.getForm(), getContext()));
+      if (null != pu) {
+         applicationRateTableData.setUnit(pu.deepCopy());
+      }
       return applicationRateTableData;
    }
 
@@ -1660,35 +1666,83 @@ public class ProductMixDialog extends DialogView implements DialogHandlerListene
    private void enableAddNewProductButtons(boolean enable) {
       isAddNewProductOpen = !enable;
       for (ProductMixElementHolder productMixElementHolder : productMixElementHolderList) {
-         productMixElementHolder.productPickList.setAllowNewItemsCreation(enable);
+         productMixElementHolder.getProductPickList().setAllowNewItemsCreation(enable);
       }
       if (carrierProductHolder != null) {
-         carrierProductHolder.productPickList.setAllowNewItemsCreation(enable);
+         carrierProductHolder.getProductPickList().setAllowNewItemsCreation(enable);
       }
    }
 
    private class ProductMixElementHolder {
-      public PickListEditable productPickList;
-      public Button removeButton;
-      public SegmentedToggleButtonGroupPickList productUnit;
-      public StepperView productAmountStepper;
-      public ProductMixRecipe currentRecipe;
-      public View elementView;
+      private PickListEditable productPickList;
+      private Button removeButton;
+      private SegmentedToggleButtonGroupPickList productUnit;
+      private StepperView productAmountStepper;
+      private ProductMixRecipe currentRecipe;
+      private View elementView;
 
       public ProductMixElementHolder(View view) {
          if (view != null) {
             try {
-               productPickList = (PickListEditable) view.findViewById(R.id.product_mix_product_left_picklist_product);
-               removeButton = (Button) view.findViewById(R.id.product_mix_button_remove_product);
-               productUnit = (SegmentedToggleButtonGroupPickList) view.findViewById(R.id.product_mix_segmentedtogglebuttongroup_product_unit);
-               productAmountStepper = (StepperView) view.findViewById(R.id.product_mix_stepperview_product_amount);
-               elementView = view;
-               productUnit.addEntry((long) 0, "m");
+               setProductPickList((PickListEditable) view.findViewById(R.id.product_mix_product_left_picklist_product));
+               setRemoveButton((Button) view.findViewById(R.id.product_mix_button_remove_product));
+               setProductUnit((SegmentedToggleButtonGroupPickList) view.findViewById(R.id.product_mix_segmentedtogglebuttongroup_product_unit));
+               setProductAmountStepper((StepperView) view.findViewById(R.id.product_mix_stepperview_product_amount));
+               setElementView(view);
+               getProductUnit().addEntry((long) 0, "m");
             }
             catch (Exception e) {
                log.error("error ", e);
             }
          }
+      }
+
+      public PickListEditable getProductPickList() {
+         return productPickList;
+      }
+
+      public void setProductPickList(PickListEditable productPickList) {
+         this.productPickList = productPickList;
+      }
+
+      public Button getRemoveButton() {
+         return removeButton;
+      }
+
+      public void setRemoveButton(Button removeButton) {
+         this.removeButton = removeButton;
+      }
+
+      public SegmentedToggleButtonGroupPickList getProductUnit() {
+         return productUnit;
+      }
+
+      public void setProductUnit(SegmentedToggleButtonGroupPickList productUnit) {
+         this.productUnit = productUnit;
+      }
+
+      public StepperView getProductAmountStepper() {
+         return productAmountStepper;
+      }
+
+      public void setProductAmountStepper(StepperView productAmountStepper) {
+         this.productAmountStepper = productAmountStepper;
+      }
+
+      public ProductMixRecipe getCurrentRecipe() {
+         return currentRecipe;
+      }
+
+      public void setCurrentRecipe(ProductMixRecipe currentRecipe) {
+         this.currentRecipe = currentRecipe;
+      }
+
+      public View getElementView() {
+         return elementView;
+      }
+
+      public void setElementView(View elementView) {
+         this.elementView = elementView;
       }
    }
 }

@@ -30,7 +30,7 @@ import com.cnh.pf.android.data.management.adapter.SelectionTreeViewAdapter;
 import com.cnh.pf.android.data.management.graph.GroupObjectGraph;
 import com.cnh.pf.android.data.management.helper.DataExchangeBlockedOverlay;
 import com.cnh.pf.android.data.management.helper.DataExchangeProcessOverlay;
-import com.cnh.pf.android.data.management.helper.TreeDragShadowBuilder;
+import com.cnh.pf.android.data.management.helper.TreeDragMultipleSelectionShadowBuilder;
 import com.cnh.pf.android.data.management.session.ErrorCode;
 import com.cnh.pf.android.data.management.session.Session;
 import com.cnh.pf.android.data.management.session.SessionContract;
@@ -48,6 +48,8 @@ import java.util.Comparator;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
+
+import javax.validation.constraints.NotNull;
 
 import pl.polidea.treeview.InMemoryTreeNode;
 import pl.polidea.treeview.InMemoryTreeStateManager;
@@ -88,6 +90,15 @@ public abstract class BaseDataFragment extends RoboFragment implements SessionCo
    private SessionContract.SessionManager sessionManager;
 
    private List<String> dataTreeRootNodesWithAutomaticParentSelection = null;
+   private static boolean dsPerfFlag = false;
+
+   public static boolean isDsPerfFlag() {
+      return dsPerfFlag;
+   }
+
+   public static void setDsPerfFlag(boolean dsPerfFlag) {
+      BaseDataFragment.dsPerfFlag = dsPerfFlag;
+   }
 
    @Override
    public void setSessionManager(SessionContract.SessionManager sessionManager) {
@@ -122,7 +133,7 @@ public abstract class BaseDataFragment extends RoboFragment implements SessionCo
     * Sort a list of child nodes under each tree parent node.
     */
    protected void sortTreeList() {
-      if (manager != null && manager instanceof SortableChildrenTree) {
+      if (manager instanceof SortableChildrenTree) {
          ((SortableChildrenTree) manager).sortChildren(comparator);
       }
    }
@@ -300,16 +311,6 @@ public abstract class BaseDataFragment extends RoboFragment implements SessionCo
    }
 
    @Override
-   public void onSaveInstanceState(Bundle outState) {
-      super.onSaveInstanceState(outState);
-   }
-
-   @Override
-   public void onCreate(Bundle savedInstanceState) {
-      super.onCreate(savedInstanceState);
-   }
-
-   @Override
    public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
       View layout = inflater.inflate(R.layout.import_layout, container, false);
       LinearLayout leftPanel = (LinearLayout) layout.findViewById(R.id.left_panel_wrapper);
@@ -332,13 +333,30 @@ public abstract class BaseDataFragment extends RoboFragment implements SessionCo
       });
 
       treeViewList.setChoiceMode(AbsListView.CHOICE_MODE_NONE);
+   }
+
+   /**
+    * This method enables drag and drop for treeViewList
+    */
+   protected void enableDragAndDropForTreeView() {
       treeViewList.setOnItemLongClickListener(new AdapterView.OnItemLongClickListener() {
          @Override
          public boolean onItemLongClick(AdapterView<?> parent, View view, int position, long id) {
             if (!treeAdapter.getSelectionMap().containsKey(view.getTag())) {
-               treeAdapter.handleItemClick(parent, view, position, view.getTag()); //select it, and start the drag
+               treeAdapter.handleItemClick(parent, view, position, view.getTag()); //update selection
+               view.setPressed(false); //Item would be shown/marked as pressed while in OnItemLongClickListener
             }
-            view.startDrag(null, new TreeDragShadowBuilder(view, treeViewList, treeAdapter), treeAdapter.getSelected(), 0);
+
+            //use different shadow builder depending on number of selected items
+            View.DragShadowBuilder shadowBuilder = null;
+            if (treeAdapter.getSelectionMap().size() == 1) {
+               shadowBuilder = new View.DragShadowBuilder(view);
+            }
+            else {
+               shadowBuilder = new TreeDragMultipleSelectionShadowBuilder(countSelectedItem(), getResources());
+            }
+            view.startDrag(null, shadowBuilder, treeAdapter.getSelected(), 0);
+
             return false;
          }
       });
@@ -370,6 +388,7 @@ public abstract class BaseDataFragment extends RoboFragment implements SessionCo
     *
     * @return  the session
     */
+   @NotNull
    protected Session getSession() {
       return sessionManager.getCurrentSession(getAction());
    }
@@ -449,6 +468,20 @@ public abstract class BaseDataFragment extends RoboFragment implements SessionCo
       }
       else {
          logger.debug("update(): Session manager is null");
+      }
+   }
+
+   /**
+    * Helper function to invoke copy paste on the session manager
+    *
+    * @param operations    list of operation
+    */
+   protected void paste(List<Operation> operations) {
+      if (sessionManager != null) {
+         sessionManager.paste(operations);
+      }
+      else {
+         logger.debug("paste(): Session manager is null");
       }
    }
 
@@ -548,17 +581,6 @@ public abstract class BaseDataFragment extends RoboFragment implements SessionCo
       }
    }
 
-   private List<Operation> processPartialImports(List<Operation> operations) {
-      if (operations == null) {
-         logger.warn("calculate operations returned No operations");
-         return null;
-      }
-      for (Operation operation : operations) {
-         operation.setTarget(operation.getData().getParent());
-      }
-      return operations;
-   }
-
    /**
     * Create tree-adapter if no tree adapter is set
     */
@@ -572,7 +594,7 @@ public abstract class BaseDataFragment extends RoboFragment implements SessionCo
             }
 
             @Override
-            public boolean isSupportedEntitiy(ObjectGraph node) {
+            public boolean isSupportedEntity(ObjectGraph node) {
                return supportedByFormat(node);
             }
 
@@ -647,7 +669,13 @@ public abstract class BaseDataFragment extends RoboFragment implements SessionCo
       else {
          treeBuilder.clear();
       }
-      addToTree(objectGraphs);
+      if (isDsPerfFlag()) {
+         TreeEntityHelper.LoadDMTreeFromJson(this.getActivity(), treeBuilder);
+         jsonAddToTree(objectGraphs);
+      }
+      else {
+         addToTree(objectGraphs);
+      }
       sortTreeList();
       createTreeAdapter();
 
@@ -687,6 +715,32 @@ public abstract class BaseDataFragment extends RoboFragment implements SessionCo
    //notify the treeview data change
    private void dataChangedRefresh() {
       manager.refresh();
+   }
+
+   /**
+    * adding object(s) to treeview using json.
+    * @param  objectGraphs objects to add
+    */
+   private void jsonAddToTree(List<ObjectGraph> objectGraphs) {
+      for (ObjectGraph objectGraph : objectGraphs) {
+         GroupObjectGraph gNode = TreeEntityHelper.findGroupNode(objectGraph.getType());
+         if (gNode != null) {
+            addOneObjectGraph(gNode, objectGraph);
+         }
+      }
+   }
+
+   /**
+    * add object to treeview using json.
+    * @param  objectGraph objects to add
+    */
+   private void addOneObjectGraph(ObjectGraph parent, ObjectGraph objectGraph) {
+      if (objectGraph != null) {
+         treeBuilder.bAddRelation(parent, objectGraph);
+         for (ObjectGraph children : objectGraph.getChildren()) {
+            addOneObjectGraph(objectGraph, children);
+         }
+      }
    }
 
    //Put the object into tree item list and return true for it is visible and false for invisible
@@ -823,15 +877,23 @@ public abstract class BaseDataFragment extends RoboFragment implements SessionCo
     * Given the current session state, chagne text & UI states for 'Select All'  button.
     */
    protected void updateSelectAllState() {
+      boolean allSelected = false;
+      boolean enable = false;
       final Session session = getSession();
-      boolean enable = !SessionUtil.isInProgress(session) && session.getObjectData() != null;
+      final ObjectTreeViewAdapter treeViewAdapter = getTreeAdapter();
+
+      if (treeViewAdapter != null && treeViewAdapter.getCount() > 0 && session != null) {
+         if (SessionUtil.isImportAction(session)) {
+            enable = !SessionUtil.isInProgress(session) && session.getObjectData() != null && !session.getObjectData().isEmpty();
+         }
+         else {
+            enable = !SessionUtil.isInProgress(session) && session.getObjectData() != null;
+         }
+         allSelected = treeViewAdapter.areAllSelected();
+      }
 
       logger.debug("Enable Select All button: {}", enable);
       enableSelectAllButton(enable);
-      boolean allSelected = false;
-      if (getTreeAdapter() != null) {
-         allSelected = getTreeAdapter().areAllSelected();
-      }
       selectAllBtn.setText(allSelected ? R.string.deselect_all : R.string.select_all);
       selectAllBtn.setActivated(allSelected);
    }
@@ -853,7 +915,12 @@ public abstract class BaseDataFragment extends RoboFragment implements SessionCo
       if (blockingActions != null && sessionManager != null && !DataExchangeBlockedOverlay.MODE.DISCONNECTED.equals(disabledOverlay.getMode())) {
          for (Session.Action action : blockingActions) {
             if (action != null) {
-               if (sessionManager.actionIsActive(action) && !Process.Result.CANCEL.equals(sessionManager.getCurrentSession(action).getResultCode())) {
+               //To show the blocking overlay the following constraints must be valid:
+               // - the current action task is actively running
+               // - the current action task is NOT a discovery task
+               // - the current action task has not been cancelled
+               if (sessionManager.actionIsActive(action) && sessionManager.getCurrentSession(action).getType() != Session.Type.DISCOVERY
+                     && !Process.Result.CANCEL.equals(sessionManager.getCurrentSession(action).getResultCode())) {
                   //found blocking session, determine reason
                   final DataExchangeBlockedOverlay.MODE overlayMode;
                   switch (action) {
@@ -870,13 +937,6 @@ public abstract class BaseDataFragment extends RoboFragment implements SessionCo
                   }
                   disabledOverlay.setMode(overlayMode);
                   return true; //true:enabled blocking overlay
-               }
-               else {
-                  if (!DataExchangeBlockedOverlay.MODE.HIDDEN.equals(disabledOverlay.getMode())) {
-                     //disable overlay is shown but should be hidden
-                     disabledOverlay.setMode(DataExchangeBlockedOverlay.MODE.HIDDEN);
-                     return false;
-                  }
                }
             }
             else {

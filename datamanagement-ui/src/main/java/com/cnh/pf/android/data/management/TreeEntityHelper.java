@@ -9,11 +9,26 @@
 
 package com.cnh.pf.android.data.management;
 
+import com.cnh.pf.android.data.management.graph.GroupObjectGraph;
+import com.google.gson.Gson;
+
 import android.content.Context;
 
 import com.cnh.jgroups.DataTypes;
+import com.cnh.jgroups.ObjectGraph;
+import com.cnh.pf.android.data.management.helper.DMTreeJsonData;
 import com.google.common.base.CaseFormat;
+import com.google.gson.JsonIOException;
+import com.google.gson.JsonSyntaxException;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import pl.polidea.treeview.TreeBuilder;
 
+import java.io.Closeable;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.InputStreamReader;
+import java.nio.charset.Charset;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -23,7 +38,18 @@ import java.util.Map;
  */
 public class TreeEntityHelper {
 
+   private static final Logger logger = LoggerFactory.getLogger(TreeEntityHelper.class);
    private static final Map<String, Integer> TYPE_ICONS = new HashMap<String, Integer>();
+
+   private static final Map<String, GroupObjectGraph> GroupObjectGraphMap =
+      new HashMap<String, GroupObjectGraph>();
+
+   /**
+    * Map lists all entities which are groupable in ui, entities with types specified in this lists will be grouped in ui.
+    */
+   protected static final Map<String, Integer> group2name = new HashMap<String, Integer>();
+   protected static final Map<String, String> obj2group = new HashMap<String, String>();
+   protected static final Map<String, String> group2group = new HashMap<String, String>();
 
    public static final String GROWERS = "GROWERS";
    public static final String TASKS = "TASKS";
@@ -43,109 +69,110 @@ public class TreeEntityHelper {
 
    static {
       TYPE_ICONS.put(DataTypes.GROWER, R.drawable.ic_datatree_grower);
-      TYPE_ICONS.put(GROWERS, R.drawable.ic_datatree_grower);
       TYPE_ICONS.put(DataTypes.FARM, R.drawable.ic_datatree_farm);
       TYPE_ICONS.put(DataTypes.FIELD, R.drawable.ic_datatree_field);
       TYPE_ICONS.put(DataTypes.TASK, R.drawable.ic_datatree_tasks);
       TYPE_ICONS.put(TASKS, R.drawable.ic_datatree_tasks);
-      TYPE_ICONS.put(DataTypes.RX, R.drawable.ic_datatree_prescription);
-      TYPE_ICONS.put(RXS, R.drawable.ic_datatree_prescription);
-      TYPE_ICONS.put(DataTypes.RX_PLAN, R.drawable.ic_datatree_prescription);
-      TYPE_ICONS.put(DataTypes.PRODUCT, R.drawable.ic_datatree_products);
-      TYPE_ICONS.put(PRODUCTS, R.drawable.ic_datatree_products);
-      TYPE_ICONS.put(DataTypes.PRODUCT_MIX, R.drawable.ic_datatree_obstacles);
-      TYPE_ICONS.put(PRODUCT_MIXS, R.drawable.ic_datatree_obstacles);
-      TYPE_ICONS.put(PRODUCT_MIX_VARIETY, R.drawable.ic_datatree_products);
-      TYPE_ICONS.put(DataTypes.BOUNDARY, R.drawable.ic_datatree_boundaries);
-      TYPE_ICONS.put(BOUNDARIES, R.drawable.ic_datatree_boundaries);
-      TYPE_ICONS.put(DataTypes.LANDMARK, R.drawable.ic_datatree_obstacles);
-      TYPE_ICONS.put(LANDMARKS, R.drawable.ic_datatree_obstacles);
-      TYPE_ICONS.put(DataTypes.GUIDANCE_GROUP, R.drawable.ic_data_tree_swath);
-      TYPE_ICONS.put(GUIDANCE_GROUPS, R.drawable.ic_data_tree_swath);
+      TYPE_ICONS.put(DataTypes.RX, R.drawable.ic_data_tree_rx);
+      TYPE_ICONS.put(RXS, R.drawable.ic_data_tree_rx);
+      TYPE_ICONS.put(DataTypes.RX_PLAN, R.drawable.ic_data_tree_rx);
+      TYPE_ICONS.put(DataTypes.PRODUCT, R.drawable.dt_icon_products);
+      TYPE_ICONS.put(PRODUCTS, R.drawable.dt_icon_products);
+      TYPE_ICONS.put(DataTypes.PRODUCT_MIX, R.drawable.dt_icon_product_mix);
+      TYPE_ICONS.put(PRODUCT_MIXS, R.drawable.dt_icon_product_mix);
+      TYPE_ICONS.put(DataTypes.BOUNDARY, R.drawable.dt_icon_boundary);
+      TYPE_ICONS.put(BOUNDARIES, R.drawable.dt_icon_boundary);
+      TYPE_ICONS.put(DataTypes.LANDMARK, R.drawable.dt_icon_landmark);
+      TYPE_ICONS.put(LANDMARKS, R.drawable.dt_icon_landmark);
+      TYPE_ICONS.put(DataTypes.GUIDANCE_GROUP, R.drawable.ic_data_tree_swaths);
+      TYPE_ICONS.put(GUIDANCE_GROUPS, R.drawable.ic_data_tree_swaths);
       TYPE_ICONS.put(DataTypes.GUIDANCE_PATTERN, R.drawable.ic_datatree_swath);
       TYPE_ICONS.put(DataTypes.GUIDANCE_CONFIGURATION, R.drawable.ic_data_tree_guidance);
       TYPE_ICONS.put(GUIDANCE_CONFIGURATIONS, R.drawable.ic_data_tree_guidance);
       TYPE_ICONS.put(DataTypes.COVERAGE, R.drawable.ic_data_tree_coverage_area);
-      TYPE_ICONS.put(DataTypes.NOTE, R.drawable.ic_datatree_background_layers);
-      TYPE_ICONS.put(NOTES, R.drawable.ic_datatree_background_layers);
+      TYPE_ICONS.put(DataTypes.NOTE, R.drawable.dt_icon_bglayers);
+      TYPE_ICONS.put(NOTES, R.drawable.dt_icon_bglayers);
       TYPE_ICONS.put(DataTypes.FILE, R.drawable.ic_data_tree_harvesting);
       TYPE_ICONS.put(DataTypes.VEHICLE, R.drawable.ic_data_tree_tractor_case);
       TYPE_ICONS.put(VEHICLES, R.drawable.ic_data_tree_tractor_case);
       TYPE_ICONS.put(DataTypes.VEHICLE_IMPLEMENT, R.drawable.ic_datatree_implements);
-      TYPE_ICONS.put(DataTypes.VEHICLE_IMPLEMENT_CONFIG, R.drawable.ic_datatree_background_layers);
+      TYPE_ICONS.put(DataTypes.VEHICLE_IMPLEMENT_CONFIG, R.drawable.ic_datatree_implements);
       TYPE_ICONS.put(DataTypes.IMPLEMENT, R.drawable.ic_datatree_implements);
       TYPE_ICONS.put(IMPLEMENTS, R.drawable.ic_datatree_implements);
       TYPE_ICONS.put(DataTypes.IMPLEMENT_PRODUCT_CONFIG, R.drawable.ic_datatree_screenshots);
-      TYPE_ICONS.put(VARIETIES, R.drawable.ic_data_management_varieties);
-      TYPE_ICONS.put(DataTypes.VARIETY, R.drawable.ic_data_management_varieties);
+      TYPE_ICONS.put(VARIETIES, R.drawable.dt_icon_varieties);
+      TYPE_ICONS.put(DataTypes.VARIETY, R.drawable.dt_icon_varieties);
+      TYPE_ICONS.put(DataTypes.USB, R.drawable.ic_data_tree_usb_active);
+      TYPE_ICONS.put(DataTypes.CLOUD,R.drawable.ic_data_tree_cloud_active);
+
+      group2name.put(GROWERS, R.string.pfds);
+      group2name.put(GROWERS, R.string.pfds);
+      group2name.put(TASKS, R.string.tasks);
+      group2name.put(RXS, R.string.prescriptions);
+      group2name.put(BOUNDARIES, R.string.boundaries);
+      group2name.put(GUIDANCE_GROUPS, R.string.guidance_groups);
+      group2name.put(LANDMARKS, R.string.obstacles);
+      group2name.put(PRODUCTS, R.string.products);
+      group2name.put(PRODUCT_MIXS, R.string.product_mixes);
+      group2name.put(VARIETIES, R.string.varieties);
+      group2name.put(VEHICLES, R.string.vehicles);
+      group2name.put(IMPLEMENTS, R.string.imps);
+      group2name.put(NOTES, R.string.notes);
+      group2name.put(GUIDANCE_CONFIGURATIONS, R.string.guidance_configurations);
+      group2name.put(PRODUCT_MIX_VARIETY, R.string.product_mix_variety);
+
+      obj2group.put(DataTypes.GROWER, GROWERS);
+      obj2group.put(DataTypes.TASK, TASKS);
+      obj2group.put(DataTypes.RX, RXS);
+      obj2group.put(DataTypes.BOUNDARY, BOUNDARIES);
+      obj2group.put(DataTypes.GUIDANCE_GROUP, GUIDANCE_GROUPS);
+      obj2group.put(DataTypes.LANDMARK, LANDMARKS);
+      obj2group.put(DataTypes.PRODUCT, PRODUCTS);
+      obj2group.put(DataTypes.PRODUCT_MIX, PRODUCT_MIXS);
+      obj2group.put(DataTypes.VARIETY, VARIETIES);
+      obj2group.put(DataTypes.VEHICLE, VEHICLES);
+      obj2group.put(DataTypes.IMPLEMENT, IMPLEMENTS);
+      obj2group.put(DataTypes.NOTE, NOTES);
+      obj2group.put(DataTypes.GUIDANCE_CONFIGURATION, GUIDANCE_CONFIGURATIONS);
+      obj2group.put(DataTypes.DDOP, DDOP);
+
+      group2group.put(PRODUCTS, PRODUCT_MIX_VARIETY);
+      group2group.put(PRODUCT_MIXS, PRODUCT_MIX_VARIETY);
+      group2group.put(VARIETIES, PRODUCT_MIX_VARIETY);
    }
-   /* Map lists all entities which are groupable in ui, entities with types specified in
-   this list will be grouped in ui.
+
+   private TreeEntityHelper() {
+      //prevent instantiation
+   }
+
+   /**
+    * Returns if a given type is representing a groupType
+    * @param type Type in question to be a groupType
+    * @return True if type is a groupType, false otherwise
     */
-   public static Map<String, Integer> group2name = new HashMap<String, Integer>() {
-      {
-         put(GROWERS, R.string.pfds);
-         put(TASKS, R.string.tasks);
-         put(RXS, R.string.prescriptions);
-         put(BOUNDARIES, R.string.boundaries);
-         put(GUIDANCE_GROUPS, R.string.guidance_groups);
-         put(LANDMARKS, R.string.obstacles);
-         put(PRODUCTS, R.string.products);
-         put(PRODUCT_MIXS, R.string.product_mixes);
-         put(VARIETIES, R.string.varieties);
-         put(VEHICLES, R.string.vehicles);
-         put(IMPLEMENTS, R.string.imps);
-         put(NOTES, R.string.notes);
-         put(GUIDANCE_CONFIGURATIONS, R.string.guidance_configurations);
-         put(PRODUCT_MIX_VARIETY, R.string.product_mix_variety);
-      }
-   };
-   public static boolean isGroupType(String type){
+   public static boolean isGroupType(String type) {
       return group2name.containsKey(type);
    }
-   public static Map<String, String> obj2group = new HashMap<String, String>() {
-      {
-         put(DataTypes.GROWER, GROWERS);
-         put(DataTypes.TASK, TASKS);
-         put(DataTypes.RX, RXS);
-         put(DataTypes.BOUNDARY, BOUNDARIES);
-         put(DataTypes.GUIDANCE_GROUP, GUIDANCE_GROUPS);
-         put(DataTypes.LANDMARK, LANDMARKS);
-         put(DataTypes.PRODUCT, PRODUCTS);
-         put(DataTypes.PRODUCT_MIX,PRODUCT_MIXS);
-         put(DataTypes.VARIETY, VARIETIES);
-         put(DataTypes.VEHICLE,VEHICLES);
-         put(DataTypes.IMPLEMENT,IMPLEMENTS);
-         put(DataTypes.NOTE,NOTES);
-         put(DataTypes.GUIDANCE_CONFIGURATION,GUIDANCE_CONFIGURATIONS);
-         put(DataTypes.DDOP,DDOP);
-      }
-   };
-   public static Map<String, String> group2group = new HashMap<String, String>() {
-      {
-         put(PRODUCTS, PRODUCT_MIX_VARIETY);
-         put(PRODUCT_MIXS, PRODUCT_MIX_VARIETY);
-         put(VARIETIES, PRODUCT_MIX_VARIETY);
-      }
-   };
+
    /**
     * get a its group type, return origin type if there is no config
     * @param type the ObjectGraph type
-    * @return  group's data type
+    * @return group's data type
     */
-   public static String getGroupType(String type){
-      if(obj2group.containsKey(type)){
+   public static String getGroupType(String type) {
+      if (obj2group.containsKey(type)) {
          return obj2group.get(type);
       }
       return type;
    }
+
    /**
     * get a its group's group type, return origin type if there is no config
     * @param type the ObjectGraph type
-    * @return  group's group data type
+    * @return group's group data type
     */
-   public static String getGroupOfGroupType(String type){
-      if(group2group.containsKey(obj2group.get(type))) {
+   public static String getGroupOfGroupType(String type) {
+      if (group2group.containsKey(obj2group.get(type))) {
          return group2group.get(obj2group.get(type));
       }
       return type;
@@ -154,24 +181,32 @@ public class TreeEntityHelper {
    /**
     * check if the data type has a parent group
     * @param type the ObjectGraph type
-    * @return  true if it has a parent group, false for no
+    * @return true if it has a parent group, false for no
     */
-   public static boolean isGroup(String type){
+   public static boolean isGroup(String type) {
       return obj2group.containsKey(type);
    }
+
    /**
     * check if the data type has a group's group
     * @param type the ObjectGraph type
-    * @return  true if it has a group's group, false for no
+    * @return true if it has a group's group, false for no
     */
-   public static boolean isGroupOfGroup(String type){
-      if(isGroup(type)){
+   public static boolean isGroupOfGroup(String type) {
+      if (isGroup(type)) {
          return group2group.containsKey(getGroupType(type));
       }
       return false;
    }
+
+   /**
+    * Returns the group name of a given type
+    * @param context Context string of GroupName should be loaded from
+    * @param type Type of whose GroupName should be loaded from
+    * @return GroupName of the given type
+    */
    public static String getGroupName(Context context, String type) {
-      if (group2name.containsKey(type)){
+      if (group2name.containsKey(type)) {
          return context.getString(group2name.get(type));
       }
       String name = type.substring(type.lastIndexOf('.') + 1);
@@ -180,7 +215,7 @@ public class TreeEntityHelper {
 
    /**
     * @param type the ObjectGraph type
-    * @return  the icon resource id
+    * @return the icon resource id
     */
    public static int getIcon(String type) {
       return TYPE_ICONS.get(type);
@@ -192,5 +227,85 @@ public class TreeEntityHelper {
     */
    public static boolean hasIcon(String type) {
       return TYPE_ICONS.containsKey(type);
+   }
+
+   /**
+    * Create UI Tree using json file.
+    * @param context
+    * @param builder
+    */
+   public static void LoadDMTreeFromJson(Context context, TreeBuilder<ObjectGraph> builder)  {
+      InputStream inputStream = null;
+      InputStreamReader inputStreamReader = null;
+      try {
+         GroupObjectGraphMap.clear();
+         inputStream = context.getAssets().open(("dmtree.json"));
+         inputStreamReader = new InputStreamReader(inputStream, Charset.defaultCharset());
+         DMTreeJsonData[] jsondata = new Gson().fromJson(inputStreamReader, DMTreeJsonData[].class);
+
+         for (DMTreeJsonData entry : jsondata) {
+            addToTree(entry, null, builder);
+         }
+      }
+      catch (IOException ioex) {
+         logger.error("Unable to read the json file " + ioex.getMessage());
+      }
+      catch (JsonSyntaxException syexp) {
+         logger.error("Syntax error in json file " + syexp.getMessage());
+      }
+      catch (JsonIOException jioexp) {
+         logger.error("JSON IO Exception " + jioexp.getMessage());
+      }
+      finally {
+         closeQuietly(inputStream);
+         closeQuietly(inputStreamReader);
+      }
+   }
+
+   /**
+    * Quietly Close Resource
+    * @param closeable  Resource to close
+    */
+   private static void closeQuietly(Closeable closeable) {
+      try {
+         if(closeable != null) {
+            closeable.close();
+         }
+      } catch( Exception ex ) {
+         logger.error("Exception during Resource.close()", ex );
+      }
+   }
+
+   /**
+    * Helper function to add objects in tree.
+    * @param entry
+    * @param parent
+    * @param builder
+    */
+   public static void addToTree(DMTreeJsonData  entry, GroupObjectGraph parent, TreeBuilder<ObjectGraph> builder) {
+      if(entry != null) {
+         GroupObjectGraph gGroup = new GroupObjectGraph(null, entry.getDataType(),
+                 entry.getTitle(), null, parent);
+         GroupObjectGraphMap.put(entry.getDataType(), gGroup);
+         builder.bAddRelation(gGroup.getParent(), gGroup);
+         if(entry.getChildren() != null) {
+            for (DMTreeJsonData childEntry : entry.getChildren()) {
+               addToTree(childEntry, gGroup, builder);
+            }
+         }
+      }
+   }
+
+   /**
+    * Get group object when provided with data type.
+    * @param dataType
+    * @return  group object graph
+    */
+   public static GroupObjectGraph findGroupNode(String dataType) {
+      GroupObjectGraph retNode = null;
+      if(GroupObjectGraphMap.containsKey(dataType)){
+         retNode = GroupObjectGraphMap.get(dataType);
+      }
+      return retNode;
    }
 }
