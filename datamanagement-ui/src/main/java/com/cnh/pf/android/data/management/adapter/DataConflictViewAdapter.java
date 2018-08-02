@@ -83,8 +83,8 @@ public class DataConflictViewAdapter extends DataManagementBaseAdapter {
          if (fromIndex < 0) {
             fromIndex = 0;
          }
-         for (int currentIndex = fromIndex; currentIndex < toIndex; currentIndex++) {
-            Operation op = operationList.get(position);
+         for (int currentIndex = fromIndex; currentIndex <= toIndex; currentIndex++) {
+            Operation op = operationList.get(currentIndex);
             if (op != null) {
                op.setAction(action);
             }
