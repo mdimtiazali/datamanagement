@@ -117,10 +117,8 @@ public class DataManagementService extends RoboService implements SharedPreferen
    private boolean hasActiveSession() {
       if (getActiveSession() != null) {
          final Session session = getActiveSession();
-         return SessionUtil.isDiscoveryTask(session) ||
-                 SessionUtil.isPerformOperationsTask(session) ||
-                 SessionUtil.isCalculateConflictsTask(session) ||
-                 SessionUtil.isCalculateOperationsTask(session);
+         return SessionUtil.isDiscoveryTask(session) || SessionUtil.isPerformOperationsTask(session) || SessionUtil.isCalculateConflictsTask(session)
+               || SessionUtil.isCalculateOperationsTask(session);
       }
       return false;
    }
@@ -185,7 +183,7 @@ public class DataManagementService extends RoboService implements SharedPreferen
                fault.reset();
                fault.alert();
             }
-            else if (SessionUtil.isImportAction(curSession) && curSession.getObjectData() != null && getActiveView() != null
+            else if (SessionUtil.isImportAction(curSession) && (curSession.getObjectData() != null && curSession.getObjectData().size() > 0) && getActiveView() != null
                   && (SessionUtil.isDiscoveryTask(curSession) || SessionUtil.isCalculateConflictsTask(curSession))) {
                logger.debug("USB unplugged while waiting for the user response (discovery/conflict resolution).");
                notifySessionError(curSession, ErrorCode.USB_REMOVED);
@@ -557,9 +555,8 @@ public class DataManagementService extends RoboService implements SharedPreferen
     */
    public void notifyMediumUpdate() {
       logger.debug("notifyMediumUpdate()");
-      if (Environment.getExternalStorageState().equals(Environment.MEDIA_MOUNTED)
-              || Environment.getExternalStorageState().equals(Environment.MEDIA_UNMOUNTED)
-              || Environment.getExternalStorageState().equals(Environment.MEDIA_BAD_REMOVAL)) {
+      if (Environment.getExternalStorageState().equals(Environment.MEDIA_MOUNTED) || Environment.getExternalStorageState().equals(Environment.MEDIA_UNMOUNTED)
+            || Environment.getExternalStorageState().equals(Environment.MEDIA_BAD_REMOVAL)) {
          // Reset cached item for import process when USB mounting status changes.
          cacheManager.reset(Session.Action.IMPORT);
       }
