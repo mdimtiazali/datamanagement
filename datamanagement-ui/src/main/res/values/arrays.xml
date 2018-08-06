@@ -34,10 +34,10 @@
         <item>PRODUCT</item>
         <item>PRODUCT_MIX</item>
         <item>GUIDANCE_CONFIGURATION</item>
-        <item>GUIDANCE_PATTERN</item>
+        <item>GUIDANCE_GROUP</item>
     </string-array>
     <string-array name="copy">
-        <item>GUIDANCE_PATTERN</item>
+        <item>GUIDANCE_GROUP</item>
     </string-array>
     <!--Definition of root nodes supporting implicit parent selection on selection of their child nodes-->
     <string-array name="rootnodenames_with_implicit_parent_selection_in_management">
