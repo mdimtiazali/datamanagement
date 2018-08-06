@@ -12,17 +12,22 @@ package com.cnh.pf.android.data.management.session;
 import com.cnh.pf.datamng.Process;
 import com.google.common.base.Function;
 import com.google.common.collect.Collections2;
+
 import org.jgroups.Address;
 import org.jgroups.util.UUID;
 
-import javax.annotation.Nullable;
 import java.util.Arrays;
+
+import javax.annotation.Nullable;
 
 /**
  * This utility class provides static methods that query session state & types and etc.
  */
 public class SessionUtil {
-   private SessionUtil() {}      // This is to avoid code analysis warning.
+
+   private SessionUtil() {
+      // This is to avoid code analysis warning.
+   }
 
    /**
     * Return true if the session is in progress.
@@ -42,6 +47,16 @@ public class SessionUtil {
     */
    public static boolean isComplete(final Session session) {
       return session != null && Session.State.COMPLETE.equals(session.getState());
+   }
+
+   /**
+    * Return true if the session is waiting.
+    *
+    * @param session the session
+    * @return  true if the session is waiting
+    */
+   public static boolean isWaiting(final Session session) {
+      return session != null && Session.State.WAIT.equals(session.getState());
    }
 
    /**
@@ -123,6 +138,7 @@ public class SessionUtil {
    public static boolean isUpdateTask(final Session session) {
       return session != null && Session.Type.UPDATE.equals(session.getType());
    }
+
    /**
     * Return true if the current session type is PASTE
     *
@@ -132,6 +148,7 @@ public class SessionUtil {
    public static boolean isPasteTask(final Session session) {
       return session != null && Session.Type.PASTE.equals(session.getType());
    }
+
    /**
     * Return true if the current session type is DELETE
     *
