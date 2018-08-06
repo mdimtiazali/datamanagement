@@ -358,7 +358,7 @@
                     cnh:heading="@string/variety_title"
                     cnh:subheading="@string/variety_section_subheader"
                     cnh:expanded="false"
-                    cnh:headerIcon="@drawable/ic_data_management_varieties"
+                    cnh:headerIcon="@drawable/dt_icon_varieties"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:paddingBottom="@dimen/product_library_progressive_disclosure_view_padding_bottom">

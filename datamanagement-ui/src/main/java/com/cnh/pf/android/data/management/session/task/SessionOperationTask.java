@@ -179,6 +179,9 @@ public abstract class SessionOperationTask<Progress> extends AsyncTask<Session, 
          else if (SessionUtil.isDeleteTask(_session)) {
             task = new DeleteTask(_mediator, _notifier);
          }
+         else if (SessionUtil.isPasteTask(_session)) {
+            task = new PasteTask(_mediator, _notifier);
+         }
 
          return task;
       }

@@ -10,28 +10,28 @@
 <resources>
     <dimen name="row_height">48dp</dimen>
 
-    <style name="treeViewListStyle" parent="@android:style/Widget.ListView" >
+    <style name="treeViewListStyle" parent="@android:style/Widget.ListView">
         <item name="android:background">@android:color/white</item>
         <item name="android:divider">@drawable/divider</item>
     </style>
 
     <style name="TextAppearance.Import.Entity" parent="@style/TextAppearance.Roboto.Bold">
-        <item name="android:textSize">22dp</item>
+        <item name="android:textSize">22sp</item>
         <item name="android:textColor">#333333</item>
     </style>
 
     <style name="TextAppearance.Data.Conflict" parent="@style/TextAppearance.Roboto.Bold">
-        <item name="android:textSize">16dp</item>
-        <item name="android:textColor">@color/e_red_light</item>
+        <item name="android:textSize">22sp</item>
+        <item name="android:textColor">@color/defaultTextColor</item>
     </style>
 
     <style name="TextAppearance.Data.File.Header" parent="@style/TextAppearance.Roboto.Bold">
-        <item name="android:textSize">16dp</item>
+        <item name="android:textSize">16sp</item>
         <item name="android:textColor">@color/e_gray_text_medium</item>
     </style>
 
     <style name="TextAppearance.Data.File.Column" parent="@style/TextAppearance.Roboto.Bold">
-        <item name="android:textSize">14dp</item>
+        <item name="android:textSize">14sp</item>
         <item name="android:textColor">@color/e_gray_text_medium</item>
     </style>
 
@@ -41,43 +41,60 @@
     </style>
     <style name="DmAppTheme" parent="@android:style/Theme.NoTitleBar.Fullscreen">
 
-            <!-- Android default styles -->
-            <item name="android:windowBackground">@android:color/background_dark</item>
-            <item name="android:textColor">@color/defaultTextColor</item>
-            <item name="android:textSize">@dimen/default_text_size</item>
+        <!-- Android default styles -->
+        <item name="android:windowBackground">@android:color/background_dark</item>
+        <item name="android:textColor">@color/defaultTextColor</item>
+        <item name="android:textSize">@dimen/default_text_size</item>
 
-            <!-- 		<item name="android:errorMessageBackground">@drawable/popup_inline_error</item> -->
-            <!-- 		<item name="android:errorMessageAboveBackground">@drawable/popup_inline_error_above</item> -->
+        <!-- <item name="android:errorMessageBackground">@drawable/popup_inline_error</item> -->
+        <!-- <item name="android:errorMessageAboveBackground">@drawable/popup_inline_error_above</item> -->
 
-            <!-- Cnh widgets -->
+        <!-- Cnh widgets -->
 
-            <!--         <item name="EditText">@style/EditText</item> -->
-            <!--         <item name="EditTextBig">@style/EditTextBig</item> -->
-            <!--         <item name="EditTextSmall">@style/EditTextSmall</item> -->
+        <!-- <item name="EditText">@style/EditText</item> -->
+        <!-- <item name="EditTextBig">@style/EditTextBig</item> -->
+        <!-- <item name="EditTextSmall">@style/EditTextSmall</item> -->
 
-            <item name="InputField">@style/InputField</item>
-            <item name="InputFieldBig">@style/InputFieldBig</item>
-            <item name="InputFieldSmall">@style/InputFieldSmall</item>
+        <item name="InputField">@style/InputField</item>
+        <item name="InputFieldBig">@style/InputFieldBig</item>
+        <item name="InputFieldSmall">@style/InputFieldSmall</item>
 
-            <item name="OnOff">@style/InputField</item>
-            <item name="OnOffBig">@style/OnOffBig</item>
-            <item name="OnOffSmall">@style/OnOffSmall</item>
+        <item name="OnOff">@style/InputField</item>
+        <item name="OnOffBig">@style/OnOffBig</item>
+        <item name="OnOffSmall">@style/OnOffSmall</item>
 
-            <item name="CheckBox">@style/CheckBox</item>
+        <item name="CheckBox">@style/CheckBox</item>
 
-            <item name="InfoButton">@style/InfoButton</item>
+        <item name="InfoButton">@style/InfoButton</item>
 
-            <item name="ProgressBar">@style/ProgressBar</item>
+        <item name="ProgressBar">@style/ProgressBar</item>
 
-            <item name="SliderVerticalSmall_Right">@style/SliderVertical.Right</item>
-            <item name="SliderVerticalBig_Right">@style/SliderVertical.Right</item>
-            <item name="Slider_Interactive_With_Increment">@style/Slider.Interactive.With.Increment</item>
+        <item name="SliderVerticalSmall_Right">@style/SliderVertical.Right</item>
+        <item name="SliderVerticalBig_Right">@style/SliderVertical.Right</item>
+        <item name="Slider_Interactive_With_Increment">@style/Slider.Interactive.With.Increment</item>
 
-            <item name="Stepper">@style/Stepper</item>
-            <item name="SpinnerStepper">@style/SpinnerStepper</item>
+        <item name="Stepper">@style/Stepper</item>
+        <item name="SpinnerStepper">@style/SpinnerStepper</item>
 
     </style>
     <style name="TextAppearance.deleteDialog.Big.InsideText" parent="@style/TextAppearance.CnhDialog.Big.InsideText">
         <item name="android:textStyle">normal</item>
+    </style>
+
+    <!--Import Conflict Dialog-->
+    <style name="ImportConfigTableBase">
+        <item name="android:layout_width">@dimen/import_conflict_dialog_table_cells_width</item>
+        <item name="android:layout_height">@dimen/import_conflict_dialog_table_cells_height</item>
+        <item name="android:gravity">center</item>
+        <item name="android:textColor">@color/import_conflict_dialog_field_text_color</item>
+    </style>
+    <style name="ImportConfigTableHeader" parent="ImportConfigTableBase">
+        <item name="android:textSize">@dimen/import_conflict_dialog_table_header_text_size</item>
+        <item name="android:textStyle">bold</item>
+        <item name="android:background">@drawable/data_conflict_header_cell</item>
+    </style>
+    <style name="ImportConfigTableBody" parent="ImportConfigTableBase">
+        <item name="android:textSize">@dimen/import_conflict_dialog_table_body_text_size</item>
+        <item name="android:background">@drawable/data_conflict_cell</item>
     </style>
 </resources>

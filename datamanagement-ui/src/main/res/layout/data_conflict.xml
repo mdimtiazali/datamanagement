@@ -8,51 +8,92 @@
   ~ authorization from CNH Industrial NV.
   -->
 
-<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
-        android:layout_width="match_parent"
-        android:layout_height="match_parent">
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+              android:layout_width="match_parent"
+              android:layout_height="match_parent"
+              android:orientation="vertical">
 
-    <TextView
-            android:id="@+id/conflict_file_tv"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:gravity="center"
-            android:drawableLeft="@drawable/ic_invalid_tab"
-            style="@style/TextAppearance.Data.Conflict"
-            android:text="@string/duplicate_file" />
-
+    <!-- textual sub-process indicator-->
     <LinearLayout
+            android:id="@+id/import_conflict_dialog_textual_process_feedback_container"
+            android:layout_width="match_parent"
+            android:layout_height="@dimen/import_conflict_dialog_textual_process_feedback_box_height"
+            android:background="@color/import_conflict_dialog_textual_process_feedback_box_background">
+        <TextView
+                android:id="@+id/import_conflict_dialog_textual_process_feedback_text_view"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:gravity="center"
+                android:text="@string/import_conflict_dialog_textual_process_feedback_text"
+                android:textColor="@color/import_conflict_dialog_textual_process_feedback_text_color"
+                android:textStyle="bold"/>
+    </LinearLayout>
+
+    <!-- conflict headline -->
+    <LinearLayout android:layout_width="match_parent"
+                  android:layout_height="wrap_content"
+                  android:orientation="horizontal"
+                  android:layout_marginLeft="@dimen/import_conflict_dialog_margin_left"
+                  android:layout_weight="1"
+                  android:gravity="center_vertical">
+        <ImageView
+                android:layout_width="@dimen/import_conflict_dialog_image_width"
+                android:layout_height="@dimen/import_conflict_dialog_image_height"
+                android:src="@drawable/ic_invalid_tab"/>
+        <TextView
+                android:id="@+id/conflict_file_tv"
+                android:layout_width="@dimen/import_conflict_dialog_title_width"
+                android:layout_height="@dimen/import_conflict_dialog_title_height"
+                android:layout_marginLeft="@dimen/import_conflict_dialog_title_margin_left"
+                android:gravity="left"
+                style="@style/TextAppearance.Data.Conflict"
+                android:text="@string/duplicate_file"/>
+    </LinearLayout>
+
+    <!-- field in conflict-->
+    <TableLayout android:layout_width="match_parent"
+                 android:layout_height="wrap_content"
+                 android:layout_marginLeft="@dimen/import_conflict_dialog_margin_left"
+                 android:layout_weight="1"
+                 android:gravity="center_vertical">
+        <TableRow>
+            <TextView
+                    android:text="@string/import_conflict_dialog_existing_field_text"
+                    style="@style/ImportConfigTableHeader"/>
+            <TextView
+                    android:text="@string/import_conflict_dialog_new_field_text"
+                    style="@style/ImportConfigTableHeader"/>
+        </TableRow>
+        <TableRow>
+            <TextView
+                    android:id="@+id/import_conflict_dialog_existing_field_text"
+                    style="@style/ImportConfigTableBody"/>
+            <TextView
+                    android:id="@+id/import_conflict_dialog_new_field_text"
+                    style="@style/ImportConfigTableBody"/>
+        </TableRow>
+    </TableLayout>
+
+    <!-- reuse checkbox -->
+    <LinearLayout
+            android:id="@+id/import_conflict_dialog_reuse_action_container"
+            android:orientation="horizontal"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_marginTop="8dp"
-            android:layout_below="@+id/conflict_file_tv"
-            android:orientation="horizontal">
-
-        <FrameLayout
-                android:layout_width="0dp"
-                android:layout_height="wrap_content"
-                android:layout_weight="1">
-
-            <include
-                    android:id="@+id/existing_file"
-                    layout="@layout/file_descriptor" />
-        </FrameLayout>
-
-        <LinearLayout
-                android:id="@+id/description_columns"
+            android:layout_gravity="center_vertical"
+            android:layout_marginLeft="@dimen/import_conflict_dialog_margin_left"
+            android:gravity="center_vertical"
+            android:layout_weight="1">
+        <com.cnh.android.widget.control.CheckBox
+                android:layout_width="wrap_content"
+                android:layout_height="match_parent"
+                android:id="@+id/import_conflict_dialog_reuse_action_checkbox"/>
+        <TextView
+                style="@style/CheckBoxLabelBig"
+                android:layout_marginLeft="@dimen/import_conflict_dialog_checkbox_label_spacing"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:layout_marginTop="26dp"
-                android:orientation="vertical" />
-
-        <FrameLayout
-                android:layout_width="0dp"
-                android:layout_height="wrap_content"
-                android:layout_weight="1">
-
-            <include
-                    android:id="@+id/new_file"
-                    layout="@layout/file_descriptor" />
-        </FrameLayout>
+                android:text="@string/import_conflict_dialog_reuse_action_text"/>
     </LinearLayout>
-</RelativeLayout>
+
+</LinearLayout>

@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+   Copyright (C) 2018 CNH Industrial NV. All rights reserved.
+   This software contains proprietary information of CNH Industrial NV. Neither
+   receipt nor possession thereof confers any right to reproduce, use, or
+   disclose in whole or in part any such information without written
+   authorization from CNH Industrial NV.
+-->
+
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+              android:orientation="horizontal"
+              android:layout_width="match_parent"
+              android:layout_height="@dimen/list_item_height"
+              android:paddingLeft="8dp"
+              android:descendantFocusability="blocksDescendants">
+    <RadioButton android:layout_width="wrap_content"
+              android:layout_height="wrap_content"
+              android:id="@+id/checkbox"
+              android:focusable="false"
+              android:clickable="false"/>
+    <TextView android:layout_width="wrap_content"
+              android:layout_height="match_parent"
+              android:layout_marginLeft="4dp"
+              android:id="@+id/field_name"
+              android:gravity="center"
+              android:ellipsize="middle"
+              android:layout_weight="1"/>
+</LinearLayout>
