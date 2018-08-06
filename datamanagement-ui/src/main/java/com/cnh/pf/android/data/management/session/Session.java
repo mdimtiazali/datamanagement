@@ -121,7 +121,8 @@ public class Session implements Parcelable {
       CALCULATE_CONFLICTS(3),
       PERFORM_OPERATIONS(4),
       UPDATE(5),
-      DELETE(6);
+      DELETE(6),
+      PASTE(7);
 
 
       private int value;
@@ -148,6 +149,8 @@ public class Session implements Parcelable {
                return UPDATE;
             case 6:
                return DELETE;
+            case 7:
+               return PASTE;
             case 0:
             default:
                return INITIAL;

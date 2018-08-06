@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+   Copyright (C) 2018 CNH Industrial NV. All rights reserved.
+   This software contains proprietary information of CNH Industrial NV. Neither
+   receipt nor possession thereof confers any right to reproduce, use, or
+   disclose in whole or in part any such information without written
+   authorization from CNH Industrial NV.
+-->
+
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+              android:layout_width="match_parent"
+              android:layout_height="@dimen/list_item_height"
+              android:paddingBottom="2dp">
+    <TextView android:layout_width="match_parent"
+              android:layout_height="match_parent"
+              android:background="@color/grower_item_bg"
+              android:gravity="center"
+              android:textStyle="bold"
+              android:id="@+id/grower_name"
+              android:paddingTop="4dp"
+              android:paddingBottom="8dp"
+              android:ellipsize="middle"/>
+</RelativeLayout>

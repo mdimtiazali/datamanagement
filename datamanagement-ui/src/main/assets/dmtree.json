@@ -1,0 +1,33 @@
+[
+  {
+    "Title":"Growers/Farms/Fields/Tasks",
+    "DataType": "GROWER",
+    "FollowSource": 1,
+    "Hidden" : 0 ,
+    "Children" : null
+  },
+  {
+    "Title":"Crop and Product Library",
+    "DataType": "PRODUCT",
+    "FollowSource": 1,
+    "Hidden" : 0,
+    "Children" : [
+      {
+        "Title":"Products",
+        "DataType": "PRODUCT",
+        "Location": 2,
+        "FollowSource": 1,
+        "Hidden" : 0,
+        "Children" : null
+      },
+      {
+        "Title":"Varities",
+        "DataType": "VARIETY",
+        "Location": 2,
+        "FollowSource": 1,
+        "Hidden" : 0,
+        "Children" : null
+      },
+    ]
+  }
+]

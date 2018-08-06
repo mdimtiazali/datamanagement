@@ -204,7 +204,7 @@ public class AddOrEditVarietyDialog extends DialogView {
             cropType = cropTypes[i];
             cropTypePickListItems
                   .add(new PickListItemWithTag<CropType>(i, EnumValueToUiStringUtility.getUiStringForCropType(cropType, getContext()), true, false, false, false, false, cropType));
-            if (actionType.equals(VarietyDialogActionType.EDIT) && modifiedVariety != null) {
+            if (actionType.equals(VarietyDialogActionType.EDIT) && (null != modifiedVariety) && (null != modifiedVariety.getCropType()) ) {
                if (modifiedVariety.getCropType().equals(cropType)) {
                   selectedId = i;
                }
@@ -339,8 +339,12 @@ public class AddOrEditVarietyDialog extends DialogView {
             }
          }
          inputField.setErrorIndicator(Widget.ErrorIndicator.NONE);
-         if (currentVariety.getName().equals(newName) && modifiedVariety.getCropType().equals(currentVariety.getCropType())
-               && currentVariety.getVarietyColor().getId() == modifiedVariety.getVarietyColor().getId()) {
+         // Logic: CropType and Color have to have been set, to save,
+         //   or  you have to have changed something.  (Also can not check for equality if null)
+         if ((null == modifiedVariety.getCropType()) || (null == modifiedVariety.getVarietyColor())
+                 || (currentVariety.getName().equals(newName)
+                 && modifiedVariety.getCropType().equals(currentVariety.getCropType())
+                 && (currentVariety.getVarietyColor().getId() == modifiedVariety.getVarietyColor().getId()))) {
             setFirstButtonEnabled(false);
             return;
          }
