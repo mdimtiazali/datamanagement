@@ -286,7 +286,9 @@ public class UtilityHelper {
     public enum CommonPaths{
         PATH_DESIGNATOR("/"),
         PATH_USB_PORT("./storage/usb1"),
-        PATH_TMP("./tmp/data/");
+        PATH_TMP("./tmp/data/"),
+        PATH_USB_FRED("/XML");
+
         //TODO move this folder to global access for isoservice, datamanagement and vipdmg
 
         private final String path;
