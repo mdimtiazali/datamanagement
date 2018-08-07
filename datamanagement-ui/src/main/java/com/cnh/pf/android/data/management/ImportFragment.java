@@ -270,9 +270,7 @@ public class ImportFragment extends BaseDataFragment {
          updateSelectAllState();
 
          if (session.getExtra() != null && session.getExtra().isUsbExtra()) {
-            String filename = UtilityHelper.filenameOnly(session.getExtra().getPath());
-            if (filename == null) filename = "";
-            setHeaderText(filename);
+            setHeaderTextToSessionPath(session);
          }
       }
       else if (SessionUtil.isCalculateOperationsTask(session)) {
@@ -421,14 +419,17 @@ public class ImportFragment extends BaseDataFragment {
       else if (SessionUtil.isPerformOperationsTask(session)) {
          logger.trace("Import process has been completed. Reset session.");
 
-         clearTreeSelection();
-         showStartMessage();
+         hideStartMessage();
+         showTreeList();
+
+         treeAdapter.selectAll(treeViewList, false);
+         treeViewList.setAdapter(treeAdapter);
+
          showFinishedStatePanel();
          processOverlay.setMode(DataExchangeProcessOverlay.MODE.HIDDEN);
          ToastMessageCustom.makeToastMessageText(getActivity().getApplicationContext(), getString(R.string.import_complete), Gravity.TOP | Gravity.CENTER_HORIZONTAL,
                getResources().getInteger(R.integer.toast_message_xoffset), getResources().getInteger(R.integer.toast_message_yoffset)).show();
-         // Reset session data after completing PERFORM_OPERATIONS successfully.
-         resetSession();
+
          updateSelectAllState();
 
          //close cancel dialog if still open
@@ -609,9 +610,7 @@ public class ImportFragment extends BaseDataFragment {
                updateSelectAllState();
 
                if (session.getExtra() != null && session.getExtra().isUsbExtra()) {
-                  String filename = UtilityHelper.filenameOnly(session.getExtra().getPath());
-                  if (filename == null) filename = "";
-                  setHeaderText(filename);
+                  setHeaderTextToSessionPath(session);
                }
             }
             else {
@@ -927,5 +926,19 @@ public class ImportFragment extends BaseDataFragment {
    @Override
    public Session.Action getAction() {
       return Session.Action.IMPORT;
+   }
+
+   /**
+    * Applies the current path of the given session to the header text
+    * @param session Current session of which the path should be applied to the header text
+    */
+   private void setHeaderTextToSessionPath(Session session) {
+      String filename = "";
+      if (session != null && session.getExtra() != null) {
+         filename = UtilityHelper.filenameOnly(session.getExtra().getPath());
+         if (filename == null) filename = "";
+
+      }
+      setHeaderText(filename);
    }
 }
