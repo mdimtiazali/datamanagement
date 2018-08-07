@@ -17,6 +17,7 @@ import android.widget.AdapterView;
 import android.widget.LinearLayout;
 import android.widget.ScrollView;
 
+import butterknife.ButterKnife;
 import com.android.annotations.VisibleForTesting;
 import com.cnh.android.dialog.DialogView;
 import com.cnh.android.dialog.DialogViewInterface;
@@ -30,20 +31,18 @@ import com.cnh.pf.android.data.management.adapter.PathTreeViewAdapter;
 import com.cnh.pf.android.data.management.misc.IconizedFile;
 import com.cnh.pf.android.data.management.session.SessionExtra;
 import com.google.common.io.Files;
-
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 import java.io.File;
 import java.io.FileFilter;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
-
-import butterknife.ButterKnife;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import pl.polidea.treeview.InMemoryTreeStateManager;
 import pl.polidea.treeview.TreeBuilder;
+import pl.polidea.treeview.TreeNodeInfo;
 import pl.polidea.treeview.TreeStateManager;
 import pl.polidea.treeview.TreeViewList;
 import roboguice.RoboGuice;
@@ -61,6 +60,7 @@ public class ImportSourceDialog extends DialogView {
    private LayoutInflater layoutInflater;
    private LinearLayout loadingContainer;
    private ScrollView contentContainer;
+   private View rootView;
    private TreeStateManager<IconizedFile> usbManager;
    private TreeStateManager<IconizedFile> cloudManager;
    private PathTreeViewAdapter usbTreeAdapter;
@@ -73,6 +73,7 @@ public class ImportSourceDialog extends DialogView {
    private int getCurrentSessionExtra;
    private boolean isUSBType = false;
    private Set<String> file2Support = new HashSet<String>();
+   private List selectedNodeList = new ArrayList();
 
    private boolean cloudIsLoaded = true;
    private boolean usbIsLoaded = true;
@@ -97,14 +98,23 @@ public class ImportSourceDialog extends DialogView {
       setBodyHeight(getResources().getInteger(R.integer.import_source_dialog_height));
       layoutInflater = (LayoutInflater) context.getSystemService(Context.LAYOUT_INFLATER_SERVICE);
       eventManager = RoboGuice.getInjector(context).getInstance(EventManager.class);
+      updateView(extras);
+   }
+
+   /**
+    * updates view based on import source states
+    * @param extras list of Import sources
+    */
+   public void updateView(List<SessionExtra> extras) {
+      this.mFlContent.removeAllViews();
       init(extras);
    }
 
    private void init(List<SessionExtra> extrasIn) {
       setTitle(getResources().getString(R.string.select_source));
       if (extrasIn != null && extrasIn.isEmpty()) {
-         View view = layoutInflater.inflate(R.layout.no_device_layout, null);
-         setBodyView(view);
+         rootView = layoutInflater.inflate(R.layout.no_device_layout, null);
+         setBodyView(rootView);
          setFirstButtonText(getResources().getString(R.string.ok));
          showSecondButton(false);
          showThirdButton(false);
@@ -118,12 +128,12 @@ public class ImportSourceDialog extends DialogView {
          });
       }
       else {
-         View view = layoutInflater.inflate(R.layout.import_source_layout, null);
-         sourcePathTreeView = (TreeViewList) view.findViewById(R.id.source_path_tree_view);
-         displayPicklist = (PickListEditable) view.findViewById(R.id.display_picklist);
-         loadingContainer = (LinearLayout) view.findViewById(R.id.import_source_select_import_sources_loading);
-         contentContainer = (ScrollView) view.findViewById(R.id.import_source_select_import_sources_content);
-         ButterKnife.bind(this, view);
+         rootView = layoutInflater.inflate(R.layout.import_source_layout, null);
+         sourcePathTreeView = (TreeViewList) rootView.findViewById(R.id.source_path_tree_view);
+         displayPicklist = (PickListEditable) rootView.findViewById(R.id.display_picklist);
+         loadingContainer = (LinearLayout) rootView.findViewById(R.id.import_source_select_import_sources_loading);
+         contentContainer = (ScrollView) rootView.findViewById(R.id.import_source_select_import_sources_content);
+         ButterKnife.bind(this, rootView);
          extras = new HashMap<Integer, SessionExtra>();
          int importSourceId = 0;
          Set<String> hosts = new HashSet<String>();
@@ -157,10 +167,10 @@ public class ImportSourceDialog extends DialogView {
             }
             importSourceId++;
          }
-         setBodyView(view);
+         setBodyView(rootView);
          setFirstButtonText(getResources().getString(R.string.select_string));
-         showFirstButton(true);
          setFirstButtonEnabled(false);
+         setSecondButtonEnabled(true);
          setSecondButtonText(getResources().getString(R.string.cancel));
          setOnButtonClickListener(new OnButtonClickListener() {
             @Override
@@ -279,10 +289,10 @@ public class ImportSourceDialog extends DialogView {
          usbManager.collapseChildren(null); //Collapse all children
          usbTreeAdapter.setOnPathSelectedListener(new PathTreeViewAdapter.OnPathSelectedListener() {
             @Override
-            public void onPathSelected(IconizedFile iconizedFile) {
+            public void onPathSelected(IconizedFile iconizedFile, TreeNodeInfo selectedNode) {
                File file = iconizedFile.getFile();
                currentExtra.setPath(file.getPath());
-               setFirstButtonEnabled(true);
+               onTreeNodeClick(selectedNode);
             }
          });
       }
@@ -313,6 +323,35 @@ public class ImportSourceDialog extends DialogView {
          });
          displayPicklist.setVisibility(VISIBLE);
       }
+   }
+
+   /**
+    * updates the selected node list whenever user selects/unselects a node
+    * @param selectedNode current selected node
+    */
+   private void onTreeNodeClick(TreeNodeInfo selectedNode) {
+      log.debug("onTreeNodeClick");
+      if (!selectedNodeList.contains(selectedNode.getId())) {
+         selectedNodeList.add(selectedNode.getId());
+      }
+      else {
+         selectedNodeList.remove(selectedNode.getId());
+      }
+      updateSelectButtonState();
+   }
+
+   /**
+    * enables/disables the select button state
+    */
+   private void updateSelectButtonState() {
+      final boolean selectButtonState;
+      if (selectedNodeList.isEmpty()) {
+         selectButtonState = false;
+      }
+      else {
+         selectButtonState = true;
+      }
+      setFirstButtonEnabled(selectButtonState);
    }
 
    public static class ObjectPickListItem<T> extends PickListItem {

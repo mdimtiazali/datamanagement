@@ -11,6 +11,7 @@ package com.cnh.pf.android.data.management;
 
 import static android.os.Environment.MEDIA_BAD_REMOVAL;
 
+import static android.os.Environment.MEDIA_MOUNTED;
 import static com.cnh.pf.android.data.management.utility.UtilityHelper.MAX_TREE_SELECTIONS_FOR_DEFAULT_TEXT_SIZE;
 
 import android.app.Activity;
@@ -129,6 +130,8 @@ public class ImportFragment extends BaseDataFragment {
    private Drawable importWhiteIcon;
    private Drawable importDefaultIcon;
 
+   private ImportSourceDialog importSourceDialog;
+
    @Override
    protected List<Session.Action> getBlockingActions() {
       return blockingActions;
@@ -177,7 +180,7 @@ public class ImportFragment extends BaseDataFragment {
       importSourceBtn.setOnClickListener(new View.OnClickListener() {
          @Override
          public void onClick(View v) {
-            onSelectSource();
+            onSelectImportSource();
          }
       });
       stopBtn.setOnClickListener(new View.OnClickListener() {
@@ -901,8 +904,16 @@ public class ImportFragment extends BaseDataFragment {
       return list;
    }
 
-   private void onSelectSource() {
-      ((TabActivity) getActivity()).showPopup(new ImportSourceDialog(getActivity(), generateImportExtras()), true);
+   private void onSelectImportSource() {
+      logger.debug("onSelectImportSource");
+      importSourceDialog = new ImportSourceDialog(getActivity(), generateImportExtras());
+      importSourceDialog.setOnDismissListener(new DialogViewInterface.OnDismissListener() {
+         @Override
+         public void onDismiss(DialogViewInterface dialogViewInterface) {
+            importSourceDialog = null;
+         }
+      });
+      ((TabActivity) getActivity()).showPopup(importSourceDialog, true);
    }
 
    /**
@@ -922,11 +933,9 @@ public class ImportFragment extends BaseDataFragment {
    @Override
    public void onMediumUpdate() {
       super.onMediumUpdate();
-
       logger.trace("onMediumUpdate()");
       if (Environment.getExternalStorageState().equals(MEDIA_BAD_REMOVAL)) {
          logger.debug("onMediumUpdate() - Reset the import screen and session state.");
-
          hideAndDismissProcessDialog();
          showDragAndDropZone();
          setHeaderText("");
@@ -935,6 +944,9 @@ public class ImportFragment extends BaseDataFragment {
          resetSession();
          updateSelectAllState();
          updateImportButton();
+      }
+      if (importSourceDialog != null) {
+         importSourceDialog.updateView(generateImportExtras());
       }
    }
 
