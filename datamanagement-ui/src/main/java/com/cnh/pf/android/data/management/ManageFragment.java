@@ -746,7 +746,7 @@ public class ManageFragment extends BaseDataFragment implements DmAccessibleObse
                nameView.setText(graph.getName());
                nameView.setTextColor(getActivity().getResources().getColorStateList(R.color.tree_text_color));
                int resId = 0;
-               if (TreeEntityHelper.hasIcon(graph.getType()) && (TreeEntityHelper.hasSubtype(graph) || graph instanceof GroupObjectGraph || !isGroupableEntity(graph))) {
+               if (TreeEntityHelper.hasIcon(graph.getType()) || TreeEntityHelper.hasSubtype(graph)) {
                   resId = TreeEntityHelper.getIcon(graph);
                   resId = (resId < 0) ? 0 : resId;
                }
