@@ -10,9 +10,12 @@ package com.cnh.pf.android.data.management.dialog;
 
 import android.app.Activity;
 import android.content.Context;
+import android.os.AsyncTask;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.widget.AdapterView;
+import android.widget.LinearLayout;
+import android.widget.ScrollView;
 
 import com.android.annotations.VisibleForTesting;
 import com.cnh.android.dialog.DialogView;
@@ -56,6 +59,8 @@ public class ImportSourceDialog extends DialogView {
    private EventManager eventManager;
    private PickListEditable displayPicklist;
    private LayoutInflater layoutInflater;
+   private LinearLayout loadingContainer;
+   private ScrollView contentContainer;
    private TreeStateManager<IconizedFile> usbManager;
    private TreeStateManager<IconizedFile> cloudManager;
    private PathTreeViewAdapter usbTreeAdapter;
@@ -68,6 +73,9 @@ public class ImportSourceDialog extends DialogView {
    private int getCurrentSessionExtra;
    private boolean isUSBType = false;
    private Set<String> file2Support = new HashSet<String>();
+
+   private boolean cloudIsLoaded = true;
+   private boolean usbIsLoaded = true;
 
    private void initSupportedFiles() {
       file2Support.add("TASKDATA.XML");
@@ -87,7 +95,7 @@ public class ImportSourceDialog extends DialogView {
       //TODO: Height should be dynamic! The following line is only a fix for DialogView loosing buttons if
       //      height is too great. This should be verified to be necessary with each core update!
       setBodyHeight(getResources().getInteger(R.integer.import_source_dialog_height));
-      layoutInflater= (LayoutInflater) context.getSystemService(Context.LAYOUT_INFLATER_SERVICE);
+      layoutInflater = (LayoutInflater) context.getSystemService(Context.LAYOUT_INFLATER_SERVICE);
       eventManager = RoboGuice.getInjector(context).getInstance(EventManager.class);
       init(extras);
    }
@@ -113,6 +121,8 @@ public class ImportSourceDialog extends DialogView {
          View view = layoutInflater.inflate(R.layout.import_source_layout, null);
          sourcePathTreeView = (TreeViewList) view.findViewById(R.id.source_path_tree_view);
          displayPicklist = (PickListEditable) view.findViewById(R.id.display_picklist);
+         loadingContainer = (LinearLayout) view.findViewById(R.id.import_source_select_import_sources_loading);
+         contentContainer = (ScrollView) view.findViewById(R.id.import_source_select_import_sources_content);
          ButterKnife.bind(this, view);
          extras = new HashMap<Integer, SessionExtra>();
          int importSourceId = 0;
@@ -127,6 +137,7 @@ public class ImportSourceDialog extends DialogView {
                currentExtra = extra;
                File usbFile = new File(getContext().getResources().getString(R.string.usb_string));
                IconizedFile usbRootFile = new IconizedFile(usbFile, TreeEntityHelper.getIcon("USB"));
+               usbIsLoaded = false;
                usbImportSource(usbRootFile, importSourceId, currentExtra);
                getCurrentSessionExtra = currentExtra.getType();
             }
@@ -135,6 +146,7 @@ public class ImportSourceDialog extends DialogView {
                cloudExtra = extra;
                File cloudFile = new File(getContext().getResources().getString(R.string.cloud_string));
                IconizedFile cloudRootFile = new IconizedFile(cloudFile, TreeEntityHelper.getIcon("CLOUD"));
+               cloudIsLoaded = false;
                cloudImportSource(cloudRootFile, importSourceId, cloudExtra);//TODO needs Implementation
             }
             else if (extra.isDisplayExtra()) {
@@ -163,22 +175,55 @@ public class ImportSourceDialog extends DialogView {
       }
    }
 
+   private synchronized void onLoadingFinished() {
+      if (usbIsLoaded && cloudIsLoaded) {
+         loadingContainer.setVisibility(GONE);
+         contentContainer.setVisibility(VISIBLE);
+      }
+   }
+
    @VisibleForTesting
-   public void usbImportSource(IconizedFile usbFile, int importSourceId, SessionExtra currentExtra) {
-      usbTreeBuilder.sequentiallyAddNextNode(usbFile, 0);
-      File usbRootFile = new File(currentExtra.getPath());
-      populateTree(usbTreeBuilder, usbFile, new IconizedFile(usbRootFile));
-      onImportSourceSelected(importSourceId);
-      isUSBType = true; //for Testing
+   public void usbImportSource(final IconizedFile usbFile, final int importSourceId, final SessionExtra currentExtra) {
+      new AsyncTask<Void, Void, Void>() {
+         @Override
+         protected Void doInBackground(Void... voids) {
+            Thread.currentThread().setName("usbImportSource loading usb data");
+            usbTreeBuilder.sequentiallyAddNextNode(usbFile, 0);
+            File usbRootFile = new File(currentExtra.getPath());
+            populateTree(usbTreeBuilder, usbFile, new IconizedFile(usbRootFile));
+            return null;
+         }
+
+         @Override
+         protected void onPostExecute(Void aVoid) {
+            onImportSourceSelected(importSourceId);
+            isUSBType = true; //for Testing
+            usbIsLoaded = true;
+            onLoadingFinished();
+         }
+      }.execute();
    }
 
-   private void cloudImportSource(IconizedFile cloudFile, int importSourceId, SessionExtra cloudExtra) {
-      cloudTreeBuilder.sequentiallyAddNextNode(cloudFile, 0);
-      //TODO need to implement populateTree
-      onImportSourceSelected(importSourceId);
+   private void cloudImportSource(final IconizedFile cloudFile, final int importSourceId, final SessionExtra cloudExtra) {
+      new AsyncTask<Void, Void, Void>() {
+         @Override
+         protected Void doInBackground(Void... voids) {
+            Thread.currentThread().setName("cloudImportSource loading cloud data");
+            cloudTreeBuilder.sequentiallyAddNextNode(cloudFile, 0);
+            //TODO need to implement populateTree
+            return null;
+         }
+
+         @Override
+         protected void onPostExecute(Void aVoid) {
+            onImportSourceSelected(importSourceId);
+            cloudIsLoaded = true;
+            onLoadingFinished();
+         }
+      }.execute();
    }
 
-   private void populateTree(TreeBuilder<IconizedFile> treeBuilder, IconizedFile parent, IconizedFile dir) {
+   private void populateTree(final TreeBuilder<IconizedFile> treeBuilder, final IconizedFile parent, final IconizedFile dir) {
       if (parent == null) {
          treeBuilder.sequentiallyAddNextNode(dir, 0);
       }
@@ -245,7 +290,6 @@ public class ImportSourceDialog extends DialogView {
          sourcePathTreeView.setVisibility(GONE);
          displayPicklist.setAdapter(new PickListAdapter(displayPicklist, getContext()));
          String currentHost = currentExtra.getDescription();
-         int id = 0;
          log.trace("current host {}", currentHost);
          log.trace("Medium devices {}", extras);
          for (SessionExtra ex : extras.values()) {
@@ -264,6 +308,7 @@ public class ImportSourceDialog extends DialogView {
 
             @Override
             public void onNothingSelected(AdapterView<?> parent) {
+               //not needed
             }
          });
          displayPicklist.setVisibility(VISIBLE);
