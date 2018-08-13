@@ -39,6 +39,7 @@
       <type>LANDMARK</type>
       <type>LANDMARKS</type>
       <type>DDOP</type>
+      <type>VARIETY_MAP</type>
    </format>
 
    <format name="PF Database" pcm="true" standalone="true" path="PFDATABASE">

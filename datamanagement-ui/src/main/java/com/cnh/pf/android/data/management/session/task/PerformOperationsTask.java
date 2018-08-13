@@ -109,10 +109,10 @@ public class PerformOperationsTask extends SessionOperationTask<Void> {
                      final String USB_EXPORT_PATH = UtilityHelper.CommonPaths.PATH_USB_PORT.getPathString();
 
                      final String PFDATABASE_FOLDER =
-                        UtilityHelper.CommonPaths.PATH_DESIGNATOR.getPathString() + formatManager.getFormat(UtilityHelper.CommonFormats.PFDATABASEFORMAT.getName()).path + UtilityHelper.CommonPaths.PATH_DESIGNATOR.getPathString();
+                        UtilityHelper.CommonPaths.PATH_DESIGNATOR.getPathString() + formatManager.getFormat(UtilityHelper.CommonFormats.PFDATABASEFORMAT.getName()).getPath() + UtilityHelper.CommonPaths.PATH_DESIGNATOR.getPathString();
 
                      final String ISOXML_FOLDER =
-                        UtilityHelper.CommonPaths.PATH_DESIGNATOR.getPathString() + formatManager.getFormat(UtilityHelper.CommonFormats.ISOXMLFORMAT.getName()).path + UtilityHelper.CommonPaths.PATH_DESIGNATOR.getPathString();
+                        UtilityHelper.CommonPaths.PATH_DESIGNATOR.getPathString() + formatManager.getFormat(UtilityHelper.CommonFormats.ISOXMLFORMAT.getName()).getPath() + UtilityHelper.CommonPaths.PATH_DESIGNATOR.getPathString();
 
                      if (Environment.getExternalStorageState().equals(MEDIA_MOUNTED) && tmpFolder.exists()) {
 
@@ -219,7 +219,7 @@ public class PerformOperationsTask extends SessionOperationTask<Void> {
             StatFs stat = new StatFs(destRoot);
             long bytesFree = stat.getAvailableBytes();
 
-            final long SAFETY_BUFFER_BYTE = 2 * 1024 * 1024; // 2MByte safety buffer to prevent crashes caused by logging
+            final long SAFETY_BUFFER_BYTE = (long)(2 * 1024 * 1024); // 2MByte safety buffer to prevent crashes caused by logging
 
             boolean isMounted = Environment.getExternalStorageState().equals(MEDIA_MOUNTED);
 
@@ -243,7 +243,9 @@ public class PerformOperationsTask extends SessionOperationTask<Void> {
                if (dest.exists()) {
                   logger.info("Renaming existing export destination folder");
                   File copy = new File(dest.getAbsolutePath());
-                  copy.renameTo(new File(String.format("%s.%s", dest.getAbsolutePath(), new SimpleDateFormat("yyyyMMddHHmmss").format(new Date(dest.lastModified())))));
+                  if(!copy.renameTo(new File(String.format("%s.%s", dest.getAbsolutePath(), new SimpleDateFormat("yyyyMMddHHmmss").format(new Date(dest.lastModified())))))) {
+                     logger.info("Failed Renaming {} with last modified date suffix", dest.getAbsolutePath());
+                  }
                }
                dest.mkdirs();
 
@@ -296,9 +298,7 @@ public class PerformOperationsTask extends SessionOperationTask<Void> {
          logger.error("aborted moving files to USB, casued by:", e);
          retValue = false;
       }
-      finally {
-         return retValue;
-      }
+      return retValue;
    }
 
    private boolean moveFilesToInternalFlash(SessionExtra extra) {
@@ -306,15 +306,17 @@ public class PerformOperationsTask extends SessionOperationTask<Void> {
       File source = new File(tempPath);
       File dest = new File(extra.getPath());
       final String PFDATABASE_FOLDER =
-         UtilityHelper.CommonPaths.PATH_DESIGNATOR.getPathString() + formatManager.getFormat(UtilityHelper.CommonFormats.PFDATABASEFORMAT.getName()).path +
+         UtilityHelper.CommonPaths.PATH_DESIGNATOR.getPathString() + formatManager.getFormat(UtilityHelper.CommonFormats.PFDATABASEFORMAT.getName()).getPath() +
             UtilityHelper.CommonPaths.PATH_DESIGNATOR.getPathString();
-      final String ISOXML_FOLDER = UtilityHelper.CommonPaths.PATH_DESIGNATOR.getPathString() + formatManager.getFormat(UtilityHelper.CommonFormats.ISOXMLFORMAT.getName()).path
+      final String ISOXML_FOLDER = UtilityHelper.CommonPaths.PATH_DESIGNATOR.getPathString() + formatManager.getFormat(UtilityHelper.CommonFormats.ISOXMLFORMAT.getName()).getPath()
          + UtilityHelper.CommonPaths.PATH_DESIGNATOR.getPathString();
 
       if (dest.exists()) {
          logger.info("Renaming existing export destination folder");
          File copy = new File(dest.getAbsolutePath());
-         copy.renameTo(new File(String.format("%s.%s", dest.getAbsolutePath(), new SimpleDateFormat("yyyyMMddHHmmss").format(new Date(dest.lastModified())))));
+         if(!copy.renameTo(new File(String.format("%s.%s", dest.getAbsolutePath(), new SimpleDateFormat("yyyyMMddHHmmss").format(new Date(dest.lastModified())))))) {
+            logger.info("Failed Renaming {} with last modified date suffix", dest.getAbsolutePath());
+         }
       }
       dest.mkdirs();
 

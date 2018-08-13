@@ -18,6 +18,8 @@ import static org.junit.Assert.assertTrue;
 import static org.mockito.Matchers.any;
 import static org.mockito.Mockito.doAnswer;
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.spy;
+import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 import static org.robolectric.Shadows.shadowOf;
 
@@ -33,6 +35,8 @@ import com.cnh.jgroups.DataTypes;
 import com.cnh.jgroups.ObjectGraph;
 import com.cnh.pf.android.data.management.adapter.ObjectTreeViewAdapter;
 import com.cnh.pf.android.data.management.adapter.SelectionTreeViewAdapter;
+import com.cnh.pf.android.data.management.dialog.ImportSourceDialog;
+import com.cnh.pf.android.data.management.misc.IconizedFile;
 import com.cnh.pf.android.data.management.parser.FormatManager;
 import com.cnh.pf.android.data.management.productlibrary.views.AddOrEditVarietyDialog;
 import com.cnh.pf.android.data.management.service.DataManagementService;
@@ -43,6 +47,7 @@ import com.cnh.pf.model.product.library.CropType;
 import com.google.inject.Key;
 import com.google.inject.name.Names;
 
+import java.io.File;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
@@ -90,6 +95,12 @@ public class DataManagementUITest {
    ObjectGraph customer;
    ObjectGraph testObject;
 
+   private List<SessionExtra> sessionExtraList;
+   private ImportSourceDialog importSourceDialog;
+   private SessionExtra currentSessionExtra;
+   private List<SessionExtra> mockSessionExtraList = new ArrayList<SessionExtra>();
+   private SessionExtra sessionExtra = new SessionExtra(SessionExtra.USB, "USB", 0);
+
    @Before
    public void setUp() {
       MockitoAnnotations.initMocks(this);
@@ -100,6 +111,9 @@ public class DataManagementUITest {
       when(binder.getService()).thenReturn(service);
       shadowOf(RuntimeEnvironment.application).setComponentNameAndServiceForBindService(new ComponentName(activity.getPackageName(), DataManagementService.class.getName()),
             binder);
+      currentSessionExtra = createCurrentSessionExtra();
+      sessionExtraList = createSessionExtraList();
+      importSourceDialog = createImportSourceDialog();
    }
 
    @After
@@ -167,9 +181,9 @@ public class DataManagementUITest {
       when(fragment.exportFormatPicklist.getSelectedItemValue()).thenReturn("ISOXML");
       //Select non-supported format from tree to export, check to make sure its supported state is false
       ObjectTreeViewAdapter adapter = (ObjectTreeViewAdapter) fragment.treeViewList.getAdapter();
-      assertTrue("isoxml does not support com.cnh.prescription.Shapefile type", !adapter.isSupportedEntitiy(testObject));
+      assertTrue("isoxml does not support com.cnh.prescription.Shapefile type", !adapter.isSupportedEntity(testObject));
       //Now check supported format
-      assertTrue("isoxml supports customer type", adapter.isSupportedEntitiy(customer));
+      assertTrue("isoxml supports customer type", adapter.isSupportedEntity(customer));
    }
 
    /** Test to make sure that the data sent to destination datasource only has supported types */
@@ -231,15 +245,6 @@ public class DataManagementUITest {
    }
 
    @Test
-   public void testForNoImportSource() throws RemoteException {
-      activateTab(IMPORT_SOURCE_TAB_POSITION);
-      ImportFragment importFragment = (ImportFragment) ((TabActivity) activity).getFragmentManager().findFragmentByTag("Import");
-      LayoutInflater layoutInflater = (LayoutInflater) activity.getSystemService(Context.LAYOUT_INFLATER_SERVICE);
-      View view = layoutInflater.inflate(R.layout.no_device_layout, null);
-      assertEquals("No Import Source", View.VISIBLE, view.findViewById(R.id.no_import_source_view).getVisibility());
-   }
-
-   @Test
    public void testForVarietiesCropTypeWhenIsUsed() throws RemoteException {
       activateTab(PRODUCT_LIBRARY_TAB_POSITION);
       AddOrEditVarietyDialog addOrEditVarietyDialog = new AddOrEditVarietyDialog(activity);
@@ -252,5 +257,44 @@ public class DataManagementUITest {
       View editView = layoutInflater.inflate(R.layout.variety_add_or_edit_dialog, null);
       PickList pickList = (PickList) editView.findViewById(R.id.variety_dialog_crop_type_pick_list);
       assertTrue(!pickList.isPickListEditable());
+   }
+
+   private SessionExtra createCurrentSessionExtra() {
+      SessionExtra mockSessionExtra = spy(sessionExtra);
+      when(mockSessionExtra.isUsbExtra()).thenReturn(true);
+      return mockSessionExtra;
+   }
+
+   private ImportSourceDialog createImportSourceDialog() {
+      ImportSourceDialog mockImportSource = mock(ImportSourceDialog.class);
+      File mockFile = new File("USB");
+      IconizedFile mockUsbRootFile = new IconizedFile(mockFile, TreeEntityHelper.getIcon("USB"));
+      mockImportSource.usbImportSource(mockUsbRootFile, 0, createCurrentSessionExtra());
+      when(mockImportSource.getCurrentExtra()).thenReturn(SessionExtra.USB);
+      when(mockImportSource.checkUSBType()).thenReturn(true);
+      return mockImportSource;
+   }
+
+   private List<SessionExtra> createSessionExtraList() {
+      mockSessionExtraList.add(sessionExtra);
+      return mockSessionExtraList;
+   }
+
+   @Test
+   public void testForNoImportSource() throws RemoteException {
+      activateTab(IMPORT_SOURCE_TAB_POSITION);
+      LayoutInflater layoutInflater = (LayoutInflater) activity.getSystemService(Context.LAYOUT_INFLATER_SERVICE);
+      View view = layoutInflater.inflate(R.layout.no_device_layout, null);
+      assertEquals("No Import Source", View.VISIBLE, view.findViewById(R.id.no_import_source_view).getVisibility());
+   }
+
+   @Test
+   public void testForUSBImportSource() throws RemoteException {
+      //checking for current source and current source type
+      assertEquals("Checking currentExtra", importSourceDialog.getCurrentExtra(), SessionExtra.USB);
+      assertEquals("The currentExtra type is USB", importSourceDialog.checkUSBType(), currentSessionExtra.isUsbExtra());
+      //verifying method calls in the ImportSourceDialog class
+      verify(importSourceDialog).getCurrentExtra();
+      verify(importSourceDialog).checkUSBType();
    }
 }
