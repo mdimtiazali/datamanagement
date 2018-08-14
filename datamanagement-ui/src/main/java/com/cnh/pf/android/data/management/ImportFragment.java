@@ -631,6 +631,11 @@ public class ImportFragment extends BaseDataFragment {
             logger.info("There is import session (PERFORM_OPERATIONS) going on. Display the import process overlay.");
             showProgressPanel();
             processOverlay.setMode(DataExchangeProcessOverlay.MODE.IMPORT_PROCESS);
+            setHeaderTextToSessionPath(session);
+            if (session != null) {
+               initAndPopulateTree(session.getObjectData());
+            }
+            showTreeList();
          }
          else {
             hideTreeList();
