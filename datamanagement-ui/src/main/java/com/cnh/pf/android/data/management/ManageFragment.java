@@ -165,7 +165,18 @@ public class ManageFragment extends BaseDataFragment implements DmAccessibleObse
             break;
          }
          case R.id.mng_copy_button: {
-            final ObjectGraph copyObj = (ObjectGraph) v.getTag();
+            final List<ObjectGraph> copyObjects = new LinkedList<ObjectGraph>();
+            final ObjectGraph selectedObj = (ObjectGraph) v.getTag();
+            String itemName = selectedObj.getName();
+            if(TreeEntityHelper.isGuidanceGroups(selectedObj.getType()) && selectedObj.getChildren() != null){
+               for(ObjectGraph o: manager.getChildren(selectedObj)){
+                  copyObjects.add(o);
+               }
+               itemName = getResources().getQuantityString(R.plurals.copy_paste_item_name, copyObjects.size(), copyObjects.size());
+            }
+            else{
+               copyObjects.add(selectedObj);
+            }
             List<ObjectGraph> growers = new LinkedList<ObjectGraph>();
             Iterator<ObjectGraph> iterator = getTreeAdapter().getData().iterator();
             ObjectGraph grower;
@@ -179,8 +190,8 @@ public class ManageFragment extends BaseDataFragment implements DmAccessibleObse
                   growers.add(grower);
                }
             }
-            final List<GFFObject> gffObjects = UtilityHelper.getGffObjects(growers,copyObj.getParent());
-            final GFFSelectionView gffSelectionView = new GFFSelectionView(getActivity(),gffObjects,copyObj);
+            final List<GFFObject> gffObjects = UtilityHelper.getGffObjects(growers,selectedObj.getParent());
+            final GFFSelectionView gffSelectionView = new GFFSelectionView(getActivity(), gffObjects, itemName);
             int dialogHeight = gffObjects.size()>threshold?copy_paste_dialog_height_tall:copy_paste_dialog_height_short;
             gffSelectionView.setBodyHeight(dialogHeight);
 
@@ -191,7 +202,7 @@ public class ManageFragment extends BaseDataFragment implements DmAccessibleObse
                      GFFObject gffObject = gffSelectionView.getSelected();
                      if(gffObject != null) {
                         lastDestinationObj = gffObject.getDataObj();
-                        List<Operation> operations = composeCopyPasteOpt(copyObj, lastDestinationObj);
+                        List<Operation> operations = composeCopyPasteOpt(copyObjects, lastDestinationObj);
                         paste(operations);
                         gffSelectionView.dismiss();
                         progress.show();
@@ -212,13 +223,15 @@ public class ManageFragment extends BaseDataFragment implements DmAccessibleObse
          }
       }
    };
-   private List<Operation> composeCopyPasteOpt(ObjectGraph cpObj, ObjectGraph targetParent){
+   private List<Operation> composeCopyPasteOpt(List<ObjectGraph> cpObjs, ObjectGraph targetParent){
       List<ObjectGraph> targets = new ArrayList<ObjectGraph>();
-      List<Operation> operations = new ArrayList<Operation>(1);
+      List<Operation> operations = new ArrayList<Operation>(cpObjs.size());
       targets.add(targetParent);
-      Operation operation = new Operation(cpObj.copy(),null);
-      operation.setTarget(targetParent);
-      operations.add(operation);
+      for(ObjectGraph o: cpObjs) {
+         Operation operation = new Operation(o.copy(), null);
+         operation.setTarget(targetParent);
+         operations.add(operation);
+      }
       return operations;
    }
    @Override
@@ -437,15 +450,18 @@ public class ManageFragment extends BaseDataFragment implements DmAccessibleObse
                            lastDestinationObj.addChild(newObj);
                            newObj.setParent(lastDestinationObj);
                            pasteObjects.add(newObj);
-                           lastDestinationObj = null;
                         }
                         else{
                            logger.error("Something wrong with pasted object parent; returned: {}, cachedObj:{}",newObj.getParent(), lastDestinationObj);
                         }
                      }
+                     else{
+                        logger.error("Something wrong with pasted object, operation :{}",operation);
+                     }
                   }
                }
             }
+            lastDestinationObj = null;
             addToTree(pasteObjects);
          }
       }
