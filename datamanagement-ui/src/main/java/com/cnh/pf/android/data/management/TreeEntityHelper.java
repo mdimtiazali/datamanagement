@@ -159,6 +159,14 @@ public class TreeEntityHelper {
    }
 
    /**
+    * Returns if a given type is representing a Guidance groups
+    * @param type Type in question to be a groupType
+    * @return True if type is a guidance groups, false otherwise
+    */
+   public static boolean isGuidanceGroups(String type){
+      return type.equals(GUIDANCE_GROUPS);
+   }
+   /**
     * Returns if a given type is representing a groupType
     * @param type Type in question to be a groupType
     * @return True if type is a groupType, false otherwise
