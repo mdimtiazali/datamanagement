@@ -77,20 +77,25 @@ public abstract class ObjectTreeViewAdapter extends SelectionTreeViewAdapter<Obj
    }
 
    private boolean filterPredicate(ObjectGraph obj, SelectionType... types) {
-      return getSelectionMap().containsKey(obj) && isSupportedEntitiy(obj) && (Arrays.binarySearch(types, getSelectionMap().get(obj)) >= 0);
+      return getSelectionMap().containsKey(obj) && isSupportedEntity(obj) && (Arrays.binarySearch(types, getSelectionMap().get(obj)) >= 0);
    }
 
    // Check input node itself and children nodes recursively for selection type
    private boolean filterPredicateRecursive(ObjectGraph obj, SelectionType... types) {
+
+      if (obj == null) {
+         return false;
+      }
+
       if (filterPredicate(obj, types)) return true;
       else {
-         if (obj.getChildren() == null) return false;
+            if (obj.getChildren() == null) return false;
 
-         for (ObjectGraph child : obj.getChildren()) {
-            if (filterPredicateRecursive(child, types)) {
-               return true;
+            for (ObjectGraph child : obj.getChildren()) {
+               if (filterPredicateRecursive(child, types)) {
+                  return true;
+               }
             }
-         }
       }
       return false;
    }
@@ -216,7 +221,7 @@ public abstract class ObjectTreeViewAdapter extends SelectionTreeViewAdapter<Obj
       Set<ObjectGraph> set = new HashSet<ObjectGraph>();
       Map<ObjectGraph, SelectionType> allSelectedObj = getSelectionMap();
       if(!allSelectedObj.isEmpty()){
-         Iterator<Map.Entry<ObjectGraph,SelectionType>> it = allSelectedObj.entrySet().iterator();
+         Iterator<Map.Entry<ObjectGraph, SelectionType>> it = allSelectedObj.entrySet().iterator();
          while(it.hasNext()){
             ObjectGraph objectGraph = it.next().getKey();
             if(objectGraph.getParent() == null || !allSelectedObj.containsKey(objectGraph.getParent())){
@@ -299,18 +304,18 @@ public abstract class ObjectTreeViewAdapter extends SelectionTreeViewAdapter<Obj
                      return true;
                   }
                });
-               if(objs.size() > 0){
+               if (objs.size() > 0) {
                   break;
                }
             }
          }
       }
-      if(!objs.isEmpty()){
+      if (!objs.isEmpty()) {
          ObjectGraph parent = objs.get(0).getParent();
-         if(parent != null){
+         if (parent != null) {
             parent.getChildren().remove(objectGraph);
          }
-         else if(objectGraphs.contains(objectGraph)){
+         else if (objectGraphs != null && objectGraphs.contains(objectGraph)) {
             objectGraphs.remove(objectGraph);
          }
       }

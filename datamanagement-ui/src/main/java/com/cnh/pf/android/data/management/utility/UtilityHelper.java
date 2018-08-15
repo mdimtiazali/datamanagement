@@ -2,16 +2,21 @@ package com.cnh.pf.android.data.management.utility;
 
 import android.content.Context;
 import android.content.SharedPreferences;
-import android.content.res.Resources;
 import android.preference.PreferenceManager;
-import com.cnh.jgroups.Datasource;
+import com.cnh.jgroups.DataTypes;
+import com.cnh.jgroups.ObjectGraph;
 import com.cnh.pf.android.data.management.R;
+import com.cnh.pf.android.data.management.graph.GFFObject;
 import com.cnh.pf.android.data.management.session.SessionExtra;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.File;
 import java.util.EnumMap;
+import java.util.ArrayList;
+import java.util.Iterator;
+import java.util.LinkedList;
+import java.util.List;
 import java.util.Map;
 
 
@@ -38,7 +43,7 @@ public class UtilityHelper {
    /**
     * Map for returning the correct strings based on the vehicle make and data sources available
     */
-   public static final Map<VehicleBrand, Map<MediumVariant, Integer>> destinationNamesHashMap;
+   private static final Map<VehicleBrand, Map<MediumVariant, Integer>> destinationNamesHashMap;
    static {
       destinationNamesHashMap = new EnumMap<VehicleBrand, Map<MediumVariant, Integer>>(VehicleBrand.class);
       /**
@@ -344,21 +349,72 @@ public class UtilityHelper {
       if (path.exists()) {
          if (path.isDirectory()) {
             File[] fileList = path.listFiles();
-            if((null != fileList)&&(fileList.length > 0)) {
+            if ((null != fileList) && (fileList.length > 0)) {
                for (File file : path.listFiles()) {
                   retValue &= deleteRecursively(file);
                }
             }
          }
          retValue &= path.delete();
-         if(!retValue){
+         if (!retValue) {
             logger.error("unable to delete: {}", path.getPath());
          }
-      }
-      else {
+      } else {
          logger.error("unable to delete not existing path: {}", path.getPath());
          retValue = false;
       }
       return retValue;
+   }
+    private static boolean hasField(ObjectGraph grower){
+       final List<Boolean> list = new ArrayList<Boolean>(1);
+
+       ObjectGraph.traverse(grower, ObjectGraph.TRAVERSE_DOWN, new ObjectGraph.Visitor<ObjectGraph>() {
+          @Override
+          public boolean visit(ObjectGraph objectGraph) {
+             if(objectGraph.getType().equals(DataTypes.FIELD)) {
+                list.add(true);
+                return false;
+             }
+             return true;
+          }
+       });
+       if(list.isEmpty()){
+          return false;
+       }
+       else{
+          return true;
+       }
+    }
+   /**
+    * Convert the GGF list into GFFObject list
+    * @param growers
+    * @return the list of GFFObject
+    */
+   public static List<GFFObject> getGffObjects(List<ObjectGraph> growers, final ObjectGraph parent){
+      final List<GFFObject> list = new LinkedList<GFFObject>();
+      if(growers != null){
+         Iterator<ObjectGraph> iterator = growers.iterator();
+         ObjectGraph grower;
+         while(iterator.hasNext()){
+            grower = iterator.next();
+            if(hasField(grower)) {
+               ObjectGraph.traverse(grower, ObjectGraph.TRAVERSE_DOWN, new ObjectGraph.Visitor<ObjectGraph>() {
+                  @Override
+                  public boolean visit(ObjectGraph objectGraph) {
+                     if(objectGraph.getType().equals(DataTypes.FIELD) && !objectGraph.equals(parent)){
+                        list.add(new GFFObject(objectGraph.getName(), objectGraph.getType(), objectGraph));
+                        return false;
+                     }
+                     else if (objectGraph.getType().equals(DataTypes.GROWER)
+                             || objectGraph.getType().equals(DataTypes.FARM)) {
+                        list.add(new GFFObject(objectGraph.getName(), objectGraph.getType(), objectGraph));
+                     }
+                     return true;
+                  }
+               });
+            }
+         }
+      }
+      return list;
    }
 }

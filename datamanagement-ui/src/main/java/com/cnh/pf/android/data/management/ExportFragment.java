@@ -250,6 +250,7 @@ public class ExportFragment extends BaseDataFragment {
    @Override
    public void onViewCreated(View view, Bundle savedInstanceState) {
       super.onViewCreated(view, savedInstanceState);
+      enableDragAndDropForTreeView();
       exportSelectedBtn.setOnClickListener(new View.OnClickListener() {
          @Override
          public void onClick(View v) {
@@ -749,6 +750,7 @@ public class ExportFragment extends BaseDataFragment {
    public void onTreeItemSelected() {
       super.onTreeItemSelected();
       updateExportButton();
+      updateSelectAllState();
    }
 
    private void updateProgressbar(ProgressValue progressVal) {
@@ -848,7 +850,7 @@ public class ExportFragment extends BaseDataFragment {
          ObjectPickListItem<SessionExtra> item = (ObjectPickListItem<SessionExtra>) exportMediumPicklist.getSelectedItem();
          SessionExtra extra = new SessionExtra(item.getObject());
          String format = exportFormatPicklist.getSelectedItemValue();
-         String path = new File(extra.getBasePath(), formatManager.getFormat(format).path).getPath();
+         String path = new File(extra.getBasePath(), formatManager.getFormat(format).getPath()).getPath();
 
          extra.setFormat(format);
          // Based on PickList selections, set appropriate location type and file path.
@@ -938,9 +940,16 @@ public class ExportFragment extends BaseDataFragment {
             useDefaultText = false;
             Resources resources = getResources();
             exportSelectedBtn.setText(resources.getString(R.string.export_selected) + " (" + selectedItemCount + ")");
-            exportSelectedBtn.setTextSize(selectedItemCount > MAX_TREE_SELECTIONS_FOR_DEFAULT_TEXT_SIZE
-                  ? resources.getDimension(R.dimen.button_default_text_size) - resources.getDimension(R.dimen.decrease_text_size)
-                  : resources.getDimension(R.dimen.button_default_text_size));
+            if (selectedItemCount > MAX_TREE_SELECTIONS_FOR_DEFAULT_TEXT_SIZE) {
+               exportSelectedBtn.setTextSize(resources.getDimension(R.dimen.button_default_text_size) - resources.getDimension(R.dimen.decrease_text_size));
+               exportSelectedBtn.setPadding(resources.getInteger(R.integer.button_minimum_padding_left), resources.getInteger(R.integer.button_default_padding_top),
+                       resources.getInteger(R.integer.button_minimum_padding_right), resources.getInteger(R.integer.button_default_padding_bottom));
+            }
+            else {
+               exportSelectedBtn.setTextSize(resources.getDimension(R.dimen.button_default_text_size));
+               exportSelectedBtn.setPadding(resources.getInteger(R.integer.button_default_padding_left), resources.getInteger(R.integer.button_default_padding_top),
+                       resources.getInteger(R.integer.button_default_padding_right), resources.getInteger(R.integer.button_default_padding_bottom));
+            }
          }
       }
 

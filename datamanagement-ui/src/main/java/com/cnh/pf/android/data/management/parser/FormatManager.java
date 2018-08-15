@@ -48,7 +48,7 @@ public class FormatManager {
    private static String FORMAT_PCM = "pcm";
    private static String FORMAT_STANDALONE = "standalone";
    private static String FORMAT_PATH = "path";
-   public static String TYPE = "type";
+   private static String TYPE = "type";
 
    @Inject
    public FormatManager(Application context, GlobalPreferences globalPreferences) {
@@ -61,16 +61,16 @@ public class FormatManager {
       Format format = new Format();
       for (int idx = 0; idx < parser.getAttributeCount(); idx++) {
          if (parser.getAttributeName(idx).equals(FORMAT_NAME)) {
-            format.name = parser.getAttributeValue(idx);
+            format.setName(parser.getAttributeValue(idx));
          }
          else if (parser.getAttributeName(idx).equals(FORMAT_PCM)) {
-            format.pcmMode = Boolean.valueOf(parser.getAttributeValue(idx));
+            format.setPcmMode(Boolean.valueOf(parser.getAttributeValue(idx)));
          }
          else if (parser.getAttributeName(idx).equals(FORMAT_STANDALONE)) {
-            format.standaloneMode = Boolean.valueOf(parser.getAttributeValue(idx));
+            format.setStandaloneMode(Boolean.valueOf(parser.getAttributeValue(idx)));
          }
          else if (parser.getAttributeName(idx).equals(FORMAT_PATH)) {
-            format.path = parser.getAttributeValue(idx);
+            format.setPath(parser.getAttributeValue(idx));
          }
       }
       int eventType = parser.getEventType();
@@ -79,10 +79,10 @@ public class FormatManager {
             if (parser.next() == XmlPullParser.TEXT) {
                String text = parser.getText();
                if (text.startsWith("!")) {
-                  format.excludes.add(text.substring(1));
+                  format.getExcludes().add(text.substring(1));
                }
                else {
-                  format.includes.add(text);
+                  format.getIncludes().add(text);
                }
             }
          }
@@ -98,9 +98,9 @@ public class FormatManager {
       if (!formatMap.containsKey(format)) return false;
       Format f = formatMap.get(format);
 
-      if (!f.includes.isEmpty() && f.includes.contains(type)) return true;
+      if (!f.getIncludes().isEmpty() && f.getIncludes().contains(type)) return true;
 
-      if (!f.excludes.isEmpty() && !f.excludes.contains(type)) return true;
+      if (!f.getExcludes().isEmpty() && !f.getExcludes().contains(type)) return true;
 
       return false;
    }
@@ -112,8 +112,8 @@ public class FormatManager {
       Set<String> formats = new HashSet<String>(formatMap.size());
       boolean pcmMode = globalPreferences.hasPCM();
       for (Format format : formatMap.values()) {
-         if ((format.standaloneMode && !pcmMode) || (format.pcmMode && pcmMode)) {
-            formats.add(format.name);
+         if ((format.isStandaloneMode() && !pcmMode) || (format.isPcmMode() && pcmMode)) {
+            formats.add(format.getName());
          }
       }
       return formats;
@@ -139,7 +139,7 @@ public class FormatManager {
          while (eventType != XmlPullParser.END_DOCUMENT) {
             if (eventType == XmlPullParser.START_TAG && xpp.getName().equals(FORMAT)) {
                Format f = parseFormat(xpp);
-               formatMap.put(f.name, f);
+               formatMap.put(f.getName(), f);
             }
             eventType = xpp.next();
          }
@@ -147,11 +147,59 @@ public class FormatManager {
    }
 
    public static class Format {
-      public String name;
-      public boolean pcmMode;
-      public boolean standaloneMode;
-      public String path;
-      public List<String> includes = new ArrayList<String>();
-      public List<String> excludes = new ArrayList<String>();
+      private String name;
+      private boolean pcmMode;
+      private boolean standaloneMode;
+      private String path;
+      private List<String> includes = new ArrayList<String>();
+      private List<String> excludes = new ArrayList<String>();
+
+      public String getName() {
+         return name;
+      }
+
+      public void setName(String name) {
+         this.name = name;
+      }
+
+      public boolean isPcmMode() {
+         return pcmMode;
+      }
+
+      public void setPcmMode(boolean pcmMode) {
+         this.pcmMode = pcmMode;
+      }
+
+      public boolean isStandaloneMode() {
+         return standaloneMode;
+      }
+
+      public void setStandaloneMode(boolean standaloneMode) {
+         this.standaloneMode = standaloneMode;
+      }
+
+      public String getPath() {
+         return path;
+      }
+
+      public void setPath(String path) {
+         this.path = path;
+      }
+
+      public List<String> getIncludes() {
+         return includes;
+      }
+
+      public void setIncludes(List<String> includes) {
+         this.includes = includes;
+      }
+
+      public List<String> getExcludes() {
+         return excludes;
+      }
+
+      public void setExcludes(List<String> excludes) {
+         this.excludes = excludes;
+      }
    }
 }

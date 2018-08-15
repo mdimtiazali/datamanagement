@@ -1,0 +1,35 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+   Copyright (C) 2018 CNH Industrial NV. All rights reserved.
+   This software contains proprietary information of CNH Industrial NV. Neither
+   receipt nor possession thereof confers any right to reproduce, use, or
+   disclose in whole or in part any such information without written
+   authorization from CNH Industrial NV.
+-->
+
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+              android:orientation="vertical"
+              android:layout_gravity="center"
+              android:layout_width="match_parent"
+              android:layout_height="match_parent" >
+    <TextView android:layout_width="match_parent"
+              android:layout_height="wrap_content"
+              android:lineSpacingMultiplier="1.5"
+              android:id="@+id/header"
+              android:gravity="center"
+              android:paddingTop="4dp"
+              android:background="@color/color_grey"/>
+    <ImageView android:layout_width="match_parent"
+               android:layout_height="2dp"
+               android:id="@+id/devider"
+               android:background="@drawable/divider_line"/>
+    <ListView android:layout_marginTop="4dp"
+              android:layout_width="wrap_content"
+              android:layout_height="0dp"
+              android:layout_weight="1"
+              android:paddingLeft="32dp"
+              android:paddingRight="32dp"
+              android:id="@+id/gff_list"
+              android:divider="@android:color/transparent"
+              android:listSelector="#00000000"/>
+</LinearLayout>

@@ -163,6 +163,7 @@ public class ProductLibraryFragment extends RoboFragment implements ProductMixCa
    private static final int WHAT_GET_VARIETY_LIST = 9;
    private static final int WHAT_LOAD_PRODUCT_MIX_LIST_SIZE = 10;
    private static final int WHAT_LOAD_VARIETY_LIST_SIZE = 11;
+   private boolean isPaused;
 
    private IVIPServiceAIDL vipService;
    private IPVIPServiceAIDL pvipService;
@@ -946,6 +947,7 @@ public class ProductLibraryFragment extends RoboFragment implements ProductMixCa
       updateDisconnectedOverlay(pcmConnected);
       // super on resume must be called before registerVIPService because this checks isResumed()
       super.onResume();
+      this.isPaused = false;
       measurementSystemCache.registerContentObservers();
       registerVIPService();
    }
@@ -1061,6 +1063,7 @@ public class ProductLibraryFragment extends RoboFragment implements ProductMixCa
    public void onPause() {
       log.debug("onPause called");
       super.onPause();
+      this.isPaused = true;
       unregisterVIPService();
       measurementSystemCache.unregisterContentObservers();
    }
@@ -1114,7 +1117,7 @@ public class ProductLibraryFragment extends RoboFragment implements ProductMixCa
       if (productMixAdapter != null) {
          productMixAdapter.setVIPService(vipService);
       }
-      if (this.vipService == null) {
+      if (this.vipService == null && !isPaused) {
          //vipService is disconnected
          if (pcmConnected) {
             //invoke disconnect action

@@ -34,9 +34,10 @@
     <string name="select_path">Select Path...</string>
     <string name="continue_string">Continue</string>
     <string name="next">Next</string>
-    <string name="copy_click_string">Copy click on node </string>
+    <string name="copy_click_string">Copy click on node</string>
     <string name="no_data_of_format_string">No data of selected format selected</string>
-    <string name="no_operations_check_connectivity_string">No operations came back from server. Check connectivity</string>
+    <string name="no_operations_check_connectivity_string">No operations came back from server. Check connectivity
+    </string>
 
     <string name="pfds">Grower/Farm/Field/Task</string>
     <string name="vehicles">Vehicles</string>
@@ -60,6 +61,7 @@
     <string name="select_all">Select All</string>
     <string formatted="false" name="x_of_y_format">%d of %d</string>
     <string name="usb_string">USB</string>
+    <string name="cloud_string">Cloud</string>
     <string name="display_string">Display</string>
     <string name="display_numbered">Display %d</string>
     <string name="display_named">Display %s</string>
@@ -72,11 +74,10 @@
     <string name="exporting_string">Exporting</string>
     <string name="importing_string">Importing</string>
     <string name="exporting_data">Exporting Data</string>
-    <string name="importing_data">Importing Data</string>
     <string name="select_source_first">Select Import Source \nto get started</string>
     <string name="no_import_source">No import source device is detected. \nPlease check the device connection.</string>
     <string name="deselect_all">Deselect All</string>
-    <string formatted="false" name="duplicate_file">A %s named \"%s\" already exists</string>
+    <string formatted="false" name="duplicate_file">A %s \"%s\" already exists</string>
     <string name="existing_file">Existing</string>
     <string name="existing_file_typed">Existing %s</string>
     <string name="new_file">New</string>
@@ -104,7 +105,8 @@
         \n\t\t- Point, Line, and Area Features
     </string>
     <string name="destination_title">Supported Export Destinations:</string>
-    <string name="case_destination_info">Please select the proper destination to ensure the export file structure is compatible with the destination file structure.
+    <string name="case_destination_info">Please select the proper destination to ensure the export file structure is
+        compatible with the destination file structure.
         \n
         \nYou can export to the USB for use on the following products:
         \n- Pro 1200
@@ -115,7 +117,8 @@
         \nYou can export directly to the AFS Connect by selecting:
         \n- AFS Connect
     </string>
-    <string name="new_holland_destination_info">Please select the proper destination to ensure the export file structure is compatible with the destination file structure.
+    <string name="new_holland_destination_info">Please select the proper destination to ensure the export file structure
+        is compatible with the destination file structure.
         \n
         \nYou can export to the USB for use on the following products:
         \n- Intelliview 12
@@ -132,6 +135,7 @@
     <string name="error_no_target">No Destination Datasource</string>
     <string name="error_perform_ops">Perform Operations Error</string>
     <string name="error_update">Update Error</string>
+    <string name="error_paste">Paste Error</string>
     <string name="error_calculate_conflicts">Calculate Conflicts Error</string>
     <string name="error_calculate_operations">Calculate Targets Error</string>
     <string name="error_discovery">Discovery Error</string>
@@ -160,8 +164,12 @@
         <item quantity="other">Delete Confirmation (%1$d Items)</item>
     </plurals>
     <plurals name="delete_confirm_dialog_content">
-        <item quantity="one">&lt;b>Are you sure you want to delete %1$d item? &lt;/b> &lt;br /> The item will be permanently deleted.</item>
-        <item quantity="other">&lt;b>Are you sure you want to delete %1$d items? &lt;/b> &lt;br />The items will be permanently deleted.</item>
+        <item quantity="one">&lt;b>Are you sure you want to delete %1$d item? &lt;/b> &lt;br /> The item will be
+            permanently deleted.
+        </item>
+        <item quantity="other">&lt;b>Are you sure you want to delete %1$d items? &lt;/b> &lt;br />The items will be
+            permanently deleted.
+        </item>
     </plurals>
     <string name="usb_data_available">USB Data Available</string>
     <string name="usb_no_data_available">No USB Data Available</string>
@@ -275,7 +283,9 @@
     <string name="variety_add_or_edit_dialog_crop_type_header_text">Crop Type</string>
     <string name="variety_add_or_edit_dialog_name_header_text">Name</string>
     <string name="variety_delete_dialog_delete_title_text">Delete Variety</string>
-    <string name="variety_delete_dialog_body_text_delete_allowed">This will permanently delete this variety and its settings.</string>
+    <string name="variety_delete_dialog_body_text_delete_allowed">This will permanently delete this variety and its
+        settings.
+    </string>
     <string name="variety_dialog_cancel_button_text">Cancel</string>
     <string name="variety_dialog_save_button_text">Save</string>
     <string name="variety_edit_dialog_title">Edit Variety</string>
@@ -300,6 +310,7 @@
     <string name="edit_name_warning">The item with this name already exists. Please choose a different name</string>
     <string name="edit_update_title">Updating item</string>
     <string name="edit_update_content">In progress ...</string>
+    <string name="copy_paste_update_content">In progress ...</string>
 
     <string name="unknown_vehicle">Unknown Vehicle</string>
 
@@ -342,8 +353,20 @@
     <string name="generic_tractor_internal">Internal</string>
 
     <string name="no_data_for_delete">No selected data right for deletion</string>
+    <string name="no_data_for_paste">No selected data for paste</string>
     <string name="update_error_notice">Error occur when updating the name</string>
     <string name="delete_error_notice">Error occur when deleting the data</string>
+
     <string name="delete_select_notice">No selection is made</string>
     <string name="delete_select_notice_inaccessible">Delete isn\'t allowed since system is in work or engage</string>
+    <string name="copy_paste_header">Copying <![CDATA[<b><font color=#006ab1>&quot;%1$s&quot;</font></b>]]>
+        <![CDATA[<br/>]]> Please select a desired destination.
+    </string>
+
+    <string name="import_conflict_dialog_textual_process_feedback_text" formatted="false">%d of %d</string>
+    <string name="import_conflict_dialog_reuse_action_text">Reuse action for all remaining naming conflicts</string>
+    <string name="import_conflict_dialog_existing_field_text">Existing Field</string>
+    <string name="import_conflict_dialog_new_field_text">New Field</string>
+
 </resources>
+

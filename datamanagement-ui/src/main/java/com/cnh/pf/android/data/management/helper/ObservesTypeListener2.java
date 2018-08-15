@@ -137,7 +137,7 @@ public class ObservesTypeListener2 implements TypeListener {
       protected EventThread threadType;
 
       public ContextObserverMethodInjector(Provider<EventManager> eventManagerProvider, EventListenerThreadingDecorator observerThreadingDecorator, Method method, Class<T> event,
-            EventThread threadType) {
+            @Nonnull EventThread threadType) {
          this.observerThreadingDecorator = observerThreadingDecorator;
          this.eventManagerProvider = eventManagerProvider;
          this.method = method;
