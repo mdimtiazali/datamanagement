@@ -818,4 +818,15 @@ public class ManageFragment extends BaseDataFragment implements DmAccessibleObse
    public Session.Action getAction() {
       return Session.Action.MANAGE;
    }
+   @Override
+   protected int countSelectedItem() {
+      int sum = 0;
+      if (getTreeAdapter() != null) {
+         Set<ObjectGraph> selectedObjs = getTreeAdapter().getSelected();
+         for (ObjectGraph obj : selectedObjs) {
+            sum += obj.size();
+         }
+      }
+      return sum;
+   }
 }
