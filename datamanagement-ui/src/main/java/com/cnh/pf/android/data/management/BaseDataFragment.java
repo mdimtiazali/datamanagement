@@ -695,6 +695,29 @@ public abstract class BaseDataFragment extends RoboFragment implements SessionCo
    }
 
    /**
+    * Resumes the tree view session with all data contained and selections made
+    * in the current (/old) session.
+    */
+   protected void restoreTreeViewSession() {
+      Session session = getSession();
+      if (session != null) {
+         treeAdapter.setData(getSession().getObjectData());
+         treeViewList.setAdapter(treeAdapter);
+         treeViewList.post(new Runnable() {
+            @Override
+            public void run() {
+               treeAdapter.updateViewSelection(treeViewList);
+               treeAdapter.setListeners(treeViewList);
+            }
+         });
+      }
+      else {
+         logger.error("Could not restore tree session! Recreating datatree (loss of data and selection)!");
+         initAndPopulateTree(new ArrayList<ObjectGraph>());
+      }
+   }
+
+   /**
     * adding object(s) to treeview
     * @param  objectGraphs objects to add
     */
