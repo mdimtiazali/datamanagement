@@ -120,12 +120,17 @@ public abstract class BaseDataFragment extends RoboFragment implements SessionCo
       @Override
       public int compare(InMemoryTreeNode<ObjectGraph> lhs, InMemoryTreeNode<ObjectGraph> rhs) {
          // Do the case-insensitive check first
-         int comparison = lhs.getId().getName().compareToIgnoreCase(rhs.getId().getName());
-         if (comparison != 0) {
-            return comparison;
+         if((lhs != null)  && (rhs != null) && (lhs.getId() != null) && (rhs.getId() != null) &&
+            (lhs.getId().getName() != null) && (rhs.getId().getName() != null) ){
+            int comparison = lhs.getId().getName().compareToIgnoreCase(rhs.getId().getName());
+            if (comparison != 0) {
+               return comparison;
+            }
+            // If the case-insensitive check is same, do the case-sensitive check to make upper-case come first
+            return lhs.getId().getName().compareTo(rhs.getId().getName());
          }
-         // If the case-insensitive check is same, do the case-sensitive check to make upper-case come first
-         return lhs.getId().getName().compareTo(rhs.getId().getName());
+         // error case, return after
+         return 1;
       }
    };
 
