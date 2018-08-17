@@ -11,7 +11,6 @@ package com.cnh.pf.android.data.management;
 
 import static android.os.Environment.MEDIA_BAD_REMOVAL;
 
-import static android.os.Environment.MEDIA_MOUNTED;
 import static com.cnh.pf.android.data.management.utility.UtilityHelper.MAX_TREE_SELECTIONS_FOR_DEFAULT_TEXT_SIZE;
 
 import android.app.Activity;
@@ -478,25 +477,7 @@ public class ImportFragment extends BaseDataFragment {
             showErrorStatePanel();
             //tree is still available
             showTreeList();
-            initAndPopulateTree(session.getObjectData());
-
-            /*
-            //This is to be kept, since it is the approach to fix a defect (pfhmi-dev-defects-12995)
-            //Removing the line "initAndPopulateTree(session.getObjectData());" above and
-            //uncommenting the following lines somehow fixes the defect (but with having an unacceptable delay of 5 seconds visible)
-            treeAdapter.refresh();
-            treeViewList.invalidate();
-            treeViewList.setAdapter(treeAdapter); //required
-            //I have no(!) idea, why this delay of +5 seconds enables the treeViewList to update the selection properly!
-            new Handler(Looper.getMainLooper()).postDelayed(new Runnable() {
-               @Override
-               public void run() {
-                  treeAdapter.updateViewSelection(treeViewList);
-                  treeViewList.refreshDrawableState();
-               }
-            }, 5000);
-            */
-
+            restoreTreeViewSession();
          }
       }
       updateSelectAllState();
@@ -610,8 +591,7 @@ public class ImportFragment extends BaseDataFragment {
          if (SessionUtil.isDiscoveryTask(session) && (SessionUtil.isInProgress(session) || SessionUtil.isComplete(session))) {
             logger.info("There is already active session. Continue on the previous active session.");
             if (session.getObjectData() != null && !session.getObjectData().isEmpty()) {
-               initAndPopulateTree(session.getObjectData());
-
+               restoreTreeViewSession();
                showTreeList();
                hideDisabledOverlay();
                updateSelectAllState();
@@ -632,9 +612,7 @@ public class ImportFragment extends BaseDataFragment {
             showProgressPanel();
             processOverlay.setMode(DataExchangeProcessOverlay.MODE.IMPORT_PROCESS);
             setHeaderTextToSessionPath(session);
-            if (session != null) {
-               initAndPopulateTree(session.getObjectData());
-            }
+            restoreTreeViewSession();
             showTreeList();
          }
          else {
