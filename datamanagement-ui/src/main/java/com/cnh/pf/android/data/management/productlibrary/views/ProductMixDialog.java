@@ -403,6 +403,7 @@ public class ProductMixDialog extends DialogView implements DialogHandlerListene
             }
          }
          productMixFormPickList.setAdapter(carrierPickListAdapter);
+         productMixFormPickList.sortAdapterData();
          productMixFormPickList.setOnItemSelectedListener(new PickListEditable.OnItemSelectedListener() {
             @Override
             public void onItemSelected(AdapterView<?> adapterView, View view, int position, long id, boolean fromUser) {
