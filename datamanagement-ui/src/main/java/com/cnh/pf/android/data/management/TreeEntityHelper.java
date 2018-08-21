@@ -239,7 +239,7 @@ public class TreeEntityHelper {
     * @return the icon resource id
     */
    public static int getIcon(String type) {
-      return TYPE_ICONS.get(type);
+      return TYPE_ICONS.containsKey(type) ? TYPE_ICONS.get(type) : 0;
    }
 
    /**
