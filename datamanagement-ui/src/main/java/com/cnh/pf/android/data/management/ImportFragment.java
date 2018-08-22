@@ -63,6 +63,8 @@ import roboguice.event.Observes;
 import roboguice.inject.InjectResource;
 import roboguice.inject.InjectView;
 
+import javax.annotation.Nonnull;
+
 /**
  * Import Tab Fragment, Handles import from external mediums {USB, External Display}.
  * @author oscar.salazar@cnhind.com
@@ -538,16 +540,14 @@ public class ImportFragment extends BaseDataFragment {
       hideStartMessage();
       showLoadingOverlay();
 
-      // TODO: this creates the temporary folder on import from datamanagement, so it can be deleted from datamanagement as well.
-      // this workaround prevents some trouble on a later export when datamanagement will try deleting the temporary folder that has been created by isoservice
-      // it would be nice if we would find a cleaner solution for this
-      // unfortunately setting permissions to 777 doesn't make a difference - data management is still unable to delete this folder if it has been created by isoservice
       final String tempPath = UtilityHelper.CommonPaths.PATH_TMP.getPathString();
       File tmpFolder = new File(tempPath);
       if (!tmpFolder.exists() && !tmpFolder.mkdirs()) {
          logger.error("unable to create tmp folder");
       }
-
+      else if(!grantAllPermissionsRecursive(tmpFolder)) {
+         logger.error("unable to grant permissions for tmp folder");
+      }
       discovery(extra);
    }
 
@@ -557,6 +557,43 @@ public class ImportFragment extends BaseDataFragment {
       hideTreeList();
       showDisconnectedOverlay();
       updateSelectAllState();
+   }
+
+   /**
+    * granting all permissions recursively
+    * @param currItem can be file or a folder that will be set recursively
+    * @return true if success
+    */
+   private static boolean grantAllPermissionsRecursive(@Nonnull File currItem) {
+      boolean checkVal = true;
+      if (!currItem.exists()) {
+         logger.error("Unable to grant permissions for not existing: {}", currItem.getPath());
+         return false;
+      }
+
+      // first, set the permissions of the item
+      checkVal &= currItem.setWritable(true, false);
+      checkVal &= currItem.setExecutable(true, false);
+      checkVal &= currItem.setReadable(true, false);
+
+      logger.info("granting permissions to: {}", currItem.getPath());
+
+      if (checkVal) {
+         // then check for the next stage
+         if (currItem.isDirectory()) {
+            File[] paths = currItem.listFiles();
+            if (null != paths) {
+               for (File singleItem : paths) {
+                  checkVal &= grantAllPermissionsRecursive(singleItem);
+               }
+            }
+         }
+      }
+      else {
+         checkVal = false;
+         logger.error("Unable to grant permissions for: {}", currItem.getPath());
+      }
+      return checkVal;
    }
 
    @Override
