@@ -29,6 +29,7 @@ import com.cnh.jgroups.ObjectGraph;
 import com.cnh.jgroups.Operation;
 import com.cnh.pf.android.data.management.adapter.BaseTreeViewAdapter;
 import com.cnh.pf.android.data.management.adapter.ObjectTreeViewAdapter;
+import com.cnh.pf.android.data.management.dialog.CpCompleteDialog;
 import com.cnh.pf.android.data.management.dialog.DeleteDialog;
 import com.cnh.pf.android.data.management.dialog.EditDialog;
 import com.cnh.pf.android.data.management.dialog.GFFSelectionView;
@@ -194,6 +195,7 @@ public class ManageFragment extends BaseDataFragment implements DmAccessibleObse
             final GFFSelectionView gffSelectionView = new GFFSelectionView(getActivity(), gffObjects, itemName);
             int dialogHeight = gffObjects.size()>threshold?copy_paste_dialog_height_tall:copy_paste_dialog_height_short;
             gffSelectionView.setBodyHeight(dialogHeight);
+            gffSelectionView.setDialogWidth(getResources().getInteger(R.integer.copy_paste_dialog_width));
 
             gffSelectionView.setOnButtonClickListener(new DialogViewInterface.OnButtonClickListener() {
                @Override
@@ -461,8 +463,21 @@ public class ManageFragment extends BaseDataFragment implements DmAccessibleObse
                   }
                }
             }
-            lastDestinationObj = null;
             addToTree(pasteObjects);
+            int swathFolderIcon = 0;
+            String swathFolderName = null;
+            if(pasteObjects.size() > 1){
+               swathFolderIcon = TreeEntityHelper.getIcon(TreeEntityHelper.GUIDANCE_GROUPS);
+               swathFolderName = TreeEntityHelper.getGroupName(getActivity(),TreeEntityHelper.GUIDANCE_GROUPS);
+            }
+            List<Integer> ids = new LinkedList<Integer>();
+            List<String> names = new LinkedList<String>();
+            for(ObjectGraph o:pasteObjects){
+               ids.add(TreeEntityHelper.getSubtypeIcon(o));
+               names.add(o.getName());
+            }
+            ((TabActivity)getActivity()).showModalPopup(new CpCompleteDialog(getActivity(),lastDestinationObj.getName(),swathFolderIcon,swathFolderName,ids,names));
+            lastDestinationObj = null;
          }
       }
       else if (SessionUtil.isDeleteTask(session)) {

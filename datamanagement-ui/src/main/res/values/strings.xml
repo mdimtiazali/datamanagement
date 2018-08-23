@@ -365,7 +365,8 @@
     <string name="copy_paste_header">Copying <![CDATA[<b><font color=#006ab1>&quot;%1$s&quot;</font></b>]]>
         <![CDATA[<br/>]]> Please select a desired destination.
     </string>
-
+    <string name="copy">Copy</string>
+    <string name="cp_complete_content">Copied to \"%1$s\":</string>
     <string name="import_conflict_dialog_textual_process_feedback_text" formatted="false">%d of %d</string>
     <string name="import_conflict_dialog_reuse_action_text">Reuse action for all remaining naming conflicts</string>
     <string name="import_conflict_dialog_existing_field_text">Existing Field</string>
