@@ -1,9 +1,51 @@
 [
   {
-    "Title":"Growers/Farms/Fields/Tasks",
+    "Title":"Grower/Farm/Field/Task",
     "DataType": "GROWER",
     "FollowSource": 1,
     "Hidden" : 0 ,
+    "Children" : null
+  },
+  {
+    "Title":"Tasks",
+    "DataType": "TASK",
+    "FollowSource": 0,
+    "Hidden" : 0 ,
+    "Children" : null
+  },
+  {
+    "Title":"RXS",
+    "DataType": "RX",
+    "FollowSource": 0,
+    "Hidden" : 0 ,
+    "Children" : null
+  },
+  {
+    "Title":"Boundaries",
+    "DataType": "BOUNDARY",
+    "FollowSource": 0,
+    "Hidden" : 0 ,
+    "Children" : null
+  },
+  {
+    "Title":"Swaths",
+    "DataType": "GUIDANCE_GROUP",
+    "FollowSource": 0,
+    "Hidden" : 0 ,
+    "Children" : null
+  },
+  {
+    "Title":"Obstacles",
+    "DataType": "LANDMARK",
+    "FollowSource": 0,
+    "Hidden" : 0 ,
+    "Children" : null
+  },
+  {
+    "Title":"DDOP",
+    "DataType": "DDOP",
+    "FollowSource": 1,
+    "Hidden" : 1,
     "Children" : null
   },
   {
@@ -21,7 +63,15 @@
         "Children" : null
       },
       {
-        "Title":"Varities",
+        "Title":"Product Mixes",
+        "DataType": "PRODUCT_MIXS",
+        "Location": 2,
+        "FollowSource": 1,
+        "Hidden" : 0,
+        "Children" : null
+      },
+      {
+        "Title":"Varieties",
         "DataType": "VARIETY",
         "Location": 2,
         "FollowSource": 1,

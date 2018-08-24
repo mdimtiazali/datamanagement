@@ -774,24 +774,85 @@ public abstract class BaseDataFragment extends RoboFragment implements SessionCo
     */
    private void jsonAddToTree(List<ObjectGraph> objectGraphs) {
       for (ObjectGraph objectGraph : objectGraphs) {
-         GroupObjectGraph gNode = TreeEntityHelper.findGroupNode(objectGraph.getType());
-         if (gNode != null) {
-            addOneObjectGraph(gNode, objectGraph);
+         addOneObjectGraph(null, objectGraph);
+      }
+      removeEmptyNodes(null);
+      List<ObjectGraph> tmpLIst =  manager.getChildren(null);
+   }
+
+   private void removeEmptyNodes(ObjectGraph parent) {
+      List<ObjectGraph> tmpLIst =  manager.getChildren(parent);
+      for(ObjectGraph tmp : tmpLIst) {
+         if (tmp.getChildren() != null) {
+            removeEmptyNodes(tmp);
+         }
+      }
+      if ( (parent != null) && (parent.getChildren() != null) && (parent.getChildren().size() == 0) &&
+         (parent instanceof GroupObjectGraph) ) {
+         int childrenCount = parent.getDataInt(TreeEntityHelper.CHILDREN_COUNT);
+         if (childrenCount == 0) {
+            manager.removeNodeRecursively(parent);
          }
       }
    }
+
 
    /**
     * add object to treeview using json.
     * @param  objectGraph objects to add
     */
-   private void addOneObjectGraph(ObjectGraph parent, ObjectGraph objectGraph) {
-      if (objectGraph != null) {
-         treeBuilder.bAddRelation(parent, objectGraph);
-         for (ObjectGraph children : objectGraph.getChildren()) {
-            addOneObjectGraph(objectGraph, children);
+   private ObjectGraph addOneObjectGraph(ObjectGraph parent, ObjectGraph objectGraph) {
+      ObjectGraph newNode = null;
+      try {
+         if (objectGraph != null) {
+            GroupObjectGraph gNode = TreeEntityHelper.findGroupNode(objectGraph.getType());
+            if (gNode != null) {
+               int hiddenItem = gNode.getDataInt(TreeEntityHelper.HIDDEN_ITEM);
+               int followSource = gNode.getDataInt(TreeEntityHelper.FOLLOW_SOURCE);
+               if(hiddenItem == 0) {
+                  if (followSource != 0) {
+                     treeBuilder.bAddRelation(gNode, objectGraph);
+                     TreeEntityHelper.UpdateChidrenCount(gNode);
+                     if ( (gNode.getParent() != null) && (gNode.getParent() instanceof  GroupObjectGraph) ) {
+                        TreeEntityHelper.UpdateChidrenCount((GroupObjectGraph)gNode.getParent());
+                     }
+                     for (ObjectGraph children : objectGraph.getChildren()) {
+                        addOneObjectGraph(objectGraph, children);
+                     }
+                  }
+                  else {
+                     if (parent != null) {
+                        GroupObjectGraph gExitingNode = TreeEntityHelper.findParentNeededGroup(parent.getId());
+                        if (gExitingNode == null) {
+                           gExitingNode = new GroupObjectGraph(null,
+                              gNode.getType(), gNode.getName(), gNode.getData(), parent);
+                           treeBuilder.bAddRelation(parent, gExitingNode);
+                           treeBuilder.bAddRelation(gExitingNode, objectGraph);
+                           TreeEntityHelper.UpdateChidrenCount(gExitingNode);
+                           TreeEntityHelper.addToParentNeededGroup(parent.getId(), gExitingNode);
+                        }
+                        else {
+                           treeBuilder.bAddRelation(gExitingNode, objectGraph);
+                        }
+                        for (ObjectGraph children : objectGraph.getChildren()) {
+                           addOneObjectGraph(objectGraph, children);
+                        }
+                     }
+                  }
+               }
+            }
+            else {
+               treeBuilder.bAddRelation(parent, objectGraph);
+               for (ObjectGraph children : objectGraph.getChildren()) {
+                  addOneObjectGraph(objectGraph, children);
+               }
+            }
          }
       }
+      catch (NodeAlreadyInTreeException e) {
+         logger.warn("Caught NodeAlreadyInTree exception", e);
+      }
+      return newNode;
    }
 
    //Put the object into tree item list and return true for it is visible and false for invisible

@@ -34,6 +34,7 @@ import java.nio.charset.Charset;
 import java.util.EnumMap;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.UUID;
 
 /**
  * Helper class deals with entity grouping for all Groups {PFDS, VIP, ...}
@@ -45,9 +46,14 @@ public class TreeEntityHelper {
    private static final Map<String, Integer> TYPE_ICONS = new HashMap<String, Integer>();
    private static final Map<SwathType, Integer> SWATH_ICONS = new EnumMap<SwathType, Integer>(SwathType.class);
    private static final Map<ProductForm, Integer> PRODUCTFORM_ICONS = new EnumMap<ProductForm, Integer>(ProductForm.class);
+   public static final String HIDDEN_ITEM = "HIDDEN_ITEM";
+   public static final String FOLLOW_SOURCE = "FOLLOW_SOURCE";
+   public static final String CHILDREN_COUNT = "CHILDREN_COUNT";
 
    private static final Map<String, GroupObjectGraph> GroupObjectGraphMap =
       new HashMap<String, GroupObjectGraph>();
+   protected static final Map<String, GroupObjectGraph> NeedtoFindParentGroup =
+         new HashMap<String, GroupObjectGraph>();
 
    /**
     * Map lists all entities which are groupable in ui, entities with types specified in this lists will be grouped in ui.
@@ -306,6 +312,7 @@ public class TreeEntityHelper {
       InputStreamReader inputStreamReader = null;
       try {
          GroupObjectGraphMap.clear();
+         NeedtoFindParentGroup.clear();
          inputStream = context.getAssets().open(("dmtree.json"));
          inputStreamReader = new InputStreamReader(inputStream, Charset.defaultCharset());
          DMTreeJsonData[] jsondata = new Gson().fromJson(inputStreamReader, DMTreeJsonData[].class);
@@ -353,11 +360,16 @@ public class TreeEntityHelper {
       if(entry != null) {
          GroupObjectGraph gGroup = new GroupObjectGraph(null, entry.getDataType(),
                  entry.getTitle(), null, parent);
+         gGroup.setId(UUID.randomUUID().toString());
+         gGroup.addData(HIDDEN_ITEM, entry.getHidden());
+         gGroup.addData(FOLLOW_SOURCE, entry.getFollowSource());
          GroupObjectGraphMap.put(entry.getDataType(), gGroup);
-         builder.bAddRelation(gGroup.getParent(), gGroup);
-         if(entry.getChildren() != null) {
-            for (DMTreeJsonData childEntry : entry.getChildren()) {
-               addToTree(childEntry, gGroup, builder);
+         if ((entry.getFollowSource() == 1) && (entry.getHidden() == 0)) {
+            builder.bAddRelation(gGroup.getParent(), gGroup);
+            if (entry.getChildren() != null) {
+               for (DMTreeJsonData childEntry : entry.getChildren()) {
+                  addToTree(childEntry, gGroup, builder);
+               }
             }
          }
       }
@@ -374,5 +386,24 @@ public class TreeEntityHelper {
          retNode = GroupObjectGraphMap.get(dataType);
       }
       return retNode;
+   }
+
+   public static GroupObjectGraph findParentNeededGroup(String objId) {
+      GroupObjectGraph retNode = null;
+      if(NeedtoFindParentGroup.containsKey(objId)){
+         retNode = NeedtoFindParentGroup.get(objId);
+      }
+      return retNode;
+
+   }
+
+   public static void addToParentNeededGroup(String objId, GroupObjectGraph node) {
+      NeedtoFindParentGroup.put(objId, node);
+   }
+
+   public static void UpdateChidrenCount(GroupObjectGraph gNode) {
+      if ((gNode != null) && (!gNode.hasData(CHILDREN_COUNT))) {
+         gNode.addData(CHILDREN_COUNT, 1);
+      }
    }
 }
