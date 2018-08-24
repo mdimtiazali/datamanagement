@@ -34,6 +34,7 @@ import com.android.annotations.Nullable;
 import com.cnh.android.dialog.DialogViewInterface;
 import com.cnh.android.dialog.TextDialogView;
 import com.cnh.android.pf.widget.controls.ToastMessageCustom;
+import com.cnh.android.pf.widget.view.DisabledOverlay;
 import com.cnh.android.widget.activity.TabActivity;
 import com.cnh.android.widget.control.ProgressBarView;
 import com.cnh.jgroups.ObjectGraph;
@@ -46,6 +47,7 @@ import com.cnh.pf.android.data.management.dialog.ProcessDialog;
 import com.cnh.pf.android.data.management.helper.DataExchangeProcessOverlay;
 import com.cnh.pf.android.data.management.session.ErrorCode;
 import com.cnh.pf.android.data.management.session.Session;
+import com.cnh.pf.android.data.management.session.SessionContract;
 import com.cnh.pf.android.data.management.session.SessionExtra;
 import com.cnh.pf.android.data.management.session.SessionUtil;
 import com.cnh.pf.android.data.management.utility.UtilityHelper;
@@ -58,12 +60,12 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
+import javax.annotation.Nonnull;
+
 import roboguice.event.EventThread;
 import roboguice.event.Observes;
 import roboguice.inject.InjectResource;
 import roboguice.inject.InjectView;
-
-import javax.annotation.Nonnull;
 
 /**
  * Import Tab Fragment, Handles import from external mediums {USB, External Display}.
@@ -245,7 +247,7 @@ public class ImportFragment extends BaseDataFragment {
          showStartMessage();
       }
       else if (SessionUtil.isPerformOperationsTask(session)) {
-         hideDisabledOverlay();
+         hideDataTreeLoadingOverlay();
          showTreeList();
       }
       updateImportButton();
@@ -273,7 +275,7 @@ public class ImportFragment extends BaseDataFragment {
       if (SessionUtil.isDiscoveryTask(session)) {
          initAndPopulateTree(session.getObjectData());
 
-         hideDisabledOverlay();
+         hideDataTreeLoadingOverlay();
          showTreeList();
          updateSelectAllState();
 
@@ -458,7 +460,7 @@ public class ImportFragment extends BaseDataFragment {
       logger.debug("onMyselfSessionError(): {}, {}", session.getType(), errorCode);
       //disable overlays
       processOverlay.setMode(DataExchangeProcessOverlay.MODE.HIDDEN);
-      hideDisabledOverlay();
+      hideDataTreeLoadingOverlay();
       closeCancelDialog();
 
       if (ErrorCode.USB_REMOVED.equals(errorCode)) {
@@ -535,20 +537,54 @@ public class ImportFragment extends BaseDataFragment {
    private void onImportSourceSelected(@Observes(EventThread.UI) ImportSourceDialog.ImportSourceSelectedEvent event) {
       logger.debug("onImportSourceSelected( {} )", event.getExtra());
       SessionExtra extra = new SessionExtra(event.getExtra());
-
       hideTreeList();
       hideStartMessage();
-      showLoadingOverlay();
-
+      showDataTreeLoadingOverlay();
+      //update header text
+      String filename = UtilityHelper.filenameOnly(extra.getPath());
+      if (filename == null) filename = "";
+      setHeaderText(filename);
+      //reset enable select all button
+      enableSelectAllButton(false);
+      selectAllBtn.setText(R.string.select_all);
+      //reset import selected btn
+      importSelectedBtn.setText(getResources().getString(R.string.import_selected));
+      float defaultButtonSize = getResources().getDimension(R.dimen.button_default_text_size);
+      if (importSelectedBtn.getTextSize() < defaultButtonSize) importSelectedBtn.setTextSize(defaultButtonSize);
+      importSelectedBtn.setEnabled(false);
       final String tempPath = UtilityHelper.CommonPaths.PATH_TMP.getPathString();
       File tmpFolder = new File(tempPath);
       if (!tmpFolder.exists() && !tmpFolder.mkdirs()) {
          logger.error("unable to create tmp folder");
       }
-      else if(!grantAllPermissionsRecursive(tmpFolder)) {
+      else if (!grantAllPermissionsRecursive(tmpFolder)) {
          logger.error("unable to grant permissions for tmp folder");
       }
       discovery(extra);
+   }
+
+   /**
+    * Show loading overlay that blocks the data-tree
+    */
+   private void showDataTreeLoadingOverlay() {
+      if (treeLoadingOverlay != null) {
+         treeLoadingOverlay.setMode(DisabledOverlay.MODE.LOADING);
+      }
+      //As soon as "pfhmi-dev-defects-13486 - Data Mgmt: Discovery task cannot be canceled" is solved
+      //the following line is to be deleted.
+      importSourceBtn.setEnabled(false);
+   }
+
+   /**
+    * Hide loading overlay that blocks the data-tree
+    */
+   private void hideDataTreeLoadingOverlay() {
+      if (treeLoadingOverlay != null) {
+         treeLoadingOverlay.setMode(DisabledOverlay.MODE.HIDDEN);
+      }
+      //As soon as "pfhmi-dev-defects-13486 - Data Mgmt: Discovery task cannot be canceled" is solved
+      //the following line is to be deleted.
+      importSourceBtn.setEnabled(true);
    }
 
    @Override
@@ -599,7 +635,7 @@ public class ImportFragment extends BaseDataFragment {
    @Override
    public void onPCMConnected() {
       logger.trace("PCM is online.");
-      showLoadingOverlay();
+      hideDisabledOverlay();
       onResumeSession();
    }
 
@@ -630,7 +666,7 @@ public class ImportFragment extends BaseDataFragment {
             if (session.getObjectData() != null && !session.getObjectData().isEmpty()) {
                restoreTreeViewSession();
                showTreeList();
-               hideDisabledOverlay();
+               hideDataTreeLoadingOverlay();
                updateSelectAllState();
 
                if (session.getExtra() != null && session.getExtra().isUsbExtra()) {
@@ -641,7 +677,7 @@ public class ImportFragment extends BaseDataFragment {
                logger.info("Still loading data from media.");
                hideTreeList();
                hideStartMessage();
-               showLoadingOverlay();
+               showDataTreeLoadingOverlay();
             }
          }
          else if (SessionUtil.isPerformOperationsTask(session) && SessionUtil.isInProgress(session)) {
@@ -654,7 +690,7 @@ public class ImportFragment extends BaseDataFragment {
          }
          else {
             hideTreeList();
-            hideDisabledOverlay();
+            hideDataTreeLoadingOverlay();
             showStartMessage();
          }
          updateImportButton();
@@ -926,6 +962,17 @@ public class ImportFragment extends BaseDataFragment {
 
    private void onSelectImportSource() {
       logger.debug("onSelectImportSource");
+      SessionContract.SessionManager sessionManager = getSessionManager();
+      if (sessionManager != null && sessionManager.actionIsActive(getAction())) {
+         //As soon as "pfhmi-dev-defects-13486 - Data Mgmt: Discovery task cannot be canceled" is solved,
+         //the line below is to be uncommented again.
+         //sessionManager.cancel();
+         showStartMessage();
+         hideTreeList();
+         resetSession();
+         updateImportButton();
+         updateSelectAllState();
+      }
       importSourceDialog = new ImportSourceDialog(getActivity(), generateImportExtras());
       importSourceDialog.setOnDismissListener(new DialogViewInterface.OnDismissListener() {
          @Override

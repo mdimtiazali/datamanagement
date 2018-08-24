@@ -17,7 +17,6 @@ import android.widget.AdapterView;
 import android.widget.LinearLayout;
 import android.widget.ScrollView;
 
-import butterknife.ButterKnife;
 import com.android.annotations.VisibleForTesting;
 import com.cnh.android.dialog.DialogView;
 import com.cnh.android.dialog.DialogViewInterface;
@@ -31,6 +30,10 @@ import com.cnh.pf.android.data.management.adapter.PathTreeViewAdapter;
 import com.cnh.pf.android.data.management.misc.IconizedFile;
 import com.cnh.pf.android.data.management.session.SessionExtra;
 import com.google.common.io.Files;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import java.io.File;
 import java.io.FileFilter;
 import java.util.ArrayList;
@@ -38,8 +41,8 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+
+import butterknife.ButterKnife;
 import pl.polidea.treeview.InMemoryTreeStateManager;
 import pl.polidea.treeview.TreeBuilder;
 import pl.polidea.treeview.TreeNodeInfo;
@@ -367,7 +370,7 @@ public class ImportSourceDialog extends DialogView {
       }
    }
 
-   public class ImportSourceSelectedEvent {
+   public static class ImportSourceSelectedEvent {
       private SessionExtra extra;
 
       public ImportSourceSelectedEvent(SessionExtra extra) {
