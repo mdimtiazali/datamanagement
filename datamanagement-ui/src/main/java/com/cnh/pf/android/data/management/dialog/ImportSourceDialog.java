@@ -26,6 +26,7 @@ import com.cnh.android.widget.control.PickListEditable;
 import com.cnh.android.widget.control.PickListItem;
 import com.cnh.pf.android.data.management.R;
 import com.cnh.pf.android.data.management.TreeEntityHelper;
+import com.cnh.pf.android.data.management.adapter.BaseTreeViewAdapter;
 import com.cnh.pf.android.data.management.adapter.PathTreeViewAdapter;
 import com.cnh.pf.android.data.management.misc.IconizedFile;
 import com.cnh.pf.android.data.management.session.SessionExtra;
@@ -36,7 +37,6 @@ import org.slf4j.LoggerFactory;
 
 import java.io.File;
 import java.io.FileFilter;
-import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
@@ -76,7 +76,6 @@ public class ImportSourceDialog extends DialogView {
    private int getCurrentSessionExtra;
    private boolean isUSBType = false;
    private Set<String> file2Support = new HashSet<String>();
-   private List selectedNodeList = new ArrayList();
 
    private boolean cloudIsLoaded = true;
    private boolean usbIsLoaded = true;
@@ -288,14 +287,43 @@ public class ImportSourceDialog extends DialogView {
          sourcePathTreeView.setVisibility(VISIBLE);
          displayPicklist.setVisibility(GONE);
          usbTreeAdapter = new PathTreeViewAdapter((Activity) getContext(), usbManager, 1);
+         usbTreeAdapter.setAutomaticSelection(false);
          sourcePathTreeView.setAdapter(usbTreeAdapter);
          usbManager.collapseChildren(null); //Collapse all children
          usbTreeAdapter.setOnPathSelectedListener(new PathTreeViewAdapter.OnPathSelectedListener() {
             @Override
             public void onPathSelected(IconizedFile iconizedFile, TreeNodeInfo selectedNode) {
-               File file = iconizedFile.getFile();
-               currentExtra.setPath(file.getPath());
-               onTreeNodeClick(selectedNode);
+               //check that selection is selectable item
+               if (!selectedNode.isWithChildren()) {
+                  //determine, if any other item is already selected
+                  if (usbTreeAdapter.getSelectionMap().containsKey(iconizedFile)) {
+                     usbTreeAdapter.getSelectionMap().remove(iconizedFile);
+                  }
+                  else {
+                     if (usbTreeAdapter.getSelectionMap().size() > 0) {
+                        //at least one item in  the usb tree is already selected, remove selection
+                        usbTreeAdapter.getSelectionMap().clear();
+                     }
+                     File file = iconizedFile.getFile();
+                     currentExtra.setPath(file.getPath());
+                     usbTreeAdapter.getSelectionMap().put(iconizedFile, BaseTreeViewAdapter.SelectionType.FULL);
+                     //TODO: as soon as the cloud is implemented, the selection should be cleared here as well
+                  }
+               }
+               else {
+                  //selected item is non selectable: expand or collapse
+                  if (usbTreeAdapter.getSelectionMap().containsKey(iconizedFile)) {
+                     usbTreeAdapter.getSelectionMap().remove(iconizedFile);
+                  }
+                  if (selectedNode.isExpanded()) {
+                     usbManager.collapseChildren(iconizedFile);
+                  }
+                  else {
+                     usbManager.expandDirectChildren(iconizedFile);
+                  }
+               }
+               updateSelectButtonState();
+               usbTreeAdapter.updateViewSelection(sourcePathTreeView);
             }
          });
       }
@@ -329,26 +357,12 @@ public class ImportSourceDialog extends DialogView {
    }
 
    /**
-    * updates the selected node list whenever user selects/unselects a node
-    * @param selectedNode current selected node
-    */
-   private void onTreeNodeClick(TreeNodeInfo selectedNode) {
-      log.debug("onTreeNodeClick");
-      if (!selectedNodeList.contains(selectedNode.getId())) {
-         selectedNodeList.add(selectedNode.getId());
-      }
-      else {
-         selectedNodeList.remove(selectedNode.getId());
-      }
-      updateSelectButtonState();
-   }
-
-   /**
     * enables/disables the select button state
     */
    private void updateSelectButtonState() {
       final boolean selectButtonState;
-      if (selectedNodeList.isEmpty()) {
+      //TODO: As soon as the cloud is implemented, its selection map should be checked here as well
+      if (usbTreeAdapter.getSelectionMap().isEmpty()) {
          selectButtonState = false;
       }
       else {
