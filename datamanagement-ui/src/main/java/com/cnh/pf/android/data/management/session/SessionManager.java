@@ -89,11 +89,6 @@ public class SessionManager implements SessionContract.SessionManager, SessionEv
       if (view != null) {
          view.onDataServiceConnectionChange(false);
       }
-
-      // Clear stored session data for IMPORT action before exiting the application
-      if (sessionMap.containsKey(Session.Action.IMPORT)) {
-         sessionMap.remove(Session.Action.IMPORT);
-      }
    }
 
    @Override

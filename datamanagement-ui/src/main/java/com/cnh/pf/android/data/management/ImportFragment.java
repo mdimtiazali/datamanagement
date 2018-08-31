@@ -63,6 +63,8 @@ import roboguice.event.Observes;
 import roboguice.inject.InjectResource;
 import roboguice.inject.InjectView;
 
+import javax.annotation.Nonnull;
+
 /**
  * Import Tab Fragment, Handles import from external mediums {USB, External Display}.
  * @author oscar.salazar@cnhind.com
@@ -106,6 +108,10 @@ public class ImportFragment extends BaseDataFragment {
    @InjectView(R.id.operation_name)
    TextView operationName;
 
+   //those are strings defined in the backend to identify the received progress
+   private final static String PROGRESS_CONFLICT_IDENTIFICATION_STRING = "Calculating conflict";
+   private final static String PROGRESS_TARGETS_IDENTIFICATION_STRING = "Calculating Targets";
+
    //this variable denotes the current state of dynamic visual feedback (success or failure of process)
    private boolean visualFeedbackActive = false; //true: visual feedback is currently shown, false: currently no visual feedback shown
 
@@ -124,6 +130,8 @@ public class ImportFragment extends BaseDataFragment {
 
    private Drawable importWhiteIcon;
    private Drawable importDefaultIcon;
+
+   private ImportSourceDialog importSourceDialog;
 
    @Override
    protected List<Session.Action> getBlockingActions() {
@@ -173,7 +181,7 @@ public class ImportFragment extends BaseDataFragment {
       importSourceBtn.setOnClickListener(new View.OnClickListener() {
          @Override
          public void onClick(View v) {
-            onSelectSource();
+            onSelectImportSource();
          }
       });
       stopBtn.setOnClickListener(new View.OnClickListener() {
@@ -225,7 +233,6 @@ public class ImportFragment extends BaseDataFragment {
 
    @Override
    public void onMyselfSessionCancelled(Session session) {
-
       ToastMessageCustom.makeToastMessageText(getActivity().getApplicationContext(), getString(R.string.import_cancel), Gravity.TOP | Gravity.CENTER_HORIZONTAL,
             getResources().getInteger(R.integer.toast_message_xoffset), getResources().getInteger(R.integer.toast_message_yoffset)).show();
 
@@ -271,9 +278,7 @@ public class ImportFragment extends BaseDataFragment {
          updateSelectAllState();
 
          if (session.getExtra() != null && session.getExtra().isUsbExtra()) {
-            String filename = UtilityHelper.filenameOnly(session.getExtra().getPath());
-            if (filename == null) filename = "";
-            setHeaderText(filename);
+            setHeaderTextToSessionPath(session);
          }
       }
       else if (SessionUtil.isCalculateOperationsTask(session)) {
@@ -422,14 +427,17 @@ public class ImportFragment extends BaseDataFragment {
       else if (SessionUtil.isPerformOperationsTask(session)) {
          logger.trace("Import process has been completed. Reset session.");
 
-         clearTreeSelection();
-         showStartMessage();
+         hideStartMessage();
+         showTreeList();
+
+         treeAdapter.selectAll(treeViewList, false);
+         treeViewList.setAdapter(treeAdapter);
+
          showFinishedStatePanel();
          processOverlay.setMode(DataExchangeProcessOverlay.MODE.HIDDEN);
          ToastMessageCustom.makeToastMessageText(getActivity().getApplicationContext(), getString(R.string.import_complete), Gravity.TOP | Gravity.CENTER_HORIZONTAL,
                getResources().getInteger(R.integer.toast_message_xoffset), getResources().getInteger(R.integer.toast_message_yoffset)).show();
-         // Reset session data after completing PERFORM_OPERATIONS successfully.
-         resetSession();
+
          updateSelectAllState();
 
          //close cancel dialog if still open
@@ -471,6 +479,7 @@ public class ImportFragment extends BaseDataFragment {
             showErrorStatePanel();
             //tree is still available
             showTreeList();
+            restoreTreeViewSession();
          }
       }
       updateSelectAllState();
@@ -531,16 +540,14 @@ public class ImportFragment extends BaseDataFragment {
       hideStartMessage();
       showLoadingOverlay();
 
-      // TODO: this creates the temporary folder on import from datamanagement, so it can be deleted from datamanagement as well.
-      // this workaround prevents some trouble on a later export when datamanagement will try deleting the temporary folder that has been created by isoservice
-      // it would be nice if we would find a cleaner solution for this
-      // unfortunately setting permissions to 777 doesn't make a difference - data management is still unable to delete this folder if it has been created by isoservice
       final String tempPath = UtilityHelper.CommonPaths.PATH_TMP.getPathString();
       File tmpFolder = new File(tempPath);
       if (!tmpFolder.exists() && !tmpFolder.mkdirs()) {
          logger.error("unable to create tmp folder");
       }
-
+      else if(!grantAllPermissionsRecursive(tmpFolder)) {
+         logger.error("unable to grant permissions for tmp folder");
+      }
       discovery(extra);
    }
 
@@ -550,6 +557,43 @@ public class ImportFragment extends BaseDataFragment {
       hideTreeList();
       showDisconnectedOverlay();
       updateSelectAllState();
+   }
+
+   /**
+    * granting all permissions recursively
+    * @param currItem can be file or a folder that will be set recursively
+    * @return true if success
+    */
+   private static boolean grantAllPermissionsRecursive(@Nonnull File currItem) {
+      boolean checkVal = true;
+      if (!currItem.exists()) {
+         logger.error("Unable to grant permissions for not existing: {}", currItem.getPath());
+         return false;
+      }
+
+      // first, set the permissions of the item
+      checkVal &= currItem.setWritable(true, false);
+      checkVal &= currItem.setExecutable(true, false);
+      checkVal &= currItem.setReadable(true, false);
+
+      logger.info("granting permissions to: {}", currItem.getPath());
+
+      if (checkVal) {
+         // then check for the next stage
+         if (currItem.isDirectory()) {
+            File[] paths = currItem.listFiles();
+            if (null != paths) {
+               for (File singleItem : paths) {
+                  checkVal &= grantAllPermissionsRecursive(singleItem);
+               }
+            }
+         }
+      }
+      else {
+         checkVal = false;
+         logger.error("Unable to grant permissions for: {}", currItem.getPath());
+      }
+      return checkVal;
    }
 
    @Override
@@ -584,16 +628,13 @@ public class ImportFragment extends BaseDataFragment {
          if (SessionUtil.isDiscoveryTask(session) && (SessionUtil.isInProgress(session) || SessionUtil.isComplete(session))) {
             logger.info("There is already active session. Continue on the previous active session.");
             if (session.getObjectData() != null && !session.getObjectData().isEmpty()) {
-               initAndPopulateTree(session.getObjectData());
-
+               restoreTreeViewSession();
                showTreeList();
                hideDisabledOverlay();
                updateSelectAllState();
 
                if (session.getExtra() != null && session.getExtra().isUsbExtra()) {
-                  String filename = UtilityHelper.filenameOnly(session.getExtra().getPath());
-                  if (filename == null) filename = "";
-                  setHeaderText(filename);
+                  setHeaderTextToSessionPath(session);
                }
             }
             else {
@@ -607,6 +648,9 @@ public class ImportFragment extends BaseDataFragment {
             logger.info("There is import session (PERFORM_OPERATIONS) going on. Display the import process overlay.");
             showProgressPanel();
             processOverlay.setMode(DataExchangeProcessOverlay.MODE.IMPORT_PROCESS);
+            setHeaderTextToSessionPath(session);
+            restoreTreeViewSession();
+            showTreeList();
          }
          else {
             hideTreeList();
@@ -734,9 +778,20 @@ public class ImportFragment extends BaseDataFragment {
 
    @Override
    public void onProgressUpdate(String operation, int progress, int max) {
-      final Double percent = ((progress * 1.0) / max) * 100;
-      progressBar.setProgress(percent.intValue());
-      progressBar.setSecondText(true, loadingString, String.format(xOfYFormat, progress, max), true);
+      if (operation != null) {
+         int percent = (int) Math.round(((double) progress / max) * 100.0);
+         if (operation.contains(PROGRESS_TARGETS_IDENTIFICATION_STRING) || operation.contains(PROGRESS_CONFLICT_IDENTIFICATION_STRING)) {
+            processDialog.setProgress(percent);
+         }
+         else {
+            //non targets / conflict operations are supposed to be performing progress updates
+            progressBar.setProgress(percent);
+            progressBar.setSecondText(true, loadingString, String.format(xOfYFormat, progress, max), true);
+         }
+      }
+      else {
+         logger.error("Operation is null - Could not process onProgressUpdate to UI!");
+      }
    }
 
    @Override
@@ -869,8 +924,16 @@ public class ImportFragment extends BaseDataFragment {
       return list;
    }
 
-   private void onSelectSource() {
-      ((TabActivity) getActivity()).showPopup(new ImportSourceDialog(getActivity(), generateImportExtras()), true);
+   private void onSelectImportSource() {
+      logger.debug("onSelectImportSource");
+      importSourceDialog = new ImportSourceDialog(getActivity(), generateImportExtras());
+      importSourceDialog.setOnDismissListener(new DialogViewInterface.OnDismissListener() {
+         @Override
+         public void onDismiss(DialogViewInterface dialogViewInterface) {
+            importSourceDialog = null;
+         }
+      });
+      ((TabActivity) getActivity()).showPopup(importSourceDialog, true);
    }
 
    /**
@@ -890,11 +953,9 @@ public class ImportFragment extends BaseDataFragment {
    @Override
    public void onMediumUpdate() {
       super.onMediumUpdate();
-
       logger.trace("onMediumUpdate()");
       if (Environment.getExternalStorageState().equals(MEDIA_BAD_REMOVAL)) {
          logger.debug("onMediumUpdate() - Reset the import screen and session state.");
-
          hideAndDismissProcessDialog();
          showDragAndDropZone();
          setHeaderText("");
@@ -904,10 +965,27 @@ public class ImportFragment extends BaseDataFragment {
          updateSelectAllState();
          updateImportButton();
       }
+      if (importSourceDialog != null) {
+         importSourceDialog.updateView(generateImportExtras());
+      }
    }
 
    @Override
    public Session.Action getAction() {
       return Session.Action.IMPORT;
+   }
+
+   /**
+    * Applies the current path of the given session to the header text
+    * @param session Current session of which the path should be applied to the header text
+    */
+   private void setHeaderTextToSessionPath(Session session) {
+      String filename = "";
+      if (session != null && session.getExtra() != null) {
+         filename = UtilityHelper.filenameOnly(session.getExtra().getPath());
+         if (filename == null) filename = "";
+
+      }
+      setHeaderText(filename);
    }
 }

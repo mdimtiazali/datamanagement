@@ -15,7 +15,6 @@ import android.view.ViewGroup;
 import android.widget.AbsListView;
 import android.widget.AdapterView;
 
-
 import pl.polidea.treeview.TreeStateManager;
 import pl.polidea.treeview.TreeViewList;
 
@@ -79,7 +78,7 @@ public abstract class SelectionTreeViewAdapter<T> extends BaseTreeViewAdapter<T>
     * Makes view state match selection state
     * @param parent  the tree view
     */
-   private void setListeners(final AdapterView<?> parent) {
+   public void setListeners(final AdapterView<?> parent) {
       parent.setOnHierarchyChangeListener(new ViewGroup.OnHierarchyChangeListener() {
          @Override
          public void onChildViewAdded(View p, View child) {
