@@ -10,7 +10,7 @@
           xmlns:cnh="http://schemas.android.com/apk/res/com.cnh.pf.android.data.management">
 
     <item android:state_selected="true" cnh:state_supported="false"
-          android:drawable="@drawable/complex_selector_background_selected_unsupported"/>
+          android:drawable="@drawable/complex_selector_background_selected_supported"/>
 
     <item cnh:state_implicit="true" cnh:state_supported="false"
           android:drawable="@drawable/complex_selector_background_selected_unsupported"/>
