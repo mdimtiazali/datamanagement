@@ -35,9 +35,9 @@
         <item>PRODUCT_MIX</item>
         <item>GUIDANCE_CONFIGURATION</item>
         <item>GUIDANCE_GROUP</item>
-        <item>GUIDANCE_PATTERN</item>
     </string-array>
     <string-array name="copy">
+        <item>GUIDANCE_GROUPS</item>
         <item>GUIDANCE_GROUP</item>
     </string-array>
     <!--Definition of root nodes supporting implicit parent selection on selection of their child nodes-->

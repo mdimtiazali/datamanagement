@@ -9,21 +9,6 @@
  */
 package com.cnh.pf.android.data.management.adapter;
 
-import android.app.Activity;
-import android.graphics.drawable.Drawable;
-import android.view.View;
-import android.widget.ImageButton;
-import android.widget.ImageView;
-import android.widget.LinearLayout;
-import android.widget.TextView;
-
-import com.cnh.jgroups.DataTypes;
-import com.cnh.jgroups.ObjectGraph;
-import com.cnh.pf.android.data.management.R;
-import com.cnh.pf.android.data.management.TreeEntityHelper;
-import com.cnh.pf.android.data.management.graph.GroupObjectGraph;
-import com.google.common.base.Predicate;
-
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashSet;
@@ -35,6 +20,19 @@ import java.util.Set;
 
 import javax.annotation.Nullable;
 
+import com.cnh.jgroups.DataTypes;
+import com.cnh.jgroups.ObjectGraph;
+import com.cnh.pf.android.data.management.R;
+import com.cnh.pf.android.data.management.TreeEntityHelper;
+import com.google.common.base.Predicate;
+
+import android.app.Activity;
+import android.graphics.drawable.Drawable;
+import android.view.View;
+import android.widget.ImageButton;
+import android.widget.ImageView;
+import android.widget.LinearLayout;
+import android.widget.TextView;
 import pl.polidea.treeview.InMemoryTreeNode;
 import pl.polidea.treeview.TreeNodeInfo;
 import pl.polidea.treeview.TreeStateManager;
@@ -87,15 +85,21 @@ public abstract class ObjectTreeViewAdapter extends SelectionTreeViewAdapter<Obj
          return false;
       }
 
-      if (filterPredicate(obj, types)) return true;
+      if (filterPredicate(obj, types))
+         return true;
+      // Guidance pattern is hidden and it's automatically selected if the guidance group is selected.
+      else if (DataTypes.GUIDANCE_PATTERN.equals(obj.getType()) && filterPredicate(obj.getParent(), types))
+         return true;
+      else if (DataTypes.FILE.equals(obj.getType()) && filterPredicate(obj.getParent(), types))
+         return true;
       else {
-            if (obj.getChildren() == null) return false;
+         if (obj.getChildren() == null) return false;
 
-            for (ObjectGraph child : obj.getChildren()) {
-               if (filterPredicateRecursive(child, types)) {
-                  return true;
-               }
+         for (ObjectGraph child : obj.getChildren()) {
+            if (filterPredicateRecursive(child, types)) {
+               return true;
             }
+         }
       }
       return false;
    }
@@ -119,10 +123,7 @@ public abstract class ObjectTreeViewAdapter extends SelectionTreeViewAdapter<Obj
 
    @Override
    public boolean includeParent(ObjectGraph id) {
-      if (id.getType().equals(DataTypes.FILE)) {
-         return true;
-      }
-      return false;
+      return (id.getType().equals(DataTypes.FILE));
    }
 
    @Override
@@ -138,12 +139,12 @@ public abstract class ObjectTreeViewAdapter extends SelectionTreeViewAdapter<Obj
          ObjectGraph graph = (ObjectGraph) treeNodeInfo.getId();
          nameView.setText(graph.getName());
          nameView.setTextColor(getActivity().getResources().getColorStateList(R.color.tree_text_color));
-         if (TreeEntityHelper.hasIcon(graph.getType()) && (graph instanceof GroupObjectGraph || !isGroupableEntity(graph))) {
-            nameView.setCompoundDrawablesWithIntrinsicBounds(TreeEntityHelper.getIcon(graph.getType()), 0, 0, 0);
+         int resId = 0;
+         if (TreeEntityHelper.hasIcon(graph.getType()) || TreeEntityHelper.hasSubtype(graph)) {
+            resId = TreeEntityHelper.getIcon(graph);
+            resId = (resId < 0) ? 0 : resId;
          }
-         else {
-            nameView.setCompoundDrawablesWithIntrinsicBounds(0, 0, 0, 0);
-         }
+         nameView.setCompoundDrawablesWithIntrinsicBounds(resId, 0, 0, 0);
       }
       return view;
    }
@@ -212,101 +213,105 @@ public abstract class ObjectTreeViewAdapter extends SelectionTreeViewAdapter<Obj
       }
       return selected;
    }
+
    /**
     * Get Set of selected root ObjectGraphs, it won't check the children node
     *
     * @return Set<ObjectGraph>
     */
-   public Set<ObjectGraph> getSelectedRootNodes(){
+   public Set<ObjectGraph> getSelectedRootNodes() {
       Set<ObjectGraph> set = new HashSet<ObjectGraph>();
       Map<ObjectGraph, SelectionType> allSelectedObj = getSelectionMap();
-      if(!allSelectedObj.isEmpty()){
+      if (!allSelectedObj.isEmpty()) {
          Iterator<Map.Entry<ObjectGraph, SelectionType>> it = allSelectedObj.entrySet().iterator();
-         while(it.hasNext()){
+         while (it.hasNext()) {
             ObjectGraph objectGraph = it.next().getKey();
-            if(objectGraph.getParent() == null || !allSelectedObj.containsKey(objectGraph.getParent())){
+            if (objectGraph.getParent() == null || !allSelectedObj.containsKey(objectGraph.getParent())) {
                set.add(objectGraph);
             }
          }
       }
       return set;
    }
+
    /**
     * adding an objectGraph to the tree
     *
     * @param objectGraph Object Data
     */
-   public void addObjectGraph(final ObjectGraph objectGraph){
-      if(objectGraph != null){
+   public void addObjectGraph(final ObjectGraph objectGraph) {
+      if (objectGraph != null) {
          final ObjectGraph parent = objectGraph.getParent();
          List<ObjectGraph> objectGraphs = getData();
-         if(objectGraphs != null) {
+         if (objectGraphs != null) {
             if (parent == null) {
                objectGraphs.add(objectGraph);
-            } else {
+            }
+            else {
                for (ObjectGraph obj : objectGraphs) {
                   ObjectGraph.traverse(obj, ObjectGraph.TRAVERSE_DOWN, new ObjectGraph.Visitor<ObjectGraph>() {
-                        @Override
-                        public boolean visit(ObjectGraph node) {
-                           if (node.equals(parent)) {
-                              node.addChild(objectGraph);
-                              return false;
-                           }
-                           return true;
+                     @Override
+                     public boolean visit(ObjectGraph node) {
+                        if (node.equals(parent)) {
+                           node.addChild(objectGraph);
+                           return false;
                         }
-                     });
-                  }
+                        return true;
+                     }
+                  });
+               }
             }
          }
       }
    }
+
    /**
     * adding objectGraphs to the tree
     *
     * @param objectGraphs Object Data
     */
-   public void addObjectGraphs(final List<ObjectGraph> objectGraphs){
-      if(objectGraphs != null && !objectGraphs.isEmpty()){
-         for(ObjectGraph objectGraph: objectGraphs){
+   public void addObjectGraphs(final List<ObjectGraph> objectGraphs) {
+      if (objectGraphs != null && !objectGraphs.isEmpty()) {
+         for (ObjectGraph objectGraph : objectGraphs) {
             addObjectGraph(objectGraph);
          }
       }
    }
+
    /**
     * remove ObjectGraph list from data
     *
     */
-   public void removeObjectGraphs(final List<ObjectGraph> objects){
-      if(objects != null && !objects.isEmpty()){
-         for(ObjectGraph o: objects){
+   public void removeObjectGraphs(final List<ObjectGraph> objects) {
+      if (objects != null && !objects.isEmpty()) {
+         for (ObjectGraph o : objects) {
             removeObjectGraph(o);
          }
       }
       resetSelectedMap();
    }
+
    /**
     * remove ObjectGraph from data
     *
     */
-   public void removeObjectGraph(final ObjectGraph objectGraph){
+   public void removeObjectGraph(final ObjectGraph objectGraph) {
       final List<ObjectGraph> objs = new ArrayList<ObjectGraph>();
       List<ObjectGraph> objectGraphs = getData();
-      if(objectGraph != null) {
-         if (objectGraphs != null) {
-            for (ObjectGraph obj : objectGraphs) {
-               ObjectGraph.traverse(obj, ObjectGraph.TRAVERSE_DOWN, new ObjectGraph.Visitor<ObjectGraph>() {
-                  @Override
-                  public boolean visit(ObjectGraph node) {
-                     if (node.equals(objectGraph)) {
-                        objs.add(node);
-                        return false;
-                     }
-                     return true;
+      if ((objectGraph != null) && (objectGraphs != null)) {
+         for (ObjectGraph obj : objectGraphs) {
+            ObjectGraph.traverse(obj, ObjectGraph.TRAVERSE_DOWN, new ObjectGraph.Visitor<ObjectGraph>() {
+               @Override
+               public boolean visit(ObjectGraph node) {
+                  if (node.equals(objectGraph)) {
+                     objs.add(node);
+                     return false;
                   }
-               });
-               if (objs.size() > 0) {
-                  break;
+                  return true;
                }
+            });
+            if (!objs.isEmpty()) {
+               break;
             }
          }
       }
@@ -320,11 +325,13 @@ public abstract class ObjectTreeViewAdapter extends SelectionTreeViewAdapter<Obj
          }
       }
    }
-   private void resetSelectedMap(){
-      if(!getSelectionMap().isEmpty()){
+
+   private void resetSelectedMap() {
+      if (!getSelectionMap().isEmpty()) {
          getSelectionMap().clear();
       }
    }
+
    /**
     * Update a specific item view
     *

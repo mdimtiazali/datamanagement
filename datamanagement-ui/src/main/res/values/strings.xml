@@ -311,7 +311,10 @@
     <string name="edit_update_title">Updating item</string>
     <string name="edit_update_content">In progress ...</string>
     <string name="copy_paste_update_content">In progress ...</string>
-
+    <plurals name="copy_paste_item_name">
+        <item quantity="one">%1$d Item</item>
+        <item quantity="other">%1$d Items</item>
+    </plurals>
     <string name="unknown_vehicle">Unknown Vehicle</string>
 
     <!-- Destination / Format Combinations -->
