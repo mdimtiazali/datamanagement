@@ -31,7 +31,6 @@ import pl.polidea.treeview.TreeViewList;
  */
 public class PathTreeViewAdapter extends BaseTreeViewAdapter<IconizedFile> {
    private OnPathSelectedListener listener;
-   private TreeNodeInfo selectedNode;
    private boolean automaticSelection = true;
 
    public PathTreeViewAdapter(Activity activity, TreeStateManager treeStateManager, int numberOfLevels) {
@@ -46,7 +45,7 @@ public class PathTreeViewAdapter extends BaseTreeViewAdapter<IconizedFile> {
          this.selectionImpl(id);
          this.updateViewSelection(parent);
       }
-      selectedNode = getTreeNodeInfo(position);
+      TreeNodeInfo selectedNode = getTreeNodeInfo(position);
       if (listener != null) {
          listener.onPathSelected((IconizedFile) id, selectedNode);
       }
