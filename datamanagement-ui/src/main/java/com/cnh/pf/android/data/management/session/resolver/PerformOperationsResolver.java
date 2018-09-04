@@ -43,7 +43,7 @@ public class PerformOperationsResolver implements Resolver {
          logger.trace("resolve() - EXPORT");
 
          String format = session.getExtra().getFormat();
-         if (format == null || (!format.equals("ISOXML") && !format.equals("PF Database"))) {
+         if (format == null || !format.equals("ISOXML")) {
             logger.debug("resolve() - EXPORT: Invalid format");
             throw new SessionException(ErrorCode.INVALID_FORMAT);
          }

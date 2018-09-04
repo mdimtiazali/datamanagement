@@ -38,8 +38,9 @@ public class UtilityHelper {
    public static final int NEGATIVE_BINARY_ERROR = -1;
    public static final int MAX_TREE_SELECTIONS_FOR_DEFAULT_TEXT_SIZE = 999;
    public static final int POPOVER_DEFAULT_WIDTH = 550;
-   public static final int EXPORT_DEST_POPOVER_DEFAULT_HEIGHT = 370;
-   public static final int EXPORT_FORMAT_POPOVER_DEFAULT_HEIGHT = 455;
+   public static final int EXPORT_FORMAT_POPOVER_DEFAULT_WIDTH = 480;
+   public static final int EXPORT_DEST_POPOVER_DEFAULT_HEIGHT = 380;
+   public static final int EXPORT_FORMAT_POPOVER_DEFAULT_HEIGHT = 135;
    /**
     * Map for returning the correct strings based on the vehicle make and data sources available
     */
@@ -307,7 +308,6 @@ public class UtilityHelper {
     }
 
     public enum CommonFormats{
-        PFDATABASEFORMAT("PF Database"),
         ISOXMLFORMAT("ISOXML");
 
         private final String name;

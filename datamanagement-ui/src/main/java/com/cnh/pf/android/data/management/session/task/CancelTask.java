@@ -54,6 +54,5 @@ public class CancelTask extends SessionOperationTask<Void> {
       } catch (Exception e) {
          logger.debug("Exception in CANCEL: ", e);
       }
-      session.setResultCode(Process.Result.CANCEL);
    }
 }

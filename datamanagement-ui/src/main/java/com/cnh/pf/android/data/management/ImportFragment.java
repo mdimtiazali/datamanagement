@@ -235,15 +235,17 @@ public class ImportFragment extends BaseDataFragment {
 
    @Override
    public void onMyselfSessionCancelled(Session session) {
-      ToastMessageCustom.makeToastMessageText(getActivity().getApplicationContext(), getString(R.string.import_cancel), Gravity.TOP | Gravity.CENTER_HORIZONTAL,
-            getResources().getInteger(R.integer.toast_message_xoffset), getResources().getInteger(R.integer.toast_message_yoffset)).show();
+      logger.debug("onMyselfSessionCancelled(): {}, {}", session.getType(), session.getAction());
+      if (SessionUtil.isPerformOperationsTask(session) || SessionUtil.isDiscoveryTask(session)) {
+         ToastMessageCustom.makeToastMessageText(getActivity().getApplicationContext(), getString(R.string.export_cancel), Gravity.TOP | Gravity.CENTER_HORIZONTAL,
+                 getResources().getInteger(R.integer.toast_message_xoffset), getResources().getInteger(R.integer.toast_message_yoffset)).show();
+         clearTreeSelection();
+      }
 
       //close cancel dialog if still open
-      closeCancelDialog();
-      showDragAndDropZone();
+      showErrorStatePanel();
 
       if (SessionUtil.isDiscoveryTask(session)) {
-         showDragAndDropZone();
          showStartMessage();
       }
       else if (SessionUtil.isPerformOperationsTask(session)) {
@@ -394,9 +396,9 @@ public class ImportFragment extends BaseDataFragment {
                   hideAndDismissProcessDialog();
                   showProgressPanel();
                   processOverlay.setMode(DataExchangeProcessOverlay.MODE.IMPORT_PROCESS);
+                  performOperations(extra, operations);
                   updateImportButton();
                   updateSelectAllState();
-                  performOperations(extra, operations);
                }
             });
             processDialog.setOnDismissListener(new DialogViewInterface.OnDismissListener() {
@@ -421,9 +423,9 @@ public class ImportFragment extends BaseDataFragment {
             hideAndDismissProcessDialog();
             showProgressPanel();
             processOverlay.setMode(DataExchangeProcessOverlay.MODE.IMPORT_PROCESS);
+            performOperations(extra, session.getOperations());
             updateImportButton();
             updateSelectAllState();
-            performOperations(extra, session.getOperations());
          }
       }
       else if (SessionUtil.isPerformOperationsTask(session)) {
@@ -440,6 +442,10 @@ public class ImportFragment extends BaseDataFragment {
          ToastMessageCustom.makeToastMessageText(getActivity().getApplicationContext(), getString(R.string.import_complete), Gravity.TOP | Gravity.CENTER_HORIZONTAL,
                getResources().getInteger(R.integer.toast_message_xoffset), getResources().getInteger(R.integer.toast_message_yoffset)).show();
 
+         resetSession();
+         hideTreeList();
+         setHeaderText("");
+         showStartMessage();
          updateSelectAllState();
 
          //close cancel dialog if still open
@@ -462,23 +468,23 @@ public class ImportFragment extends BaseDataFragment {
       processOverlay.setMode(DataExchangeProcessOverlay.MODE.HIDDEN);
       hideDataTreeLoadingOverlay();
       closeCancelDialog();
+      showErrorStatePanel();
 
       if (ErrorCode.USB_REMOVED.equals(errorCode)) {
-         showErrorStatePanel();
          //USB was removed, no tree available anymore
          hideTreeList();
          showStartMessage();
+         clearTreeSelection();
+         treeAdapter.setData(new ArrayList<ObjectGraph>());
       }
       else {
          if (SessionUtil.isDiscoveryTask(session)) {
             //if task was discovery, just reset UI to beginning state
-            showDragAndDropZone();
             hideTreeList();
             showStartMessage();
          }
          else {
             //if import was active, show error indicator
-            showErrorStatePanel();
             //tree is still available
             showTreeList();
             restoreTreeViewSession();
@@ -657,8 +663,6 @@ public class ImportFragment extends BaseDataFragment {
             // In that case, reset session & tree selection before updating UI.
             resetSession();
             clearTreeSelection();
-            updateImportButton();
-            updateSelectAllState();
          }
 
          if (SessionUtil.isDiscoveryTask(session) && (SessionUtil.isInProgress(session) || SessionUtil.isComplete(session))) {
@@ -761,6 +765,7 @@ public class ImportFragment extends BaseDataFragment {
          leftStatus.setVisibility(View.GONE);
          importFinishedStatePanel.setVisibility(View.GONE);
          importDropZone.setVisibility(View.VISIBLE);
+         progressBar.setProgress(0);
       }
    }
 
@@ -793,7 +798,11 @@ public class ImportFragment extends BaseDataFragment {
       importDropZone.setVisibility(View.GONE);
       importFinishedStatePanel.setVisibility(View.GONE);
       leftStatus.setVisibility(View.VISIBLE);
-      progressBar.setErrorProgress(progressBar.getProgress(), getResources().getString(R.string.pb_error));
+      Resources resources = getResources();
+      String errorString = resources.getString(R.string.pb_error);
+      progressBar.setSecondText(true, errorString, null, true);
+      progressBar.setErrorProgress(resources.getInteger(R.integer.error_percentage_value), errorString);
+
       //post cleanup to show drag and drop zone after time X
       final Handler handler = new Handler();
       handler.postDelayed(new Runnable() {
@@ -1000,17 +1009,12 @@ public class ImportFragment extends BaseDataFragment {
    @Override
    public void onMediumUpdate() {
       super.onMediumUpdate();
-      logger.trace("onMediumUpdate()");
+      logger.trace("ImportFragment onMediumUpdate()");
       if (Environment.getExternalStorageState().equals(MEDIA_BAD_REMOVAL)) {
-         logger.debug("onMediumUpdate() - Reset the import screen and session state.");
-         hideAndDismissProcessDialog();
-         showDragAndDropZone();
+         logger.debug("onMediumUpdate() - Reset the import screen.");
          setHeaderText("");
-         showStartMessage();
-         clearTreeSelection();
-         resetSession();
-         updateSelectAllState();
          updateImportButton();
+         updateSelectAllState();
       }
       if (importSourceDialog != null) {
          importSourceDialog.updateView(generateImportExtras());
