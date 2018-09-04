@@ -98,6 +98,7 @@
     <dimen name="undelete_dialog_edge_margin">24dp</dimen>
     <dimen name="progress_circle_diameter">48dp</dimen>
     <dimen name="delete_dialog_width">592dp</dimen>
+    <dimen name="cp_complete_dialog_width">592dp</dimen>
     <dimen name="min_select_all_btn_width">175dp</dimen>
 
     <!-- Import/Export Overlays-->
