@@ -9,6 +9,7 @@
 package com.cnh.pf.android.data.management;
 
 import static com.cnh.pf.android.data.management.session.Session.Type.DISCOVERY;
+
 import static org.hamcrest.core.Is.is;
 import static org.hamcrest.core.IsNull.notNullValue;
 import static org.junit.Assert.assertEquals;
@@ -47,7 +48,6 @@ import com.cnh.pf.model.product.library.CropType;
 import com.google.inject.Key;
 import com.google.inject.name.Names;
 
-import java.io.File;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
@@ -63,6 +63,7 @@ import org.robolectric.annotation.Config;
 import org.robolectric.util.ActivityController;
 import org.xmlpull.v1.XmlPullParserException;
 
+import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
@@ -79,10 +80,10 @@ import roboguice.event.EventManager;
 @RunWith(RobolectricMavenTestRunner.class)
 @Config(manifest = "src/main/AndroidManifest.xml", application = TestApp.class)
 public class DataManagementUITest {
-   private static int MANAGE_SOURCE_TAB_POSITION = 0;
-   private static int IMPORT_SOURCE_TAB_POSITION = 1;
-   private static int EXPORT_SOURCE_TAB_POSITION = 2;
-   private static int PRODUCT_LIBRARY_TAB_POSITION = 3;
+   protected static int MANAGE_SOURCE_TAB_POSITION = 0;
+   protected static int IMPORT_SOURCE_TAB_POSITION = 1;
+   protected static int EXPORT_SOURCE_TAB_POSITION = 2;
+   protected static int PRODUCT_LIBRARY_TAB_POSITION = 3;
 
    ActivityController<DataManagementActivity> controller;
    DataManagementActivity activity;
@@ -156,7 +157,6 @@ public class DataManagementUITest {
       assertThat(manageFragment.getTreeAdapter(), is(notNullValue()));
       assertThat(manageFragment.getTreeAdapter().getCount() > 0, is(true));
    }
-
 
    @Test
    public void testISOSupport() throws RemoteException {
@@ -297,4 +297,5 @@ public class DataManagementUITest {
       verify(importSourceDialog).getCurrentExtra();
       verify(importSourceDialog).checkUSBType();
    }
+
 }

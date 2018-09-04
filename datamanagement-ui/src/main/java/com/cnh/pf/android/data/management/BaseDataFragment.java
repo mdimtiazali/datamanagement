@@ -21,7 +21,9 @@ import android.widget.LinearLayout;
 import android.widget.TextView;
 
 import com.android.annotations.Nullable;
+import com.android.annotations.VisibleForTesting;
 import com.cnh.android.pf.widget.controls.ToastMessageCustom;
+import com.cnh.android.pf.widget.view.DisabledOverlay;
 import com.cnh.jgroups.DataTypes;
 import com.cnh.jgroups.ObjectGraph;
 import com.cnh.jgroups.Operation;
@@ -80,6 +82,7 @@ public abstract class BaseDataFragment extends RoboFragment implements SessionCo
 
    protected DataExchangeBlockedOverlay disabledOverlay = null;
    protected DataExchangeProcessOverlay processOverlay = null;
+   protected DisabledOverlay treeLoadingOverlay = null;
    protected TreeStateManager<ObjectGraph> manager;
    protected TreeBuilder<ObjectGraph> treeBuilder;
    protected ObjectTreeViewAdapter treeAdapter;
@@ -120,8 +123,7 @@ public abstract class BaseDataFragment extends RoboFragment implements SessionCo
       @Override
       public int compare(InMemoryTreeNode<ObjectGraph> lhs, InMemoryTreeNode<ObjectGraph> rhs) {
          // Do the case-insensitive check first
-         if((lhs != null)  && (rhs != null) && (lhs.getId() != null) && (rhs.getId() != null) &&
-            (lhs.getId().getName() != null) && (rhs.getId().getName() != null) ){
+         if ((lhs != null) && (rhs != null) && (lhs.getId() != null) && (rhs.getId() != null) && (lhs.getId().getName() != null) && (rhs.getId().getName() != null)) {
             int comparison = lhs.getId().getName().compareToIgnoreCase(rhs.getId().getName());
             if (comparison != 0) {
                return comparison;
@@ -323,6 +325,8 @@ public abstract class BaseDataFragment extends RoboFragment implements SessionCo
 
       disabledOverlay = (DataExchangeBlockedOverlay) layout.findViewById(R.id.disabled_overlay);
       processOverlay = (DataExchangeProcessOverlay) layout.findViewById(R.id.process_overlay);
+      treeLoadingOverlay = (DisabledOverlay) layout.findViewById(R.id.tree_loading_overlay);
+
       showLoadingOverlay();
       return layout;
    }
@@ -706,7 +710,26 @@ public abstract class BaseDataFragment extends RoboFragment implements SessionCo
    protected void restoreTreeViewSession() {
       Session session = getSession();
       if (session != null) {
-         treeAdapter.setData(getSession().getObjectData());
+         if (treeAdapter == null) {
+            //happens after resuming app
+            if (manager == null) {
+               manager = new InMemoryTreeStateManager<ObjectGraph>();
+            }
+            if (treeBuilder == null) {
+               treeBuilder = new TreeBuilder<ObjectGraph>(manager);
+            }
+            if (isDsPerfFlag()) {
+               TreeEntityHelper.LoadDMTreeFromJson(this.getActivity(), treeBuilder);
+               jsonAddToTree(session.getObjectData());
+            }
+            else {
+               addToTree(session.getObjectData());
+            }
+            sortTreeList();
+            createTreeAdapter();
+            manager.collapseChildren(null);
+         }
+         treeAdapter.setData(session.getObjectData());
          treeViewList.setAdapter(treeAdapter);
          treeViewList.post(new Runnable() {
             @Override
@@ -939,6 +962,7 @@ public abstract class BaseDataFragment extends RoboFragment implements SessionCo
     * @param blockingActions List of Actions that are allowed to block fragments
     * @return True if blocking overlay is shown afterwards, False otherwise
     */
+   @VisibleForTesting
    protected boolean requestAndUpdateBlockedOverlay(@Nullable List<Session.Action> blockingActions) {
       if (blockingActions != null && sessionManager != null && !DataExchangeBlockedOverlay.MODE.DISCONNECTED.equals(disabledOverlay.getMode())) {
          for (Session.Action action : blockingActions) {
