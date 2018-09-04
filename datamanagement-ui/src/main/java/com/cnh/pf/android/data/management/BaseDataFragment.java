@@ -120,12 +120,17 @@ public abstract class BaseDataFragment extends RoboFragment implements SessionCo
       @Override
       public int compare(InMemoryTreeNode<ObjectGraph> lhs, InMemoryTreeNode<ObjectGraph> rhs) {
          // Do the case-insensitive check first
-         int comparison = lhs.getId().getName().compareToIgnoreCase(rhs.getId().getName());
-         if (comparison != 0) {
-            return comparison;
+         if((lhs != null)  && (rhs != null) && (lhs.getId() != null) && (rhs.getId() != null) &&
+            (lhs.getId().getName() != null) && (rhs.getId().getName() != null) ){
+            int comparison = lhs.getId().getName().compareToIgnoreCase(rhs.getId().getName());
+            if (comparison != 0) {
+               return comparison;
+            }
+            // If the case-insensitive check is same, do the case-sensitive check to make upper-case come first
+            return lhs.getId().getName().compareTo(rhs.getId().getName());
          }
-         // If the case-insensitive check is same, do the case-sensitive check to make upper-case come first
-         return lhs.getId().getName().compareTo(rhs.getId().getName());
+         // error case, return after
+         return 1;
       }
    };
 
@@ -695,6 +700,29 @@ public abstract class BaseDataFragment extends RoboFragment implements SessionCo
    }
 
    /**
+    * Resumes the tree view session with all data contained and selections made
+    * in the current (/old) session.
+    */
+   protected void restoreTreeViewSession() {
+      Session session = getSession();
+      if (session != null) {
+         treeAdapter.setData(getSession().getObjectData());
+         treeViewList.setAdapter(treeAdapter);
+         treeViewList.post(new Runnable() {
+            @Override
+            public void run() {
+               treeAdapter.updateViewSelection(treeViewList);
+               treeAdapter.setListeners(treeViewList);
+            }
+         });
+      }
+      else {
+         logger.error("Could not restore tree session! Recreating datatree (loss of data and selection)!");
+         initAndPopulateTree(new ArrayList<ObjectGraph>());
+      }
+   }
+
+   /**
     * adding object(s) to treeview
     * @param  objectGraphs objects to add
     */
@@ -747,7 +775,7 @@ public abstract class BaseDataFragment extends RoboFragment implements SessionCo
    private boolean bAddToTree(ObjectGraph parent, ObjectGraph object) {
       boolean bVisible = false;
       try {
-         if (object.getType().equals(DataTypes.DDOP)) {
+         if (DataTypes.DDOP.equals(object.getType()) || DataTypes.GUIDANCE_PATTERN.equals(object.getType()) || DataTypes.FILE.equals(object.getType())) {
             return bVisible;
          }
          //Check if entity can be grouped

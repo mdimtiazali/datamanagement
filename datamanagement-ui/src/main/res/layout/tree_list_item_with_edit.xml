@@ -27,7 +27,7 @@
         android:singleLine="true"
         android:ellipsize="middle"
         android:layout_weight="1"
-        android:gravity="left"
+        android:gravity="center_vertical"
         android:textColor="@color/StandardBlackColor"/>
     <ImageButton
         android:id="@+id/mng_copy_button"

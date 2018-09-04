@@ -11,7 +11,7 @@
 
     <item android:state_selected="true" android:state_pressed="false" cnh:state_supported="true" android:color="@color/StandardWhiteColor" />
 
-    <item android:state_selected="true" android:state_pressed="false" android:color="@color/bar_grey" />
+    <item android:state_selected="true" android:state_pressed="false" android:color="@color/StandardWhiteColor" />
 
     <item cnh:state_implicit="true" android:state_pressed="false" cnh:state_supported="false" android:color="@color/bar_grey" />
 
