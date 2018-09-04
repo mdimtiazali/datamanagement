@@ -28,13 +28,13 @@ public class GFFSelectionView extends DialogView{
     private LayoutInflater inflater;
     private GFFAdapter adapter;
 
-    public GFFSelectionView(Context context, List<GFFObject> data, ObjectGraph object) {
+    public GFFSelectionView(Context context, List<GFFObject> data, String objectName) {
         super(context);
         this.data = data;
         inflater = LayoutInflater.from(context);
         View view = inflater.inflate(R.layout.gff_selection_dialog,null);
         TextView header = (TextView)view.findViewById(R.id.header);
-        String headline = String.format(getResources().getString(R.string.copy_paste_header),object.getName());
+        String headline = String.format(getResources().getString(R.string.copy_paste_header),objectName);
         header.setText(Html.fromHtml(headline));
      //   header.setText(String.format(getResources().getString(R.string.copy_paste_header),object.getName()));
         adapter = new GFFAdapter(context, data);

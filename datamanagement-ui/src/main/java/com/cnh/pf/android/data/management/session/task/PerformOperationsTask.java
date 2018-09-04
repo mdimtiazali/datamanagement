@@ -108,11 +108,19 @@ public class PerformOperationsTask extends SessionOperationTask<Void> {
                   else {
                      final String USB_EXPORT_PATH = UtilityHelper.CommonPaths.PATH_USB_PORT.getPathString();
 
-                     final String PFDATABASE_FOLDER =
-                        UtilityHelper.CommonPaths.PATH_DESIGNATOR.getPathString() + formatManager.getFormat(UtilityHelper.CommonFormats.PFDATABASEFORMAT.getName()).getPath() + UtilityHelper.CommonPaths.PATH_DESIGNATOR.getPathString();
+                     final String PFDATABASE_FOLDER = UtilityHelper.CommonPaths.PATH_DESIGNATOR.getPathString() +
+                             formatManager.getFormat(UtilityHelper.CommonFormats.PFDATABASEFORMAT.getName()).getPath() + UtilityHelper.CommonPaths.PATH_DESIGNATOR.getPathString();
 
-                     final String ISOXML_FOLDER =
-                        UtilityHelper.CommonPaths.PATH_DESIGNATOR.getPathString() + formatManager.getFormat(UtilityHelper.CommonFormats.ISOXMLFORMAT.getName()).getPath() + UtilityHelper.CommonPaths.PATH_DESIGNATOR.getPathString();
+                     UtilityHelper.MediumVariant mediumVariant = UtilityHelper.MediumVariant.fromValue(extra.getOrder());
+                     final String ISOXML_FOLDER;
+                     if (null != mediumVariant && UtilityHelper.MediumVariant.USB_FRED.equals(mediumVariant)) {
+                        ISOXML_FOLDER = UtilityHelper.CommonPaths.PATH_USB_FRED.getPathString() + UtilityHelper.CommonPaths.PATH_DESIGNATOR.getPathString() +
+                                formatManager.getFormat(UtilityHelper.CommonFormats.ISOXMLFORMAT.getName()).getPath() + UtilityHelper.CommonPaths.PATH_DESIGNATOR.getPathString();
+                     }
+                     else {
+                        ISOXML_FOLDER = UtilityHelper.CommonPaths.PATH_DESIGNATOR.getPathString() +
+                                formatManager.getFormat(UtilityHelper.CommonFormats.ISOXMLFORMAT.getName()).getPath() + UtilityHelper.CommonPaths.PATH_DESIGNATOR.getPathString();
+                     }
 
                      if (Environment.getExternalStorageState().equals(MEDIA_MOUNTED) && tmpFolder.exists()) {
 
@@ -204,7 +212,7 @@ public class PerformOperationsTask extends SessionOperationTask<Void> {
          File dest = new File(destRoot + destDir);
          long exportSize = 0;
 
-         if ((null != source) && source.exists()) {
+         if (null != source && source.exists()) {
 
             File[] paths = source.listFiles();
             if (null != paths) {
@@ -213,8 +221,8 @@ public class PerformOperationsTask extends SessionOperationTask<Void> {
                   exportSize += path.length();
                }
             }
-            logger.debug("exporting source: ", source.getPath());
-            logger.debug("exporting destination: ", dest.getPath());
+            logger.debug("Exporting source: {}", source.getPath());
+            logger.debug("Exporting destination: {}", dest.getPath());
 
             StatFs stat = new StatFs(destRoot);
             long bytesFree = stat.getAvailableBytes();
@@ -224,13 +232,13 @@ public class PerformOperationsTask extends SessionOperationTask<Void> {
             boolean isMounted = Environment.getExternalStorageState().equals(MEDIA_MOUNTED);
 
             if (exportSize == 0) {
-               logger.info("no source file found");
+               logger.info("No source file found");
             }
             else if (bytesFree < (exportSize + SAFETY_BUFFER_BYTE)) {
                // reset before showing again
                faultHandler.getFault(FaultCode.USB_NOT_ENOUGH_MEMORY).reset();
                faultHandler.getFault(FaultCode.USB_NOT_ENOUGH_MEMORY).alert();
-               logger.info("not enough space on USB stick");
+               logger.info("Not enough space on USB stick");
             }
             else if (!isMounted) {
                // if the USB does not exist anymore, drop a USB removed alert
@@ -247,23 +255,21 @@ public class PerformOperationsTask extends SessionOperationTask<Void> {
                      logger.info("Failed Renaming {} with last modified date suffix", dest.getAbsolutePath());
                   }
                }
-               dest.mkdirs();
 
-               String root;
+               if (!dest.mkdirs()) {
+                  logger.info("Failed to create directory");
+               }
 
-               root = source.toString();
-               File[] temppath = source.listFiles();
+               String root = source.toString();
                File next;
                File destination;
                File parent;
-               logger.info("start copy {} files", fileList.size());
-
-               File destFolder = new File(destRoot);
+               logger.info("Start copy {} files", fileList.size());
 
                retValue = true;
                while (!fileList.isEmpty()) {
                   next = fileList.pop();
-                  logger.info("copy:{}", next.getPath());
+                  logger.info("Copy: {}", next.getPath());
                   if (next.isFile()) {
                      destination = new File(String.format("%s%s", dest, next.toString().substring(root.length())));
                      parent = destination.getCanonicalFile().getParentFile();
@@ -283,11 +289,11 @@ public class PerformOperationsTask extends SessionOperationTask<Void> {
                      }
                   }
                }
-               logger.info("finished copy files");
+               logger.info("Finished copy files");
             }
          }
          else {
-            logger.error("no source folder found");
+            logger.error("No source folder found");
          }
       }
       catch (Exception e) {
@@ -295,7 +301,7 @@ public class PerformOperationsTask extends SessionOperationTask<Void> {
             faultHandler.getFault(FaultCode.USB_REMOVED_DURING_EXPORT).reset();
             faultHandler.getFault(FaultCode.USB_REMOVED_DURING_EXPORT).alert();
          }
-         logger.error("aborted moving files to USB, casued by:", e);
+         logger.error("Aborted moving files to USB, caused by:", e);
          retValue = false;
       }
       return retValue;

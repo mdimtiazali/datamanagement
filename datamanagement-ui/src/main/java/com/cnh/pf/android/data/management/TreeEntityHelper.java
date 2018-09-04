@@ -9,7 +9,9 @@
 
 package com.cnh.pf.android.data.management;
 
+import com.cnh.autoguidance.shared.SwathType;
 import com.cnh.pf.android.data.management.graph.GroupObjectGraph;
+import com.cnh.pf.model.product.library.ProductForm;
 import com.google.gson.Gson;
 
 import android.content.Context;
@@ -29,6 +31,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.nio.charset.Charset;
+import java.util.EnumMap;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -40,6 +43,8 @@ public class TreeEntityHelper {
 
    private static final Logger logger = LoggerFactory.getLogger(TreeEntityHelper.class);
    private static final Map<String, Integer> TYPE_ICONS = new HashMap<String, Integer>();
+   private static final Map<SwathType, Integer> SWATH_ICONS = new EnumMap<SwathType, Integer>(SwathType.class);
+   private static final Map<ProductForm, Integer> PRODUCTFORM_ICONS = new EnumMap<ProductForm, Integer>(ProductForm.class);
 
    private static final Map<String, GroupObjectGraph> GroupObjectGraphMap =
       new HashMap<String, GroupObjectGraph>();
@@ -51,6 +56,7 @@ public class TreeEntityHelper {
    protected static final Map<String, String> obj2group = new HashMap<String, String>();
    protected static final Map<String, String> group2group = new HashMap<String, String>();
 
+   public static final String SUB_TYPE = "_subtype";
    public static final String GROWERS = "GROWERS";
    public static final String TASKS = "TASKS";
    public static final String RXS = "RXS";
@@ -71,7 +77,6 @@ public class TreeEntityHelper {
       TYPE_ICONS.put(DataTypes.GROWER, R.drawable.ic_datatree_grower);
       TYPE_ICONS.put(DataTypes.FARM, R.drawable.ic_datatree_farm);
       TYPE_ICONS.put(DataTypes.FIELD, R.drawable.ic_datatree_field);
-      TYPE_ICONS.put(DataTypes.TASK, R.drawable.ic_datatree_tasks);
       TYPE_ICONS.put(TASKS, R.drawable.ic_datatree_tasks);
       TYPE_ICONS.put(DataTypes.RX, R.drawable.ic_data_tree_rx);
       TYPE_ICONS.put(RXS, R.drawable.ic_data_tree_rx);
@@ -84,7 +89,6 @@ public class TreeEntityHelper {
       TYPE_ICONS.put(BOUNDARIES, R.drawable.dt_icon_boundary);
       TYPE_ICONS.put(DataTypes.LANDMARK, R.drawable.dt_icon_landmark);
       TYPE_ICONS.put(LANDMARKS, R.drawable.dt_icon_landmark);
-      TYPE_ICONS.put(DataTypes.GUIDANCE_GROUP, R.drawable.ic_data_tree_swaths);
       TYPE_ICONS.put(GUIDANCE_GROUPS, R.drawable.ic_data_tree_swaths);
       TYPE_ICONS.put(DataTypes.GUIDANCE_PATTERN, R.drawable.ic_datatree_swath);
       TYPE_ICONS.put(DataTypes.GUIDANCE_CONFIGURATION, R.drawable.ic_data_tree_guidance);
@@ -101,11 +105,20 @@ public class TreeEntityHelper {
       TYPE_ICONS.put(IMPLEMENTS, R.drawable.ic_datatree_implements);
       TYPE_ICONS.put(DataTypes.IMPLEMENT_PRODUCT_CONFIG, R.drawable.ic_datatree_screenshots);
       TYPE_ICONS.put(VARIETIES, R.drawable.dt_icon_varieties);
-      TYPE_ICONS.put(DataTypes.VARIETY, R.drawable.dt_icon_varieties);
       TYPE_ICONS.put(DataTypes.USB, R.drawable.ic_data_tree_usb_active);
       TYPE_ICONS.put(DataTypes.CLOUD,R.drawable.ic_data_tree_cloud_active);
 
-      group2name.put(GROWERS, R.string.pfds);
+      SWATH_ICONS.put(SwathType.STRAIGHT, R.drawable.dt_icon_swath_straight);
+      SWATH_ICONS.put(SwathType.HEADING, R.drawable.dt_icon_swath_heading);
+      SWATH_ICONS.put(SwathType.CURVE, R.drawable.dt_icon_swath_curve);
+      SWATH_ICONS.put(SwathType.PIVOT, R.drawable.ic_data_tree_pivot);
+      SWATH_ICONS.put(SwathType.SPIRAL_PIVOT, R.drawable.ic_data_tree_spiral_swath);
+
+      PRODUCTFORM_ICONS.put(ProductForm.GRANULAR, R.drawable.ic_data_tree_granular);
+      PRODUCTFORM_ICONS.put(ProductForm.BULK_SEED, R.drawable.ic_data_tree_bulk_seed);
+      PRODUCTFORM_ICONS.put(ProductForm.LIQUID, R.drawable.ic_data_tree_liquid);
+      PRODUCTFORM_ICONS.put(ProductForm.SEED, R.drawable.ic_data_tree_seed_control);
+
       group2name.put(GROWERS, R.string.pfds);
       group2name.put(TASKS, R.string.tasks);
       group2name.put(RXS, R.string.prescriptions);
@@ -145,6 +158,14 @@ public class TreeEntityHelper {
       //prevent instantiation
    }
 
+   /**
+    * Returns if a given type is representing a Guidance groups
+    * @param type Type in question to be a groupType
+    * @return True if type is a guidance groups, false otherwise
+    */
+   public static boolean isGuidanceGroups(String type){
+      return type.equals(GUIDANCE_GROUPS);
+   }
    /**
     * Returns if a given type is representing a groupType
     * @param type Type in question to be a groupType
@@ -218,7 +239,53 @@ public class TreeEntityHelper {
     * @return the icon resource id
     */
    public static int getIcon(String type) {
-      return TYPE_ICONS.get(type);
+      return TYPE_ICONS.containsKey(type) ? TYPE_ICONS.get(type) : 0;
+   }
+
+   /**
+    * Return the icon resource id representing ObjectGraph data type.
+    *
+    * @param objectGraph   the object graph
+    * @return  the icon resource id
+    */
+   public static int getIcon(ObjectGraph objectGraph) {
+      if (hasSubtype(objectGraph)) {
+         return getSubtypeIcon(objectGraph);
+      }
+
+      return getIcon(objectGraph.getType());
+   }
+
+   /**
+    * Return true if ObjectGraph has sub type defined in its map data.
+    *
+    * @param objectGraph   the object graph
+    * @return  true if ObjectGraph has sub type defined in its map data.
+    */
+   public static boolean hasSubtype(ObjectGraph objectGraph) {
+      return objectGraph.getData() != null && objectGraph.hasData(SUB_TYPE);
+   }
+
+   /**
+    * If ObjectGraph has sub type, return icon resource id assigned to sub type.
+    *
+    * @param objectGraph   the object graph
+    * @return  resource id for icon. 0 if no sub type icon found.
+    */
+   public static int getSubtypeIcon(ObjectGraph objectGraph) {
+      if (hasSubtype(objectGraph)) {
+         if (DataTypes.GUIDANCE_GROUP.equals(objectGraph.getType())) {
+            int subType = objectGraph.getDataInt(SUB_TYPE);
+            SwathType sType = SwathType.findByValue(subType);
+            return SWATH_ICONS.containsKey(sType) ? SWATH_ICONS.get(sType) : 0;
+         }
+         else if (DataTypes.PRODUCT.equals(objectGraph.getType())) {
+            int form = objectGraph.getDataInt(SUB_TYPE);
+            ProductForm pForm = ProductForm.findByValue(form);
+            return PRODUCTFORM_ICONS.containsKey(pForm) ? PRODUCTFORM_ICONS.get(pForm) : 0;
+         }
+      }
+      return 0;
    }
 
    /**

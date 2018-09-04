@@ -850,11 +850,18 @@ public class ExportFragment extends BaseDataFragment {
          ObjectPickListItem<SessionExtra> item = (ObjectPickListItem<SessionExtra>) exportMediumPicklist.getSelectedItem();
          SessionExtra extra = new SessionExtra(item.getObject());
          String format = exportFormatPicklist.getSelectedItemValue();
-         String path = new File(extra.getBasePath(), formatManager.getFormat(format).getPath()).getPath();
-
          extra.setFormat(format);
+
          // Based on PickList selections, set appropriate location type and file path.
-         //TODO: Implement path resolver to generate base path given USB variation and cloud
+         //TODO: Implement path resolver to generate base path for cloud
+         UtilityHelper.MediumVariant mediumVariant = UtilityHelper.MediumVariant.fromValue(extra.getOrder());
+         String path;
+         if (null != mediumVariant && UtilityHelper.MediumVariant.USB_FRED.equals(mediumVariant)) {
+            path = new File(extra.getBasePath() + UtilityHelper.CommonPaths.PATH_USB_FRED.getPathString(), formatManager.getFormat(format).getPath()).getPath();
+         }
+         else {
+            path = new File(extra.getBasePath(), formatManager.getFormat(format).getPath()).getPath();
+         }
          extra.setPath(path);
 
          List<Operation> operations = new ArrayList<Operation>();
