@@ -359,6 +359,9 @@
     <string name="import_conflict_dialog_reuse_action_text">Reuse action for all remaining naming conflicts</string>
     <string name="import_conflict_dialog_existing_field_text">Existing Field</string>
     <string name="import_conflict_dialog_new_field_text">New Field</string>
-
+    <string name="import_select_source_dialog_introduction">Please select the folder that contains the desired
+        files.\nYou can select only one folder at a time.
+    </string>
+    <string name="import_cloud_inbox">Inbox</string>
 </resources>
 
