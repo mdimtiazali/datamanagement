@@ -986,25 +986,54 @@ public abstract class BaseDataFragment extends RoboFragment implements SessionCo
    }
 
    /**
+    * Display/Hide the 'Select All' UI button
+    * @param display
+    */
+   protected void displaySelectAllButton(boolean display) {
+      if (display) {
+         selectAllBtn.setVisibility(View.VISIBLE);
+      }
+      else {
+         selectAllBtn.setVisibility(View.GONE);
+      }
+   }
+
+   /**
     * Given the current session state, chagne text & UI states for 'Select All'  button.
     */
    protected void updateSelectAllState() {
       boolean allSelected = false;
       boolean enable = false;
+      boolean displayButton = true;
       final Session session = getSession();
       final ObjectTreeViewAdapter treeViewAdapter = getTreeAdapter();
 
-      if (treeViewAdapter != null && treeViewAdapter.getCount() > 0 && session != null) {
+      if (treeViewAdapter != null && session != null) {
          if (SessionUtil.isImportAction(session)) {
-            enable = !SessionUtil.isInProgress(session) && session.getObjectData() != null && !session.getObjectData().isEmpty();
+            if (treeViewAdapter.getData().size() > 0 && treeViewAdapter.getCount() > 0) {
+               if (session.getObjectData() != null && !session.getObjectData().isEmpty()) {
+                  enable = !SessionUtil.isInProgress(session);
+                  displayButton = true;
+               }
+               else {
+                  displayButton = false;
+               }
+            }
+            else if (treeViewAdapter.getData().size() == 0) {
+               displayButton = false;
+            }
          }
          else {
             enable = !SessionUtil.isInProgress(session) && session.getObjectData() != null;
          }
          allSelected = treeViewAdapter.areAllSelected();
       }
+      else if (treeViewAdapter == null && session != null) { // && SessionUtil.isImportAction(session)
+         displayButton = false;
+      }
 
-      logger.debug("Enable Select All button: {}", enable);
+      logger.debug("Select All button: Enable {}, Visible {}", enable, displayButton);
+      displaySelectAllButton(displayButton);
       enableSelectAllButton(enable);
       selectAllBtn.setText(allSelected ? R.string.deselect_all : R.string.select_all);
       selectAllBtn.setActivated(allSelected);

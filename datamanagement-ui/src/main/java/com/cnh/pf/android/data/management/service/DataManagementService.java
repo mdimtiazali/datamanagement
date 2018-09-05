@@ -176,8 +176,8 @@ public class DataManagementService extends RoboService implements SharedPreferen
 
             if (SessionUtil.isInProgress(curSession) && (curSession.getExtra() != null && curSession.getExtra().isUsbExtra())) {
                logger.debug("USB unplugged while interacting with datasources. Cancel the current session.");
-               notifySessionError(curSession, ErrorCode.USB_REMOVED);
                cancelSession(curSession);
+               curSession.setResultCode(Result.ERROR);
                FaultCode faultCode = SessionUtil.isExportAction(curSession) ? FaultCode.USB_REMOVED_DURING_EXPORT : FaultCode.USB_REMOVED_DURING_IMPORT;
                DMFaultHandler.Fault fault = faultHandler.getFault(faultCode);
                fault.reset();
@@ -186,8 +186,8 @@ public class DataManagementService extends RoboService implements SharedPreferen
             else if (SessionUtil.isImportAction(curSession) && (curSession.getObjectData() != null && curSession.getObjectData().size() > 0) && getActiveView() != null
                   && (SessionUtil.isDiscoveryTask(curSession) || SessionUtil.isCalculateConflictsTask(curSession))) {
                logger.debug("USB unplugged while waiting for the user response (discovery/conflict resolution).");
+               curSession.setResultCode(Result.ERROR);
                notifySessionError(curSession, ErrorCode.USB_REMOVED);
-               curSession.setResultCode(Result.CANCEL);
                curSession.setType(Session.Type.DISCOVERY);
                DMFaultHandler.Fault fault = faultHandler.getFault(FaultCode.USB_REMOVED_DURING_IMPORT);
                fault.reset();

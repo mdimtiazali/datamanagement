@@ -89,21 +89,7 @@
     <string name="export_cancel_confirmation">This will cancel current export.\nDo you want to proceed?</string>
     <string name="import_cancel_confirmation">This will cancel current import.\nDo you want to proceed?</string>
     <string name="format_description_title">Export Formats</string>
-    <string name="format_description">ISOXML:
-        \n- Grower, Farm, Field, and Task Folders
-        \n- Task Data:
-        \n\t\t- AsApplied Logs
-        \n\t\t- Harvest Logs
-        \n\t\t- Coverage Logs
-        \n\t\t- Trip Computer Logs
-        \n- Products, Varieties, and Product Mixes
-        \n- Variety Maps
-        \n- Prescriptions
-        \n- Guidance Lines (Except Field and Multi-Swaths)
-        \n- Boundaries
-        \n- Landmarks:
-        \n\t\t- Point, Line, and Area Features
-    </string>
+    <string name="format_description">ISOXML is the only format available. All files can\nbe exported in ISOXML.</string>
     <string name="destination_title">Supported Export Destinations:</string>
     <string name="case_destination_info">Please select the proper destination to ensure the export file structure is
         compatible with the destination file structure.
@@ -139,15 +125,17 @@
     <string name="error_calculate_conflicts">Calculate Conflicts Error</string>
     <string name="error_calculate_operations">Calculate Targets Error</string>
     <string name="error_discovery">Discovery Error</string>
-    <string name="error_drag_drop">Select destination and/or format</string>
+    <string name="error_drag_drop">Please select destination.</string>
     <string name="error_usb_removal">USB Removal Error</string>
     <string name="status_cancelled">Cancelled</string>
     <string name="status_cancelling">Cancelling...</string>
     <string name="status_successful">Successful</string>
     <string name="status_starting">Starting...</string>
     <string name="import_complete">Import Completed</string>
+    <string name="import_complete_left_layout">Import\nCompleted</string>
     <string name="import_cancel">Import Cancelled</string>
     <string name="export_complete">Export Completed</string>
+    <string name="export_complete_left_layout">Export\nCompleted</string>
     <string name="export_cancel">Export Cancelled</string>
     <string name="export_in_progress">Export in Progress</string>
     <string name="import_in_progress">Import in Progress</string>

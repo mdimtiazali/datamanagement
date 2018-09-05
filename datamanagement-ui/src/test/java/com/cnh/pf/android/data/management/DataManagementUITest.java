@@ -142,10 +142,6 @@ public class DataManagementUITest {
       assertTrue("xml specifies isoxml format", formats.contains("ISOXML"));
       assertTrue("isoxml supporrts customery type", parser.formatSupportsType("ISOXML", DataTypes.GROWER));
       assertFalse("isoxml does not support VEHICLE type", parser.formatSupportsType("ISOXML", "VEHICLE"));
-      assertTrue("xml specifies cnh format", formats.contains("PF Database"));
-      assertTrue("cnh supports vehicle type", parser.formatSupportsType("PF Database", "VEHICLE"));
-      assertTrue("cnh does not support customer type", parser.formatSupportsType("PF Database", DataTypes.GROWER));
-      assertFalse("cnh does not support prescription type", parser.formatSupportsType("PF Database", DataTypes.RX));
    }
 
    @Test
