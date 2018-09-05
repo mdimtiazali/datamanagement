@@ -388,10 +388,13 @@ public class TreeEntityHelper {
       return retNode;
    }
 
-   public static GroupObjectGraph findParentNeededGroup(String objId) {
+   public static GroupObjectGraph findParentNeededGroup(String objId, String dataType) {
       GroupObjectGraph retNode = null;
       if(NeedtoFindParentGroup.containsKey(objId)){
          retNode = NeedtoFindParentGroup.get(objId);
+         if(retNode.getType().equals(dataType) == false) {
+            retNode = null;
+         }
       }
       return retNode;
 

@@ -822,7 +822,8 @@ public abstract class BaseDataFragment extends RoboFragment implements SessionCo
                   }
                   else {
                      if (parent != null) {
-                        GroupObjectGraph gExitingNode = TreeEntityHelper.findParentNeededGroup(parent.getId());
+                        GroupObjectGraph gExitingNode =
+                           TreeEntityHelper.findParentNeededGroup(parent.getId(), gNode.getType());
                         if (gExitingNode == null) {
                            gExitingNode = new GroupObjectGraph(null,
                               gNode.getType(), gNode.getName(), gNode.getData(), parent);

@@ -64,7 +64,7 @@
       },
       {
         "Title":"Product Mixes",
-        "DataType": "PRODUCT_MIXS",
+        "DataType": "PRODUCT_MIX",
         "Location": 2,
         "FollowSource": 1,
         "Hidden" : 0,
