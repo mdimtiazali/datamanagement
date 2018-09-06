@@ -8,6 +8,7 @@
  */
 package com.cnh.pf.android.data.management.productlibrary;
 
+import android.content.Intent;
 import android.content.res.Resources;
 import android.os.AsyncTask;
 import android.os.Bundle;
@@ -62,6 +63,7 @@ import com.cnh.pf.android.data.management.productlibrary.views.ListHeaderSortVie
 import com.cnh.pf.android.data.management.productlibrary.views.NestedExpandableListView;
 import com.cnh.pf.android.data.management.productlibrary.views.ProductMixDialog;
 import com.cnh.pf.android.data.management.productlibrary.views.ProductMixDialog.ProductMixCallBack;
+import com.cnh.pf.android.data.management.service.DataManagementService;
 import com.cnh.pf.api.pvip.IPVIPServiceAIDL;
 import com.cnh.pf.model.TableChangeEvent;
 import com.cnh.pf.model.product.configuration.ControllerProductConfiguration;
@@ -177,6 +179,10 @@ public class ProductLibraryFragment extends RoboFragment implements ProductMixCa
       @Override
       public void onTableChange(TableChangeEvent action, String tableName, String id) throws RemoteException {
          log.debug("OnTableChange - Action:{}, tableName:{}, id:{}", action, tableName, id);
+         // Send Intent to DM service to clear cache
+         Intent intent = new Intent(getActivity(), DataManagementService.class);
+         intent.setAction(DataManagementService.ACTION_RESET_CACHE);
+         getActivity().startService(intent);
       }
 
       @Override
