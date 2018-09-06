@@ -1,0 +1,232 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  ~ Copyright (C) 2016 CNH Industrial NV. All rights reserved.
+  ~
+  ~ This software contains proprietary information of CNH Industrial NV. Neither
+  ~ receipt nor possession thereof confers any right to reproduce, use, or
+  ~ disclose in whole or in part any such information without written
+  ~ authorization from CNH Industrial NV.
+  -->
+<resources>
+    <string name="app_name">إدارة البيانات</string>
+    <string name="tab_import">استيراد</string>
+    <string name="tab_import_test">اختبار الاستيراد</string>
+    <string name="import_source">مصدر الاستيراد</string>
+    <string name="destination">الوجهة</string>
+    <string name="collapse_button_content_description">زر الطي</string>
+    <string name="import_selected">تم تحديد الاستيراد</string>
+    <string name="export_selected">تم تحديد التصدير</string>
+    <string name="done">تمت</string>
+    <string name="type">النوع:</string>
+    <string name="name">الاسم:</string>
+    <string name="target">الهدف</string>
+    <string name="select_target">تحديد هدف</string>
+    <string name="copy_and_replace">استبدال</string>
+    <string name="dont_copy">لا تنسخ</string>
+    <string name="keep_both">احتفظ بكليهما</string>
+    <string name="conflict">التعارض</string>
+    <string name="new_id_title">إدخال مُعرف جديد</string>
+    <string name="new_id_label">المُعرف الجديد:</string>
+    <string name="calculating_targets">حساب الأهداف</string>
+    <string name="checking_targets">جارٍ فحص الأهداف المحتملة...</string>
+    <string name="checking_conflicts">جارٍ فحص التعارضات...</string>
+    <string name="importing">جارٍ الاستيراد...</string>
+    <string name="select_path">تحديد مسار...</string>
+    <string name="continue_string">استمرار</string>
+    <string name="next">التالي</string>
+
+    <string name="pfds">المُزارع / المزرعة / الحقل</string>
+    <string name="vehicles">المركبات</string>
+    <string name="imps">الآلات</string>
+    <string name="prescriptions">الأوصاف</string>
+    <string name="tasks">المهام</string>
+    <string name="boundaries">الحدود</string>
+    <string name="obstacles">العوائق</string>
+    <string name="guidance_groups">الصفوف</string>
+    <string name="guidance_patterns">أنماط التوجيه</string>
+    <string name="notes">ملاحظات</string>
+
+    <string name="products">المنتجات</string>
+    <string name="product_mixes">خلائط المنتجات</string>
+    <string name="select_source">تحديد مصدر الاستيراد</string>
+    <string name="import_drag_and_drop"><![CDATA[سحب وإفلات \nللاستيراد \nإلى وحدة PCM/شاشة العرض]]></string>
+    <string name="export_drag_and_drop"><![CDATA[سحب وإفلات \nللتصدير]]></string>
+    <string name="select_all">تحديد الكل</string>
+    <string formatted="false" name="x_of_y_format">%d من %d</string>
+    <string name="usb_string">USB</string>
+    <string name="display_string">شاشة العرض</string>
+    <string name="display_numbered">شاشة العرض %d</string>
+    <string name="display_named">شاشة العرض %s</string>
+    <string name="select_string">تحديد</string>
+    <string name="export_to">الوجهة:</string>
+    <string name="export_format">تنسيق التصدير:</string>
+    <string name="tab_export">تصدير</string>
+    <string name="percent_complete">% مكتمل</string>
+    <string name="loading_string">التحميل</string>
+    <string name="exporting_string">التصدير</string>
+    <string name="importing_string">الاستيراد</string>
+    <string name="exporting_data">تصدير البيانات</string>
+    <string name="importing_data">استيراد البيانات</string>
+    <string name="select_source_first">للبدء \nحدّد أولاً \nمصدر الاستيراد</string>
+    <string name="no_import_source">لم يُكتَشف أي جهاز مصدر استيراد. \nيُرجى التحقق من اتصال الجهاز.</string>
+    <string name="deselect_all">إلغاء تحديد الكل</string>
+    <string formatted="false" name="duplicate_file">%s باسم \"%s\" موجود بالفعل</string>
+    <string name="existing_file">موجود</string>
+    <string name="existing_file_typed">موجود %s</string>
+    <string name="new_file">جديد</string>
+    <string name="new_file_typed">جديد %s</string>
+    <string name="data_conflict">تعارض البيانات</string>
+    <string name="rename_file">إعادة التسمية %s</string>
+    <string name="file_name">اسم الملف</string>
+    <string name="empty_discovery">لم يُعثر على بيانات</string>
+    <string name="export_cancel_confirmation">سيؤدي هذا إلى إلغاء التصدير الحالي.\nهل تريد المتابعة؟</string>
+
+    <string name="format_description">ISOXML: \nيمكن تصدير كل الملفات بتنسيق ISOXML. \n \nالملف الشكلي: \nالأوصاف.</string>
+
+    <string name="error_no_data">لا توجد بيانات</string>
+    <string name="error_no_source">لا يوجد مصدر بيانات للمصدر</string>
+    <string name="error_no_target">لا يوجد مصدر بيانات للهدف</string>
+    <string name="error_perform_ops">خطأ بتنفيذ العمليات</string>
+    <string name="error_calculate_conflicts">خطأ بحساب التعارضات</string>
+    <string name="error_calculate_operations">خطأ بحساب الأهداف</string>
+    <string name="error_discovery">خطأ بالاكتشاف</string>
+    <string name="status_cancelled">أُلغيت</string>
+    <string name="status_cancelling">جارٍ الإلغاء...</string>
+    <string name="status_successful">ناجح</string>
+    <string name="status_starting">جارٍ البدء...</string>
+    <string name="import_complete">اكتمل الاستيراد</string>
+    <string name="import_cancel">تم إلغاء الاستيراد</string>
+    <string name="export_complete">اكتمل التصدير</string>
+    <string name="export_cancel">تم إلغاء التصدير</string>
+
+    <string name="usb_data_available">بيانات USB متوفرة</string>
+    <string name="usb_no_data_available">لا تتوفر بيانات USB</string>
+    <string name="usb_scanning">جارٍ فحص ذاكرة USB...</string>
+
+    <string name="stop">التوقف</string>
+    <string name="status_progress">%1$s %2$d/%3$d</string>
+   <!-- starting here everything is used by the productlibrary-package -->
+   <string name="product_default_rate">السرعة الافتراضية</string>
+    <string name="product_form">الشكل</string>
+    <string name="product_name">الاسم</string>
+   <!-- Product Mix -->
+   <string name="product_mix_add_button_title">إضافة</string>
+    <string name="product_mix_default_text_edittext">اسم المنتج</string>
+    <string name="product_mix_default_text_picklist">سجل المنتج</string>
+    <string name="product_mix_search_hint">خليط المنتج، الشكل، المُعدّل</string>
+    <string name="product_mix_subheader_total_mix">الإجمالي: 0 من خلائط المنتجات</string>
+    <plurals name="product_mix_subheader_total_mix_format">
+        <item quantity="zero">الإجمالي: 0 من خلائط المنتجات</item>
+        <item quantity="one">الإجمالي: 1 خليط منتج</item>
+        <item quantity="other">الإجمالي: %1$d من خلائط المنتجات</item>
+    </plurals>
+    <string name="product_mix_title">خلط المنتج</string>
+    <string name="product_mix_text_button_add_product_mix">إضافة خليط منتج +</string>
+    <string name="product_mix_title_dialog_add_product_mix">إضافة خليط منتج</string>
+    <string name="product_mix_title_dialog_edit_product_mix">تعديل خليط منتج</string>
+    <string name="product_mix_title_dialog_copy_product_mix">نسخ خليط منتج</string>
+    <string name="product_mix_title_add_new_product">إضافة منتج جديد</string>
+    <string name="product_mix_title_add_new_carrier">إضافة ناقل جديد</string>
+    <string name="product_mix_text_button_remove">إزالة x</string>
+    <string name="product_mix_text_button_add_more">إضافة المزيد +</string>
+    <string name="product_mix_title_category_button_title_mix_products">خلط المنتجات</string>
+    <string name="product_mix_title_name">اسم خليط المنتج</string>
+    <string name="product_mix_title_carrier">الحامل</string>
+    <string name="product_mix_title_total_mix_amount">إجمال مقدار الخليط</string>
+    <string name="product_mix_title_carrier_amount">كمية الناقل</string>
+    <string name="product_mix_title_mix_products">خلط المنتجات</string>
+    <string name="product_mix_title_product">منتج %1$d</string>
+    <string name="product_mix_title_product_amount">المقدار</string>
+    <string name="product_mix_title_units">الوحدات</string>
+    <string name="product_mix_title_application_rates">معدلات التطبيق</string>
+    <string name="product_mix_title_application_rate_1">معدل التطبيق 1 (افتراضي)</string>
+    <string name="product_mix_title_application_rate_2">معدل التطبيق 2</string>
+    <string name="product_mix_title_application_rate_1_short">معدل التطبيق 1</string>
+    <string name="product_mix_title_application_rate_2_short">معدل التطبيق 2</string>
+    <string name="product_mix_title_application_rate_1_short_point">معدل التطبيق 1:</string>
+    <string name="product_mix_title_application_rate_2_short_point">معدل التطبيق 2:</string>
+    <string name="product_mix_title_min_application_rate">أدنى معدل تطبيق</string>
+    <string name="product_mix_title_max_application_rate">أقصى معدل تطبيق</string>
+    <string name="product_mix_title_delta_application_rate">دلتا معدل التطبيق</string>
+    <string name="product_mix_title_application_rates_per_product">معدلات التطبيق حسب المنتج</string>
+    <string name="product_mix_title_products">المنتجات</string>
+    <string name="product_mix_title_advanced">متقدم</string>
+    <string name="product_mix_title_usage">الاستخدام</string>
+    <string name="product_mix_title_package_size">حجم الحزمة</string>
+    <string name="product_mix_title_package_size_units">وحدات حجم الحزمة</string>
+    <string name="product_mix_title_density">الكثافة</string>
+    <string name="product_mix_title_density_unit">وحدات الكثافة</string>
+    <string name="product_mix_title_picklist_default_select">تحديد</string>
+    <string name="product_mix_title_product_mix_form">نموذج خليط المنتج</string>
+    <string name="product_mix_unittext_default_text">--.-</string>
+
+    <string name="product_text_bulk_fill_fan_delta_label">خطوة الحبوب السائبة:</string>
+    <string name="product_text_bulk_fill_fan_rate_label">معدل الحبوب السائبة:</string>
+    <string name="product_text_density_label">الكثافة:</string>
+    <string name="product_text_density_units_label">وحدات الكثافة:</string>
+    <string name="product_text_package_label">حجم الحزمة:</string>
+    <string name="product_text_rate_delta_label">معدل دلتا:</string>
+    <string name="product_text_rate_min_label">أدنى معدل تطبيق:</string>
+    <string name="product_text_rate_max_label">أقصى معدل تطبيق:</string>
+    <string name="product_text_rate_one_label">معدل التطبيق 1:</string>
+    <string name="product_text_rate_two_label">معدل التطبيق 2:</string>
+    <string name="product_text_vacuum_fan_delta_label">خطوة التفريغ:</string>
+    <string name="product_text_vacuum_fan_rate_label">معدل التفريغ:</string>
+
+    <string name="product_section_header">المنتجات</string>
+    <string name="product_section_subheader">الإجمالي: 0 من المنتجات</string>
+    <plurals name="product_section_subheader_format">
+        <item quantity="zero">الإجمالي: 0 من المنتجات</item>
+        <item quantity="one">الإجمالي: 1 منتج</item>
+        <item quantity="other">الإجمالي: %1$d من المنتجات</item>
+    </plurals>
+    <string name="product_search_hint">المنتج، النموذج، المعدل</string>
+
+    <string name="tab_product_library">مكتبة المنتجات</string>
+    <string name="create_product_button">إضافة منتج +</string>
+    <string name="no_available_products">لم تتم إضافة أي منتجات.</string>
+    <string name="add_product_instructions">أضف منتجًا باستخدام زر \"إضافة منتج\" بالأعلى.</string>
+    <string name="add_product_mix_instructions">أضف خليط منتج باستخدام زر \"إضافة خليط منتج\" بالأعلى.</string>
+
+    <string name="unit_gal_per_acre">ف/ج</string>
+
+    <string name="delete_dialog_confirm_button_text">حذف</string>
+    <string name="delete_product_dialog_body_text">سيؤدي هذا إلى حذف هذا المنتج وإعداداته نهائيًا.</string>
+
+    <string name="alert_title">تنبيه</string>
+    <string name="alert_dismiss">تجاهل</string>
+    <string name="alert_in_use">هذا المنتج مستخدم حاليًا بواسطة وحدة تحكم.</string>
+
+    <string name="variety_title">مجموعات متنوعة</string>
+    <string name="variety_section_subheader">الإجمالي: 0 من المجموعات المتنوعة</string>
+    <plurals name="variety_section_subheader_format">
+        <item quantity="zero">الإجمالي: 0 من المجموعات المتنوعة</item>
+        <item quantity="one">الإجمالي: 1 مجموعة متنوعة</item>
+        <item quantity="other">الإجمالي: %1$d من المجموعات المتنوعة</item>
+    </plurals>
+    <string name="variety_button_add_text">إضافة مجموعة متنوعة +</string>
+    <string name="variety_add_dialog_title_text">إضافة مجموعة متنوعة</string>
+    <string name="variety_add_or_edit_dialog_crop_type_header_text">نوع المحصول</string>
+    <string name="variety_add_or_edit_dialog_name_header_text">الاسم</string>
+    <string name="variety_delete_dialog_delete_title_text">حذف مجموعة متنوعة</string>
+    <string name="variety_delete_dialog_body_text_delete_allowed">سيؤدي هذا إلى حذف هذه المجموعة المتنوعة وإعداداتها نهائيًا.</string>
+    <string name="variety_dialog_cancel_button_text">إلغاء</string>
+    <string name="variety_dialog_save_button_text">حفظ</string>
+    <string name="variety_edit_dialog_title">تحرير مجموعة متنوعة</string>
+    <string name="variety_instruction_add">أضف مجموعة متنوعة باستخدام زر \"إضافة مجموعة متنوعة\" بالأعلى.</string>
+    <string name="variety_list_header_crop_type_text">نوع المحصول</string>
+    <string name="variety_list_header_color">اللون</string>
+    <string name="variety_list_header_name_text">الاسم</string>
+    <string name="variety_not_available">لم تتم إضافة أي مجموعات متنوعة.</string>
+    <string name="variety_search_hint">المجموعة المتنوعة، نوع المحصول</string>
+    <string name="tab_management">الإدارة</string>
+    <string name="edit_field_name">الاسم</string>
+    <string name="edit_dialog_header">تحرير الاسم</string>
+    <string name="edit_dialog_save">حفظ</string>
+    <string name="edit_dialog_cancel">إلغاء</string>
+    <string name="tab_mng_none_header">حدّد عناصر لتحريرها، أو نسخها، أو حذفها</string>
+    <string name="tab_mng_items_header">تم تحديد %1$d من العناصر</string>
+   <!-- end of productlibrary-package usage -->
+   <string name="edit_name_warning">يوجد بالفعل عنصر بهذا الاسم. يُرجى اختيار اسم مختلف</string>
+    <string name="edit_update_title">تحديث العنصر</string>
+</resources>

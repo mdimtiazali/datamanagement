@@ -1,0 +1,232 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  ~ Copyright (C) 2016 CNH Industrial NV. All rights reserved.
+  ~
+  ~ This software contains proprietary information of CNH Industrial NV. Neither
+  ~ receipt nor possession thereof confers any right to reproduce, use, or
+  ~ disclose in whole or in part any such information without written
+  ~ authorization from CNH Industrial NV.
+  -->
+<resources>
+    <string name="app_name">Správa údajov</string>
+    <string name="tab_import">Import</string>
+    <string name="tab_import_test">Test importu</string>
+    <string name="import_source">Zdroj importu</string>
+    <string name="destination">Cieľ</string>
+    <string name="collapse_button_content_description">Tlačidlo zbalenia</string>
+    <string name="import_selected">Import vybratý</string>
+    <string name="export_selected">Export vybratý</string>
+    <string name="done">Dokončené</string>
+    <string name="type">Typ:</string>
+    <string name="name">Názov:</string>
+    <string name="target">Cieľ</string>
+    <string name="select_target">Vybrať cieľ</string>
+    <string name="copy_and_replace">Vymeniť</string>
+    <string name="dont_copy">Nekopírovať</string>
+    <string name="keep_both">Nechať obidv.</string>
+    <string name="conflict">Konflikt</string>
+    <string name="new_id_title">Zadať nový identifikátor</string>
+    <string name="new_id_label">Nový identifikátor:</string>
+    <string name="calculating_targets">Prebieha výpočet cieľov</string>
+    <string name="checking_targets">Kontrola možných cieľov...</string>
+    <string name="checking_conflicts">Kontrola konfliktov...</string>
+    <string name="importing">Importuje sa...</string>
+    <string name="select_path">Vybrať cestu...</string>
+    <string name="continue_string">Pokrač.</string>
+    <string name="next">Nasled.</string>
+
+    <string name="pfds">Pestovateľ/farma/pole</string>
+    <string name="vehicles">Vozidlá</string>
+    <string name="imps">Príslušenstvo</string>
+    <string name="prescriptions">Predpisy</string>
+    <string name="tasks">Úlohy</string>
+    <string name="boundaries">Hranice</string>
+    <string name="obstacles">Prekážky</string>
+    <string name="guidance_groups">Pokosy</string>
+    <string name="guidance_patterns">Vzory navádzania</string>
+    <string name="notes">Poznámky</string>
+
+    <string name="products">Produkty</string>
+    <string name="product_mixes">Zmesi produktov</string>
+    <string name="select_source">Vybrať zdroj importu</string>
+    <string name="import_drag_and_drop"><![CDATA[Na PCM/displej \n importovať \npresunutím]]></string>
+    <string name="export_drag_and_drop"><![CDATA[Exportovať \npresunutím]]></string>
+    <string name="select_all">Vybrať všetko</string>
+    <string formatted="false" name="x_of_y_format">%d z %d</string>
+    <string name="usb_string">USB</string>
+    <string name="display_string">Displej</string>
+    <string name="display_numbered">Displej %d</string>
+    <string name="display_named">Displej %s</string>
+    <string name="select_string">Vybrať</string>
+    <string name="export_to">Cieľ:</string>
+    <string name="export_format">Formát exportu:</string>
+    <string name="tab_export">Export</string>
+    <string name="percent_complete">% Dokončené</string>
+    <string name="loading_string">Načítanie</string>
+    <string name="exporting_string">Exportuje sa</string>
+    <string name="importing_string">Importuje sa</string>
+    <string name="exporting_data">Exportujú sa údaje</string>
+    <string name="importing_data">Importujú sa údaje</string>
+    <string name="select_source_first">Ak chcete začať, \nnajprv vyberte \nzdroj importu</string>
+    <string name="no_import_source">Nezistilo sa žiadne zariadenie zdr. importu. \nSkontrolujte pripojenie zariadenia.</string>
+    <string name="deselect_all">Zrušiť výber vš.</string>
+    <string formatted="false" name="duplicate_file">%s S názvom \„%s\“ už existuje</string>
+    <string name="existing_file">Existujúce</string>
+    <string name="existing_file_typed">Existujúce %s</string>
+    <string name="new_file">Nové</string>
+    <string name="new_file_typed">Nové %s</string>
+    <string name="data_conflict">Konflikt údajov</string>
+    <string name="rename_file">Premenovať %s</string>
+    <string name="file_name">Názov súboru</string>
+    <string name="empty_discovery">Nenašli sa údaje</string>
+    <string name="export_cancel_confirmation">Týmto sa zruší aktuálny export.\nChcete pokračovať?</string>
+
+    <string name="format_description">ISOXML: \nVšetky súbory možno exportovať v ISOXML. \n \nShapefile: \nPredpisy.</string>
+
+    <string name="error_no_data">Žiadne údaje</string>
+    <string name="error_no_source">Žiadny zdr. zdroj údajov</string>
+    <string name="error_no_target">Žiadny cieľ. zdroj údajov</string>
+    <string name="error_perform_ops">Chyba výkonu operácií</string>
+    <string name="error_calculate_conflicts">Chyba výpočtu konfliktov</string>
+    <string name="error_calculate_operations">Chyba výpočtu cieľov</string>
+    <string name="error_discovery">Chyba Discovery</string>
+    <string name="status_cancelled">Zrušené</string>
+    <string name="status_cancelling">Ruší sa...</string>
+    <string name="status_successful">Úspešné</string>
+    <string name="status_starting">Spúšťa sa...</string>
+    <string name="import_complete">Import dokončený</string>
+    <string name="import_cancel">Import zrušený</string>
+    <string name="export_complete">Export dokončený</string>
+    <string name="export_cancel">Export zrušený</string>
+
+    <string name="usb_data_available">K dispozícii údaje USB</string>
+    <string name="usb_no_data_available">K disp. žiadne údaje USB</string>
+    <string name="usb_scanning">Skenuje sa kľúč USB...</string>
+
+    <string name="stop">Stop</string>
+    <string name="status_progress">%1$s %2$d/%3$d</string>
+   <!-- starting here everything is used by the productlibrary-package -->
+   <string name="product_default_rate">Základná frekv.</string>
+    <string name="product_form">Druh</string>
+    <string name="product_name">Názov</string>
+   <!-- Product Mix -->
+   <string name="product_mix_add_button_title">Pridať</string>
+    <string name="product_mix_default_text_edittext">Názov produktu</string>
+    <string name="product_mix_default_text_picklist">Druh produktu</string>
+    <string name="product_mix_search_hint">Zmes prod, forma, rýchlosť</string>
+    <string name="product_mix_subheader_total_mix">Celkove: 0 zmesí produktov</string>
+    <plurals name="product_mix_subheader_total_mix_format">
+        <item quantity="zero">Celkove: 0 zmesí produktov</item>
+        <item quantity="one">Celkove: 1 zmes produktov</item>
+        <item quantity="other">Celkove: %1$d zmesí produktov</item>
+    </plurals>
+    <string name="product_mix_title">Zmes prod.</string>
+    <string name="product_mix_text_button_add_product_mix">Pridať zmes prod. +</string>
+    <string name="product_mix_title_dialog_add_product_mix">Pridať zmes prod.</string>
+    <string name="product_mix_title_dialog_edit_product_mix">Upraviť zmes prod.</string>
+    <string name="product_mix_title_dialog_copy_product_mix">Kopírovať zmes prod.</string>
+    <string name="product_mix_title_add_new_product">Pridať nový produkt</string>
+    <string name="product_mix_title_add_new_carrier">Pridať nový nosič</string>
+    <string name="product_mix_text_button_remove">Odstrániť x</string>
+    <string name="product_mix_text_button_add_more">Pridať viac +</string>
+    <string name="product_mix_title_category_button_title_mix_products">Zmes prod.</string>
+    <string name="product_mix_title_name">Názov zmesi prod</string>
+    <string name="product_mix_title_carrier">Nosič</string>
+    <string name="product_mix_title_total_mix_amount">Celk. množstvo zmesi</string>
+    <string name="product_mix_title_carrier_amount">Množstvo nosiča</string>
+    <string name="product_mix_title_mix_products">Zmes prod.</string>
+    <string name="product_mix_title_product">Produkt %1$d</string>
+    <string name="product_mix_title_product_amount">Množstvo</string>
+    <string name="product_mix_title_units">Jedn.</string>
+    <string name="product_mix_title_application_rates">Aplikačné rýchlosti</string>
+    <string name="product_mix_title_application_rate_1">Aplikačná rýchlosť 1 (predv.)</string>
+    <string name="product_mix_title_application_rate_2">Aplikačná rýchlosť 2</string>
+    <string name="product_mix_title_application_rate_1_short">Apl. rýchlosť 1</string>
+    <string name="product_mix_title_application_rate_2_short">Apl. rýchlosť 2</string>
+    <string name="product_mix_title_application_rate_1_short_point">Apl. rýchlosť 1:</string>
+    <string name="product_mix_title_application_rate_2_short_point">Apl. rýchlosť 2:</string>
+    <string name="product_mix_title_min_application_rate">Min. apl. rýchlosť</string>
+    <string name="product_mix_title_max_application_rate">Max. apl. rýchlosť</string>
+    <string name="product_mix_title_delta_application_rate">Delta apl. rýchlosť</string>
+    <string name="product_mix_title_application_rates_per_product">Apl. rýchlosti podľa produktu</string>
+    <string name="product_mix_title_products">Produkty</string>
+    <string name="product_mix_title_advanced">Pokročilý</string>
+    <string name="product_mix_title_usage">Použitie</string>
+    <string name="product_mix_title_package_size">Veľkosť balenia</string>
+    <string name="product_mix_title_package_size_units">Jednotky veľkosti balenia</string>
+    <string name="product_mix_title_density">Hustota</string>
+    <string name="product_mix_title_density_unit">Jednotky hustoty</string>
+    <string name="product_mix_title_picklist_default_select">Vybrať</string>
+    <string name="product_mix_title_product_mix_form">Forma zmesi prod.</string>
+    <string name="product_mix_unittext_default_text">--.-</string>
+
+    <string name="product_text_bulk_fill_fan_delta_label">Hrom. krok:</string>
+    <string name="product_text_bulk_fill_fan_rate_label">Hrom. rýchl.:</string>
+    <string name="product_text_density_label">Hustota:</string>
+    <string name="product_text_density_units_label">Jednotky hustoty:</string>
+    <string name="product_text_package_label">Veľkosť balenia:</string>
+    <string name="product_text_rate_delta_label">Delta fr.:</string>
+    <string name="product_text_rate_min_label">Min. apl. rýchl.:</string>
+    <string name="product_text_rate_max_label">Max. apl. rýchl.:</string>
+    <string name="product_text_rate_one_label">Apl. rýchlosť 1:</string>
+    <string name="product_text_rate_two_label">Apl. rýchlosť 2:</string>
+    <string name="product_text_vacuum_fan_delta_label">Krok vent.:</string>
+    <string name="product_text_vacuum_fan_rate_label">Rýchl. vent.:</string>
+
+    <string name="product_section_header">Produkty</string>
+    <string name="product_section_subheader">Celkove: 0 produktov</string>
+    <plurals name="product_section_subheader_format">
+        <item quantity="zero">Celkove: 0 produktov</item>
+        <item quantity="one">Celkove: 1 produkt</item>
+        <item quantity="other">Celkove: %1$d produktov</item>
+    </plurals>
+    <string name="product_search_hint">Produkt, forma, rýchlosť</string>
+
+    <string name="tab_product_library">Knižnica produktov</string>
+    <string name="create_product_button">Pridať produkt +</string>
+    <string name="no_available_products">Nepridali ste žiadne produkty.</string>
+    <string name="add_product_instructions">Pridajte produkt pomocou tlačidla \„Pridať produkt\“ vyššie.</string>
+    <string name="add_product_mix_instructions">Pridajte zmes prod. pomocou tlač. \„Pridať zmes produktov\“ vyššie.</string>
+
+    <string name="unit_gal_per_acre">gal/ac</string>
+
+    <string name="delete_dialog_confirm_button_text">Odstrániť</string>
+    <string name="delete_product_dialog_body_text">Týmto sa natrvalo odstráni produkt a jeho nastavenia.</string>
+
+    <string name="alert_title">Výstraha</string>
+    <string name="alert_dismiss">Zrušiť</string>
+    <string name="alert_in_use">Tento produkt práve používa ovládač.</string>
+
+    <string name="variety_title">Odrody</string>
+    <string name="variety_section_subheader">Celkove: 0 odrôd</string>
+    <plurals name="variety_section_subheader_format">
+        <item quantity="zero">Celkove: 0 odrôd</item>
+        <item quantity="one">Celkove: 1 odroda</item>
+        <item quantity="other">Celkove: %1$d odrôd</item>
+    </plurals>
+    <string name="variety_button_add_text">Pridať odrodu +</string>
+    <string name="variety_add_dialog_title_text">Pridať odrodu</string>
+    <string name="variety_add_or_edit_dialog_crop_type_header_text">Typ plodiny</string>
+    <string name="variety_add_or_edit_dialog_name_header_text">Názov</string>
+    <string name="variety_delete_dialog_delete_title_text">Odstrániť odrodu</string>
+    <string name="variety_delete_dialog_body_text_delete_allowed">Týmto sa natrvalo odstráni táto odroda a jej nastavenia.</string>
+    <string name="variety_dialog_cancel_button_text">Zrušiť</string>
+    <string name="variety_dialog_save_button_text">Uložiť</string>
+    <string name="variety_edit_dialog_title">Upraviť odrodu</string>
+    <string name="variety_instruction_add">Pridajte odrodu pomocou tlačidla \„Pridať odrodu\“ vyššie.</string>
+    <string name="variety_list_header_crop_type_text">TYP PLODINY</string>
+    <string name="variety_list_header_color">FARBA</string>
+    <string name="variety_list_header_name_text">NÁZOV</string>
+    <string name="variety_not_available">Nepridali ste žiadne odrody.</string>
+    <string name="variety_search_hint">Odroda, typ plodiny</string>
+    <string name="tab_management">Správa</string>
+    <string name="edit_field_name">Názov</string>
+    <string name="edit_dialog_header">Upraviť názov</string>
+    <string name="edit_dialog_save">Uložiť</string>
+    <string name="edit_dialog_cancel">Zrušiť</string>
+    <string name="tab_mng_none_header">Vybrať položky na úpravu, kop. alebo odstr.</string>
+    <string name="tab_mng_items_header">Vybratých %1$d položiek</string>
+   <!-- end of productlibrary-package usage -->
+   <string name="edit_name_warning">Položka s týmto názvom už existuje. Vyberte iný názov</string>
+    <string name="edit_update_title">Aktualizuje sa položka</string>
+</resources>

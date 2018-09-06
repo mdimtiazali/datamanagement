@@ -1,0 +1,232 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  ~ Copyright (C) 2016 CNH Industrial NV. All rights reserved.
+  ~
+  ~ This software contains proprietary information of CNH Industrial NV. Neither
+  ~ receipt nor possession thereof confers any right to reproduce, use, or
+  ~ disclose in whole or in part any such information without written
+  ~ authorization from CNH Industrial NV.
+  -->
+<resources>
+    <string name="app_name">Databehandling</string>
+    <string name="tab_import">Importer</string>
+    <string name="tab_import_test">Importer test</string>
+    <string name="import_source">Importer kilde</string>
+    <string name="destination">Destinasjon</string>
+    <string name="collapse_button_content_description">Minimer knapp</string>
+    <string name="import_selected">Import valgt</string>
+    <string name="export_selected">Eksporter valgt</string>
+    <string name="done">Utført</string>
+    <string name="type">Type:</string>
+    <string name="name">Navn:</string>
+    <string name="target">Mål</string>
+    <string name="select_target">Velg mål</string>
+    <string name="copy_and_replace">Skift</string>
+    <string name="dont_copy">Ikke kopier</string>
+    <string name="keep_both">Behold begge</string>
+    <string name="conflict">Konflikt</string>
+    <string name="new_id_title">Angi ny ID</string>
+    <string name="new_id_label">Ny ID:</string>
+    <string name="calculating_targets">Beregner mål</string>
+    <string name="checking_targets">Kontrollerer potensielle mål...</string>
+    <string name="checking_conflicts">Ser etter konflikter...</string>
+    <string name="importing">Importerer...</string>
+    <string name="select_path">Velg bane...</string>
+    <string name="continue_string">Fortsett</string>
+    <string name="next">Neste</string>
+
+    <string name="pfds">Produsent/Gård/Åker</string>
+    <string name="vehicles">Kjøretøy</string>
+    <string name="imps">Utstyr</string>
+    <string name="prescriptions">Planer</string>
+    <string name="tasks">Oppgaver</string>
+    <string name="boundaries">Grenser</string>
+    <string name="obstacles">Hindringer</string>
+    <string name="guidance_groups">Skår</string>
+    <string name="guidance_patterns">Veiledningsmønstre</string>
+    <string name="notes">Merknader</string>
+
+    <string name="products">Produkter</string>
+    <string name="product_mixes">Produktblandinger</string>
+    <string name="select_source">Velg importkilde</string>
+    <string name="import_drag_and_drop"><![CDATA[Dra og slipp \nfor å importere \ntil PCM/Display]]></string>
+    <string name="export_drag_and_drop"><![CDATA[Dra og slipp \nfor å eksportere]]></string>
+    <string name="select_all">Velg alle</string>
+    <string formatted="false" name="x_of_y_format">%d av %d</string>
+    <string name="usb_string">USB</string>
+    <string name="display_string">Skjerm</string>
+    <string name="display_numbered">Skjerm %d</string>
+    <string name="display_named">Skjerm %s</string>
+    <string name="select_string">Velg</string>
+    <string name="export_to">Destinasjon:</string>
+    <string name="export_format">Eksportformat:</string>
+    <string name="tab_export">Eksport</string>
+    <string name="percent_complete">% fullført</string>
+    <string name="loading_string">Pålastning</string>
+    <string name="exporting_string">Eksporterer</string>
+    <string name="importing_string">Importerer</string>
+    <string name="exporting_data">Eksporterer data</string>
+    <string name="importing_data">Importerer data</string>
+    <string name="select_source_first">For å starte \nmå du først velge \nImportkilde</string>
+    <string name="no_import_source">Ingen kildeenhet for import er oppdaget. \nKontroller enhetstilkoblingen.</string>
+    <string name="deselect_all">Velg bort alle</string>
+    <string formatted="false" name="duplicate_file">En %s kalt %s eksisterer allerede</string>
+    <string name="existing_file">Eksisterende</string>
+    <string name="existing_file_typed">Eksisterende %s</string>
+    <string name="new_file">Ny</string>
+    <string name="new_file_typed">Ny %s</string>
+    <string name="data_conflict">Datakonflikt</string>
+    <string name="rename_file">Gi nytt navn %s</string>
+    <string name="file_name">Filnavn</string>
+    <string name="empty_discovery">Ingen data funnet</string>
+    <string name="export_cancel_confirmation">Dette vil avbryte den gjeldende eksporten.\nVil du fortsette?</string>
+
+    <string name="format_description">ISOXML: \nAlle filer kan eksporteres i ISOXML. \n \nShapefile: \nPlaner.</string>
+
+    <string name="error_no_data">Ingen data</string>
+    <string name="error_no_source">Ingen kildedatakilde</string>
+    <string name="error_no_target">Ingen måldatakilde</string>
+    <string name="error_perform_ops">Feil ved utføring av operasjoner</string>
+    <string name="error_calculate_conflicts">Feil ved beregning av konflikter</string>
+    <string name="error_calculate_operations">Feil ved beregning av mål</string>
+    <string name="error_discovery">Oppdagelsesfeil</string>
+    <string name="status_cancelled">Avbrutt</string>
+    <string name="status_cancelling">Avbryter...</string>
+    <string name="status_successful">Vellykket</string>
+    <string name="status_starting">Starter...</string>
+    <string name="import_complete">Import fullført</string>
+    <string name="import_cancel">Import avbrutt</string>
+    <string name="export_complete">Eksport fullført</string>
+    <string name="export_cancel">Eksport avbrutt</string>
+
+    <string name="usb_data_available">USB-data tilgjengelig</string>
+    <string name="usb_no_data_available">Ingen USB-data er tilgjengelig</string>
+    <string name="usb_scanning">Skanner minnepinne...</string>
+
+    <string name="stop">Stopp</string>
+    <string name="status_progress">%1$s %2$d/%3$d</string>
+   <!-- starting here everything is used by the productlibrary-package -->
+   <string name="product_default_rate">Standardrate</string>
+    <string name="product_form">Skjema</string>
+    <string name="product_name">Navn</string>
+   <!-- Product Mix -->
+   <string name="product_mix_add_button_title">Legg til</string>
+    <string name="product_mix_default_text_edittext">Produktnavn</string>
+    <string name="product_mix_default_text_picklist">Produktskjema</string>
+    <string name="product_mix_search_hint">Produktblanding, type, hastighet</string>
+    <string name="product_mix_subheader_total_mix">Totalt: 0 produktblandinger</string>
+    <plurals name="product_mix_subheader_total_mix_format">
+        <item quantity="zero">Totalt: 0 produktblandinger</item>
+        <item quantity="one">Totalt: 1 produktblanding</item>
+        <item quantity="other">Totalt: %1$d produktblandinger</item>
+    </plurals>
+    <string name="product_mix_title">Prod.bland.</string>
+    <string name="product_mix_text_button_add_product_mix">Legg til produktblanding +</string>
+    <string name="product_mix_title_dialog_add_product_mix">Legg til produktblanding</string>
+    <string name="product_mix_title_dialog_edit_product_mix">Rediger produktblanding</string>
+    <string name="product_mix_title_dialog_copy_product_mix">Kopier produktblanding</string>
+    <string name="product_mix_title_add_new_product">Legg til nytt produkt</string>
+    <string name="product_mix_title_add_new_carrier">Legg til nytt transportkjøretøy</string>
+    <string name="product_mix_text_button_remove">Fjern x</string>
+    <string name="product_mix_text_button_add_more">Legg til flere +</string>
+    <string name="product_mix_title_category_button_title_mix_products">Produktblanding</string>
+    <string name="product_mix_title_name">Prod.bland. navn</string>
+    <string name="product_mix_title_carrier">Bærer</string>
+    <string name="product_mix_title_total_mix_amount">Total blandingsmengde</string>
+    <string name="product_mix_title_carrier_amount">Transportmengde</string>
+    <string name="product_mix_title_mix_products">Produktblanding</string>
+    <string name="product_mix_title_product">Produkt %1$d</string>
+    <string name="product_mix_title_product_amount">Mengde</string>
+    <string name="product_mix_title_units">Enheter</string>
+    <string name="product_mix_title_application_rates">Påføringsmengder</string>
+    <string name="product_mix_title_application_rate_1">Påføringsmengde 1 (standard)</string>
+    <string name="product_mix_title_application_rate_2">Påføringsmengde 2</string>
+    <string name="product_mix_title_application_rate_1_short">Påføringsgrad 1</string>
+    <string name="product_mix_title_application_rate_2_short">Påføringsgrad 2</string>
+    <string name="product_mix_title_application_rate_1_short_point">Påføringsgrad 1:</string>
+    <string name="product_mix_title_application_rate_2_short_point">Påføringsgrad 2:</string>
+    <string name="product_mix_title_min_application_rate">Min. påføringsmengde</string>
+    <string name="product_mix_title_max_application_rate">Maks. påføringsmengde</string>
+    <string name="product_mix_title_delta_application_rate">Delta-påføringsmengde</string>
+    <string name="product_mix_title_application_rates_per_product">Påføringsmengder per produkt</string>
+    <string name="product_mix_title_products">Produkter</string>
+    <string name="product_mix_title_advanced">Avansert</string>
+    <string name="product_mix_title_usage">Bruk</string>
+    <string name="product_mix_title_package_size">Pakkestr.</string>
+    <string name="product_mix_title_package_size_units">Pakkestørrelsesenheter</string>
+    <string name="product_mix_title_density">Tetthet</string>
+    <string name="product_mix_title_density_unit">Tetthetsenheter</string>
+    <string name="product_mix_title_picklist_default_select">Velg</string>
+    <string name="product_mix_title_product_mix_form">Produktblandingstype</string>
+    <string name="product_mix_unittext_default_text">--.-</string>
+
+    <string name="product_text_bulk_fill_fan_delta_label">Bulktrinn:</string>
+    <string name="product_text_bulk_fill_fan_rate_label">Bulkrate:</string>
+    <string name="product_text_density_label">Tetthet:</string>
+    <string name="product_text_density_units_label">Tetthetsenheter:</string>
+    <string name="product_text_package_label">Pakkestørrelse:</string>
+    <string name="product_text_rate_delta_label">Delta-påføringsgrad:</string>
+    <string name="product_text_rate_min_label">Min. påføringsgrad:</string>
+    <string name="product_text_rate_max_label">Maks. påføringsgrad:</string>
+    <string name="product_text_rate_one_label">Påføringsgrad 1:</string>
+    <string name="product_text_rate_two_label">Påføringsgrad 2:</string>
+    <string name="product_text_vacuum_fan_delta_label">Vakuumtrinn:</string>
+    <string name="product_text_vacuum_fan_rate_label">Vakuum-rate:</string>
+
+    <string name="product_section_header">Produkter</string>
+    <string name="product_section_subheader">Totalt: 0 produkter</string>
+    <plurals name="product_section_subheader_format">
+        <item quantity="zero">Totalt: 0 produkter</item>
+        <item quantity="one">Totalt: 1 produkt</item>
+        <item quantity="other">Totalt: %1$d produkter</item>
+    </plurals>
+    <string name="product_search_hint">Produkt, type, hastighet</string>
+
+    <string name="tab_product_library">Produktbibliotek</string>
+    <string name="create_product_button">Legg til produkt +</string>
+    <string name="no_available_products">Du har ikke lagt til noen produkter.</string>
+    <string name="add_product_instructions">Legg til et produkt med knappen «Legg til produkt» over.</string>
+    <string name="add_product_mix_instructions">Legg til en produktblanding med knappen «Legg til produktblanding» over.</string>
+
+    <string name="unit_gal_per_acre">gal/ac</string>
+
+    <string name="delete_dialog_confirm_button_text">Slett</string>
+    <string name="delete_product_dialog_body_text">Dette vil permanent slette dette produktet og tilhørende innstillinger.</string>
+
+    <string name="alert_title">Varsel</string>
+    <string name="alert_dismiss">Avvis</string>
+    <string name="alert_in_use">Dette produktet brukes for øyeblikket av en kontroller.</string>
+
+    <string name="variety_title">Varianter</string>
+    <string name="variety_section_subheader">Totalt: 0 varianter</string>
+    <plurals name="variety_section_subheader_format">
+        <item quantity="zero">Totalt: 0 varianter</item>
+        <item quantity="one">Totalt: 1 variant</item>
+        <item quantity="other">Totalt: %1$d varianter</item>
+    </plurals>
+    <string name="variety_button_add_text">Legg til variant +</string>
+    <string name="variety_add_dialog_title_text">Legg til variant</string>
+    <string name="variety_add_or_edit_dialog_crop_type_header_text">Avlingstype</string>
+    <string name="variety_add_or_edit_dialog_name_header_text">Navn</string>
+    <string name="variety_delete_dialog_delete_title_text">Slett variant</string>
+    <string name="variety_delete_dialog_body_text_delete_allowed">Dette vil permanent slette denne varianten og tilhørende innstillinger.</string>
+    <string name="variety_dialog_cancel_button_text">Avbryt</string>
+    <string name="variety_dialog_save_button_text">Lagre</string>
+    <string name="variety_edit_dialog_title">Rediger en variant</string>
+    <string name="variety_instruction_add">Legg til variant med knappen «Legg til variant» over.</string>
+    <string name="variety_list_header_crop_type_text">AVLINGSTYPE</string>
+    <string name="variety_list_header_color">FARGE</string>
+    <string name="variety_list_header_name_text">NAVN</string>
+    <string name="variety_not_available">Du har ikke lagt til noen varianter.</string>
+    <string name="variety_search_hint">Variant, avlingstype</string>
+    <string name="tab_management">Håndtering</string>
+    <string name="edit_field_name">Navn</string>
+    <string name="edit_dialog_header">Rediger Navn</string>
+    <string name="edit_dialog_save">Lagre</string>
+    <string name="edit_dialog_cancel">Avbryt</string>
+    <string name="tab_mng_none_header">Velg element(er) for redigering, kopiering eller sletting</string>
+    <string name="tab_mng_items_header">%1$d element(er) valgt</string>
+   <!-- end of productlibrary-package usage -->
+   <string name="edit_name_warning">Elementet med dette navnet eksisterer allerede. Velg et annet navn</string>
+    <string name="edit_update_title">Oppdaterer element</string>
+</resources>
