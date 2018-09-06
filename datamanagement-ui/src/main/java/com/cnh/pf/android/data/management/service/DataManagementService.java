@@ -415,6 +415,15 @@ public class DataManagementService extends RoboService implements SharedPreferen
       return !internalAddresses.isEmpty();
    }
 
+   /**
+    * Return true if Cloud is online.
+    * @return True if Cloud is online
+    */
+   public boolean isCloudOnline() {
+      List<Address> addresses = dsHelper.getAddressesForLocation(Datasource.LocationType.CLOUD);
+      return !addresses.isEmpty();
+   }
+
    @Override
    public void onSharedPreferenceChanged(SharedPreferences sharedPreferences, String key) {
       logger.info("Shared prefs changed {}.  Stopping DatamanagementService", key);
@@ -445,12 +454,13 @@ public class DataManagementService extends RoboService implements SharedPreferen
       }
 
       @Override
-      public void onViewAccepted(View newView) {
+      public void onViewAccepted(final View newView) {
          logger.debug("onViewAccepted {}", newView);
          dsHelper.updateView(newView, new DatasourceHelper.onConnectionChangeListener() {
             @Override
             public void onConnectionChange(Address[] left, Address[] join, boolean updateNeeded) {
                notifyChannelConnectionChange(updateNeeded);
+               notifyMediumUpdate();
             }
          });
       }
@@ -561,8 +571,14 @@ public class DataManagementService extends RoboService implements SharedPreferen
          cacheManager.reset(Session.Action.IMPORT);
       }
 
-      for (SessionEventListener listener : this.sessionEventListeners) {
-         listener.onMediumUpdate();
-      }
+      // Run the callback on the main UI thread to allow UI work.
+      new Handler(Looper.getMainLooper()).post(new Runnable() {
+         @Override
+         public void run() {
+            for (SessionEventListener listener : sessionEventListeners) {
+               listener.onMediumUpdate();
+            }
+         }
+      });
    }
 }

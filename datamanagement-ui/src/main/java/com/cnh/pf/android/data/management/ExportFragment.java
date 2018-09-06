@@ -513,9 +513,16 @@ public class ExportFragment extends BaseDataFragment {
       for (Map.Entry<UtilityHelper.MediumVariant, Integer> entry : resourceMap.entrySet()) {
          UtilityHelper.MediumVariant mediumVariant = entry.getKey();
 
-         if (SessionExtra.USB == mediumVariant.getExtraType()) {
+         if (SessionExtra.USB == mediumVariant.getExtraType() && Environment.getExternalStorageState().equals(Environment.MEDIA_MOUNTED)) {
             Integer resId = resourceMap.get(mediumVariant);
             SessionExtra newExtra = new SessionExtra(SessionExtra.USB, getResources().getString(resId), mediumVariant.getValue());
+            newExtra.setBasePath(basePath);
+            newExtra.setUseInternalFileSystem(useInternalFileSystem);
+            list.add(newExtra);
+         }
+         else if (SessionExtra.CLOUD == mediumVariant.getExtraType() && getSessionManager().isCloudPresent()){
+            Integer resId = resourceMap.get(mediumVariant);
+            SessionExtra newExtra = new SessionExtra(SessionExtra.CLOUD, getResources().getString(resId), mediumVariant.getValue());
             newExtra.setBasePath(basePath);
             newExtra.setUseInternalFileSystem(useInternalFileSystem);
             list.add(newExtra);
@@ -551,7 +558,7 @@ public class ExportFragment extends BaseDataFragment {
          logger.info("Unable to check if internal flash need to be used.", e);
       }
 
-      if (!resourceMap.isEmpty() && useInternalFileSystem == false && Environment.getExternalStorageState().equals(Environment.MEDIA_MOUNTED)) {
+      if (!resourceMap.isEmpty() && useInternalFileSystem == false && (Environment.getExternalStorageState().equals(Environment.MEDIA_MOUNTED) || getSessionManager().isCloudPresent())) {
          list = createMediumVariants(resourceMap, Environment.getExternalStorageDirectory().getPath());
       }
       return list;

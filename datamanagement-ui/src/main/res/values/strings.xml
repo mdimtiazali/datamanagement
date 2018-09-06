@@ -312,7 +312,6 @@
     <string name="case_pro700_usb">USB for Pro 700</string>
     <string name="case_desktopsw_usb">USB for Desktop Software</string>
     <string name="case_cloud_connect_outbox">AFS Connect</string>
-    <string name="case_cloud_connect_inbox">AFS Connect / INBOX</string>
     <string name="case_display">Display</string>
     <string name="case_internal">Internal</string>
 
@@ -321,7 +320,6 @@
     <string name="new_holland_intelli4_usb">USB for Intelliview IV</string>
     <string name="new_holland_desktopsw_usb">USB for Desktop Software</string>
     <string name="new_holland_cloud_connect_outbox">PLM Connect</string>
-    <string name="new_holland_cloud_connect_inbox">PLM Connect / INBOX</string>
     <string name="new_holland_display">Display</string>
     <string name="new_holland_internal">Internal</string>
 
@@ -329,8 +327,7 @@
     <string name="steyr_8_usb">USB for Steyr 8</string>
     <string name="steyr_4_usb">USB for Steyr 7</string>
     <string name="steyr_desktopsw_usb">USB for Desktop Software</string>
-    <string name="steyr_cloud_connect_outbox">Cloud Connect / OUTBOX</string>
-    <string name="steyr_cloud_connect_inbox">Cloud Connect / INBOX</string>
+    <string name="steyr_cloud_connect_outbox">Cloud Connect</string>
     <string name="steyr_display">Display</string>
     <string name="steyr_internal">Internal</string>
 
@@ -338,8 +335,7 @@
     <string name="generic_tractor_8_usb">USB for 800</string>
     <string name="generic_tractor_4_usb">USB for 700</string>
     <string name="generic_tractor_desktopsw_usb">USB for Desktop Software</string>
-    <string name="generic_tractor_cloud_connect_outbox">Cloud Connect / OUTBOX</string>
-    <string name="generic_tractor_cloud_connect_inbox">Cloud Connect / INBOX</string>
+    <string name="generic_tractor_cloud_connect_outbox">Cloud Connect</string>
     <string name="generic_tractor_display">Display</string>
     <string name="generic_tractor_internal">Internal</string>
 
