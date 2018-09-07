@@ -295,7 +295,7 @@
         <item quantity="other">%1$d Items Selected</item>
     </plurals>
     <!-- end of productlibrary-package usage -->
-    <string name="edit_name_warning">The item with this name already exists. Please choose a different name</string>
+    <string name="edit_name_warning">Duplicate Entry Found.\nPlease Enter New Input</string>
     <string name="edit_update_title">Updating item</string>
     <string name="edit_update_content">In progress ...</string>
     <string name="copy_paste_update_content">In progress ...</string>
