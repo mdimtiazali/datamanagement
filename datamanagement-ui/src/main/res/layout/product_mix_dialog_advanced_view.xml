@@ -26,5 +26,6 @@
 
     <include layout="@layout/product_dialog_package_size"/>
     <include layout="@layout/product_dialog_density"/>
+    <include layout="@layout/advanced_product_information"/>
 
 </com.cnh.android.widget.control.CategoryButtons>
