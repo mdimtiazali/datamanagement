@@ -7,7 +7,7 @@
     <parent>
         <groupId>com.cnh.pf</groupId>
         <artifactId>parent</artifactId>
-        <version>18.0.0-core42-SNAPSHOT</version>
+        <version>17.0.0-dev-SNAPSHOT</version>
     </parent>
 
     <artifactId>datamanagement-parent</artifactId>
