@@ -70,9 +70,6 @@ public class DataManagementService extends RoboService implements SharedPreferen
    private static final Logger logger = LoggerFactory.getLogger(DataManagementService.class);
 
    public static final String ACTION_RESET_CACHE = "com.cnh.pf.data.management.RESET_CACHE";
-   public static final String ACTION_CANCEL = "com.cnh.pf.data.management.CANCEL";
-
-   public static final int KILL_STATUS_DELAY = 5000;
 
    @Inject
    private Mediator mediator;
