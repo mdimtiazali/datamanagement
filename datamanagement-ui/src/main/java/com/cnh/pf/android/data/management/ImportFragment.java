@@ -450,6 +450,13 @@ public class ImportFragment extends BaseDataFragment {
 
          //close cancel dialog if still open
          closeCancelDialog();
+
+         File tmpFolder = new File(UtilityHelper.CommonPaths.PATH_TMP.getPathString());
+         if (tmpFolder.exists()) {
+            if (!UtilityHelper.deleteRecursively(tmpFolder)){
+               logger.error("unable to delete temporary folder:{}", tmpFolder.getPath());
+            }
+         }
       }
    }
 
