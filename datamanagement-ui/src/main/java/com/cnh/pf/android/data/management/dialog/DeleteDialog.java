@@ -37,7 +37,7 @@ public class DeleteDialog extends DialogView {
       setTitle(getResources().getQuantityString(R.plurals.delete_confirm_dialog_title, number,number));
       delete_confirm_content.setText(Html.fromHtml(getResources().getQuantityString(R.plurals.delete_confirm_dialog_content, number,number)));
       setBodyView(view);
-      setFirstButtonText(getResources().getString(R.string.ok));
+      setFirstButtonText(getResources().getString(R.string.delete_dialog_confirm_button_text));
       showFirstButton(true);
       setSecondButtonText(getResources().getString(R.string.cancel));
       showSecondButton(true);
