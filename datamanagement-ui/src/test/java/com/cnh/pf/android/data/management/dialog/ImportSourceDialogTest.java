@@ -114,7 +114,7 @@ public class ImportSourceDialogTest {
       assertThat(okButton.getText().toString(), is("OK"));
       //only the OK button is shown, the others should be GONE
 
-      checkVisiblityOfDialogButtons(View.VISIBLE, View.GONE, View.GONE);
+      DialogTestUtilities.checkVisiblityOfDialogButtons(View.VISIBLE, View.GONE, View.GONE, importSourceDialog);
       assertTrue(okButton.isEnabled());
 
    }
@@ -131,7 +131,7 @@ public class ImportSourceDialogTest {
       assertThat(okButton.getText().toString(), is("OK"));
       //only the OK button is shown, the others should be GONE
 
-      checkVisiblityOfDialogButtons(View.VISIBLE, View.GONE, View.GONE);
+      DialogTestUtilities.checkVisiblityOfDialogButtons(View.VISIBLE, View.GONE, View.GONE, importSourceDialog);
       assertTrue(okButton.isEnabled());
 
       //simulate plugging usb
@@ -144,7 +144,7 @@ public class ImportSourceDialogTest {
       importSourceDialog.updateView(sessionExtras);
 
       //buttons should have changed
-      checkVisiblityOfDialogButtons(View.VISIBLE, View.VISIBLE, View.GONE);
+      DialogTestUtilities.checkVisiblityOfDialogButtons(View.VISIBLE, View.VISIBLE, View.GONE, importSourceDialog);
       Button selectButton = (Button) importSourceDialog.findViewById(R.id.btFirst);
       assertThat(selectButton.getText().toString(), is("Select"));
       Button cancelButton = (Button) importSourceDialog.findViewById(R.id.btSecond);
@@ -159,7 +159,7 @@ public class ImportSourceDialogTest {
 
       assertThat(okButton.getText().toString(), is("OK"));
       //only the OK button is shown, the others should be GONE
-      checkVisiblityOfDialogButtons(View.VISIBLE, View.GONE, View.GONE);
+      DialogTestUtilities.checkVisiblityOfDialogButtons(View.VISIBLE, View.GONE, View.GONE, importSourceDialog);
       assertTrue(okButton.isEnabled());
    }
 
@@ -173,7 +173,7 @@ public class ImportSourceDialogTest {
 
       Button okButton = (Button) importSourceDialog.findViewById(R.id.btFirst);
       assertThat(okButton.getText().toString(), is("OK"));
-      checkVisiblityOfDialogButtons(View.VISIBLE, View.GONE, View.GONE);
+      DialogTestUtilities.checkVisiblityOfDialogButtons(View.VISIBLE, View.GONE, View.GONE, importSourceDialog);
 
    }
 
@@ -184,7 +184,7 @@ public class ImportSourceDialogTest {
       sessionExtras.add(cloudExtra);
       importSourceDialog = new ImportSourceDialog(activity, sessionExtras);
 
-      checkVisiblityOfDialogButtons(View.VISIBLE, View.VISIBLE, View.GONE);
+      DialogTestUtilities.checkVisiblityOfDialogButtons(View.VISIBLE, View.VISIBLE, View.GONE, importSourceDialog);
 
       Button selectButton = (Button) importSourceDialog.findViewById(R.id.btFirst);
       assertThat(selectButton.getText().toString(), is("Select"));
@@ -199,7 +199,7 @@ public class ImportSourceDialogTest {
       SessionExtra displayExtra = new SessionExtra(SessionExtra.DISPLAY, "Test", 1);
       sessionExtras.add(displayExtra);
       importSourceDialog = new ImportSourceDialog(activity, sessionExtras);
-      checkVisiblityOfDialogButtons(View.VISIBLE, View.VISIBLE, View.GONE);
+      DialogTestUtilities.checkVisiblityOfDialogButtons(View.VISIBLE, View.VISIBLE, View.GONE, importSourceDialog);
 
    }
 
@@ -210,7 +210,7 @@ public class ImportSourceDialogTest {
       usbSessionExtra.setPath("Test");
       sessionExtras.add(usbSessionExtra);
       importSourceDialog = new ImportSourceDialog(activity, sessionExtras);
-      checkVisiblityOfDialogButtons(View.VISIBLE, View.VISIBLE, View.GONE);
+      DialogTestUtilities.checkVisiblityOfDialogButtons(View.VISIBLE, View.VISIBLE, View.GONE, importSourceDialog);
 
       Button selectButton = (Button) importSourceDialog.findViewById(R.id.btFirst);
       assertThat(selectButton.getText().toString(), is("Select"));
@@ -254,6 +254,7 @@ public class ImportSourceDialogTest {
       sessionExtras.add(usbSessionExtra);
       importSourceDialog = new ImportSourceDialog(activity, sessionExtras);
       importSourceDialog.usbImportSource(testFile, 0, usbSessionExtra);
+      // enable assert if SessionExtra.Display is implemented
       //      assertThat(importSourceDialog.getCurrentExtra(), is(usbSessionExtra.getType()));
 
    }
@@ -327,16 +328,10 @@ public class ImportSourceDialogTest {
 
    }
 
-   private void checkVisiblityOfDialogButtons(int btn1, int btn2, int btn3) {
-      Button firstButton = (Button) importSourceDialog.findViewById(R.id.btFirst);
-      Button secondButton = (Button) importSourceDialog.findViewById(R.id.btSecond);
-      Button thirdButton = (Button) importSourceDialog.findViewById(R.id.btThird);
-
-      assertThat(firstButton.getVisibility(), is(btn1));
-      assertThat(secondButton.getVisibility(), is(btn2));
-      assertThat(thirdButton.getVisibility(), is(btn3));
-   }
-
+   /**
+    * Test module to be used in the unit test for dependency injection
+    *
+    */
    public static class TestModule extends com.cnh.pf.android.data.management.TestModule {
       private EventManager eventManager;
 
@@ -346,6 +341,7 @@ public class ImportSourceDialogTest {
 
       @Override
       protected void configure() {
+         super.configure();
          bind(EventManager.class).toInstance(eventManager);
       }
    }
