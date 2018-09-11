@@ -38,12 +38,23 @@ public class DataConflictViewAdapter extends DataManagementBaseAdapter {
    protected String textualFeedbackString;
    protected boolean reuseAction = false;
 
+   protected int progressTotalConflicts; //keeps track of all conflicts in the list of operations
+   protected int progressCurrentConflict; //keeps track of the already solved conflicts
+   //position keeps track of the current position under consideration in the operations list
+
    public DataConflictViewAdapter(Activity context, List<Operation> operations) {
       super(context, operations);
       RoboGuice.getInjector(context).injectMembersWithoutViews(this);
 
       textualFeedbackString = context.getString(R.string.import_conflict_dialog_textual_process_feedback_text);
 
+      progressCurrentConflict = 1;
+      progressTotalConflicts = 0;
+      for (int currentOperationPosition = 0; currentOperationPosition < operationList.size(); currentOperationPosition++) {
+         if (operationList.get(currentOperationPosition).isConflict()) {
+            progressTotalConflicts++;
+         }
+      }
    }
 
    private static class DialogViewHolder extends ViewHolder {
@@ -102,11 +113,13 @@ public class DataConflictViewAdapter extends DataManagementBaseAdapter {
          int lastIndex = operationList.size() - 1;
          setActionForOperationsBetween(position, lastIndex, operationAction);
          position = lastIndex + 1;
+         progressCurrentConflict = progressTotalConflicts;
       }
       else {
          //use selected action for single conflict
          operationList.get(position).setAction(operationAction);
          position++;
+         progressCurrentConflict++;
       }
       checkAndUpdateActive();
    }
@@ -146,8 +159,7 @@ public class DataConflictViewAdapter extends DataManagementBaseAdapter {
 
       //update textual progress
       if (operationList.size() > 1) {
-         int currentConflictNumber = (position + 1);
-         viewHolder.textualFeedback.setText(String.format(textualFeedbackString, currentConflictNumber, operationList.size()));
+         viewHolder.textualFeedback.setText(String.format(textualFeedbackString, progressCurrentConflict, progressTotalConflicts));
       }
 
       return convertView;
