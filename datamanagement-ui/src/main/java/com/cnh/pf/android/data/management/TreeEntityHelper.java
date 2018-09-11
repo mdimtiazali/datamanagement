@@ -358,7 +358,7 @@ public class TreeEntityHelper {
     */
    public static void addToTree(DMTreeJsonData  entry, GroupObjectGraph parent, TreeBuilder<ObjectGraph> builder) {
       if(entry != null) {
-         GroupObjectGraph gGroup = new GroupObjectGraph(null, entry.getDataType(),
+         GroupObjectGraph gGroup = new GroupObjectGraph(null, entry.getGroupDataType(),
                  entry.getTitle(), null, parent);
          gGroup.setId(UUID.randomUUID().toString());
          gGroup.addData(HIDDEN_ITEM, entry.getHidden());
