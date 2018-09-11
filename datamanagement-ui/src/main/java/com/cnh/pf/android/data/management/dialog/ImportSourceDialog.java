@@ -89,13 +89,16 @@ public class ImportSourceDialog extends DialogView {
    private boolean usbIsLoaded = true;
 
    private void initSupportedFiles() {
+      //This list is case sensitive. Only add UpperCase-names!
+      //Have a look at method: isFileExtensionSupported and isFileNameSupported.
       file2Support.add("TASKDATA.XML");
-      file2Support.add("dbf");
       file2Support.add("DBF");
-      file2Support.add("shp");
       file2Support.add("SHP");
-      file2Support.add("shx");
       file2Support.add("SHX");
+      //TODO: The following files are to be supported in the future, but not by now
+      //file2Support.add("VIP.XML");
+      //file2Support.add("PDF"); //see eagle-systems-7665
+      //file2Support.add("MKV"); //see eagle-systems-9401
    }
 
    public ImportSourceDialog(Activity context, List<SessionExtra> extras) {
@@ -315,7 +318,7 @@ public class ImportSourceDialog extends DialogView {
                File[] fs = file.listFiles();
                if (fs != null) {
                   for (File f : fs) {
-                     if ((f.isDirectory() && isDirAccept(f)) || (file2Support.contains(Files.getFileExtension(f.getName())) || file2Support.contains(f.getName()))) {
+                     if ((f.isDirectory() && isDirAccept(f)) || (isFileNameSupported(f.getName()) || isFileExtensionSupported(f.getName()))) {
                         return true;
                      }
                   }
@@ -330,7 +333,7 @@ public class ImportSourceDialog extends DialogView {
             if (file.isDirectory()) {
                ret = isDirAccept(file);
             }
-            else if (file2Support.contains(Files.getFileExtension(file.getName()))) {
+            else if (isFileExtensionSupported(file.getName())) {
                ret = true;
             }
             return ret;
@@ -505,5 +508,35 @@ public class ImportSourceDialog extends DialogView {
 
    public boolean checkUSBType() {
       return isUSBType;
+   }
+
+   /**
+    * This method returns weather a file with the given filename is supported or not
+    * @param filename Filename to be checked if supported or not
+    * @return True if given filename is supported, false otherwise
+    */
+   private boolean isFileNameSupported(String filename) {
+      if (filename != null) {
+         return (file2Support.contains(filename.toUpperCase()));
+      }
+      else {
+         log.error("Could not determine if empty filename is supported!");
+         return false;
+      }
+   }
+
+   /**
+    * This method returns weather an extension of the given filename is supported or not
+    * @param filename Filename containing the extension to be checked weather it is supported or not
+    * @return True if extension of given filename is supported, false otherwise
+    */
+   private boolean isFileExtensionSupported(String filename) {
+      if (filename != null) {
+         return (file2Support.contains(Files.getFileExtension(filename).toUpperCase()));
+      }
+      else {
+         log.error("Could not determine if extension of empty filename is supported!");
+         return false;
+      }
    }
 }
