@@ -255,6 +255,10 @@
     <string name="delete_dialog_confirm_button_text">Delete</string>
     <string name="delete_product_dialog_body_text">This will permanently delete this product and its settings.</string>
     <string name="undelete_objects_headline">The followings cannot be deleted</string>
+    <plurals name="delete_complete">
+        <item quantity="one">1 item deleted</item>
+        <item quantity="other">%1$d items deleted</item>
+    </plurals>
     <string name="alert_title">Alert</string>
     <string name="alert_dismiss">Dismiss</string>
     <string name="alert_in_use">This product is currently in use by a controller.</string>
