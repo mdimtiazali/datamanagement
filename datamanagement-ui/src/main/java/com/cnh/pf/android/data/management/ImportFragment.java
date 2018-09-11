@@ -37,6 +37,7 @@ import com.cnh.android.pf.widget.controls.ToastMessageCustom;
 import com.cnh.android.pf.widget.view.DisabledOverlay;
 import com.cnh.android.widget.activity.TabActivity;
 import com.cnh.android.widget.control.ProgressBarView;
+import com.cnh.jgroups.DataTypes;
 import com.cnh.jgroups.ObjectGraph;
 import com.cnh.jgroups.Operation;
 import com.cnh.pf.android.data.management.adapter.DataConflictViewAdapter;
@@ -906,6 +907,12 @@ public class ImportFragment extends BaseDataFragment {
    private void runImport() {
       logger.debug("Run Import!");
       List<ObjectGraph> selected = new ArrayList<ObjectGraph>(getTreeAdapter().getSelected());
+      ArrayList<ObjectGraph> ddopsSelect = new ArrayList<ObjectGraph>(getTreeAdapter().getData());
+      for (ObjectGraph object : ddopsSelect) {
+         if (object.getType().equals(DataTypes.DDOP)) {
+            selected.add(object);
+         }
+      }
       if (!selected.isEmpty()) {
          processDialog.init();
          processDialog.setTitle(getResources().getString(R.string.checking_targets));
