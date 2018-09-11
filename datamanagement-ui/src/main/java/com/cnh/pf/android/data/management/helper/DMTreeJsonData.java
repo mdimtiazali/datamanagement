@@ -9,6 +9,7 @@ import java.util.List;
 public class DMTreeJsonData {
    private String Title;
    private String DataType;
+   private String GroupDataType;
    private int FollowSource;
    private int Hidden;
    private List<DMTreeJsonData> Children = new ArrayList<DMTreeJsonData>();
@@ -32,6 +33,14 @@ public class DMTreeJsonData {
 
    public void setDataType(String dataType) {
       DataType = dataType;
+   }
+
+   public String getGroupDataType() {
+      return GroupDataType;
+   }
+
+   public void setGroupDataType(String dataType) {
+      GroupDataType = dataType;
    }
 
    public int getFollowSource() {
