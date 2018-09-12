@@ -23,10 +23,4 @@
             android:textColor="@color/stepper_value_text_color"
             android:textSize="@dimen/no_device_layout_text_view_text_size"/>
 
-    <ImageView
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_marginTop="@dimen/no_device_layout_image_view_margin_top"
-            android:src="@drawable/ic_no_source_detected"/>
-
 </LinearLayout>
