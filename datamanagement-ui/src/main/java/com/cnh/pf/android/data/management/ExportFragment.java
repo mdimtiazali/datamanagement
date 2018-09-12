@@ -520,9 +520,9 @@ public class ExportFragment extends BaseDataFragment {
             newExtra.setUseInternalFileSystem(useInternalFileSystem);
             list.add(newExtra);
          }
-         else if (SessionExtra.CLOUD == mediumVariant.getExtraType() && getSessionManager().isCloudPresent()){
+         else if (((mediumVariant.getExtraType() & SessionExtra.CLOUD) == SessionExtra.CLOUD) && getSessionManager().isCloudPresent()){
             Integer resId = resourceMap.get(mediumVariant);
-            SessionExtra newExtra = new SessionExtra(SessionExtra.CLOUD, getResources().getString(resId), mediumVariant.getValue());
+            SessionExtra newExtra = new SessionExtra(SessionExtra.CLOUD | SessionExtra.USB, getResources().getString(resId), mediumVariant.getValue());
             newExtra.setBasePath(basePath);
             newExtra.setUseInternalFileSystem(useInternalFileSystem);
             list.add(newExtra);

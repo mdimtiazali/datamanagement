@@ -117,7 +117,7 @@ public class UtilityHelper {
       USB_HAWK(2, SessionExtra.USB),
       USB_FRED(3, SessionExtra.USB),
       USB_DESKTOP_SW(4, SessionExtra.USB),
-      CLOUD_EXPORT(5, SessionExtra.CLOUD);
+      CLOUD_EXPORT(5, SessionExtra.CLOUD | SessionExtra.USB);
 
       private int extraType;
       private int value;
@@ -281,7 +281,8 @@ public class UtilityHelper {
         PATH_DESIGNATOR("/"),
         PATH_USB_PORT("./storage/usb1"),
         PATH_TMP("./tmp/data/"),
-        PATH_USB_FRED("/XML");
+        PATH_USB_FRED("/XML"),
+        PATH_TMP_CLOUD("./tmp/cloud");
 
         //TODO move this folder to global access for isoservice, datamanagement and vipdmg
 

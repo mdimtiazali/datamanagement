@@ -19,7 +19,7 @@ import com.google.common.base.MoreObjects;
 public class SessionExtra implements Parcelable {
    public static final int USB = 1;
    public static final int CLOUD = 2;
-   public static final int DISPLAY = 3;
+   public static final int DISPLAY = 4;
 
    public static final Creator<SessionExtra> CREATOR = new Creator<SessionExtra>() {
       @Override
@@ -187,14 +187,14 @@ public class SessionExtra implements Parcelable {
    }
 
    public boolean isUsbExtra() {
-      return this.type == USB;
+      return (this.type & USB) == USB;
    }
 
    public boolean isCloudExtra() {
-      return this.type == CLOUD;
+      return (this.type & CLOUD) == CLOUD;
    }
 
    public boolean isDisplayExtra() {
-      return this.type == DISPLAY;
+      return (this.type & DISPLAY) == DISPLAY;
    }
 }
