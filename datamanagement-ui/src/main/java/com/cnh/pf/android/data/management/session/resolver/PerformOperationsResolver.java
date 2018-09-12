@@ -52,8 +52,8 @@ public class PerformOperationsResolver implements Resolver {
          if (session.getExtra().isUsbExtra()) {
             destinations = dsHelper.getAddressesForLocation(Datasource.LocationType.USB);
          }
-         else if (session.getExtra().isCloudExtra()) {
-            destinations = dsHelper.getAddressesForLocation(Datasource.LocationType.CLOUD);
+         if (session.getExtra().isCloudExtra()) {
+            destinations.addAll(dsHelper.getAddressesForLocation(Datasource.LocationType.CLOUD));
          }
 
          if (destinations.isEmpty()) {
