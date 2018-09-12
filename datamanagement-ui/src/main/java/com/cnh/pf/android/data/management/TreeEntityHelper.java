@@ -80,10 +80,10 @@ public class TreeEntityHelper {
    public static final String DDOP = "DDOP";
 
    static {
-      TYPE_ICONS.put(DataTypes.GROWER, R.drawable.ic_datatree_grower);
-      TYPE_ICONS.put(DataTypes.FARM, R.drawable.ic_datatree_farm);
-      TYPE_ICONS.put(DataTypes.FIELD, R.drawable.ic_datatree_field);
-      TYPE_ICONS.put(TASKS, R.drawable.ic_datatree_tasks);
+      TYPE_ICONS.put(DataTypes.GROWER, R.drawable.ic_data_tree_grower);
+      TYPE_ICONS.put(DataTypes.FARM, R.drawable.ic_data_tree_farm);
+      TYPE_ICONS.put(DataTypes.FIELD, R.drawable.ic_data_tree_field);
+      TYPE_ICONS.put(TASKS, R.drawable.ic_data_tree_task);
       TYPE_ICONS.put(DataTypes.RX, R.drawable.ic_data_tree_rx);
       TYPE_ICONS.put(RXS, R.drawable.ic_data_tree_rx);
       TYPE_ICONS.put(DataTypes.RX_PLAN, R.drawable.ic_data_tree_rx);
@@ -96,7 +96,7 @@ public class TreeEntityHelper {
       TYPE_ICONS.put(DataTypes.LANDMARK, R.drawable.dt_icon_landmark);
       TYPE_ICONS.put(LANDMARKS, R.drawable.dt_icon_landmark);
       TYPE_ICONS.put(GUIDANCE_GROUPS, R.drawable.ic_data_tree_swaths);
-      TYPE_ICONS.put(DataTypes.GUIDANCE_PATTERN, R.drawable.ic_datatree_swath);
+      TYPE_ICONS.put(DataTypes.GUIDANCE_PATTERN, R.drawable.ic_data_tree_swaths);
       TYPE_ICONS.put(DataTypes.GUIDANCE_CONFIGURATION, R.drawable.ic_data_tree_guidance);
       TYPE_ICONS.put(GUIDANCE_CONFIGURATIONS, R.drawable.ic_data_tree_guidance);
       TYPE_ICONS.put(DataTypes.COVERAGE, R.drawable.ic_data_tree_coverage_area);

@@ -13,6 +13,7 @@
         android:duplicateParentState="true"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
+        android:drawablePadding="8dp"
         android:id="@+id/tree_list_item_simple"
         android:textSize="20sp"
         android:fontFamily="sans-seriff"

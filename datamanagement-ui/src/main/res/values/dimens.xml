@@ -94,12 +94,12 @@
     <dimen name="button_default_text_size">22sp</dimen>
     <dimen name="info_image_button_padding">8dp</dimen>
     <dimen name="import_left_layout_background_bottom_margin">50dp</dimen>
-
     <dimen name="undelete_dialog_edge_margin">24dp</dimen>
     <dimen name="progress_circle_diameter">48dp</dimen>
     <dimen name="delete_dialog_width">592dp</dimen>
     <dimen name="cp_complete_dialog_width">592dp</dimen>
     <dimen name="min_select_all_btn_width">175dp</dimen>
+    <dimen name="progress_bar_padding">18dp</dimen>
 
     <!-- Import/Export Overlays-->
     <dimen name="dataexchange_blocked_overlay_spacing_between_lines">10dp</dimen>
