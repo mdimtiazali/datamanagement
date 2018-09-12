@@ -501,8 +501,11 @@ public class ManageFragment extends BaseDataFragment implements DmAccessibleObse
                }
             }
             if (undeletedObjects.isEmpty()) {
+               int count = countSelectedItem();
+               ToastMessageCustom.makeToastMessageText(getActivity(), getResources().getQuantityString(R.plurals.delete_complete, count, count), Gravity.TOP|Gravity.CENTER_HORIZONTAL,
+                       getResources().getInteger(R.integer.toast_message_xoffset),getResources().getInteger(R.integer.toast_message_yoffset)).show();
                removeAndRefreshObjectUI(removedObjects);
-            }
+          }
             else {
                removeAndRefreshObjectUI(removedObjects);
                UndeleteObjectDialog undeleteObjectDialog = new UndeleteObjectDialog(getActivity(), undeletedObjects);
