@@ -178,16 +178,16 @@ public class PerformOperationsTask extends SessionOperationTask<Void> {
        throw new SessionException(ErrorCode.PERFORM_ERROR);
       }
 
-
-      final String CLOUD_FILENAME = "CLOUD";
+      /* zip up temporary cloud export directory */
       final String ZIP_EXT = ".zip";
-
+      final String CLOUD_FILENAME = String.format("CLOUD.%s", new SimpleDateFormat("yyyyMMddHHmmssSSS").format(new Date()));
       final String zippedCloudFileName = PATH_TMP_CLOUD + File.separator + CLOUD_FILENAME + ZIP_EXT;
       logger.debug("GET FILE zipping {} as {}", PATH_TMP_CLOUD + TASKDATA_FOLDER, zippedCloudFileName);
 
       String suffixFilter = "*";
       new ZipHelper().zipDirectory(new File(PATH_TMP_CLOUD), zippedCloudFileName, suffixFilter);
 
+      /* send file */
       if (null != cloudAddress) {
          getMediator().sendFile(cloudAddress, zippedCloudFileName);
          session.setResultCode(Process.Result.SUCCESS);
