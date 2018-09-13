@@ -759,8 +759,9 @@ public class ImportFragment extends BaseDataFragment {
       //only update UI if no visual success/failure feedback is currently active
       if (!visualFeedbackActive) {
          importDropZone.setVisibility(View.GONE);
-         progressBar.setSecondText(true, loadingString, null, true);
          progressBar.setProgress(0);
+         progressBar.setShowProgress(false);
+         progressBar.setSecondText(true, loadingString, null, true);
          importFinishedStatePanel.setVisibility(View.GONE);
          leftStatus.setVisibility(View.VISIBLE);
       }

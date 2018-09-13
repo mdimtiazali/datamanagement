@@ -69,6 +69,7 @@ public class ProcessDialog extends DialogView {
       View view = inflater.inflate(R.layout.progress_layout, null);
       pbBar = (ProgressBarView) view.findViewById(R.id.progress_bar);
       pbBar.setProgress(0);
+      pbBar.setShowProgress(false);
       setBodyView(view);
    }
 
