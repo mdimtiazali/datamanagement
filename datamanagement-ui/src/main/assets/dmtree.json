@@ -16,7 +16,7 @@
     "Children" : null
   },
   {
-    "Title":"RXS",
+    "Title":"Prescriptions",
     "DataType": "RX",
     "GroupDataType": "RXS",
     "FollowSource": 0,
@@ -33,7 +33,7 @@
   },
   {
     "Title":"Swaths",
-    "DataType": "GUIDANCE_GROUP",
+    "DataType": "GUIDANCE_CONFIGURATION",
     "GroupDataType": "GUIDANCE_GROUPS",
     "FollowSource": 0,
     "Hidden" : 0 ,
