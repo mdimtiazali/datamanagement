@@ -239,7 +239,7 @@ public class ImportFragment extends BaseDataFragment {
       logger.debug("onMyselfSessionCancelled(): {}, {}", session.getType(), session.getAction());
       if (SessionUtil.isPerformOperationsTask(session) || SessionUtil.isDiscoveryTask(session)) {
          ToastMessageCustom.makeToastMessageText(getActivity().getApplicationContext(), getString(R.string.export_cancel), Gravity.TOP | Gravity.CENTER_HORIZONTAL,
-                 getResources().getInteger(R.integer.toast_message_xoffset), getResources().getInteger(R.integer.toast_message_yoffset)).show();
+               getResources().getInteger(R.integer.toast_message_xoffset), getResources().getInteger(R.integer.toast_message_yoffset)).show();
          clearTreeSelection();
       }
 
@@ -454,7 +454,7 @@ public class ImportFragment extends BaseDataFragment {
 
          File tmpFolder = new File(UtilityHelper.CommonPaths.PATH_TMP.getPathString());
          if (tmpFolder.exists()) {
-            if (!UtilityHelper.deleteRecursively(tmpFolder)){
+            if (!UtilityHelper.deleteRecursively(tmpFolder)) {
                logger.error("unable to delete temporary folder:{}", tmpFolder.getPath());
             }
          }
@@ -864,25 +864,30 @@ public class ImportFragment extends BaseDataFragment {
     * @param onClickListener Listener to be hooked to he cancel button
     */
    private void showCancelDialog(@Nullable final DialogViewInterface.OnButtonClickListener onClickListener) {
-      final Resources resources = getResources();
-      final TextDialogView cancelDialogue = new TextDialogView(ImportFragment.this.getActivity());
-      cancelDialogue.setFirstButtonText(resources.getString(R.string.yes));
-      cancelDialogue.setSecondButtonText(resources.getString(R.string.no));
-      cancelDialogue.showThirdButton(false);
-      cancelDialogue.setTitle(resources.getString(R.string.cancel));
-      cancelDialogue.setBodyText(resources.getString(R.string.import_cancel_confirmation));
-      cancelDialogue.setIcon(resources.getDrawable(R.drawable.ic_alert_red));
-      cancelDialogue.setOnButtonClickListener(onClickListener);
-      cancelDialogue.setDialogWidth(CANCEL_DIALOG_WIDTH);
-      ((TabActivity) getActivity()).showModalPopup(cancelDialogue);
-      cancelDialogue.setOnDismissListener(new DialogViewInterface.OnDismissListener() {
-         @Override
-         public void onDismiss(DialogViewInterface dialogViewInterface) {
-            //remove reference just closed dialogue
-            lastCancelDialogView = null;
-         }
-      });
-      lastCancelDialogView = cancelDialogue;
+      if (lastCancelDialogView == null) {
+         final Resources resources = getResources();
+         final TextDialogView cancelDialogue = new TextDialogView(ImportFragment.this.getActivity());
+         cancelDialogue.setFirstButtonText(resources.getString(R.string.yes));
+         cancelDialogue.setSecondButtonText(resources.getString(R.string.no));
+         cancelDialogue.showThirdButton(false);
+         cancelDialogue.setTitle(resources.getString(R.string.cancel));
+         cancelDialogue.setBodyText(resources.getString(R.string.import_cancel_confirmation));
+         cancelDialogue.setIcon(resources.getDrawable(R.drawable.ic_alert_red));
+         cancelDialogue.setOnButtonClickListener(onClickListener);
+         cancelDialogue.setDialogWidth(CANCEL_DIALOG_WIDTH);
+         ((TabActivity) getActivity()).showModalPopup(cancelDialogue);
+         cancelDialogue.setOnDismissListener(new DialogViewInterface.OnDismissListener() {
+            @Override
+            public void onDismiss(DialogViewInterface dialogViewInterface) {
+               //remove reference just closed dialogue
+               lastCancelDialogView = null;
+            }
+         });
+         lastCancelDialogView = cancelDialogue;
+      }
+      else {
+         logger.error("Could not show/create cancel dialog, since one cancel dialog instance is already open!");
+      }
    }
 
    /**

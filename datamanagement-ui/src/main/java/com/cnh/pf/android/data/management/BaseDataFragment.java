@@ -728,6 +728,13 @@ public abstract class BaseDataFragment extends RoboFragment implements SessionCo
             sortTreeList();
             createTreeAdapter();
             manager.collapseChildren(null);
+            treeAdapter.setOnTreeItemSelectedListener(new SelectionTreeViewAdapter.OnTreeItemSelectedListener() {
+               @Override
+               public void onItemSelected() {
+                  logger.debug("onTreeItemSelected");
+                  onTreeItemSelected();
+               }
+            });
          }
          treeAdapter.setData(session.getObjectData());
          treeViewList.setAdapter(treeAdapter);
