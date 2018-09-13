@@ -43,7 +43,7 @@ public class PerformOperationsResolver implements Resolver {
          logger.trace("resolve() - EXPORT");
 
          String format = session.getExtra().getFormat();
-         if (format == null || (!format.equals("ISOXML") && !format.equals("PF Database"))) {
+         if (format == null || !format.equals("ISOXML")) {
             logger.debug("resolve() - EXPORT: Invalid format");
             throw new SessionException(ErrorCode.INVALID_FORMAT);
          }
@@ -52,8 +52,8 @@ public class PerformOperationsResolver implements Resolver {
          if (session.getExtra().isUsbExtra()) {
             destinations = dsHelper.getAddressesForLocation(Datasource.LocationType.USB);
          }
-         else if (session.getExtra().isCloudExtra()) {
-            destinations = dsHelper.getAddressesForLocation(Datasource.LocationType.CLOUD);
+         if (session.getExtra().isCloudExtra()) {
+            destinations.addAll(dsHelper.getAddressesForLocation(Datasource.LocationType.CLOUD));
          }
 
          if (destinations.isEmpty()) {

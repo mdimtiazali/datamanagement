@@ -66,6 +66,10 @@
     <color name="data_exchange_overlay_background">#BBFFFFFF</color>
     <color name="data_exchange_overlay_descriptiontext_color">#aeafaf</color>
 
+    <!--Import DataTree-->
+    <color name="import_data_tree_divider_color">#80ffffff</color>
+    <color name="import_data_tree_list_selector_color">#00000000</color>
+
     <!--Configuration for dimensions of the shadow representative of multiple items for drag and drop in DM-->
     <color name="tree_drag_multiple_selection_shadow_box_background_color">@color/StandardWhiteColor</color>
     <color name="tree_drag_multiple_selection_shadow_box_shadow_color">@color/StandardBlackColor</color>

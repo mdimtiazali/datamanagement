@@ -16,8 +16,8 @@ import android.view.View;
 import android.widget.AdapterView;
 import android.widget.LinearLayout;
 import android.widget.ScrollView;
+import android.widget.TextView;
 
-import butterknife.ButterKnife;
 import com.android.annotations.VisibleForTesting;
 import com.cnh.android.dialog.DialogView;
 import com.cnh.android.dialog.DialogViewInterface;
@@ -27,19 +27,23 @@ import com.cnh.android.widget.control.PickListEditable;
 import com.cnh.android.widget.control.PickListItem;
 import com.cnh.pf.android.data.management.R;
 import com.cnh.pf.android.data.management.TreeEntityHelper;
+import com.cnh.pf.android.data.management.adapter.BaseTreeViewAdapter;
 import com.cnh.pf.android.data.management.adapter.PathTreeViewAdapter;
 import com.cnh.pf.android.data.management.misc.IconizedFile;
 import com.cnh.pf.android.data.management.session.SessionExtra;
 import com.google.common.io.Files;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import java.io.File;
 import java.io.FileFilter;
-import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+
+import butterknife.ButterKnife;
 import pl.polidea.treeview.InMemoryTreeStateManager;
 import pl.polidea.treeview.TreeBuilder;
 import pl.polidea.treeview.TreeNodeInfo;
@@ -60,32 +64,41 @@ public class ImportSourceDialog extends DialogView {
    private LayoutInflater layoutInflater;
    private LinearLayout loadingContainer;
    private ScrollView contentContainer;
-   private View rootView;
    private TreeStateManager<IconizedFile> usbManager;
    private TreeStateManager<IconizedFile> cloudManager;
    private PathTreeViewAdapter usbTreeAdapter;
+   private PathTreeViewAdapter cloudTreeAdapter;
    private TreeBuilder<IconizedFile> usbTreeBuilder;
    private TreeBuilder<IconizedFile> cloudTreeBuilder;
-   private TreeViewList sourcePathTreeView;
+   private TreeViewList sourcePathUsbTreeView;
+   private TreeViewList sourcePathCloudTreeView;
+   private View usbSpacer;
+   private TextView introductionTextView;
+   private View introductionSpacer;
+   private AsyncTask<Void, Void, Void> asyncUsbLoadingTask = null;
+   private AsyncTask<Void, Void, Void> asyncCloudLoadingTask = null;
+
    private HashMap<Integer, SessionExtra> extras;
    private SessionExtra currentExtra;
    private SessionExtra cloudExtra;
    private int getCurrentSessionExtra;
    private boolean isUSBType = false;
    private Set<String> file2Support = new HashSet<String>();
-   private List selectedNodeList = new ArrayList();
 
    private boolean cloudIsLoaded = true;
    private boolean usbIsLoaded = true;
 
    private void initSupportedFiles() {
+      //This list is case sensitive. Only add UpperCase-names!
+      //Have a look at method: isFileExtensionSupported and isFileNameSupported.
       file2Support.add("TASKDATA.XML");
-      file2Support.add("dbf");
       file2Support.add("DBF");
-      file2Support.add("shp");
       file2Support.add("SHP");
-      file2Support.add("shx");
       file2Support.add("SHX");
+      //TODO: The following files are to be supported in the future, but not by now
+      //file2Support.add("VIP.XML");
+      //file2Support.add("PDF"); //see eagle-systems-7665
+      //file2Support.add("MKV"); //see eagle-systems-9401
    }
 
    public ImportSourceDialog(Activity context, List<SessionExtra> extras) {
@@ -93,6 +106,7 @@ public class ImportSourceDialog extends DialogView {
       initSupportedFiles();
       RoboGuice.getInjector(context).injectMembers(this);
       setDialogWidth(getResources().getInteger(R.integer.import_source_dialog_width));
+      setContentPaddings(0, 0, 0, 0);
       //TODO: Height should be dynamic! The following line is only a fix for DialogView loosing buttons if
       //      height is too great. This should be verified to be necessary with each core update!
       setBodyHeight(getResources().getInteger(R.integer.import_source_dialog_height));
@@ -112,10 +126,17 @@ public class ImportSourceDialog extends DialogView {
 
    private void init(List<SessionExtra> extrasIn) {
       setTitle(getResources().getString(R.string.select_source));
-      if (extrasIn != null && extrasIn.isEmpty()) {
+      final View rootView;
+      if (extrasIn == null || extrasIn.isEmpty()) {
+         //leave quick note in the log if extrasIn is null
+         if (extrasIn == null) {
+            log.error("Could not properly initialize ImportSourceDialog since incoming SessionExtras are null!");
+         }
+         //show no device found content
          rootView = layoutInflater.inflate(R.layout.no_device_layout, null);
          setBodyView(rootView);
          setFirstButtonText(getResources().getString(R.string.ok));
+         setFirstButtonEnabled(true);
          showSecondButton(false);
          showThirdButton(false);
          setOnButtonClickListener(new OnButtonClickListener() {
@@ -128,8 +149,17 @@ public class ImportSourceDialog extends DialogView {
          });
       }
       else {
+         //show select import source content
+         final View sourcePathUsbDisabled;
+         final View sourcePathCloudDisabled;
          rootView = layoutInflater.inflate(R.layout.import_source_layout, null);
-         sourcePathTreeView = (TreeViewList) rootView.findViewById(R.id.source_path_tree_view);
+         sourcePathUsbTreeView = (TreeViewList) rootView.findViewById(R.id.source_path_usb_tree_view);
+         sourcePathUsbDisabled = rootView.findViewById(R.id.source_path_usb_disabled);
+         sourcePathCloudTreeView = (TreeViewList) rootView.findViewById(R.id.source_path_cloud_tree_view);
+         sourcePathCloudDisabled = rootView.findViewById(R.id.source_path_cloud_disabled);
+         usbSpacer = rootView.findViewById(R.id.select_source_usb_spacer);
+         introductionTextView = (TextView) rootView.findViewById(R.id.select_source_introduction);
+         introductionSpacer = rootView.findViewById(R.id.select_source_introduction_spacer);
          displayPicklist = (PickListEditable) rootView.findViewById(R.id.display_picklist);
          loadingContainer = (LinearLayout) rootView.findViewById(R.id.import_source_select_import_sources_loading);
          contentContainer = (ScrollView) rootView.findViewById(R.id.import_source_select_import_sources_content);
@@ -141,8 +171,11 @@ public class ImportSourceDialog extends DialogView {
          usbTreeBuilder = new TreeBuilder<IconizedFile>(usbManager);
          cloudManager = new InMemoryTreeStateManager<IconizedFile>();
          cloudTreeBuilder = new TreeBuilder<IconizedFile>(cloudManager);
+         boolean usbTreeDisabled = true;
+         boolean cloudTreeDisabled = true;
          for (SessionExtra extra : extrasIn) {
             if (extra.isUsbExtra()) {
+               usbTreeDisabled = false;
                extras.put(importSourceId, extra);
                currentExtra = extra;
                File usbFile = new File(getContext().getResources().getString(R.string.usb_string));
@@ -152,6 +185,7 @@ public class ImportSourceDialog extends DialogView {
                getCurrentSessionExtra = currentExtra.getType();
             }
             else if (extra.isCloudExtra()) {
+               cloudTreeDisabled = false;
                extras.put(importSourceId, extra);
                cloudExtra = extra;
                File cloudFile = new File(getContext().getResources().getString(R.string.cloud_string));
@@ -166,6 +200,25 @@ public class ImportSourceDialog extends DialogView {
                extras.put(importSourceId, extra);
             }
             importSourceId++;
+         }
+
+         if (usbTreeDisabled) {
+            //show disabled tree for usb
+            sourcePathUsbDisabled.setVisibility(VISIBLE);
+            sourcePathUsbTreeView.setVisibility(GONE);
+         }
+         else {
+            sourcePathUsbDisabled.setVisibility(GONE);
+            sourcePathUsbTreeView.setVisibility(VISIBLE);
+         }
+         if (cloudTreeDisabled) {
+            //show disabled tree for cloud
+            sourcePathCloudDisabled.setVisibility(VISIBLE);
+            sourcePathCloudTreeView.setVisibility(GONE);
+         }
+         else {
+            sourcePathCloudDisabled.setVisibility(GONE);
+            sourcePathCloudTreeView.setVisibility(VISIBLE);
          }
          setBodyView(rootView);
          setFirstButtonText(getResources().getString(R.string.select_string));
@@ -194,7 +247,7 @@ public class ImportSourceDialog extends DialogView {
 
    @VisibleForTesting
    public void usbImportSource(final IconizedFile usbFile, final int importSourceId, final SessionExtra currentExtra) {
-      new AsyncTask<Void, Void, Void>() {
+      asyncUsbLoadingTask = new AsyncTask<Void, Void, Void>() {
          @Override
          protected Void doInBackground(Void... voids) {
             Thread.currentThread().setName("usbImportSource loading usb data");
@@ -210,12 +263,14 @@ public class ImportSourceDialog extends DialogView {
             isUSBType = true; //for Testing
             usbIsLoaded = true;
             onLoadingFinished();
+            asyncUsbLoadingTask = null;
          }
-      }.execute();
+      };
+      asyncUsbLoadingTask.execute();
    }
 
    private void cloudImportSource(final IconizedFile cloudFile, final int importSourceId, final SessionExtra cloudExtra) {
-      new AsyncTask<Void, Void, Void>() {
+      asyncCloudLoadingTask = new AsyncTask<Void, Void, Void>() {
          @Override
          protected Void doInBackground(Void... voids) {
             Thread.currentThread().setName("cloudImportSource loading cloud data");
@@ -229,8 +284,24 @@ public class ImportSourceDialog extends DialogView {
             onImportSourceSelected(importSourceId);
             cloudIsLoaded = true;
             onLoadingFinished();
+            asyncCloudLoadingTask = null;
          }
-      }.execute();
+      };
+      asyncCloudLoadingTask.execute();
+   }
+
+   @Override
+   protected void onDetachedFromWindow() {
+      super.onDetachedFromWindow();
+      //decouple async loading tasks
+      if (asyncCloudLoadingTask != null) {
+         asyncCloudLoadingTask.cancel(true);
+         asyncCloudLoadingTask = null;
+      }
+      if (asyncUsbLoadingTask != null) {
+         asyncUsbLoadingTask.cancel(true);
+         asyncUsbLoadingTask = null;
+      }
    }
 
    private void populateTree(final TreeBuilder<IconizedFile> treeBuilder, final IconizedFile parent, final IconizedFile dir) {
@@ -247,7 +318,7 @@ public class ImportSourceDialog extends DialogView {
                File[] fs = file.listFiles();
                if (fs != null) {
                   for (File f : fs) {
-                     if ((f.isDirectory() && isDirAccept(f)) || (file2Support.contains(Files.getFileExtension(f.getName())) || file2Support.contains(f.getName()))) {
+                     if ((f.isDirectory() && isDirAccept(f)) || (isFileNameSupported(f.getName()) || isFileExtensionSupported(f.getName()))) {
                         return true;
                      }
                   }
@@ -262,7 +333,7 @@ public class ImportSourceDialog extends DialogView {
             if (file.isDirectory()) {
                ret = isDirAccept(file);
             }
-            else if (file2Support.contains(Files.getFileExtension(file.getName()))) {
+            else if (isFileExtensionSupported(file.getName())) {
                ret = true;
             }
             return ret;
@@ -281,23 +352,40 @@ public class ImportSourceDialog extends DialogView {
       showFirstButton(true);
       if (currentExtra.isUsbExtra() && currentExtra.getPath() != null) {
          //Do this after usb, display selection
-         sourcePathTreeView.removeAllViewsInLayout();
-         sourcePathTreeView.setVisibility(VISIBLE);
+         sourcePathUsbTreeView.removeAllViewsInLayout();
+         sourcePathUsbTreeView.setVisibility(VISIBLE);
+         sourcePathCloudTreeView.removeAllViewsInLayout();
+         sourcePathCloudTreeView.setVisibility(VISIBLE);
+         usbSpacer.setVisibility(VISIBLE);
+         introductionTextView.setVisibility(VISIBLE);
+         introductionSpacer.setVisibility(VISIBLE);
          displayPicklist.setVisibility(GONE);
          usbTreeAdapter = new PathTreeViewAdapter((Activity) getContext(), usbManager, 1);
-         sourcePathTreeView.setAdapter(usbTreeAdapter);
+         usbTreeAdapter.setAutomaticSelection(false);
+         sourcePathUsbTreeView.setAdapter(usbTreeAdapter);
          usbManager.collapseChildren(null); //Collapse all children
+         cloudTreeAdapter = new PathTreeViewAdapter((Activity) getContext(), cloudManager, 1);
+         sourcePathCloudTreeView.setAdapter(cloudTreeAdapter);
+         cloudManager.collapseChildren(null); //Collapse all children
          usbTreeAdapter.setOnPathSelectedListener(new PathTreeViewAdapter.OnPathSelectedListener() {
             @Override
             public void onPathSelected(IconizedFile iconizedFile, TreeNodeInfo selectedNode) {
-               File file = iconizedFile.getFile();
-               currentExtra.setPath(file.getPath());
-               onTreeNodeClick(selectedNode);
+               onItemClick(iconizedFile, selectedNode, usbTreeAdapter, usbManager, sourcePathUsbTreeView, cloudTreeAdapter);
+            }
+         });
+         cloudTreeAdapter.setOnPathSelectedListener(new PathTreeViewAdapter.OnPathSelectedListener() {
+            @Override
+            public void onPathSelected(IconizedFile iconizedFile, TreeNodeInfo selectedNode) {
+               onItemClick(iconizedFile, selectedNode, cloudTreeAdapter, cloudManager, sourcePathCloudTreeView, usbTreeAdapter);
             }
          });
       }
       else if (currentExtra.isDisplayExtra()) {
-         sourcePathTreeView.setVisibility(GONE);
+         sourcePathUsbTreeView.setVisibility(GONE);
+         sourcePathCloudTreeView.setVisibility(GONE);
+         usbSpacer.setVisibility(GONE);
+         introductionTextView.setVisibility(GONE);
+         introductionSpacer.setVisibility(GONE);
          displayPicklist.setAdapter(new PickListAdapter(displayPicklist, getContext()));
          String currentHost = currentExtra.getDescription();
          log.trace("current host {}", currentHost);
@@ -325,19 +413,40 @@ public class ImportSourceDialog extends DialogView {
       }
    }
 
-   /**
-    * updates the selected node list whenever user selects/unselects a node
-    * @param selectedNode current selected node
-    */
-   private void onTreeNodeClick(TreeNodeInfo selectedNode) {
-      log.debug("onTreeNodeClick");
-      if (!selectedNodeList.contains(selectedNode.getId())) {
-         selectedNodeList.add(selectedNode.getId());
+   private void onItemClick(IconizedFile iconizedFile, TreeNodeInfo selectedNode, PathTreeViewAdapter ownPathTreeViewAdapter, TreeStateManager<IconizedFile> ownManager,
+         TreeViewList ownTreeViewList, PathTreeViewAdapter otherPathTreeViewAdapter) {
+      if (!selectedNode.isWithChildren()) {
+         //determine, if any other item is already selected
+         if (ownPathTreeViewAdapter.getSelectionMap().containsKey(iconizedFile)) {
+            ownPathTreeViewAdapter.getSelectionMap().remove(iconizedFile);
+         }
+         else {
+            if (ownPathTreeViewAdapter.getSelectionMap().size() > 0) {
+               //at least one item in  the usb tree is already selected, remove selection
+               ownPathTreeViewAdapter.getSelectionMap().clear();
+            }
+            if (otherPathTreeViewAdapter.getSelectionMap().size() > 0) {
+               otherPathTreeViewAdapter.getSelectionMap().clear();
+            }
+            File file = iconizedFile.getFile();
+            currentExtra.setPath(file.getPath());
+            ownPathTreeViewAdapter.getSelectionMap().put(iconizedFile, BaseTreeViewAdapter.SelectionType.FULL);
+         }
       }
       else {
-         selectedNodeList.remove(selectedNode.getId());
+         //selected item is non selectable: expand or collapse
+         if (ownPathTreeViewAdapter.getSelectionMap().containsKey(iconizedFile)) {
+            ownPathTreeViewAdapter.getSelectionMap().remove(iconizedFile);
+         }
+         if (selectedNode.isExpanded()) {
+            ownManager.collapseChildren(iconizedFile);
+         }
+         else {
+            ownManager.expandDirectChildren(iconizedFile);
+         }
       }
       updateSelectButtonState();
+      ownPathTreeViewAdapter.updateViewSelection(ownTreeViewList);
    }
 
    /**
@@ -345,7 +454,8 @@ public class ImportSourceDialog extends DialogView {
     */
    private void updateSelectButtonState() {
       final boolean selectButtonState;
-      if (selectedNodeList.isEmpty()) {
+      //TODO: As soon as the cloud is implemented, its selection map should be checked here as well
+      if (usbTreeAdapter.getSelectionMap().isEmpty()) {
          selectButtonState = false;
       }
       else {
@@ -367,7 +477,7 @@ public class ImportSourceDialog extends DialogView {
       }
    }
 
-   public class ImportSourceSelectedEvent {
+   public static class ImportSourceSelectedEvent {
       private SessionExtra extra;
 
       public ImportSourceSelectedEvent(SessionExtra extra) {
@@ -398,5 +508,35 @@ public class ImportSourceDialog extends DialogView {
 
    public boolean checkUSBType() {
       return isUSBType;
+   }
+
+   /**
+    * This method returns weather a file with the given filename is supported or not
+    * @param filename Filename to be checked if supported or not
+    * @return True if given filename is supported, false otherwise
+    */
+   private boolean isFileNameSupported(String filename) {
+      if (filename != null) {
+         return (file2Support.contains(filename.toUpperCase()));
+      }
+      else {
+         log.error("Could not determine if empty filename is supported!");
+         return false;
+      }
+   }
+
+   /**
+    * This method returns weather an extension of the given filename is supported or not
+    * @param filename Filename containing the extension to be checked weather it is supported or not
+    * @return True if extension of given filename is supported, false otherwise
+    */
+   private boolean isFileExtensionSupported(String filename) {
+      if (filename != null) {
+         return (file2Support.contains(Files.getFileExtension(filename).toUpperCase()));
+      }
+      else {
+         log.error("Could not determine if extension of empty filename is supported!");
+         return false;
+      }
    }
 }

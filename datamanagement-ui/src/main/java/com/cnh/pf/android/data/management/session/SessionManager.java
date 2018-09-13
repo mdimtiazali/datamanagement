@@ -454,4 +454,13 @@ public class SessionManager implements SessionContract.SessionManager, SessionEv
          storedSession.setState(session.getState());
       }
    }
+
+   /**
+    * Return true if the cloud is available
+    *
+    * @return True if Cloud is available
+    */
+   public boolean isCloudPresent() {
+      return dmService.isCloudOnline();
+   }
 }

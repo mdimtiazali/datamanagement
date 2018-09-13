@@ -70,9 +70,6 @@ public class DataManagementService extends RoboService implements SharedPreferen
    private static final Logger logger = LoggerFactory.getLogger(DataManagementService.class);
 
    public static final String ACTION_RESET_CACHE = "com.cnh.pf.data.management.RESET_CACHE";
-   public static final String ACTION_CANCEL = "com.cnh.pf.data.management.CANCEL";
-
-   public static final int KILL_STATUS_DELAY = 5000;
 
    @Inject
    private Mediator mediator;
@@ -176,8 +173,8 @@ public class DataManagementService extends RoboService implements SharedPreferen
 
             if (SessionUtil.isInProgress(curSession) && (curSession.getExtra() != null && curSession.getExtra().isUsbExtra())) {
                logger.debug("USB unplugged while interacting with datasources. Cancel the current session.");
-               notifySessionError(curSession, ErrorCode.USB_REMOVED);
                cancelSession(curSession);
+               curSession.setResultCode(Result.ERROR);
                FaultCode faultCode = SessionUtil.isExportAction(curSession) ? FaultCode.USB_REMOVED_DURING_EXPORT : FaultCode.USB_REMOVED_DURING_IMPORT;
                DMFaultHandler.Fault fault = faultHandler.getFault(faultCode);
                fault.reset();
@@ -186,8 +183,8 @@ public class DataManagementService extends RoboService implements SharedPreferen
             else if (SessionUtil.isImportAction(curSession) && (curSession.getObjectData() != null && curSession.getObjectData().size() > 0) && getActiveView() != null
                   && (SessionUtil.isDiscoveryTask(curSession) || SessionUtil.isCalculateConflictsTask(curSession))) {
                logger.debug("USB unplugged while waiting for the user response (discovery/conflict resolution).");
+               curSession.setResultCode(Result.ERROR);
                notifySessionError(curSession, ErrorCode.USB_REMOVED);
-               curSession.setResultCode(Result.CANCEL);
                curSession.setType(Session.Type.DISCOVERY);
                DMFaultHandler.Fault fault = faultHandler.getFault(FaultCode.USB_REMOVED_DURING_IMPORT);
                fault.reset();
@@ -415,6 +412,15 @@ public class DataManagementService extends RoboService implements SharedPreferen
       return !internalAddresses.isEmpty();
    }
 
+   /**
+    * Return true if Cloud is online.
+    * @return True if Cloud is online
+    */
+   public boolean isCloudOnline() {
+      List<Address> addresses = dsHelper.getAddressesForLocation(Datasource.LocationType.CLOUD);
+      return !addresses.isEmpty();
+   }
+
    @Override
    public void onSharedPreferenceChanged(SharedPreferences sharedPreferences, String key) {
       logger.info("Shared prefs changed {}.  Stopping DatamanagementService", key);
@@ -445,12 +451,13 @@ public class DataManagementService extends RoboService implements SharedPreferen
       }
 
       @Override
-      public void onViewAccepted(View newView) {
+      public void onViewAccepted(final View newView) {
          logger.debug("onViewAccepted {}", newView);
          dsHelper.updateView(newView, new DatasourceHelper.onConnectionChangeListener() {
             @Override
             public void onConnectionChange(Address[] left, Address[] join, boolean updateNeeded) {
                notifyChannelConnectionChange(updateNeeded);
+               notifyMediumUpdate();
             }
          });
       }
@@ -561,8 +568,14 @@ public class DataManagementService extends RoboService implements SharedPreferen
          cacheManager.reset(Session.Action.IMPORT);
       }
 
-      for (SessionEventListener listener : this.sessionEventListeners) {
-         listener.onMediumUpdate();
-      }
+      // Run the callback on the main UI thread to allow UI work.
+      new Handler(Looper.getMainLooper()).post(new Runnable() {
+         @Override
+         public void run() {
+            for (SessionEventListener listener : sessionEventListeners) {
+               listener.onMediumUpdate();
+            }
+         }
+      });
    }
 }
