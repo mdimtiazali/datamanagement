@@ -50,6 +50,7 @@ import com.cnh.jgroups.DataTypes;
 import com.cnh.jgroups.Datasource;
 import com.cnh.jgroups.ObjectGraph;
 import com.cnh.jgroups.Operation;
+import com.cnh.pf.android.data.management.adapter.ObjectTreeViewAdapter;
 import com.cnh.pf.android.data.management.helper.DataExchangeProcessOverlay;
 import com.cnh.pf.android.data.management.helper.IVIPDataHelper;
 import com.cnh.pf.android.data.management.helper.VIPDataHandler;
@@ -59,6 +60,7 @@ import com.cnh.pf.android.data.management.session.Session;
 import com.cnh.pf.android.data.management.session.SessionExtra;
 import com.cnh.pf.android.data.management.session.SessionUtil;
 import com.cnh.pf.android.data.management.utility.UtilityHelper;
+import com.cnh.pf.datamng.Process;
 import com.cnh.pf.model.vip.vehimp.VehicleCurrent;
 import com.google.inject.Inject;
 
@@ -689,10 +691,11 @@ public class ExportFragment extends BaseDataFragment {
          clearTreeSelection();
       }
 
+      resetSession();
       updateExportButton();
       processOverlay.setMode(DataExchangeProcessOverlay.MODE.HIDDEN);
       setExportPicklistsReadOnly(false);
-      showFinishedStatePanel(false);
+      showDragAndDropZone();
       updateSelectAllState();
    }
 
@@ -744,11 +747,12 @@ public class ExportFragment extends BaseDataFragment {
       if (SessionUtil.isPerformOperationsTask(session)) {
          clearTreeSelection();
 
-         updateExportButton();
          processOverlay.setMode(DataExchangeProcessOverlay.MODE.HIDDEN);
          setExportPicklistsReadOnly(false);
          showFinishedStatePanel(false);
+         resetSession();
          updateSelectAllState();
+         updateExportButton();
       }
    }
 
@@ -877,6 +881,7 @@ public class ExportFragment extends BaseDataFragment {
          showProgressPanel();
          processOverlay.setMode(DataExchangeProcessOverlay.MODE.EXPORT_PROCESS);
          setExportPicklistsReadOnly(true);
+         updateExportButton();
 
          performOperations(extra, operations);
          updateExportButton();
@@ -939,6 +944,7 @@ public class ExportFragment extends BaseDataFragment {
       //reset button and process
       stopButton.setVisibility(View.VISIBLE);
       progressBar.setProgress(0);
+      progressBar.setShowProgress(false);
       progressBar.setSecondText(true, loading_string, null, true);
       //set visibility of sections
       exportFinishedStatePanel.setVisibility(View.GONE);
@@ -948,12 +954,13 @@ public class ExportFragment extends BaseDataFragment {
 
    private void updateExportButton() {
       Session s = getSession();
-      boolean isActiveOperation = SessionUtil.isPerformOperationsTask(s) && s.getResultCode() == null;
+      boolean isActiveOperation = SessionUtil.isPerformOperationsTask(s) && (s.getResultCode() == null || Process.Result.ERROR.equals(s.getResultCode()));
       boolean useDefaultText = true;
+      final ObjectTreeViewAdapter treeViewAdapter = getTreeAdapter();
 
-      if (getTreeAdapter() != null && getTreeAdapter().getSelectionMap() != null) {
+      if (treeViewAdapter != null && treeViewAdapter.getSelectionMap() != null) {
          int selectedItemCount = countSelectedItem();
-         if (selectedItemCount > 0) {
+         if (selectedItemCount > 0 && !isActiveOperation) {
             useDefaultText = false;
             Resources resources = getResources();
             exportSelectedBtn.setText(resources.getString(R.string.export_selected) + " (" + selectedItemCount + ")");
@@ -983,11 +990,14 @@ public class ExportFragment extends BaseDataFragment {
          exportSelectedBtn.setEnabled(true);
          exportDropZone.setBackgroundResource(R.drawable.dashed_border_selected);
       }
+      else if (isActiveOperation) {
+         exportSelectedBtn.setEnabled(false);
+         exportSelectedBtn.setText(getResources().getString(R.string.export_selected));
+      }
       else {
          exportSelectedBtn.setEnabled(false);
          exportDropZone.setBackgroundResource(R.drawable.dashed_border_initial);
       }
-
    }
 
    @Override
