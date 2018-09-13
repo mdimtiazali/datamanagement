@@ -761,7 +761,8 @@ public class ImportFragment extends BaseDataFragment {
          importDropZone.setVisibility(View.GONE);
          progressBar.setProgress(0);
          progressBar.setShowProgress(false);
-         progressBar.setSecondText(true, loadingString, null, true);
+         progressBar.setTitle(loadingString);
+         //progressBar.setSecondText(true, loadingString, null, true); //Waiting for approval from UI/UX to make this change.
          importFinishedStatePanel.setVisibility(View.GONE);
          leftStatus.setVisibility(View.VISIBLE);
       }
@@ -809,7 +810,8 @@ public class ImportFragment extends BaseDataFragment {
       leftStatus.setVisibility(View.VISIBLE);
       Resources resources = getResources();
       String errorString = resources.getString(R.string.pb_error);
-      progressBar.setSecondText(true, errorString, null, true);
+      progressBar.setTitle(errorString);
+      //progressBar.setSecondText(true, errorString, null, true); //Waiting for approval from UI/UX to make this change.
       progressBar.setErrorProgress(resources.getInteger(R.integer.error_percentage_value), errorString);
 
       //post cleanup to show drag and drop zone after time X
@@ -840,7 +842,8 @@ public class ImportFragment extends BaseDataFragment {
          else {
             //non targets / conflict operations are supposed to be performing progress updates
             progressBar.setProgress(percent);
-            progressBar.setSecondText(true, loadingString, String.format(xOfYFormat, progress, max), true);
+            progressBar.setTitle(loadingString);
+            //progressBar.setSecondText(true, loadingString, String.format(xOfYFormat, progress, max), true); //Waiting for approval from UI/UX to make this change.
          }
       }
       else {
