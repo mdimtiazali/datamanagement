@@ -9,7 +9,9 @@
  */
 package com.cnh.pf.android.data.management.dialog;
 
+import static org.hamcrest.CoreMatchers.hasItem;
 import static org.hamcrest.CoreMatchers.is;
+import static org.hamcrest.CoreMatchers.not;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertThat;
@@ -19,18 +21,10 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 import static org.robolectric.Shadows.shadowOf;
 
-import android.content.ComponentName;
-import android.view.View;
-import android.widget.Button;
-import android.widget.LinearLayout;
-import android.widget.TextView;
-
-import com.cnh.pf.android.data.management.DataManagementActivity;
-import com.cnh.pf.android.data.management.R;
-import com.cnh.pf.android.data.management.TestApp;
-import com.cnh.pf.android.data.management.misc.IconizedFile;
-import com.cnh.pf.android.data.management.service.DataManagementService;
-import com.cnh.pf.android.data.management.session.SessionExtra;
+import java.io.File;
+import java.io.IOException;
+import java.util.ArrayList;
+import java.util.List;
 
 import org.junit.Before;
 import org.junit.Rule;
@@ -47,11 +41,19 @@ import org.robolectric.shadows.ShadowListView;
 import org.robolectric.util.ActivityController;
 import org.robolectric.util.ReflectionHelpers;
 
-import java.io.File;
-import java.io.IOException;
-import java.util.ArrayList;
-import java.util.List;
+import com.cnh.pf.android.data.management.DataManagementActivity;
+import com.cnh.pf.android.data.management.R;
+import com.cnh.pf.android.data.management.TestApp;
+import com.cnh.pf.android.data.management.adapter.PathTreeViewAdapter;
+import com.cnh.pf.android.data.management.misc.IconizedFile;
+import com.cnh.pf.android.data.management.service.DataManagementService;
+import com.cnh.pf.android.data.management.session.SessionExtra;
 
+import android.content.ComponentName;
+import android.view.View;
+import android.widget.Button;
+import android.widget.LinearLayout;
+import android.widget.TextView;
 import pl.polidea.treeview.TreeViewList;
 import roboguice.RoboGuice;
 import roboguice.activity.event.OnResumeEvent;
@@ -325,6 +327,81 @@ public class ImportSourceDialogTest {
       verify(eventManager).fire(isA(OnResumeEvent.class));
       assertThat(importSourceDialog.isShown(), is(false));
 
+   }
+
+   @Test
+   public void testSupportedFileTypes() throws IOException {
+      //supported filetypes: TASKDATA.XML DBF SHP SHX;
+      String filetypes[] = { "Test.dbf", "Test.shp", "Test.SHX" };
+
+      for (String fileName : filetypes) {
+         File expectedFile = createValidFile(fileName);
+         List<File> fileList = getSupportedFileList(expectedFile);
+
+         assertThat(fileList, hasItem(expectedFile));
+
+      }
+      //for Taskdata.xml only the parent folder is shown, Taskdata.xml itself is not shown to the user
+      File expectedFile = createValidFile("TASKDATA.XML");
+      List<File> fileList = getSupportedFileList(expectedFile);
+      assertThat(fileList, not(hasItem(expectedFile)));
+      assertThat(fileList, hasItem(expectedFile.getParentFile()));
+
+      String invalidFiletypes[] = { "Test.txt", "Test.xml", "Test.dll" };
+      for (String fileName : invalidFiletypes) {
+         expectedFile = createInvalidFile(fileName);
+         fileList = getSupportedFileList(expectedFile);
+         assertThat(fileList, not(hasItem(expectedFile)));
+      }
+
+   }
+
+   private List<File> getSupportedFileList(File expectedFile) throws IOException {
+      List<SessionExtra> sessionExtras = new ArrayList<SessionExtra>();
+      SessionExtra usbSessionExtra = new SessionExtra(SessionExtra.USB, "Test", 0);
+
+      usbSessionExtra.setPath(expectedFile.getParentFile().getParentFile().getAbsolutePath());
+      sessionExtras.add(usbSessionExtra);
+      importSourceDialog = new ImportSourceDialog(activity, sessionExtras);
+
+      TreeViewList treeViewList = (TreeViewList) importSourceDialog.findViewById(R.id.source_path_usb_tree_view);
+      assertNotNull(treeViewList);
+      ShadowListView shadowListView = shadowOf(treeViewList);
+      shadowListView.populateItems();
+      shadowListView.performItemClick(0);
+      shadowListView.populateItems();
+      shadowListView.performItemClick(1);
+      shadowListView.populateItems();
+
+      PathTreeViewAdapter adapter = (PathTreeViewAdapter) treeViewList.getAdapter();
+
+      List<File> fileList = new ArrayList<File>();
+      for (IconizedFile iconizedFile : adapter.getVisibleList()) {
+         fileList.add(iconizedFile.getFile());
+
+      }
+      return fileList;
+   }
+
+   private File createValidFile(String filename) throws IOException {
+      File tempDir = new File(tempFolder.newFolder(), "temp");
+      tempDir.mkdir();
+
+      File expectedFile = new File(tempDir, filename);
+      expectedFile.createNewFile();
+      return expectedFile;
+   }
+
+   private File createInvalidFile(String filename) throws IOException {
+      //for invalid files, we need to create a valid file in the same folder
+      //otherwise the tree is not created
+      File tempDir = new File(tempFolder.newFolder(), "temp");
+      tempDir.mkdir();
+      File expectedFile = new File(tempDir, filename);
+      expectedFile.createNewFile();
+      new File(tempDir, "Test.dbf").createNewFile();
+      expectedFile.createNewFile();
+      return expectedFile;
    }
 
    /**
