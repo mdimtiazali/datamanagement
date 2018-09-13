@@ -1,0 +1,39 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  ~ Copyright (C) 2018 CNH Industrial NV. All rights reserved.
+  ~
+  ~ This software contains proprietary information of CNH Industrial NV. Neither
+  ~ receipt nor possession thereof confers any right to reproduce, use, or
+  ~ disclose in whole or in part any such information without written
+  ~ authorization from CNH Industrial NV.
+  -->
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+              android:orientation="vertical"
+              android:gravity="center_horizontal"
+              android:layout_width="match_parent"
+              android:layout_height="match_parent">
+    <ImageView android:layout_width="wrap_content"
+               android:layout_height="wrap_content"
+               android:id="@+id/icon"
+               android:src="@drawable/checkmark"
+               android:layout_marginTop="12dp"
+               android:layout_gravity="center_horizontal"/>
+    <TextView android:layout_width="wrap_content"
+              android:layout_height="wrap_content"
+              android:id="@+id/notice"
+              android:layout_marginTop="16dp"
+              android:textStyle="bold"
+              android:textSize="22sp"
+              android:gravity="center"/>
+    <com.cnh.pf.android.data.management.dialog.SimpleTreeView
+            android:layout_width="wrap_content"
+            android:layout_height="0dp"
+            android:layout_weight="1"
+            android:layout_marginTop="16dp"
+            android:divider="@null"
+            android:listSelector="#00000000"
+            android:id="@+id/simpletreeview"
+            android:layout_gravity="center"/>
+
+
+</LinearLayout>

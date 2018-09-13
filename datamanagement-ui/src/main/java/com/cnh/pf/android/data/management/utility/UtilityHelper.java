@@ -38,8 +38,9 @@ public class UtilityHelper {
    public static final int NEGATIVE_BINARY_ERROR = -1;
    public static final int MAX_TREE_SELECTIONS_FOR_DEFAULT_TEXT_SIZE = 999;
    public static final int POPOVER_DEFAULT_WIDTH = 550;
-   public static final int EXPORT_DEST_POPOVER_DEFAULT_HEIGHT = 370;
-   public static final int EXPORT_FORMAT_POPOVER_DEFAULT_HEIGHT = 455;
+   public static final int EXPORT_FORMAT_POPOVER_DEFAULT_WIDTH = 480;
+   public static final int EXPORT_DEST_POPOVER_DEFAULT_HEIGHT = 380;
+   public static final int EXPORT_FORMAT_POPOVER_DEFAULT_HEIGHT = 135;
    /**
     * Map for returning the correct strings based on the vehicle make and data sources available
     */
@@ -57,8 +58,7 @@ public class UtilityHelper {
       tempMap.put(MediumVariant.USB_FRED, R.string.case_pro700_usb);
       tempMap.put(MediumVariant.USB_DESKTOP_SW, R.string.case_desktopsw_usb);
       // Cloud List items
-      tempMap.put(MediumVariant.CLOUD_OUTBOX, R.string.case_cloud_connect_outbox);
-      tempMap.put(MediumVariant.CLOUD_INBOX, R.string.case_cloud_connect_inbox);
+      tempMap.put(MediumVariant.CLOUD_EXPORT, R.string.case_cloud_connect_outbox);
       destinationNamesHashMap.put(VehicleBrand.CASE, tempMap);
 
       // Create New Holland hashmap and add it to destination map
@@ -69,8 +69,7 @@ public class UtilityHelper {
       tempMap.put(MediumVariant.USB_FRED, R.string.new_holland_intelli4_usb);
       tempMap.put(MediumVariant.USB_DESKTOP_SW, R.string.new_holland_desktopsw_usb);
       // Cloud List
-      tempMap.put(MediumVariant.CLOUD_OUTBOX, R.string.new_holland_cloud_connect_outbox);
-      tempMap.put(MediumVariant.CLOUD_INBOX, R.string.new_holland_cloud_connect_inbox);
+      tempMap.put(MediumVariant.CLOUD_EXPORT, R.string.new_holland_cloud_connect_outbox);
       destinationNamesHashMap.put(VehicleBrand.NEW_HOLLAND, tempMap);
 
       // Create Steyr hashmap and add it to destination map
@@ -81,8 +80,7 @@ public class UtilityHelper {
       tempMap.put(MediumVariant.USB_FRED, R.string.steyr_4_usb);
       tempMap.put(MediumVariant.USB_DESKTOP_SW, R.string.steyr_desktopsw_usb);
       // Cloud List
-      tempMap.put(MediumVariant.CLOUD_OUTBOX, R.string.steyr_cloud_connect_outbox);
-      tempMap.put(MediumVariant.CLOUD_INBOX, R.string.steyr_cloud_connect_inbox);
+      tempMap.put(MediumVariant.CLOUD_EXPORT, R.string.steyr_cloud_connect_outbox);
       destinationNamesHashMap.put(VehicleBrand.STEYR, tempMap);
 
       // Create Flexicoil hashmap and add it to destination map
@@ -99,8 +97,7 @@ public class UtilityHelper {
       tempMap.put(MediumVariant.USB_FRED, R.string.generic_tractor_4_usb);
       tempMap.put(MediumVariant.USB_DESKTOP_SW, R.string.generic_tractor_desktopsw_usb);
       // Cloud List
-      tempMap.put(MediumVariant.CLOUD_OUTBOX, R.string.generic_tractor_cloud_connect_outbox);
-      tempMap.put(MediumVariant.CLOUD_INBOX, R.string.generic_tractor_cloud_connect_inbox);
+      tempMap.put(MediumVariant.CLOUD_EXPORT,R.string.generic_tractor_cloud_connect_outbox);
       destinationNamesHashMap.put(VehicleBrand.GENERIC_TRACTOR, tempMap);
 
       // Create Generic Combine hashmap and add it to destination map
@@ -120,8 +117,7 @@ public class UtilityHelper {
       USB_HAWK(2, SessionExtra.USB),
       USB_FRED(3, SessionExtra.USB),
       USB_DESKTOP_SW(4, SessionExtra.USB),
-      CLOUD_OUTBOX(5, SessionExtra.CLOUD),
-      CLOUD_INBOX(6, SessionExtra.CLOUD);
+      CLOUD_EXPORT(5, SessionExtra.CLOUD | SessionExtra.USB);
 
       private int extraType;
       private int value;
@@ -150,9 +146,7 @@ public class UtilityHelper {
             case 4:
                return USB_DESKTOP_SW;
             case 5:
-               return CLOUD_OUTBOX;
-            case 6:
-               return CLOUD_INBOX;
+               return CLOUD_EXPORT;
          }
          return null;
       }
@@ -287,7 +281,8 @@ public class UtilityHelper {
         PATH_DESIGNATOR("/"),
         PATH_USB_PORT("./storage/usb1"),
         PATH_TMP("./tmp/data/"),
-        PATH_USB_FRED("/XML");
+        PATH_USB_FRED("/XML"),
+        PATH_TMP_CLOUD("./tmp/cloud");
 
         //TODO move this folder to global access for isoservice, datamanagement and vipdmg
 
@@ -307,7 +302,6 @@ public class UtilityHelper {
     }
 
     public enum CommonFormats{
-        PFDATABASEFORMAT("PF Database"),
         ISOXMLFORMAT("ISOXML");
 
         private final String name;

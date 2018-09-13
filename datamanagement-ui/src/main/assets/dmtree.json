@@ -1,28 +1,89 @@
 [
   {
-    "Title":"Growers/Farms/Fields/Tasks",
+    "Title":"Grower/Farm/Field/Task",
     "DataType": "GROWER",
+    "GroupDataType": "GROWER",
     "FollowSource": 1,
     "Hidden" : 0 ,
     "Children" : null
   },
   {
+    "Title":"Tasks",
+    "DataType": "TASK",
+    "GroupDataType": "TASKS",
+    "FollowSource": 0,
+    "Hidden" : 0 ,
+    "Children" : null
+  },
+  {
+    "Title":"Prescriptions",
+    "DataType": "RX",
+    "GroupDataType": "RXS",
+    "FollowSource": 0,
+    "Hidden" : 0 ,
+    "Children" : null
+  },
+  {
+    "Title":"Boundaries",
+    "DataType": "BOUNDARY",
+    "GroupDataType": "BOUNDARIES",
+    "FollowSource": 0,
+    "Hidden" : 0 ,
+    "Children" : null
+  },
+  {
+    "Title":"Swaths",
+    "DataType": "GUIDANCE_CONFIGURATION",
+    "GroupDataType": "GUIDANCE_GROUPS",
+    "FollowSource": 0,
+    "Hidden" : 0 ,
+    "Children" : null
+  },
+  {
+    "Title":"Obstacles",
+    "DataType": "LANDMARK",
+    "GroupDataType": "LANDMARKS",
+    "FollowSource": 0,
+    "Hidden" : 0 ,
+    "Children" : null
+  },
+  {
+    "Title":"DDOP",
+    "DataType": "DDOP",
+    "GroupDataType": "DDOP",
+    "FollowSource": 1,
+    "Hidden" : 1,
+    "Children" : null
+  },
+  {
     "Title":"Crop and Product Library",
     "DataType": "PRODUCT",
+    "GroupDataType": "PRODUCT",
     "FollowSource": 1,
     "Hidden" : 0,
     "Children" : [
       {
         "Title":"Products",
         "DataType": "PRODUCT",
+        "GroupDataType": "PRODUCTS",
         "Location": 2,
         "FollowSource": 1,
         "Hidden" : 0,
         "Children" : null
       },
       {
-        "Title":"Varities",
+        "Title":"Product Mixes",
+        "DataType": "PRODUCT_MIX",
+        "GroupDataType": "PRODUCT_MIXS",
+        "Location": 2,
+        "FollowSource": 1,
+        "Hidden" : 0,
+        "Children" : null
+      },
+      {
+        "Title":"Varieties",
         "DataType": "VARIETY",
+        "GroupDataType": "VARIETIES",
         "Location": 2,
         "FollowSource": 1,
         "Hidden" : 0,

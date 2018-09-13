@@ -21,7 +21,9 @@ import android.widget.LinearLayout;
 import android.widget.TextView;
 
 import com.android.annotations.Nullable;
+import com.android.annotations.VisibleForTesting;
 import com.cnh.android.pf.widget.controls.ToastMessageCustom;
+import com.cnh.android.pf.widget.view.DisabledOverlay;
 import com.cnh.jgroups.DataTypes;
 import com.cnh.jgroups.ObjectGraph;
 import com.cnh.jgroups.Operation;
@@ -80,6 +82,7 @@ public abstract class BaseDataFragment extends RoboFragment implements SessionCo
 
    protected DataExchangeBlockedOverlay disabledOverlay = null;
    protected DataExchangeProcessOverlay processOverlay = null;
+   protected DisabledOverlay treeLoadingOverlay = null;
    protected TreeStateManager<ObjectGraph> manager;
    protected TreeBuilder<ObjectGraph> treeBuilder;
    protected ObjectTreeViewAdapter treeAdapter;
@@ -120,8 +123,7 @@ public abstract class BaseDataFragment extends RoboFragment implements SessionCo
       @Override
       public int compare(InMemoryTreeNode<ObjectGraph> lhs, InMemoryTreeNode<ObjectGraph> rhs) {
          // Do the case-insensitive check first
-         if((lhs != null)  && (rhs != null) && (lhs.getId() != null) && (rhs.getId() != null) &&
-            (lhs.getId().getName() != null) && (rhs.getId().getName() != null) ){
+         if ((lhs != null) && (rhs != null) && (lhs.getId() != null) && (rhs.getId() != null) && (lhs.getId().getName() != null) && (rhs.getId().getName() != null)) {
             int comparison = lhs.getId().getName().compareToIgnoreCase(rhs.getId().getName());
             if (comparison != 0) {
                return comparison;
@@ -323,6 +325,8 @@ public abstract class BaseDataFragment extends RoboFragment implements SessionCo
 
       disabledOverlay = (DataExchangeBlockedOverlay) layout.findViewById(R.id.disabled_overlay);
       processOverlay = (DataExchangeProcessOverlay) layout.findViewById(R.id.process_overlay);
+      treeLoadingOverlay = (DisabledOverlay) layout.findViewById(R.id.tree_loading_overlay);
+
       showLoadingOverlay();
       return layout;
    }
@@ -706,7 +710,33 @@ public abstract class BaseDataFragment extends RoboFragment implements SessionCo
    protected void restoreTreeViewSession() {
       Session session = getSession();
       if (session != null) {
-         treeAdapter.setData(getSession().getObjectData());
+         if (treeAdapter == null) {
+            //happens after resuming app
+            if (manager == null) {
+               manager = new InMemoryTreeStateManager<ObjectGraph>();
+            }
+            if (treeBuilder == null) {
+               treeBuilder = new TreeBuilder<ObjectGraph>(manager);
+            }
+            if (isDsPerfFlag()) {
+               TreeEntityHelper.LoadDMTreeFromJson(this.getActivity(), treeBuilder);
+               jsonAddToTree(session.getObjectData());
+            }
+            else {
+               addToTree(session.getObjectData());
+            }
+            sortTreeList();
+            createTreeAdapter();
+            manager.collapseChildren(null);
+            treeAdapter.setOnTreeItemSelectedListener(new SelectionTreeViewAdapter.OnTreeItemSelectedListener() {
+               @Override
+               public void onItemSelected() {
+                  logger.debug("onTreeItemSelected");
+                  onTreeItemSelected();
+               }
+            });
+         }
+         treeAdapter.setData(session.getObjectData());
          treeViewList.setAdapter(treeAdapter);
          treeViewList.post(new Runnable() {
             @Override
@@ -751,24 +781,86 @@ public abstract class BaseDataFragment extends RoboFragment implements SessionCo
     */
    private void jsonAddToTree(List<ObjectGraph> objectGraphs) {
       for (ObjectGraph objectGraph : objectGraphs) {
-         GroupObjectGraph gNode = TreeEntityHelper.findGroupNode(objectGraph.getType());
-         if (gNode != null) {
-            addOneObjectGraph(gNode, objectGraph);
+         addOneObjectGraph(null, objectGraph);
+      }
+      removeEmptyNodes(null);
+      List<ObjectGraph> tmpLIst =  manager.getChildren(null);
+   }
+
+   private void removeEmptyNodes(ObjectGraph parent) {
+      List<ObjectGraph> tmpLIst =  manager.getChildren(parent);
+      for(ObjectGraph tmp : tmpLIst) {
+         if (tmp.getChildren() != null) {
+            removeEmptyNodes(tmp);
+         }
+      }
+      if ( (parent != null) && (parent.getChildren() != null) && (parent.getChildren().size() == 0) &&
+         (parent instanceof GroupObjectGraph) ) {
+         int childrenCount = parent.getDataInt(TreeEntityHelper.CHILDREN_COUNT);
+         if (childrenCount == 0) {
+            manager.removeNodeRecursively(parent);
          }
       }
    }
+
 
    /**
     * add object to treeview using json.
     * @param  objectGraph objects to add
     */
-   private void addOneObjectGraph(ObjectGraph parent, ObjectGraph objectGraph) {
-      if (objectGraph != null) {
-         treeBuilder.bAddRelation(parent, objectGraph);
-         for (ObjectGraph children : objectGraph.getChildren()) {
-            addOneObjectGraph(objectGraph, children);
+   private ObjectGraph addOneObjectGraph(ObjectGraph parent, ObjectGraph objectGraph) {
+      ObjectGraph newNode = null;
+      try {
+         if (objectGraph != null) {
+            GroupObjectGraph gNode = TreeEntityHelper.findGroupNode(objectGraph.getType());
+            if (gNode != null) {
+               int hiddenItem = gNode.getDataInt(TreeEntityHelper.HIDDEN_ITEM);
+               int followSource = gNode.getDataInt(TreeEntityHelper.FOLLOW_SOURCE);
+               if(hiddenItem == 0) {
+                  if (followSource != 0) {
+                     treeBuilder.bAddRelation(gNode, objectGraph);
+                     TreeEntityHelper.UpdateChidrenCount(gNode);
+                     if ( (gNode.getParent() != null) && (gNode.getParent() instanceof  GroupObjectGraph) ) {
+                        TreeEntityHelper.UpdateChidrenCount((GroupObjectGraph)gNode.getParent());
+                     }
+                     for (ObjectGraph children : objectGraph.getChildren()) {
+                        addOneObjectGraph(objectGraph, children);
+                     }
+                  }
+                  else {
+                     if (parent != null) {
+                        GroupObjectGraph gExitingNode =
+                           TreeEntityHelper.findParentNeededGroup(parent.getId(), gNode.getType());
+                        if (gExitingNode == null) {
+                           gExitingNode = new GroupObjectGraph(null,
+                              gNode.getType(), gNode.getName(), gNode.getData(), parent);
+                           treeBuilder.bAddRelation(parent, gExitingNode);
+                           treeBuilder.bAddRelation(gExitingNode, objectGraph);
+                           TreeEntityHelper.UpdateChidrenCount(gExitingNode);
+                           TreeEntityHelper.addToParentNeededGroup(parent.getId(), gExitingNode);
+                        }
+                        else {
+                           treeBuilder.bAddRelation(gExitingNode, objectGraph);
+                        }
+                        for (ObjectGraph children : objectGraph.getChildren()) {
+                           addOneObjectGraph(objectGraph, children);
+                        }
+                     }
+                  }
+               }
+            }
+            else {
+               treeBuilder.bAddRelation(parent, objectGraph);
+               for (ObjectGraph children : objectGraph.getChildren()) {
+                  addOneObjectGraph(objectGraph, children);
+               }
+            }
          }
       }
+      catch (NodeAlreadyInTreeException e) {
+         logger.warn("Caught NodeAlreadyInTree exception", e);
+      }
+      return newNode;
    }
 
    //Put the object into tree item list and return true for it is visible and false for invisible
@@ -902,25 +994,54 @@ public abstract class BaseDataFragment extends RoboFragment implements SessionCo
    }
 
    /**
+    * Display/Hide the 'Select All' UI button
+    * @param display
+    */
+   protected void displaySelectAllButton(boolean display) {
+      if (display) {
+         selectAllBtn.setVisibility(View.VISIBLE);
+      }
+      else {
+         selectAllBtn.setVisibility(View.GONE);
+      }
+   }
+
+   /**
     * Given the current session state, chagne text & UI states for 'Select All'  button.
     */
    protected void updateSelectAllState() {
       boolean allSelected = false;
       boolean enable = false;
+      boolean displayButton = true;
       final Session session = getSession();
       final ObjectTreeViewAdapter treeViewAdapter = getTreeAdapter();
 
-      if (treeViewAdapter != null && treeViewAdapter.getCount() > 0 && session != null) {
+      if (treeViewAdapter != null && session != null) {
          if (SessionUtil.isImportAction(session)) {
-            enable = !SessionUtil.isInProgress(session) && session.getObjectData() != null && !session.getObjectData().isEmpty();
+            if (treeViewAdapter.getData().size() > 0 && treeViewAdapter.getCount() > 0) {
+               if (session.getObjectData() != null && !session.getObjectData().isEmpty()) {
+                  enable = !SessionUtil.isInProgress(session);
+                  displayButton = true;
+               }
+               else {
+                  displayButton = false;
+               }
+            }
+            else if (treeViewAdapter.getData().size() == 0) {
+               displayButton = false;
+            }
          }
          else {
             enable = !SessionUtil.isInProgress(session) && session.getObjectData() != null;
          }
          allSelected = treeViewAdapter.areAllSelected();
       }
+      else if (treeViewAdapter == null && session != null) { // && SessionUtil.isImportAction(session)
+         displayButton = false;
+      }
 
-      logger.debug("Enable Select All button: {}", enable);
+      logger.debug("Select All button: Enable {}, Visible {}", enable, displayButton);
+      displaySelectAllButton(displayButton);
       enableSelectAllButton(enable);
       selectAllBtn.setText(allSelected ? R.string.deselect_all : R.string.select_all);
       selectAllBtn.setActivated(allSelected);
@@ -939,6 +1060,7 @@ public abstract class BaseDataFragment extends RoboFragment implements SessionCo
     * @param blockingActions List of Actions that are allowed to block fragments
     * @return True if blocking overlay is shown afterwards, False otherwise
     */
+   @VisibleForTesting
    protected boolean requestAndUpdateBlockedOverlay(@Nullable List<Session.Action> blockingActions) {
       if (blockingActions != null && sessionManager != null && !DataExchangeBlockedOverlay.MODE.DISCONNECTED.equals(disabledOverlay.getMode())) {
          for (Session.Action action : blockingActions) {

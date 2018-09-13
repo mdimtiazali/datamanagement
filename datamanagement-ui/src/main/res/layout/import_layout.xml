@@ -34,6 +34,13 @@
             android:layout_width="0dp"
             android:layout_height="match_parent">
 
+
+        <com.cnh.android.pf.widget.view.DisabledOverlay
+                android:id="@+id/tree_loading_overlay"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"/>
+
+
         <LinearLayout
                 android:layout_width="match_parent"
                 android:layout_height="match_parent"

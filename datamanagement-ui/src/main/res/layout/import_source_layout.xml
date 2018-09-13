@@ -37,49 +37,159 @@
 
     </LinearLayout>
 
-    <!--main container to be shown-->
-    <ScrollView
+    <!-- Container to be shown as a source is found -->
+    <LinearLayout
             android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:id="@+id/import_source_select_import_sources_content"
-            android:visibility="gone">
+            android:layout_height="match_parent"
+            android:orientation="vertical">
 
-        <LinearLayout
+        <TextView
                 android:layout_width="match_parent"
-                android:layout_height="match_parent"
-                android:orientation="vertical">
+                android:layout_height="wrap_content"
+                android:padding="@dimen/import_select_source_dialog_introduction_padding"
+                android:id="@+id/select_source_introduction"
+                android:gravity="center"
+                android:text="@string/import_select_source_dialog_introduction"/>
 
-            <com.cnh.android.widget.control.PickListEditable
-                    android:id="@+id/display_picklist"
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:imeOptions="actionDone|flagNoExtractUi"
-                    android:visibility="gone"
-                    android:background="#FFFF00"
-                    cnh:allowItemCopying="false"
-                    cnh:allowItemDeletion="false"
-                    cnh:allowItemCreation="false"
-                    cnh:allowItemEditing="false"
-                    cnh:allowItemManagement="false"/>
+        <View
+                android:layout_width="fill_parent"
+                android:layout_height="@dimen/import_source_datatree_title_divider_line_height"
+                android:id="@+id/select_source_introduction_spacer"
+                android:background="@color/bar_grey_light"/>
 
-            <pl.polidea.treeview.TreeViewList
-                    android:id="@+id/source_path_tree_view"
+        <ScrollView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:id="@+id/import_source_select_import_sources_content"
+                android:visibility="gone">
+
+            <LinearLayout
                     android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:visibility="gone"
-                    android:divider="#80ffffff"
-                    android:dividerHeight="@dimen/import_source_layout_tree_view_divider_height"
-                    android:choiceMode="none"
-                    android:listSelector="#00000000"
-                    cnh:collapsible="true"
-                    cnh:draw_line="true"
-                    cnh:indent_width="@dimen/import_source_layout_tree_view_cnh_indent_width"
-                    cnh:indicator_background="@android:color/transparent"
-                    cnh:indicator_gravity="center_vertical|right"
-                    cnh:line_color="@color/tree_line"
-                    cnh:line_width="@dimen/import_source_layout_tree_view_cnh_line_width"
-                    cnh:src_collapsed="@drawable/ic_action_expand"
-                    cnh:src_expanded="@drawable/ic_action_collapse"/>
-        </LinearLayout>
-    </ScrollView>
+                    android:layout_height="match_parent"
+                    android:orientation="vertical">
+
+                <!-- Is this element ever really used - there is no spec showing this!? I suggest to delete it in order to clean up code! -->
+                <com.cnh.android.widget.control.PickListEditable
+                        android:id="@+id/display_picklist"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:imeOptions="actionDone|flagNoExtractUi"
+                        android:visibility="gone"
+                        android:background="#FFFF00"
+                        cnh:allowItemCopying="false"
+                        cnh:allowItemDeletion="false"
+                        cnh:allowItemCreation="false"
+                        cnh:allowItemEditing="false"
+                        cnh:allowItemManagement="false"/>
+
+                <pl.polidea.treeview.TreeViewList
+                        android:id="@+id/source_path_usb_tree_view"
+                        android:paddingLeft="@dimen/import_source_datatree_padding_left"
+                        android:paddingRight="@dimen/import_source_datatree_padding_right"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:visibility="gone"
+                        android:divider="@color/import_data_tree_divider_color"
+                        android:dividerHeight="@dimen/import_source_layout_tree_view_divider_height"
+                        android:choiceMode="none"
+                        android:listSelector="@color/import_data_tree_list_selector_color"
+                        cnh:collapsible="true"
+                        cnh:draw_line="true"
+                        cnh:indent_width="@dimen/import_source_layout_tree_view_cnh_indent_width"
+                        cnh:indicator_background="@android:color/transparent"
+                        cnh:indicator_gravity="center_vertical|right"
+                        cnh:line_color="@color/tree_line"
+                        cnh:line_width="@dimen/import_source_layout_tree_view_cnh_line_width"
+                        cnh:src_collapsed="@drawable/ic_action_expand"
+                        cnh:src_expanded="@drawable/ic_action_collapse"/>
+                <!--
+                     TODO: The buttons src_collapsed and src_expanded are not the most recent ones!
+                           Those are to be replaced as soon as svn access to ui/ux space is granted.
+                           This keeps workitem pfhmi-dev-defects-10484 open!
+                 -->
+
+                <LinearLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:id="@+id/source_path_usb_disabled"
+                        android:paddingLeft="@dimen/import_source_datatree_padding_left"
+                        android:orientation="horizontal"
+                        android:layout_margin="@dimen/import_source_datatree_disabled_margin"
+                        android:gravity="center_vertical">
+                    <!--android:visibility="gone">-->
+                    <ImageView
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:paddingRight="@dimen/import_source_datatree_disabled_spacing_expand_image"
+                            android:src="@drawable/data_tree_expand_grey"/>
+                    <ImageView
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:src="@drawable/ic_data_tree_usb_inactive"/>
+                    <TextView
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text="@string/usb_string"
+                            android:textColor="@color/color_grey"
+                            android:textSize="@dimen/import_source_datatree_disabled_font_size"
+                            android:fontFamily="sans-seriff"/>
+                </LinearLayout>
+
+                <View
+                        android:layout_width="fill_parent"
+                        android:layout_height="@dimen/import_source_datatree_divider_line_height"
+                        android:id="@+id/select_source_usb_spacer"
+                        android:background="@color/bar_grey_light"/>
+
+                <pl.polidea.treeview.TreeViewList
+                        android:id="@+id/source_path_cloud_tree_view"
+                        android:paddingLeft="@dimen/import_source_datatree_padding_left"
+                        android:paddingRight="@dimen/import_source_datatree_padding_right"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:visibility="gone"
+                        android:divider="@color/import_data_tree_divider_color"
+                        android:dividerHeight="@dimen/import_source_layout_tree_view_divider_height"
+                        android:choiceMode="none"
+                        android:listSelector="@color/import_data_tree_list_selector_color"
+                        cnh:collapsible="true"
+                        cnh:draw_line="true"
+                        cnh:indent_width="@dimen/import_source_layout_tree_view_cnh_indent_width"
+                        cnh:indicator_background="@android:color/transparent"
+                        cnh:indicator_gravity="center_vertical|right"
+                        cnh:line_color="@color/tree_line"
+                        cnh:line_width="@dimen/import_source_layout_tree_view_cnh_line_width"
+                        cnh:src_collapsed="@drawable/ic_action_expand"
+                        cnh:src_expanded="@drawable/ic_action_collapse"/>
+
+                <LinearLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:id="@+id/source_path_cloud_disabled"
+                        android:paddingLeft="@dimen/import_source_datatree_padding_left"
+                        android:orientation="horizontal"
+                        android:layout_margin="@dimen/import_source_datatree_disabled_margin"
+                        android:gravity="center_vertical"
+                        android:visibility="gone">
+                    <ImageView
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:src="@drawable/data_tree_expand_grey"
+                            android:paddingRight="@dimen/import_source_datatree_disabled_spacing_expand_image"/>
+                    <ImageView
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:src="@drawable/ic_data_tree_cloud_inactive"/>
+                    <TextView
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text="@string/import_cloud_inbox"
+                            android:textColor="@color/color_grey"
+                            android:textSize="@dimen/import_source_datatree_disabled_font_size"
+                            android:fontFamily="sans-seriff"/>
+                </LinearLayout>
+
+            </LinearLayout>
+        </ScrollView>
+    </LinearLayout>
 </LinearLayout>

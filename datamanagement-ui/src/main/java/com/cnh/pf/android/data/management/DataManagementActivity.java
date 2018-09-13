@@ -81,9 +81,6 @@ public class DataManagementActivity extends TabActivity implements RoboContext {
    protected HashMap<Key<?>, Object> scopedObjects = new HashMap<Key<?>, Object>();
    protected EventManager eventManager;
    private VIPDataHandler vipDataHandler;
-   private WeakReference<ManageFragment> manageFragmentWeakReference;
-   private WeakReference<ImportFragment> importFragmentWeakReference;
-   private WeakReference<ExportFragment> exportFragmentWeakReference;
    private WeakReference<ProductLibraryFragment> productLibraryFragmentWeakReference;
    private TabActivityTab productLibraryTab = null;
    private boolean calledProductLibraryViaShortcut = false;
@@ -459,21 +456,18 @@ public class DataManagementActivity extends TabActivity implements RoboContext {
 
       // Create Manage Tab
       ManageFragment manageFragment = new ManageFragment();
-      manageFragmentWeakReference = new WeakReference<ManageFragment>(manageFragment);
       manageFragment.setSessionManager(sessionManager);
       TabActivityTab managementTab = createActivityTab(manageFragment, R.string.tab_management, R.drawable.tab_management_selector, getResources().getString(R.string.tab_management));
       addTab(managementTab);
 
       // Create Import tab
       ImportFragment importFragment = new ImportFragment();
-      importFragmentWeakReference = new WeakReference<ImportFragment>(importFragment);
       importFragment.setSessionManager(sessionManager);
       TabActivityTab importTab = createActivityTab(importFragment, R.string.tab_import, R.drawable.tab_import_selector, getResources().getString(R.string.tab_import));
       addTab(importTab);
 
       // Create Export tab
       ExportFragment exportFragment = new ExportFragment();
-      exportFragmentWeakReference = new WeakReference<ExportFragment>(exportFragment);
       exportFragment.setVipDataHandler(vipDataHandler);
       exportFragment.setSessionManager(sessionManager);
       TabActivityTab exportTab = createActivityTab(exportFragment, R.string.tab_export, R.drawable.tab_export_selector, getResources().getString(R.string.tab_export));
