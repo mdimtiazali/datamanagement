@@ -19,10 +19,18 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 import static org.robolectric.Shadows.shadowOf;
 
-import java.io.File;
-import java.io.IOException;
-import java.util.ArrayList;
-import java.util.List;
+import android.content.ComponentName;
+import android.view.View;
+import android.widget.Button;
+import android.widget.LinearLayout;
+import android.widget.TextView;
+
+import com.cnh.pf.android.data.management.DataManagementActivity;
+import com.cnh.pf.android.data.management.R;
+import com.cnh.pf.android.data.management.TestApp;
+import com.cnh.pf.android.data.management.misc.IconizedFile;
+import com.cnh.pf.android.data.management.service.DataManagementService;
+import com.cnh.pf.android.data.management.session.SessionExtra;
 
 import org.junit.Before;
 import org.junit.Rule;
@@ -39,18 +47,11 @@ import org.robolectric.shadows.ShadowListView;
 import org.robolectric.util.ActivityController;
 import org.robolectric.util.ReflectionHelpers;
 
-import com.cnh.pf.android.data.management.DataManagementActivity;
-import com.cnh.pf.android.data.management.R;
-import com.cnh.pf.android.data.management.TestApp;
-import com.cnh.pf.android.data.management.misc.IconizedFile;
-import com.cnh.pf.android.data.management.service.DataManagementService;
-import com.cnh.pf.android.data.management.session.SessionExtra;
+import java.io.File;
+import java.io.IOException;
+import java.util.ArrayList;
+import java.util.List;
 
-import android.content.ComponentName;
-import android.view.View;
-import android.widget.Button;
-import android.widget.LinearLayout;
-import android.widget.TextView;
 import pl.polidea.treeview.TreeViewList;
 import roboguice.RoboGuice;
 import roboguice.activity.event.OnResumeEvent;
@@ -299,13 +300,11 @@ public class ImportSourceDialogTest {
       shadowListView.performItemClick(0);
       shadowListView.populateItems();
       shadowListView.performItemClick(1);
-      shadowListView.populateItems();
-      shadowListView.performItemClick(2);
       //check selecting file enables Button
       assertTrue(selectBtn.isEnabled());
 
       //deselecting file disables Button
-      shadowListView.performItemClick(2);
+      shadowListView.performItemClick(1);
       assertFalse(selectBtn.isEnabled());
 
    }

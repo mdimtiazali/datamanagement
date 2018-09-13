@@ -252,8 +252,8 @@ public class ImportSourceDialog extends DialogView {
          protected Void doInBackground(Void... voids) {
             Thread.currentThread().setName("usbImportSource loading usb data");
             usbTreeBuilder.sequentiallyAddNextNode(usbFile, 0);
-            File usbRootFile = new File(currentExtra.getPath());
-            populateTree(usbTreeBuilder, usbFile, new IconizedFile(usbRootFile));
+            //add content of usb stick bonded to pseudo root node (USB)
+            addFolderContentToTree(usbTreeBuilder, usbFile, new File(currentExtra.getPath()));
             return null;
          }
 
@@ -304,6 +304,12 @@ public class ImportSourceDialog extends DialogView {
       }
    }
 
+   /**
+    * This method adds the given dir and all its children as a child to the given parent using the given treeBuilder
+    * @param treeBuilder TreeBuilder to be used
+    * @param parent Parent of the nodes to be added (if null, dir will be added on root level)
+    * @param dir Directory to be added, the hierarchy in that directory will be adopted as well
+    */
    private void populateTree(final TreeBuilder<IconizedFile> treeBuilder, final IconizedFile parent, final IconizedFile dir) {
       if (parent == null) {
          treeBuilder.sequentiallyAddNextNode(dir, 0);
@@ -311,8 +317,17 @@ public class ImportSourceDialog extends DialogView {
       else {
          treeBuilder.addRelation(parent, dir);
       }
+      addFolderContentToTree(treeBuilder, dir, dir.getFile());
+   }
 
-      File[] files = dir.getFile().listFiles(new FileFilter() {
+   /**
+    * This method adds all files within dir to the tree under the given parent node using the given treeBuilder
+    * @param treeBuilder TreeBuilder to be used
+    * @param parent Parent node of the files/directories to be added
+    * @param dir Folder containing files/directories to be added to the tree
+    */
+   private void addFolderContentToTree(final TreeBuilder<IconizedFile> treeBuilder, final IconizedFile parent, final File dir) {
+      File[] files = dir.listFiles(new FileFilter() {
          private boolean isDirAccept(File file) {
             if (file.isDirectory()) {
                File[] fs = file.listFiles();
@@ -342,9 +357,10 @@ public class ImportSourceDialog extends DialogView {
       if (files != null) {
          for (File file : files) {
             IconizedFile tmpIconizedFile = new IconizedFile(file);
-            populateTree(treeBuilder, dir, tmpIconizedFile);
+            populateTree(treeBuilder, parent, tmpIconizedFile);
          }
       }
+
    }
 
    private void onImportSourceSelected(int importSourceId) {
