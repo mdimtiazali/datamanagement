@@ -101,6 +101,11 @@
     <dimen name="min_select_all_btn_width">175dp</dimen>
     <dimen name="progress_bar_padding">18dp</dimen>
 
+    <!-- Datamanagement DataTree margins-->
+    <dimen name="datamanagement_datatree_layout_margin_left">10dp</dimen>
+    <dimen name="datamanagement_datatree_margin_top">16dp</dimen>
+    <dimen name="datamanagement_datatree_margin_right">10dp</dimen>
+
     <!-- Import/Export Overlays-->
     <dimen name="dataexchange_blocked_overlay_spacing_between_lines">10dp</dimen>
     <dimen name="dataexchange_blocked_overlay_image_padding">40dp</dimen>
@@ -113,14 +118,18 @@
     <dimen name="import_source_layout_tree_view_cnh_line_width">2dp</dimen>
     <dimen name="import_source_no_device_layout_image_view_margin_top">20dp</dimen>
     <dimen name="import_source_no_device_layout_text_view_text_size">18sp</dimen>
-    <dimen name="import_source_datatree_padding_left">70dp</dimen>
+    <dimen name="import_source_datatree_padding_left">60dp</dimen>
     <dimen name="import_source_datatree_padding_right">20dp</dimen>
     <dimen name="import_source_datatree_title_divider_line_height">3dp</dimen>
     <dimen name="import_source_datatree_divider_line_height">1dp</dimen>
+    <dimen name="import_source_datatree_disabled_left_padding">4dp</dimen>
+    <dimen name="import_source_datatree_disabled_spacing_image_text">15dp</dimen>
     <dimen name="import_source_datatree_disabled_margin">5dp</dimen>
     <dimen name="import_source_datatree_disabled_font_size">20sp</dimen>
-    <dimen name="import_source_datatree_disabled_spacing_expand_image">5dp</dimen>
+    <dimen name="import_source_datatree_disabled_spacing_expand_image">4dp</dimen>
     <dimen name="import_select_source_dialog_introduction_padding">20dp</dimen>
+    <dimen name="datamanagement_select_import_source_padding_top">10dp</dimen>
+    <dimen name="datamanagement_select_import_source_padding_bottom">10dp</dimen>
 
     <!--Conflict Dialog-->
     <dimen name="import_conflict_dialog_table_border_width">1dp</dimen>
