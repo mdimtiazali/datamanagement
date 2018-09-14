@@ -57,7 +57,6 @@
                         android:layout_weight="1"
                         android:layout_width="0dp"
                         android:layout_height="wrap_content"
-                        cnh:isPickListSorted="true"
                         cnh:defaultPickListTextId="@string/product_mix_title_picklist_default_select"
                         cnh:headerText="@string/product_mix_title_product_mix_form"/>
             </LinearLayout>

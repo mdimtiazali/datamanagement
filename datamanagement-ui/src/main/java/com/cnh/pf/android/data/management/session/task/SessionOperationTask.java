@@ -78,7 +78,6 @@ public abstract class SessionOperationTask<Progress> extends AsyncTask<Session, 
 
       try {
          session.setState(Session.State.IN_PROGRESS);
-         session.setResultCode(null);
          processSession(session);
       }
       catch (SessionException e) {
