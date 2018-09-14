@@ -53,6 +53,7 @@
                     android:layout_marginRight="16dp"
                     android:layout_marginBottom="@dimen/button_margin_bottom"
                     android:layout_marginTop="@dimen/button_margin_top"
+                    android:layout_centerVertical="true"
                     android:layout_toLeftOf="@id/select_all_btn"/>
             <Button
                     android:id="@+id/select_all_btn"

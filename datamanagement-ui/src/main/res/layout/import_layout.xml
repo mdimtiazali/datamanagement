@@ -80,8 +80,9 @@
                     android:id="@+id/start_text"
                     android:layout_width="match_parent"
                     android:layout_height="match_parent"
-                    android:gravity="center"
-                    style="@style/TextAppearance.Import.Entity"
+                    android:paddingTop="@dimen/import_select_source_first_text_padding_top"
+                    android:gravity="center_horizontal"
+                    style="@style/TextAppearance.Import.SelectSourceFirst"
                     android:text="@string/select_source_first"/>
             <ImageButton android:id="@+id/dm_refresh"
                          android:layout_height="wrap_content"

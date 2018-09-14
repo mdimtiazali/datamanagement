@@ -56,7 +56,7 @@
     <string name="product_mixes">Product Mixes</string>
     <string name="varieties">Varieties</string>
     <string name="select_source">Select Import Source</string>
-    <string name="import_drag_and_drop"><![CDATA[Drag & Drop \nto Import \nto PCM/Display]]></string>
+    <string name="import_drag_and_drop"><![CDATA[Drag & Drop\nto Import\nto Vehicle]]></string>
     <string name="export_drag_and_drop"><![CDATA[Drag & Drop \nto Export]]></string>
     <string name="select_all">Select All</string>
     <string formatted="false" name="x_of_y_format">%d of %d</string>
