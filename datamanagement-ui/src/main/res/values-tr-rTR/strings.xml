@@ -1,0 +1,232 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  ~ Copyright (C) 2016 CNH Industrial NV. All rights reserved.
+  ~
+  ~ This software contains proprietary information of CNH Industrial NV. Neither
+  ~ receipt nor possession thereof confers any right to reproduce, use, or
+  ~ disclose in whole or in part any such information without written
+  ~ authorization from CNH Industrial NV.
+  -->
+<resources>
+    <string name="app_name">Veri Yönetimi</string>
+    <string name="tab_import">Al</string>
+    <string name="tab_import_test">Testi içe aktar</string>
+    <string name="import_source">İçe Aktarma Kaynağı</string>
+    <string name="destination">Hedef</string>
+    <string name="collapse_button_content_description">Düğmeyi Daralt</string>
+    <string name="import_selected">Seçileni İçe Aktar</string>
+    <string name="export_selected">Seçileni Dışa Aktar</string>
+    <string name="done">Yapıldı</string>
+    <string name="type">Tip:</string>
+    <string name="name">Ad:</string>
+    <string name="target">Hedef</string>
+    <string name="select_target">Hedef Seç</string>
+    <string name="copy_and_replace">Değiştir</string>
+    <string name="dont_copy">Kopyalama</string>
+    <string name="keep_both">İkisini de Tut</string>
+    <string name="conflict">Çakışma</string>
+    <string name="new_id_title">Yeni Tanımlayıcı Gir</string>
+    <string name="new_id_label">Yeni Tanımlayıcı:</string>
+    <string name="calculating_targets">Hedefler Hesaplanıyor</string>
+    <string name="checking_targets">Potansiyel Hedefler Kontrol Ediliyor...</string>
+    <string name="checking_conflicts">Çakışmalar Kontrol Ediliyor...</string>
+    <string name="importing">İçe Aktarılıyor...</string>
+    <string name="select_path">Yol Seç...</string>
+    <string name="continue_string">Devam et</string>
+    <string name="next">İleri</string>
+
+    <string name="pfds">Yetiştirici / Çiftlik/ Tarla</string>
+    <string name="vehicles">Araçlar</string>
+    <string name="imps">Tarımsal ekipmanlar</string>
+    <string name="prescriptions">Açıklamalar</string>
+    <string name="tasks">Görevler</string>
+    <string name="boundaries">Sınırlar</string>
+    <string name="obstacles">Engeller</string>
+    <string name="guidance_groups">Biçilmiş alanlar</string>
+    <string name="guidance_patterns">Kılavuz Modelleri</string>
+    <string name="notes">Notlar</string>
+
+    <string name="products">Ürün</string>
+    <string name="product_mixes">Ürün Karışımları</string>
+    <string name="select_source">İçe Aktarma Kaynağı Seç</string>
+    <string name="import_drag_and_drop"><![CDATA[PCM/Ekranı \nİçe Aktarmak için \nsürükleyip bırakınız]]></string>
+    <string name="export_drag_and_drop"><![CDATA[Dışa Aktarmak için \nsürükleyip bırakınız]]></string>
+    <string name="select_all">Tümünü Seç</string>
+    <string formatted="false" name="x_of_y_format">%d / %d</string>
+    <string name="usb_string">USB</string>
+    <string name="display_string">Ekran</string>
+    <string name="display_numbered">Ekran %d</string>
+    <string name="display_named">Ekran %s</string>
+    <string name="select_string">Seç</string>
+    <string name="export_to">Hedef:</string>
+    <string name="export_format">Formatı Dışa Aktar:</string>
+    <string name="tab_export">Dışa Aktar</string>
+    <string name="percent_complete">Tamamlanan %</string>
+    <string name="loading_string">Yükleniyor</string>
+    <string name="exporting_string">Dışa Aktarılıyor</string>
+    <string name="importing_string">İçe Aktarılıyor</string>
+    <string name="exporting_data">Veriler Dışa Aktarılıyor</string>
+    <string name="importing_data">Veriler İçe Aktarılıyor</string>
+    <string name="select_source_first">Başlamak için \nönce \nİçe Aktarma Kaynağı seçiniz</string>
+    <string name="no_import_source">İçe aktarma kaynak aygıtı algılanmadı. \nLütfen aygıt bağlantısını kontrol ediniz.</string>
+    <string name="deselect_all">Tümünün Seçimini Kaldır</string>
+    <string formatted="false" name="duplicate_file">\"%s\" adlı bir %s zaten var</string>
+    <string name="existing_file">Mevcut</string>
+    <string name="existing_file_typed">Mevcut %s</string>
+    <string name="new_file">Yeni</string>
+    <string name="new_file_typed">Yeni %s</string>
+    <string name="data_conflict">Veri Çakışması</string>
+    <string name="rename_file">Yeniden Adlandır %s</string>
+    <string name="file_name">Dosya Adı</string>
+    <string name="empty_discovery">Veri bulunamadı</string>
+    <string name="export_cancel_confirmation">Bu, mevcut dışa aktarmayı iptal edecek.\nDevam edilsin mi?</string>
+
+    <string name="format_description">ISOXML: \nTüm dosyalar ISOXML olarak dışa aktarılabilir. \n \nShapefile: \nAçıklamalar.</string>
+
+    <string name="error_no_data">Veri Yok</string>
+    <string name="error_no_source">Kaynak Veri kaynağı yok</string>
+    <string name="error_no_target">Hedef Veri kaynağı yok</string>
+    <string name="error_perform_ops">Operasyon Gerçekleştirme Hatası</string>
+    <string name="error_calculate_conflicts">Çakışma Hesaplama Hatası</string>
+    <string name="error_calculate_operations">Hedef Hesaplama Hatası</string>
+    <string name="error_discovery">Keşif Hatası</string>
+    <string name="status_cancelled">İptl Edld</string>
+    <string name="status_cancelling">İptal Ediliyor...</string>
+    <string name="status_successful">Başarılı</string>
+    <string name="status_starting">Başlatılıyor...</string>
+    <string name="import_complete">İçe Aktarma Tamamlandı</string>
+    <string name="import_cancel">İçe Aktarma İptal Edildi</string>
+    <string name="export_complete">Dışa Aktarma Tamamlandı</string>
+    <string name="export_cancel">Dışa Aktarma İptal Edildi</string>
+
+    <string name="usb_data_available">USB Verileri Kullanılabilir</string>
+    <string name="usb_no_data_available">Kullanılabilir USB Verisi Yok</string>
+    <string name="usb_scanning">USB Belleği Taranıyor...</string>
+
+    <string name="stop">Durdur</string>
+    <string name="status_progress">%1$s %2$d/%3$d</string>
+   <!-- starting here everything is used by the productlibrary-package -->
+   <string name="product_default_rate">Varsayılan Oran</string>
+    <string name="product_form">Şekil</string>
+    <string name="product_name">Ad</string>
+   <!-- Product Mix -->
+   <string name="product_mix_add_button_title">Ekle</string>
+    <string name="product_mix_default_text_edittext">Ürün İsmi</string>
+    <string name="product_mix_default_text_picklist">Ürün Şekli</string>
+    <string name="product_mix_search_hint">Ürün Karışımı, form, oran</string>
+    <string name="product_mix_subheader_total_mix">Toplam: 0 ürün karşımı</string>
+    <plurals name="product_mix_subheader_total_mix_format">
+        <item quantity="zero">Toplam: 0 ürün karşımı</item>
+        <item quantity="one">Toplam: 1 ürün karışımı</item>
+        <item quantity="other">Toplam: %1$d ürün karışımı</item>
+    </plurals>
+    <string name="product_mix_title">Ürün Karışm</string>
+    <string name="product_mix_text_button_add_product_mix">Ürün Karışımı Ekle +</string>
+    <string name="product_mix_title_dialog_add_product_mix">Ürün Karışımı Ekle</string>
+    <string name="product_mix_title_dialog_edit_product_mix">Ürün Karışımını Düzenle</string>
+    <string name="product_mix_title_dialog_copy_product_mix">Ürün Karışımını Kopyala</string>
+    <string name="product_mix_title_add_new_product">Yeni Ürün Ekle</string>
+    <string name="product_mix_title_add_new_carrier">Yeni Taşıyıcı Ekle</string>
+    <string name="product_mix_text_button_remove">Kaldır x</string>
+    <string name="product_mix_text_button_add_more">Daha Fazla Ekle +</string>
+    <string name="product_mix_title_category_button_title_mix_products">Karışık Ürünler</string>
+    <string name="product_mix_title_name">Ürün Karışm Adı</string>
+    <string name="product_mix_title_carrier">Taşıyıcı</string>
+    <string name="product_mix_title_total_mix_amount">Toplam Karışım Miktarı</string>
+    <string name="product_mix_title_carrier_amount">Taşıyıcı Miktarı</string>
+    <string name="product_mix_title_mix_products">Karışık Ürünler</string>
+    <string name="product_mix_title_product">Ürün %1$d</string>
+    <string name="product_mix_title_product_amount">Miktar</string>
+    <string name="product_mix_title_units">Brmlr</string>
+    <string name="product_mix_title_application_rates">Uygulama Oranları</string>
+    <string name="product_mix_title_application_rate_1">Uygulama Oranı 1 (Varsayılan)</string>
+    <string name="product_mix_title_application_rate_2">Uygulama Oranı 2</string>
+    <string name="product_mix_title_application_rate_1_short">Uyg Oranı 1</string>
+    <string name="product_mix_title_application_rate_2_short">Uyg Oranı 2</string>
+    <string name="product_mix_title_application_rate_1_short_point">Uyg Oranı 1:</string>
+    <string name="product_mix_title_application_rate_2_short_point">Uyg Oranı 2:</string>
+    <string name="product_mix_title_min_application_rate">Min Uygulama Oranı</string>
+    <string name="product_mix_title_max_application_rate">Maks Uygulama Oranı</string>
+    <string name="product_mix_title_delta_application_rate">Delta Uygulama Oranı</string>
+    <string name="product_mix_title_application_rates_per_product">Ürün Başına Uygulama Oranları</string>
+    <string name="product_mix_title_products">Ürün</string>
+    <string name="product_mix_title_advanced">Gelişmiş</string>
+    <string name="product_mix_title_usage">Kullanım şekli</string>
+    <string name="product_mix_title_package_size">Paket Boyutu</string>
+    <string name="product_mix_title_package_size_units">Paket Boyut Birimleri</string>
+    <string name="product_mix_title_density">Yoğunluk</string>
+    <string name="product_mix_title_density_unit">Yoğunluk Birimleri</string>
+    <string name="product_mix_title_picklist_default_select">Seç</string>
+    <string name="product_mix_title_product_mix_form">Ürün Karışım Formu</string>
+    <string name="product_mix_unittext_default_text">--.-</string>
+
+    <string name="product_text_bulk_fill_fan_delta_label">Yığın Adımı:</string>
+    <string name="product_text_bulk_fill_fan_rate_label">Yığın Oranı:</string>
+    <string name="product_text_density_label">Yoğunluk:</string>
+    <string name="product_text_density_units_label">Yoğunluk Birimleri:</string>
+    <string name="product_text_package_label">Paket Boyutu:</string>
+    <string name="product_text_rate_delta_label">Delta Oranı:</string>
+    <string name="product_text_rate_min_label">Min Uyg Oranı:</string>
+    <string name="product_text_rate_max_label">Maks Uyg Oranı:</string>
+    <string name="product_text_rate_one_label">Uyg Oranı 1:</string>
+    <string name="product_text_rate_two_label">Uyg Oranı 2:</string>
+    <string name="product_text_vacuum_fan_delta_label">Vak. Adımı:</string>
+    <string name="product_text_vacuum_fan_rate_label">Vak. Oranı:</string>
+
+    <string name="product_section_header">Ürün</string>
+    <string name="product_section_subheader">Toplam: 0 ürün</string>
+    <plurals name="product_section_subheader_format">
+        <item quantity="zero">Toplam: 0 ürün</item>
+        <item quantity="one">Toplam: 1 ürün</item>
+        <item quantity="other">Toplam: %1$d ürün</item>
+    </plurals>
+    <string name="product_search_hint">Ürün, form, oran</string>
+
+    <string name="tab_product_library">Ürün Kitaplığı</string>
+    <string name="create_product_button">Ürün Ekle +</string>
+    <string name="no_available_products">Eklenen ürününüz yok.</string>
+    <string name="add_product_instructions">Yukarıdaki \"Ürün Ekle\" düğmesini kullanarak bir ürün ekleyiniz.</string>
+    <string name="add_product_mix_instructions">Yukarıdaki \"Ürün Karışımı Ekle\" düğmesini kullanarak bir ürün karışımı ekleyiniz.</string>
+
+    <string name="unit_gal_per_acre">gal/ac</string>
+
+    <string name="delete_dialog_confirm_button_text">Sil</string>
+    <string name="delete_product_dialog_body_text">Bu, bu ürünü ve ayarlarını kalıcı olarak siler.</string>
+
+    <string name="alert_title">Uyarı</string>
+    <string name="alert_dismiss">Görmezden gel</string>
+    <string name="alert_in_use">Bu ürün şu anda bir kontrol cihazı tarafından kullanılıyor.</string>
+
+    <string name="variety_title">Çeşit</string>
+    <string name="variety_section_subheader">Toplam: 0 çeşit</string>
+    <plurals name="variety_section_subheader_format">
+        <item quantity="zero">Toplam: 0 çeşit</item>
+        <item quantity="one">Toplam: 1 çeşit</item>
+        <item quantity="other">Toplam: %1$d çeşit</item>
+    </plurals>
+    <string name="variety_button_add_text">Çeşit Ekle +</string>
+    <string name="variety_add_dialog_title_text">Çeşit Ekle</string>
+    <string name="variety_add_or_edit_dialog_crop_type_header_text">Ürün Türü</string>
+    <string name="variety_add_or_edit_dialog_name_header_text">Ad</string>
+    <string name="variety_delete_dialog_delete_title_text">Çeşidi Sil</string>
+    <string name="variety_delete_dialog_body_text_delete_allowed">Bu, bu çeşidi ve ayarlarını kalıcı olarak siler.</string>
+    <string name="variety_dialog_cancel_button_text">İptal</string>
+    <string name="variety_dialog_save_button_text">Kaydet</string>
+    <string name="variety_edit_dialog_title">Çeşidi Düzenle</string>
+    <string name="variety_instruction_add">Yukarıdaki \"Çeşit Ekle\" düğmesini kullanarak bir çeşit ekleyiniz.</string>
+    <string name="variety_list_header_crop_type_text">ÜRÜN TÜRÜ</string>
+    <string name="variety_list_header_color">RENK</string>
+    <string name="variety_list_header_name_text">AD</string>
+    <string name="variety_not_available">Eklenen çeşidiniz yok.</string>
+    <string name="variety_search_hint">Çeşit, ürün tipi</string>
+    <string name="tab_management">Yönetim</string>
+    <string name="edit_field_name">Ad</string>
+    <string name="edit_dialog_header">İsmi Düzenle</string>
+    <string name="edit_dialog_save">Kaydet</string>
+    <string name="edit_dialog_cancel">İptal</string>
+    <string name="tab_mng_none_header">Düzenlenecek, kopyalanacak veya silinecek öğeleri seçin</string>
+    <string name="tab_mng_items_header">%1$d Öğe Seçildi</string>
+   <!-- end of productlibrary-package usage -->
+   <string name="edit_name_warning">Bu ada sahip başka bir öğe var. Lütfen farklı bir ad seçiniz</string>
+    <string name="edit_update_title">Öğe güncelleniyor</string>
+</resources>

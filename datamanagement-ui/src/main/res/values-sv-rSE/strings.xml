@@ -1,0 +1,232 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  ~ Copyright (C) 2016 CNH Industrial NV. All rights reserved.
+  ~
+  ~ This software contains proprietary information of CNH Industrial NV. Neither
+  ~ receipt nor possession thereof confers any right to reproduce, use, or
+  ~ disclose in whole or in part any such information without written
+  ~ authorization from CNH Industrial NV.
+  -->
+<resources>
+    <string name="app_name">Datahantering</string>
+    <string name="tab_import">Importera</string>
+    <string name="tab_import_test">Importera test</string>
+    <string name="import_source">Importera källa</string>
+    <string name="destination">Mål</string>
+    <string name="collapse_button_content_description">Dölj-knapp</string>
+    <string name="import_selected">Import valt</string>
+    <string name="export_selected">Export valt</string>
+    <string name="done">Klar</string>
+    <string name="type">Typ:</string>
+    <string name="name">Namn:</string>
+    <string name="target">Mål</string>
+    <string name="select_target">Välj mål</string>
+    <string name="copy_and_replace">Byt</string>
+    <string name="dont_copy">Kopiera inte</string>
+    <string name="keep_both">Behåll båda</string>
+    <string name="conflict">Konflikt</string>
+    <string name="new_id_title">Ange ny identifierare</string>
+    <string name="new_id_label">Ny identifierare:</string>
+    <string name="calculating_targets">Beräknar mål</string>
+    <string name="checking_targets">Kontrollerar potentiella mål ...</string>
+    <string name="checking_conflicts">Kontrollerar konflikter ...</string>
+    <string name="importing">Importerar ...</string>
+    <string name="select_path">Välj sökväg ...</string>
+    <string name="continue_string">Fortsätt</string>
+    <string name="next">Nästa</string>
+
+    <string name="pfds">Odlare/gård/fält</string>
+    <string name="vehicles">Fordon</string>
+    <string name="imps">Redskap</string>
+    <string name="prescriptions">Föreskrifter</string>
+    <string name="tasks">Uppgifter</string>
+    <string name="boundaries">Gränser</string>
+    <string name="obstacles">Hinder</string>
+    <string name="guidance_groups">Spår</string>
+    <string name="guidance_patterns">Styrningsmönster</string>
+    <string name="notes">Anmärkningar</string>
+
+    <string name="products">Produkter</string>
+    <string name="product_mixes">Prod.blandn.</string>
+    <string name="select_source">Välj importkälla</string>
+    <string name="import_drag_and_drop"><![CDATA[Dra och släpp \nför import \ntill PCM/display]]></string>
+    <string name="export_drag_and_drop"><![CDATA[Dra och släpp \nför export]]></string>
+    <string name="select_all">Markera alla</string>
+    <string formatted="false" name="x_of_y_format">%d av %d</string>
+    <string name="usb_string">USB</string>
+    <string name="display_string">Signal</string>
+    <string name="display_numbered">Display %d</string>
+    <string name="display_named">Display %s</string>
+    <string name="select_string">Välj</string>
+    <string name="export_to">Mål:</string>
+    <string name="export_format">Exportformat:</string>
+    <string name="tab_export">Exportera</string>
+    <string name="percent_complete">% slutfört</string>
+    <string name="loading_string">Lastning</string>
+    <string name="exporting_string">Exporterar</string>
+    <string name="importing_string">Importerar</string>
+    <string name="exporting_data">Exporterar data</string>
+    <string name="importing_data">Importering av data</string>
+    <string name="select_source_first">Starta genom att \nförst välja \nimportkälla</string>
+    <string name="no_import_source">Ingen importkällenhet identifierad. \nKontrollera enhetens anslutning.</string>
+    <string name="deselect_all">Avmarkera alla</string>
+    <string formatted="false" name="duplicate_file">En %s vid namn \"%s\" finns redan</string>
+    <string name="existing_file">Befintlig</string>
+    <string name="existing_file_typed">Befintlig %s</string>
+    <string name="new_file">Ny</string>
+    <string name="new_file_typed">Ny %s</string>
+    <string name="data_conflict">Datakonflikt</string>
+    <string name="rename_file">Byt namn på %s</string>
+    <string name="file_name">Filnamn</string>
+    <string name="empty_discovery">Inga data hittades</string>
+    <string name="export_cancel_confirmation">Detta avbryter aktuell export.\nVill du fortsätta?</string>
+
+    <string name="format_description">ISOXML: \nAlla filer kan exporteras i ISOXML. \n \nShapefile: \nFöreskrifter.</string>
+
+    <string name="error_no_data">Inga data</string>
+    <string name="error_no_source">Ingen källdatakälla</string>
+    <string name="error_no_target">Ingen måldatakälla</string>
+    <string name="error_perform_ops">Åtgärd kunde ej utföras</string>
+    <string name="error_calculate_conflicts">Fel i beräkna konflikter</string>
+    <string name="error_calculate_operations">Fel i beräkna mål</string>
+    <string name="error_discovery">Detekteringsfel</string>
+    <string name="status_cancelled">Avbruten</string>
+    <string name="status_cancelling">Avbryter ...</string>
+    <string name="status_successful">Slutförd</string>
+    <string name="status_starting">Startar ...</string>
+    <string name="import_complete">Import slutförd</string>
+    <string name="import_cancel">Import avbruten</string>
+    <string name="export_complete">Export slutförd</string>
+    <string name="export_cancel">Export avbruten</string>
+
+    <string name="usb_data_available">USB-data tillgängliga</string>
+    <string name="usb_no_data_available">Inga USB-data tillgängliga</string>
+    <string name="usb_scanning">Söker i USB-minne ...</string>
+
+    <string name="stop">Stopp</string>
+    <string name="status_progress">%1$s %2$d/%3$d</string>
+   <!-- starting here everything is used by the productlibrary-package -->
+   <string name="product_default_rate">Stand.takt</string>
+    <string name="product_form">Typ</string>
+    <string name="product_name">Namn</string>
+   <!-- Product Mix -->
+   <string name="product_mix_add_button_title">Lägg till</string>
+    <string name="product_mix_default_text_edittext">Produktnamn</string>
+    <string name="product_mix_default_text_picklist">Produkttyp</string>
+    <string name="product_mix_search_hint">Prod.blandn., form, hast.</string>
+    <string name="product_mix_subheader_total_mix">Totalt: 0 prod.blandn.</string>
+    <plurals name="product_mix_subheader_total_mix_format">
+        <item quantity="zero">Totalt: 0 prod.blandn.</item>
+        <item quantity="one">Totalt: 1 prod.blandn.</item>
+        <item quantity="other">Totalt: %1$d prod.blandn.</item>
+    </plurals>
+    <string name="product_mix_title">Prod.blandn</string>
+    <string name="product_mix_text_button_add_product_mix">Lägg t. prod.blandn. +</string>
+    <string name="product_mix_title_dialog_add_product_mix">Lägg t. prod.blandn.</string>
+    <string name="product_mix_title_dialog_edit_product_mix">Red. prod.blandn.</string>
+    <string name="product_mix_title_dialog_copy_product_mix">Kop. prod.blandn.</string>
+    <string name="product_mix_title_add_new_product">Lägg till ny prod.</string>
+    <string name="product_mix_title_add_new_carrier">Lägg till ny hållare</string>
+    <string name="product_mix_text_button_remove">Ta bort x</string>
+    <string name="product_mix_text_button_add_more">Lägg t. mer +</string>
+    <string name="product_mix_title_category_button_title_mix_products">Blanda prod.</string>
+    <string name="product_mix_title_name">Prod.blandn.namn</string>
+    <string name="product_mix_title_carrier">Bärare</string>
+    <string name="product_mix_title_total_mix_amount">Totalt blandad mängd</string>
+    <string name="product_mix_title_carrier_amount">Hållarmängd</string>
+    <string name="product_mix_title_mix_products">Blanda prod.</string>
+    <string name="product_mix_title_product">Produkt %1$d</string>
+    <string name="product_mix_title_product_amount">Mängd</string>
+    <string name="product_mix_title_units">Måttenheter</string>
+    <string name="product_mix_title_application_rates">Appl.hastigheter</string>
+    <string name="product_mix_title_application_rate_1">Appliceringshast. 1 (standard)</string>
+    <string name="product_mix_title_application_rate_2">Appliceringshast. 2</string>
+    <string name="product_mix_title_application_rate_1_short">App.hast. 1</string>
+    <string name="product_mix_title_application_rate_2_short">App.hast. 2</string>
+    <string name="product_mix_title_application_rate_1_short_point">App.hast. 1:</string>
+    <string name="product_mix_title_application_rate_2_short_point">App.hast. 2:</string>
+    <string name="product_mix_title_min_application_rate">Min. appliceringshast.</string>
+    <string name="product_mix_title_max_application_rate">Max. appliceringshast.</string>
+    <string name="product_mix_title_delta_application_rate">Deltaappliceringshast.</string>
+    <string name="product_mix_title_application_rates_per_product">Appliceringshast. per produkt</string>
+    <string name="product_mix_title_products">Produkter</string>
+    <string name="product_mix_title_advanced">Advanced (avancerad)</string>
+    <string name="product_mix_title_usage">Användning</string>
+    <string name="product_mix_title_package_size">Förpackningsstorlek</string>
+    <string name="product_mix_title_package_size_units">Förpackningsstorlek</string>
+    <string name="product_mix_title_density">Densitet</string>
+    <string name="product_mix_title_density_unit">Densitetsenh.</string>
+    <string name="product_mix_title_picklist_default_select">Välj</string>
+    <string name="product_mix_title_product_mix_form">Prod.blandn.form</string>
+    <string name="product_mix_unittext_default_text">--.-</string>
+
+    <string name="product_text_bulk_fill_fan_delta_label">Bulksteg:</string>
+    <string name="product_text_bulk_fill_fan_rate_label">Bulkhast.:</string>
+    <string name="product_text_density_label">Densitet:</string>
+    <string name="product_text_density_units_label">Densitetsenh.:</string>
+    <string name="product_text_package_label">Paketstorlek:</string>
+    <string name="product_text_rate_delta_label">Deltahast.:</string>
+    <string name="product_text_rate_min_label">Min. appl.hast.:</string>
+    <string name="product_text_rate_max_label">Max. appl.hast.:</string>
+    <string name="product_text_rate_one_label">App.hast. 1:</string>
+    <string name="product_text_rate_two_label">App.hast. 2:</string>
+    <string name="product_text_vacuum_fan_delta_label">Vak.steg:</string>
+    <string name="product_text_vacuum_fan_rate_label">Vak.hast.:</string>
+
+    <string name="product_section_header">Produkter</string>
+    <string name="product_section_subheader">Totalt: 0 produkter</string>
+    <plurals name="product_section_subheader_format">
+        <item quantity="zero">Totalt: 0 produkter</item>
+        <item quantity="one">Totalt: 1 produkt</item>
+        <item quantity="other">Totalt: %1$d produkter</item>
+    </plurals>
+    <string name="product_search_hint">Produkt, form, hast.</string>
+
+    <string name="tab_product_library">Produktbibliotek</string>
+    <string name="create_product_button">Lägg t. produkt +</string>
+    <string name="no_available_products">Du har inga tillagda produkter.</string>
+    <string name="add_product_instructions">Lägg till en produkt med knappen \"Lägg t. produkt\" ovan.</string>
+    <string name="add_product_mix_instructions">Lägg till en prod.blandn. m. knappen \"Lägg t. prod.blandn.\" ovan.</string>
+
+    <string name="unit_gal_per_acre">gal/ac</string>
+
+    <string name="delete_dialog_confirm_button_text">Ta bort</string>
+    <string name="delete_product_dialog_body_text">Detta tar bort produkten och dess inställningar permanent.</string>
+
+    <string name="alert_title">Varning</string>
+    <string name="alert_dismiss">Stäng</string>
+    <string name="alert_in_use">Denna produkt används f.n. av en styrenhet.</string>
+
+    <string name="variety_title">Sorter</string>
+    <string name="variety_section_subheader">Totalt: 0 sorter</string>
+    <plurals name="variety_section_subheader_format">
+        <item quantity="zero">Totalt: 0 sorter</item>
+        <item quantity="one">Totalt: 1 sort</item>
+        <item quantity="other">Totalt: %1$d sorter</item>
+    </plurals>
+    <string name="variety_button_add_text">Lägg t. sort +</string>
+    <string name="variety_add_dialog_title_text">Lägg t. sort</string>
+    <string name="variety_add_or_edit_dialog_crop_type_header_text">Grödtyp</string>
+    <string name="variety_add_or_edit_dialog_name_header_text">Namn</string>
+    <string name="variety_delete_dialog_delete_title_text">Ta bort sort</string>
+    <string name="variety_delete_dialog_body_text_delete_allowed">Detta tar bort sorten och dess inställningar permanent.</string>
+    <string name="variety_dialog_cancel_button_text">Avbryt</string>
+    <string name="variety_dialog_save_button_text">Spara</string>
+    <string name="variety_edit_dialog_title">Redigera sort</string>
+    <string name="variety_instruction_add">Lägg till en sort med knappen \"Lägg t. sort\" ovan.</string>
+    <string name="variety_list_header_crop_type_text">GRÖDTYP</string>
+    <string name="variety_list_header_color">FÄRG</string>
+    <string name="variety_list_header_name_text">NAMN</string>
+    <string name="variety_not_available">Du har inga tillagda sorter.</string>
+    <string name="variety_search_hint">Sort, grödtyp</string>
+    <string name="tab_management">Hantering</string>
+    <string name="edit_field_name">Namn</string>
+    <string name="edit_dialog_header">Ändra namn</string>
+    <string name="edit_dialog_save">Spara</string>
+    <string name="edit_dialog_cancel">Avbryt</string>
+    <string name="tab_mng_none_header">Välj objekt att redigera, kopiera eller ta bort</string>
+    <string name="tab_mng_items_header">%1$d objekt valda</string>
+   <!-- end of productlibrary-package usage -->
+   <string name="edit_name_warning">Det finns redan ett objekt med detta namn. Välj ett annat namn</string>
+    <string name="edit_update_title">Uppdaterar objekt</string>
+</resources>
