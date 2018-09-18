@@ -101,6 +101,7 @@
     <dimen name="cp_complete_dialog_width">592dp</dimen>
     <dimen name="min_select_all_btn_width">175dp</dimen>
     <dimen name="progress_bar_padding">18dp</dimen>
+    <dimen name="dataexchange_perform_box_import_height">380dp</dimen>
 
     <!-- Datamanagement DataTree margins-->
     <dimen name="datamanagement_datatree_layout_margin_left">10dp</dimen>
