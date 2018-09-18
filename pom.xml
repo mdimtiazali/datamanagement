@@ -7,7 +7,7 @@
     <parent>
         <groupId>com.cnh.pf</groupId>
         <artifactId>parent</artifactId>
-        <version>15.0.0-delprod-SNAPSHOT</version>
+        <version>17.0.0-dev-SNAPSHOT</version>
     </parent>
 
     <artifactId>datamanagement-parent</artifactId>
