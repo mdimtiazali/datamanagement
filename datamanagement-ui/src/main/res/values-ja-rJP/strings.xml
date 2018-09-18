@@ -1,0 +1,232 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  ~ Copyright (C) 2016 CNH Industrial NV. All rights reserved.
+  ~
+  ~ This software contains proprietary information of CNH Industrial NV. Neither
+  ~ receipt nor possession thereof confers any right to reproduce, use, or
+  ~ disclose in whole or in part any such information without written
+  ~ authorization from CNH Industrial NV.
+  -->
+<resources>
+    <string name="app_name">データ管理</string>
+    <string name="tab_import">インポート</string>
+    <string name="tab_import_test">ｲﾝﾎﾟｰﾄﾃｽﾄ</string>
+    <string name="import_source">ｲﾝﾎﾟｰﾄｿｰｽ</string>
+    <string name="destination">宛先</string>
+    <string name="collapse_button_content_description">折り畳みボタン</string>
+    <string name="import_selected">ｲﾝﾎﾟｰﾄを選択</string>
+    <string name="export_selected">ｴｸｽﾎﾟｰﾄを選択</string>
+    <string name="done">完了</string>
+    <string name="type">ﾀｲﾌﾟ:</string>
+    <string name="name">名前:</string>
+    <string name="target">対象</string>
+    <string name="select_target">対象の選択</string>
+    <string name="copy_and_replace">置き換え</string>
+    <string name="dont_copy">コピー禁止</string>
+    <string name="keep_both">両方保持</string>
+    <string name="conflict">競合</string>
+    <string name="new_id_title">新規IDの入力</string>
+    <string name="new_id_label">新規ID:</string>
+    <string name="calculating_targets">対象計算中</string>
+    <string name="checking_targets">潜在的な対象を確認中...</string>
+    <string name="checking_conflicts">競合を確認中...</string>
+    <string name="importing">ｲﾝﾎﾟｰﾄ中...</string>
+    <string name="select_path">パスを選択...</string>
+    <string name="continue_string">続行</string>
+    <string name="next">次へ</string>
+
+    <string name="pfds">生産者/農場/圃場</string>
+    <string name="vehicles">車両</string>
+    <string name="imps">作業機</string>
+    <string name="prescriptions">圃場設定</string>
+    <string name="tasks">ﾀｽｸ</string>
+    <string name="boundaries">境界</string>
+    <string name="obstacles">障害物</string>
+    <string name="guidance_groups">スワス</string>
+    <string name="guidance_patterns">ｶﾞｲﾀﾞﾝｽﾊﾟﾀｰﾝ</string>
+    <string name="notes">注記</string>
+
+    <string name="products">作物</string>
+    <string name="product_mixes">ﾌﾟﾛﾀﾞｸﾄ混合</string>
+    <string name="select_source">ｲﾝﾎﾟｰﾄｿｰｽの選択</string>
+    <string name="import_drag_and_drop"><![CDATA[ﾄﾞﾗｯｸﾞ&ﾄﾞﾛｯﾌﾟし\nPCM/ﾃﾞｨｽﾌﾟﾚｲに\nｲﾝﾎﾟｰﾄ]]></string>
+    <string name="export_drag_and_drop"><![CDATA[ﾄﾞﾗｯｸﾞ&ﾄﾞﾛｯﾌﾟし\nｴｸｽﾎﾟｰﾄ]]></string>
+    <string name="select_all">全て選択</string>
+    <string formatted="false" name="x_of_y_format">%d中の%d</string>
+    <string name="usb_string">USB</string>
+    <string name="display_string">ﾃﾞｨｽﾌﾟﾚｲ</string>
+    <string name="display_numbered">ﾃﾞｨｽﾌﾟﾚｲ%d</string>
+    <string name="display_named">ﾃﾞｨｽﾌﾟﾚｲ%s</string>
+    <string name="select_string">選択</string>
+    <string name="export_to">宛先:</string>
+    <string name="export_format">ｴｸｽﾎﾟｰﾄ形式:</string>
+    <string name="tab_export">エクスポート</string>
+    <string name="percent_complete">%完了</string>
+    <string name="loading_string">ﾛｰﾄﾞ中</string>
+    <string name="exporting_string">ｴｸｽﾎﾟｰﾄ中</string>
+    <string name="importing_string">ｲﾝﾎﾟｰﾄ中</string>
+    <string name="exporting_data">ﾃﾞｰﾀｴｸｽﾎﾟｰﾄ中</string>
+    <string name="importing_data">ﾃﾞｰﾀｲﾝﾎﾟｰﾄ中</string>
+    <string name="select_source_first">開始するには、\nまずｲﾝﾎﾟｰﾄｿｰｽ\nを選択します</string>
+    <string name="no_import_source">ｲﾝﾎﾟｰﾄｿｰｽﾃﾞﾊﾞｲｽが見つかりません。\nﾃﾞﾊﾞｲｽの接続を確認してください。</string>
+    <string name="deselect_all">全て選択解除</string>
+    <string formatted="false" name="duplicate_file">「%s」という%sは既に存在</string>
+    <string name="existing_file">既存</string>
+    <string name="existing_file_typed">既存の%s</string>
+    <string name="new_file">新規</string>
+    <string name="new_file_typed">新規%s</string>
+    <string name="data_conflict">データ競合</string>
+    <string name="rename_file">%sの名前変更</string>
+    <string name="file_name">ﾌｧｲﾙ名</string>
+    <string name="empty_discovery">ﾃﾞｰﾀがありません</string>
+    <string name="export_cancel_confirmation">現在のｴｸｽﾎﾟｰﾄがｷｬﾝｾﾙされます。\n続行しますか?</string>
+
+    <string name="format_description">ISOXML: \n全ﾌｧｲﾙをISOXMLにｴｸｽﾎﾟｰﾄ可能。 \n \nShapefile: \n圃場設定。</string>
+
+    <string name="error_no_data">ﾃﾞｰﾀなし</string>
+    <string name="error_no_source">ｿｰｽのﾃﾞｰﾀｿｰｽなし</string>
+    <string name="error_no_target">対象のﾃﾞｰﾀｿｰｽなし</string>
+    <string name="error_perform_ops">操作実行エラー</string>
+    <string name="error_calculate_conflicts">競合計算エラー</string>
+    <string name="error_calculate_operations">対象計算エラー</string>
+    <string name="error_discovery">検出エラー</string>
+    <string name="status_cancelled">キャンセル</string>
+    <string name="status_cancelling">ｷｬﾝｾﾙ中...</string>
+    <string name="status_successful">成功</string>
+    <string name="status_starting">起動中...</string>
+    <string name="import_complete">インポート完了</string>
+    <string name="import_cancel">ｲﾝﾎﾟｰﾄｷｬﾝｾﾙ</string>
+    <string name="export_complete">エクスポート完了</string>
+    <string name="export_cancel">ｴｸｽﾎﾟｰﾄｷｬﾝｾﾙ</string>
+
+    <string name="usb_data_available">USBﾃﾞｰﾀ利用可能</string>
+    <string name="usb_no_data_available">USBﾃﾞｰﾀ利用不能</string>
+    <string name="usb_scanning">USBｽﾃｨｯｸをｽｷｬﾝ中...</string>
+
+    <string name="stop">停止</string>
+    <string name="status_progress">%1$s %2$d/%3$d</string>
+   <!-- starting here everything is used by the productlibrary-package -->
+   <string name="product_default_rate">ﾃﾞﾌｫﾙﾄﾚｰﾄ</string>
+    <string name="product_form">フォーム</string>
+    <string name="product_name">名前</string>
+   <!-- Product Mix -->
+   <string name="product_mix_add_button_title">追加</string>
+    <string name="product_mix_default_text_edittext">作物名</string>
+    <string name="product_mix_default_text_picklist">作物フォーム</string>
+    <string name="product_mix_search_hint">ﾌﾟﾛﾀﾞｸﾄ混合、ﾌｫｰﾑ、ﾚｰﾄ</string>
+    <string name="product_mix_subheader_total_mix">合計: ﾌﾟﾛﾀﾞｸﾄ混合0個</string>
+    <plurals name="product_mix_subheader_total_mix_format">
+        <item quantity="zero">合計: ﾌﾟﾛﾀﾞｸﾄ混合0個</item>
+        <item quantity="one">合計: ﾌﾟﾛﾀﾞｸﾄ混合1個</item>
+        <item quantity="other">合計: ﾌﾟﾛﾀﾞｸﾄ混合%1$d個</item>
+    </plurals>
+    <string name="product_mix_title">ﾌﾟﾛﾀﾞｸﾄ混合</string>
+    <string name="product_mix_text_button_add_product_mix">ﾌﾟﾛﾀﾞｸﾄ混合の追加 +</string>
+    <string name="product_mix_title_dialog_add_product_mix">ﾌﾟﾛﾀﾞｸﾄ混合の追加</string>
+    <string name="product_mix_title_dialog_edit_product_mix">ﾌﾟﾛﾀﾞｸﾄ混合の編集</string>
+    <string name="product_mix_title_dialog_copy_product_mix">ﾌﾟﾛﾀﾞｸﾄ混合のｺﾋﾟｰ</string>
+    <string name="product_mix_title_add_new_product">新規ﾌﾟﾛﾀﾞｸﾄの追加 +</string>
+    <string name="product_mix_title_add_new_carrier">新規ｷｬﾘｱの追加</string>
+    <string name="product_mix_text_button_remove">削除 x</string>
+    <string name="product_mix_text_button_add_more">更に追加 +</string>
+    <string name="product_mix_title_category_button_title_mix_products">混合作物</string>
+    <string name="product_mix_title_name">プロダクト混合名</string>
+    <string name="product_mix_title_carrier">ｷｬﾘｱ</string>
+    <string name="product_mix_title_total_mix_amount">合計混合量</string>
+    <string name="product_mix_title_carrier_amount">運搬量</string>
+    <string name="product_mix_title_mix_products">混合作物</string>
+    <string name="product_mix_title_product">作物%1$d</string>
+    <string name="product_mix_title_product_amount">量</string>
+    <string name="product_mix_title_units">単位</string>
+    <string name="product_mix_title_application_rates">散布レート</string>
+    <string name="product_mix_title_application_rate_1">散布レート1 (ﾃﾞﾌｫﾙﾄ)</string>
+    <string name="product_mix_title_application_rate_2">散布レート2</string>
+    <string name="product_mix_title_application_rate_1_short">散布ﾚｰﾄ1</string>
+    <string name="product_mix_title_application_rate_2_short">散布ﾚｰﾄ2</string>
+    <string name="product_mix_title_application_rate_1_short_point">散布ﾚｰﾄ1:</string>
+    <string name="product_mix_title_application_rate_2_short_point">散布ﾚｰﾄ2:</string>
+    <string name="product_mix_title_min_application_rate">最小散布レート</string>
+    <string name="product_mix_title_max_application_rate">最大散布レート</string>
+    <string name="product_mix_title_delta_application_rate">デルタ散布レート</string>
+    <string name="product_mix_title_application_rates_per_product">作物あたりの散布レート</string>
+    <string name="product_mix_title_products">作物</string>
+    <string name="product_mix_title_advanced">ｱﾄﾞﾊﾞﾝｽ</string>
+    <string name="product_mix_title_usage">使用量</string>
+    <string name="product_mix_title_package_size">パッケージサイズ</string>
+    <string name="product_mix_title_package_size_units">パッケージサイズ 単位</string>
+    <string name="product_mix_title_density">密度</string>
+    <string name="product_mix_title_density_unit">密度単位</string>
+    <string name="product_mix_title_picklist_default_select">選択</string>
+    <string name="product_mix_title_product_mix_form">ﾌﾟﾛﾀﾞｸﾄ混合ﾌｫｰﾑ</string>
+    <string name="product_mix_unittext_default_text">--.-</string>
+
+    <string name="product_text_bulk_fill_fan_delta_label">ﾊﾞﾙｸｽﾃｯﾌﾟ:</string>
+    <string name="product_text_bulk_fill_fan_rate_label">ﾊﾞﾙｸﾚｰﾄ:</string>
+    <string name="product_text_density_label">密度:</string>
+    <string name="product_text_density_units_label">密度単位:</string>
+    <string name="product_text_package_label">ﾊﾟｯｹｰｼﾞｻｲｽﾞ:</string>
+    <string name="product_text_rate_delta_label">ﾃﾞﾙﾀﾚｰﾄ:</string>
+    <string name="product_text_rate_min_label">最小散布ﾚｰﾄ:</string>
+    <string name="product_text_rate_max_label">最大散布ﾚｰﾄ:</string>
+    <string name="product_text_rate_one_label">散布ﾚｰﾄ1:</string>
+    <string name="product_text_rate_two_label">散布ﾚｰﾄ2:</string>
+    <string name="product_text_vacuum_fan_delta_label">真空ｽﾃｯﾌﾟ:</string>
+    <string name="product_text_vacuum_fan_rate_label">真空ﾚｰﾄ:</string>
+
+    <string name="product_section_header">作物</string>
+    <string name="product_section_subheader">合計: 作物0個</string>
+    <plurals name="product_section_subheader_format">
+        <item quantity="zero">合計: 作物0個</item>
+        <item quantity="one">合計: 作物1個</item>
+        <item quantity="other">合計: 作物%1$d個</item>
+    </plurals>
+    <string name="product_search_hint">ﾌﾟﾛﾀﾞｸﾄ、ﾌｫｰﾑ、ﾚｰﾄ</string>
+
+    <string name="tab_product_library">ﾌﾟﾛﾀﾞｸﾄﾗｲﾌﾞﾗﾘ</string>
+    <string name="create_product_button">作物の追加 +</string>
+    <string name="no_available_products">追加した作物はありません。</string>
+    <string name="add_product_instructions">上記の[作物の追加]ボタンで作物を追加します。</string>
+    <string name="add_product_mix_instructions">上記の[ﾌﾟﾛﾀﾞｸﾄ混合の追加]ﾎﾞﾀﾝでﾌﾟﾛﾀﾞｸﾄ混合を追加します。</string>
+
+    <string name="unit_gal_per_acre">gal/ac</string>
+
+    <string name="delete_dialog_confirm_button_text">削除</string>
+    <string name="delete_product_dialog_body_text">この作物と設定が完全に削除されます。</string>
+
+    <string name="alert_title">ｱﾗｰﾄ</string>
+    <string name="alert_dismiss">閉じる</string>
+    <string name="alert_in_use">この作物は現在ｺﾝﾄﾛｰﾗｰで使用されています。</string>
+
+    <string name="variety_title">種類</string>
+    <string name="variety_section_subheader">合計: 0品種</string>
+    <plurals name="variety_section_subheader_format">
+        <item quantity="zero">合計: 0品種</item>
+        <item quantity="one">合計: 1品種</item>
+        <item quantity="other">合計: %1$d品種</item>
+    </plurals>
+    <string name="variety_button_add_text">品種の追加 +</string>
+    <string name="variety_add_dialog_title_text">品種の追加</string>
+    <string name="variety_add_or_edit_dialog_crop_type_header_text">作物タイプ</string>
+    <string name="variety_add_or_edit_dialog_name_header_text">名前</string>
+    <string name="variety_delete_dialog_delete_title_text">品種の削除</string>
+    <string name="variety_delete_dialog_body_text_delete_allowed">この品種と設定が完全に削除されます。</string>
+    <string name="variety_dialog_cancel_button_text">ｷｬﾝｾﾙ</string>
+    <string name="variety_dialog_save_button_text">保存</string>
+    <string name="variety_edit_dialog_title">品種の編集</string>
+    <string name="variety_instruction_add">上記の[品種の追加]ボタンで品種を追加します。</string>
+    <string name="variety_list_header_crop_type_text">作物タイプ</string>
+    <string name="variety_list_header_color">カラー</string>
+    <string name="variety_list_header_name_text">名前</string>
+    <string name="variety_not_available">追加した品種はありません。</string>
+    <string name="variety_search_hint">品種、作物タイプ</string>
+    <string name="tab_management">管理</string>
+    <string name="edit_field_name">名前</string>
+    <string name="edit_dialog_header">名前の編集</string>
+    <string name="edit_dialog_save">保存</string>
+    <string name="edit_dialog_cancel">ｷｬﾝｾﾙ</string>
+    <string name="tab_mng_none_header">編集、ｺﾋﾟｰ、削除する項目を選択</string>
+    <string name="tab_mng_items_header">%1$d個の項目を選択</string>
+   <!-- end of productlibrary-package usage -->
+   <string name="edit_name_warning">この名前の項目は既に存在します。別の名前を選択してください</string>
+    <string name="edit_update_title">項目更新中</string>
+</resources>
