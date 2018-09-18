@@ -1,0 +1,232 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  ~ Copyright (C) 2016 CNH Industrial NV. All rights reserved.
+  ~
+  ~ This software contains proprietary information of CNH Industrial NV. Neither
+  ~ receipt nor possession thereof confers any right to reproduce, use, or
+  ~ disclose in whole or in part any such information without written
+  ~ authorization from CNH Industrial NV.
+  -->
+<resources>
+    <string name="app_name">Data Management</string>
+    <string name="tab_import">Tuo</string>
+    <string name="tab_import_test">Tuontitesti</string>
+    <string name="import_source">Tuontilähde</string>
+    <string name="destination">Kohde</string>
+    <string name="collapse_button_content_description">Pienennä-painike</string>
+    <string name="import_selected">Tuonti valittu</string>
+    <string name="export_selected">Vienti valittu</string>
+    <string name="done">Valmis</string>
+    <string name="type">Tyyppi:</string>
+    <string name="name">Nimi:</string>
+    <string name="target">Tavoite</string>
+    <string name="select_target">Valitse tavoite</string>
+    <string name="copy_and_replace">Vaihda</string>
+    <string name="dont_copy">Älä kopioi</string>
+    <string name="keep_both">Säilytä molemmat</string>
+    <string name="conflict">Ristiriita</string>
+    <string name="new_id_title">Syötä uusi tunnus</string>
+    <string name="new_id_label">Uusi tunnus:</string>
+    <string name="calculating_targets">Lasketaan tavoitteita</string>
+    <string name="checking_targets">Tarkastetaan mahdollisia tavoitteita...</string>
+    <string name="checking_conflicts">Tarkastetaan ristiriitoja...</string>
+    <string name="importing">Tuodaan...</string>
+    <string name="select_path">Valitse polku...</string>
+    <string name="continue_string">Jatka</string>
+    <string name="next">Seuraava</string>
+
+    <string name="pfds">Viljelijä/tila/pelto</string>
+    <string name="vehicles">Ajoneuvot</string>
+    <string name="imps">Työkoneet</string>
+    <string name="prescriptions">Ohjeet</string>
+    <string name="tasks">Tehtävät</string>
+    <string name="boundaries">Rajaviivat</string>
+    <string name="obstacles">Esteet</string>
+    <string name="guidance_groups">Ajolinjat</string>
+    <string name="guidance_patterns">Ohjausmallit</string>
+    <string name="notes">Huomautuksia</string>
+
+    <string name="products">Tuotteet</string>
+    <string name="product_mixes">Tuoteseokset</string>
+    <string name="select_source">Valitse tuontilähde</string>
+    <string name="import_drag_and_drop"><![CDATA[Tuo \nPCM:iin/näyttöön \nraahaamalla]]></string>
+    <string name="export_drag_and_drop"><![CDATA[Vie \nraahaamalla]]></string>
+    <string name="select_all">Valitse kaikki</string>
+    <string formatted="false" name="x_of_y_format">%d / %d</string>
+    <string name="usb_string">USB</string>
+    <string name="display_string">Näyttö</string>
+    <string name="display_numbered">Näyttö %d</string>
+    <string name="display_named">Näyttö %s</string>
+    <string name="select_string">Valitse</string>
+    <string name="export_to">Kohde:</string>
+    <string name="export_format">Vientimuoto:</string>
+    <string name="tab_export">Vienti</string>
+    <string name="percent_complete">% valmiina</string>
+    <string name="loading_string">Ladataan</string>
+    <string name="exporting_string">Vienti</string>
+    <string name="importing_string">Tuonti</string>
+    <string name="exporting_data">Tietojen vienti</string>
+    <string name="importing_data">Tietojen tuonti</string>
+    <string name="select_source_first">Aloita \nvalitsemalla ensin \ntuontilähde</string>
+    <string name="no_import_source">Tuontilähteen laitetta ei havaittu. \nTarkasta laitteen yhteys.</string>
+    <string name="deselect_all">Poista kaikkien valinta</string>
+    <string formatted="false" name="duplicate_file">%s nimellä \"%s\" on jo olemassa</string>
+    <string name="existing_file">Olemassa oleva</string>
+    <string name="existing_file_typed">Olemassa oleva %s</string>
+    <string name="new_file">Uusi</string>
+    <string name="new_file_typed">Uusi %s</string>
+    <string name="data_conflict">Tietojen ristiriita</string>
+    <string name="rename_file">Nimeä uudelleen %s</string>
+    <string name="file_name">Tiedoston nimi</string>
+    <string name="empty_discovery">Tietoja ei löytynyt</string>
+    <string name="export_cancel_confirmation">Tämä peruuttaa nykyisen viennin.\nHaluatko jatkaa?</string>
+
+    <string name="format_description">ISOXML: \nKaikki tiedostot voidaan viedä ISOXML:iin. \n \nShapefile: \nOhjeet.</string>
+
+    <string name="error_no_data">Ei tietoja</string>
+    <string name="error_no_source">Ei lähteen tietolähdettä</string>
+    <string name="error_no_target">Ei kohteen tietolähdettä</string>
+    <string name="error_perform_ops">Suoritusvirhe</string>
+    <string name="error_calculate_conflicts">Laske ristiriitojen virhe</string>
+    <string name="error_calculate_operations">Laske tavoitteen virhe</string>
+    <string name="error_discovery">Havaintovirhe</string>
+    <string name="status_cancelled">Peruttu</string>
+    <string name="status_cancelling">Peruutetaan...</string>
+    <string name="status_successful">Onnistui</string>
+    <string name="status_starting">Käynnistetään...</string>
+    <string name="import_complete">Tuonti valmis</string>
+    <string name="import_cancel">Tuonti peruttu</string>
+    <string name="export_complete">Vienti valmis</string>
+    <string name="export_cancel">Vienti peruttu</string>
+
+    <string name="usb_data_available">USB-tietoja saatavilla</string>
+    <string name="usb_no_data_available">USB-tietoja ei saatavilla</string>
+    <string name="usb_scanning">Skannataan USB-muistitikkua...</string>
+
+    <string name="stop">Seis</string>
+    <string name="status_progress">%1$s %2$d/%3$d</string>
+   <!-- starting here everything is used by the productlibrary-package -->
+   <string name="product_default_rate">Oletusnopeus</string>
+    <string name="product_form">Muoto</string>
+    <string name="product_name">Nimi</string>
+   <!-- Product Mix -->
+   <string name="product_mix_add_button_title">Lisää</string>
+    <string name="product_mix_default_text_edittext">Tuotteen nimi</string>
+    <string name="product_mix_default_text_picklist">Tuotemuoto</string>
+    <string name="product_mix_search_hint">Tuoteseos, muoto, nopeus</string>
+    <string name="product_mix_subheader_total_mix">Yhteensä: 0 tuoteseosta</string>
+    <plurals name="product_mix_subheader_total_mix_format">
+        <item quantity="zero">Yhteensä: 0 tuoteseosta</item>
+        <item quantity="one">Yhteensä: 1 tuoteseos</item>
+        <item quantity="other">Yhteensä: %1$d tuoteseosta</item>
+    </plurals>
+    <string name="product_mix_title">Tuoteseos</string>
+    <string name="product_mix_text_button_add_product_mix">Lisää tuoteseos +</string>
+    <string name="product_mix_title_dialog_add_product_mix">Lisää tuoteseos</string>
+    <string name="product_mix_title_dialog_edit_product_mix">Muokkaa tuoteseosta</string>
+    <string name="product_mix_title_dialog_copy_product_mix">Kopioi tuoteseos</string>
+    <string name="product_mix_title_add_new_product">Lisää uusi tuote</string>
+    <string name="product_mix_title_add_new_carrier">Lisää uusi valmistaja</string>
+    <string name="product_mix_text_button_remove">Poista x</string>
+    <string name="product_mix_text_button_add_more">Lisää +</string>
+    <string name="product_mix_title_category_button_title_mix_products">Seoksen tuotteet</string>
+    <string name="product_mix_title_name">Tuotes. nimi</string>
+    <string name="product_mix_title_carrier">Valmistaja</string>
+    <string name="product_mix_title_total_mix_amount">Sekoitus yhteensä</string>
+    <string name="product_mix_title_carrier_amount">Valmistajan määrä</string>
+    <string name="product_mix_title_mix_products">Seoksen tuotteet</string>
+    <string name="product_mix_title_product">Tuote %1$d</string>
+    <string name="product_mix_title_product_amount">Määrä</string>
+    <string name="product_mix_title_units">Yksiköt</string>
+    <string name="product_mix_title_application_rates">Levitysnopeudet</string>
+    <string name="product_mix_title_application_rate_1">Levitysnopeus 1 (oletus)</string>
+    <string name="product_mix_title_application_rate_2">Levitysnopeus 2</string>
+    <string name="product_mix_title_application_rate_1_short">Levitysnopeus 1</string>
+    <string name="product_mix_title_application_rate_2_short">Levitysnopeus 2</string>
+    <string name="product_mix_title_application_rate_1_short_point">Levitysnopeus 1:</string>
+    <string name="product_mix_title_application_rate_2_short_point">Levitysnopeus 2:</string>
+    <string name="product_mix_title_min_application_rate">Pienin levitysnopeus</string>
+    <string name="product_mix_title_max_application_rate">Suurin levitysnopeus</string>
+    <string name="product_mix_title_delta_application_rate">Delta-levitysnopeus</string>
+    <string name="product_mix_title_application_rates_per_product">Levitysnopeudet tuotteen mukaan</string>
+    <string name="product_mix_title_products">Tuotteet</string>
+    <string name="product_mix_title_advanced">Edistynyt</string>
+    <string name="product_mix_title_usage">Käyttö</string>
+    <string name="product_mix_title_package_size">Pakkauskoko</string>
+    <string name="product_mix_title_package_size_units">Pakkausten yks.koot</string>
+    <string name="product_mix_title_density">Tiheys</string>
+    <string name="product_mix_title_density_unit">Tiheysyksiköt</string>
+    <string name="product_mix_title_picklist_default_select">Valitse</string>
+    <string name="product_mix_title_product_mix_form">Tuoteseoksen muoto</string>
+    <string name="product_mix_unittext_default_text">--.-</string>
+
+    <string name="product_text_bulk_fill_fan_delta_label">Irtotavaran vaihe:</string>
+    <string name="product_text_bulk_fill_fan_rate_label">Irtotavaran nopeus:</string>
+    <string name="product_text_density_label">Tiheys:</string>
+    <string name="product_text_density_units_label">Tiheysyksiköt:</string>
+    <string name="product_text_package_label">Pakkauskoko:</string>
+    <string name="product_text_rate_delta_label">Delta-nopeus:</string>
+    <string name="product_text_rate_min_label">Pienin levitysnopeus:</string>
+    <string name="product_text_rate_max_label">Suurin levitysnopeus:</string>
+    <string name="product_text_rate_one_label">Levitysnopeus 1:</string>
+    <string name="product_text_rate_two_label">Levitysnopeus 2:</string>
+    <string name="product_text_vacuum_fan_delta_label">Alip. vaihe:</string>
+    <string name="product_text_vacuum_fan_rate_label">Alip. nopeus:</string>
+
+    <string name="product_section_header">Tuotteet</string>
+    <string name="product_section_subheader">Yhteensä: 0 tuotetta</string>
+    <plurals name="product_section_subheader_format">
+        <item quantity="zero">Yhteensä: 0 tuotetta</item>
+        <item quantity="one">Yhteensä: 1 tuote</item>
+        <item quantity="other">Yhteensä: %1$d tuotetta</item>
+    </plurals>
+    <string name="product_search_hint">Tuote, muoto, nopeus</string>
+
+    <string name="tab_product_library">Tuotekirjasto</string>
+    <string name="create_product_button">Lisää tuote +</string>
+    <string name="no_available_products">Sinulla ei ole lisättäviä tuotteita.</string>
+    <string name="add_product_instructions">Lisää tuote painamalla yllä olevaa \"Lisää tuote\" -painiketta.</string>
+    <string name="add_product_mix_instructions">Lisää tuoteseos painamalla yllä olevaa \"Lisää tuoteseos\" -painiketta.</string>
+
+    <string name="unit_gal_per_acre">gal/ac</string>
+
+    <string name="delete_dialog_confirm_button_text">Poista</string>
+    <string name="delete_product_dialog_body_text">Tämä poistaa tuotteen ja sen asetukset pysyvästi.</string>
+
+    <string name="alert_title">Varoitus</string>
+    <string name="alert_dismiss">Ohita</string>
+    <string name="alert_in_use">Ohjain käyttää tätä tuotetta parhaillaan.</string>
+
+    <string name="variety_title">Lajikkeet</string>
+    <string name="variety_section_subheader">Yhteensä: 0 lajiketta</string>
+    <plurals name="variety_section_subheader_format">
+        <item quantity="zero">Yhteensä: 0 lajiketta</item>
+        <item quantity="one">Yhteensä: 1 lajike</item>
+        <item quantity="other">Yhteensä: %1$d lajiketta</item>
+    </plurals>
+    <string name="variety_button_add_text">Lisää lajike +</string>
+    <string name="variety_add_dialog_title_text">Lisää lajike</string>
+    <string name="variety_add_or_edit_dialog_crop_type_header_text">Satotyyppi</string>
+    <string name="variety_add_or_edit_dialog_name_header_text">Nimi</string>
+    <string name="variety_delete_dialog_delete_title_text">Poista lajike</string>
+    <string name="variety_delete_dialog_body_text_delete_allowed">Tämä poistaa lajikkeen ja sen asetukset pysyvästi.</string>
+    <string name="variety_dialog_cancel_button_text">Peruuta</string>
+    <string name="variety_dialog_save_button_text">Tallenna</string>
+    <string name="variety_edit_dialog_title">Muokkaa lajiketta</string>
+    <string name="variety_instruction_add">Lisää lajike painamalla yllä olevaa \"Lisää lajike\" -painiketta.</string>
+    <string name="variety_list_header_crop_type_text">SATOTYYPPI</string>
+    <string name="variety_list_header_color">VÄRI</string>
+    <string name="variety_list_header_name_text">NIMI</string>
+    <string name="variety_not_available">Sinulla ei ole lisättäviä lajikkeita.</string>
+    <string name="variety_search_hint">Lajike, satotyyppi</string>
+    <string name="tab_management">Hallinta</string>
+    <string name="edit_field_name">Nimi</string>
+    <string name="edit_dialog_header">Muokkaa nimeä</string>
+    <string name="edit_dialog_save">Tallenna</string>
+    <string name="edit_dialog_cancel">Peruuta</string>
+    <string name="tab_mng_none_header">Valitse muokattavat, kopioitavat tai poistettavat kohteet</string>
+    <string name="tab_mng_items_header">%1$d kohdetta valittu</string>
+   <!-- end of productlibrary-package usage -->
+   <string name="edit_name_warning">Saman niminen kohde on jo olemassa. Valitse toinen nimi</string>
+    <string name="edit_update_title">Päivitetään kohdetta</string>
+</resources>

@@ -1,0 +1,232 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  ~ Copyright (C) 2016 CNH Industrial NV. All rights reserved.
+  ~
+  ~ This software contains proprietary information of CNH Industrial NV. Neither
+  ~ receipt nor possession thereof confers any right to reproduce, use, or
+  ~ disclose in whole or in part any such information without written
+  ~ authorization from CNH Industrial NV.
+  -->
+<resources>
+    <string name="app_name">Gegevensbeheer</string>
+    <string name="tab_import">Importeren</string>
+    <string name="tab_import_test">Test importen</string>
+    <string name="import_source">Bron importeren</string>
+    <string name="destination">Bestemming</string>
+    <string name="collapse_button_content_description">Knop samenvouwen</string>
+    <string name="import_selected">Importeren geselecteerde</string>
+    <string name="export_selected">Exporteren geselecteerde</string>
+    <string name="done">Uitgevoerd</string>
+    <string name="type">Type:</string>
+    <string name="name">Naam:</string>
+    <string name="target">Doel</string>
+    <string name="select_target">Doel selecteren</string>
+    <string name="copy_and_replace">Vervangen</string>
+    <string name="dont_copy">Niet kopiëren</string>
+    <string name="keep_both">Beide bewaren</string>
+    <string name="conflict">Conflict</string>
+    <string name="new_id_title">Nieuw identificatiekenmerk invoeren</string>
+    <string name="new_id_label">Nieuw identificatiekenmerk:</string>
+    <string name="calculating_targets">Doelen worden berekend</string>
+    <string name="checking_targets">Mogelijke doelen worden gecontroleerd...</string>
+    <string name="checking_conflicts">Conflicten worden gecontroleerd...</string>
+    <string name="importing">Bezig met importeren...</string>
+    <string name="select_path">Pad selecteren...</string>
+    <string name="continue_string">Doorgaan</string>
+    <string name="next">Vlg.</string>
+
+    <string name="pfds">Teler / Boerderij / Veld</string>
+    <string name="vehicles">Voertuigen</string>
+    <string name="imps">Werktuigen</string>
+    <string name="prescriptions">Voorschriften</string>
+    <string name="tasks">Taken</string>
+    <string name="boundaries">Grenzen</string>
+    <string name="obstacles">Obstakels</string>
+    <string name="guidance_groups">Zwad</string>
+    <string name="guidance_patterns">Geleidingspatronen</string>
+    <string name="notes">Opmerkingen</string>
+
+    <string name="products">Producten</string>
+    <string name="product_mixes">Productmengsels</string>
+    <string name="select_source">Importbron selecteren</string>
+    <string name="import_drag_and_drop"><![CDATA[\n slepen en neerzetten om \n te importen naar PCM/display]]></string>
+    <string name="export_drag_and_drop"><![CDATA[\n Slepen naar exporteren en neerzetten]]></string>
+    <string name="select_all">Alles selecteren</string>
+    <string formatted="false" name="x_of_y_format">%d van %d</string>
+    <string name="usb_string">USB</string>
+    <string name="display_string">Display</string>
+    <string name="display_numbered">Display %d</string>
+    <string name="display_named">Display %s</string>
+    <string name="select_string">Selecteren</string>
+    <string name="export_to">Bestemming:</string>
+    <string name="export_format">Exportindeling:</string>
+    <string name="tab_export">Exporteren</string>
+    <string name="percent_complete">% voltooid</string>
+    <string name="loading_string">Laden</string>
+    <string name="exporting_string">Bezig met exporteren</string>
+    <string name="importing_string">Bezig met importeren</string>
+    <string name="exporting_data">Gegevens worden geëxporteerd</string>
+    <string name="importing_data">Gegevens worden geïmporteerd</string>
+    <string name="select_source_first">Om te beginnen \nselecteert u eerst uw \nimportbron</string>
+    <string name="no_import_source">Er is geen importbronapparaat gedetecteerd. \nControleer de aansluiting van het apparaat.</string>
+    <string name="deselect_all">Alles deselecteren</string>
+    <string formatted="false" name="duplicate_file">Een %s met de naam \"%s\" bestaat reeds</string>
+    <string name="existing_file">Bestaande</string>
+    <string name="existing_file_typed">Bestaande %s</string>
+    <string name="new_file">Nieuw</string>
+    <string name="new_file_typed">Nieuwe %s</string>
+    <string name="data_conflict">Gegevensconflict</string>
+    <string name="rename_file">Naam wijzigen %s</string>
+    <string name="file_name">Bestandsnaam</string>
+    <string name="empty_discovery">Geen gegevens gevonden</string>
+    <string name="export_cancel_confirmation">Hierdoor wordt de huidige export geannuleerd.\nWilt u doorgaan?</string>
+
+    <string name="format_description">ISOXML: \nAlle bestanden kunnen in ISOXML worden geëxporteerd. \n \nVormbestand: \nVoorschriften.</string>
+
+    <string name="error_no_data">Geen gegevens</string>
+    <string name="error_no_source">Geen gegevensbron van bron</string>
+    <string name="error_no_target">Geen gegevensbron van doel</string>
+    <string name="error_perform_ops">Fout bij uitvoeren werkzaamheden</string>
+    <string name="error_calculate_conflicts">Fout bij berekenen conflicten</string>
+    <string name="error_calculate_operations">Fout bij berekenen doelen</string>
+    <string name="error_discovery">Fout bij ontdekking</string>
+    <string name="status_cancelled">Afgebroken</string>
+    <string name="status_cancelling">Bezig met afbreken...</string>
+    <string name="status_successful">Geslaagd</string>
+    <string name="status_starting">Bezig met starten...</string>
+    <string name="import_complete">Importeren voltooid</string>
+    <string name="import_cancel">Importeren afgebroken</string>
+    <string name="export_complete">Exporteren voltooid</string>
+    <string name="export_cancel">Exporteren afgebroken</string>
+
+    <string name="usb_data_available">USB-gegevens beschikbaar</string>
+    <string name="usb_no_data_available">Geen USB-gegevens beschikbaar</string>
+    <string name="usb_scanning">USB-stick wordt gescand...</string>
+
+    <string name="stop">Stop</string>
+    <string name="status_progress">%1$s %2$d/%3$d</string>
+   <!-- starting here everything is used by the productlibrary-package -->
+   <string name="product_default_rate">Standaardsnelheid</string>
+    <string name="product_form">Van</string>
+    <string name="product_name">Naam</string>
+   <!-- Product Mix -->
+   <string name="product_mix_add_button_title">Toevoegen</string>
+    <string name="product_mix_default_text_edittext">Productnaam</string>
+    <string name="product_mix_default_text_picklist">Gewasvorm</string>
+    <string name="product_mix_search_hint">Productmengsel, vorm, snelheid</string>
+    <string name="product_mix_subheader_total_mix">Totaal: 0 productmengsels</string>
+    <plurals name="product_mix_subheader_total_mix_format">
+        <item quantity="zero">Totaal: 0 productmengsels</item>
+        <item quantity="one">Totaal: 1 productmengsel</item>
+        <item quantity="other">Totaal: %1$d productmengsels</item>
+    </plurals>
+    <string name="product_mix_title">Productmengsel</string>
+    <string name="product_mix_text_button_add_product_mix">Productmengsel toevoegen +</string>
+    <string name="product_mix_title_dialog_add_product_mix">Productmengsel toevoegen</string>
+    <string name="product_mix_title_dialog_edit_product_mix">Productmengsel bewerken</string>
+    <string name="product_mix_title_dialog_copy_product_mix">Productmengsel kopiëren</string>
+    <string name="product_mix_title_add_new_product">Nieuw product toevoegen</string>
+    <string name="product_mix_title_add_new_carrier">Nieuwe drager toevoegen</string>
+    <string name="product_mix_text_button_remove">x verwijderen</string>
+    <string name="product_mix_text_button_add_more">Meer toevoegen +</string>
+    <string name="product_mix_title_category_button_title_mix_products">Producten mengen</string>
+    <string name="product_mix_title_name">Naam productmengsel</string>
+    <string name="product_mix_title_carrier">Drager</string>
+    <string name="product_mix_title_total_mix_amount">Totaal hoeveelheid mengsel</string>
+    <string name="product_mix_title_carrier_amount">Hoeveelheid in drager</string>
+    <string name="product_mix_title_mix_products">Producten mengen</string>
+    <string name="product_mix_title_product">Product %1$d</string>
+    <string name="product_mix_title_product_amount">Hoeveelheid</string>
+    <string name="product_mix_title_units">Eenheden</string>
+    <string name="product_mix_title_application_rates">Afgiftesnelheden</string>
+    <string name="product_mix_title_application_rate_1">Afgiftesnelheid 1 (standaard)</string>
+    <string name="product_mix_title_application_rate_2">Afgiftesnelheid 2</string>
+    <string name="product_mix_title_application_rate_1_short">Afg. snelheid 1</string>
+    <string name="product_mix_title_application_rate_2_short">Afg. snelheid 2</string>
+    <string name="product_mix_title_application_rate_1_short_point">Afg. snelheid 1:</string>
+    <string name="product_mix_title_application_rate_2_short_point">Afg. snelheid 2:</string>
+    <string name="product_mix_title_min_application_rate">Min. afgiftesnelheid</string>
+    <string name="product_mix_title_max_application_rate">Max. afgiftesnelheid</string>
+    <string name="product_mix_title_delta_application_rate">Verschil in afgiftesnelheid</string>
+    <string name="product_mix_title_application_rates_per_product">Afgiftesnelheden per product</string>
+    <string name="product_mix_title_products">Producten</string>
+    <string name="product_mix_title_advanced">Geavanceerd</string>
+    <string name="product_mix_title_usage">Gebruik</string>
+    <string name="product_mix_title_package_size">Afmetingen verpakking</string>
+    <string name="product_mix_title_package_size_units">Eenheden verpakkingseenheid</string>
+    <string name="product_mix_title_density">Dichtheid</string>
+    <string name="product_mix_title_density_unit">Eenheden dichtheid</string>
+    <string name="product_mix_title_picklist_default_select">Selecteren</string>
+    <string name="product_mix_title_product_mix_form">Vorm productmengsel</string>
+    <string name="product_mix_unittext_default_text">--,-</string>
+
+    <string name="product_text_bulk_fill_fan_delta_label">Bulkstap:</string>
+    <string name="product_text_bulk_fill_fan_rate_label">Bulksnelheid:</string>
+    <string name="product_text_density_label">Dichtheid:</string>
+    <string name="product_text_density_units_label">Eenheden dichtheid:</string>
+    <string name="product_text_package_label">Pakketformaat:</string>
+    <string name="product_text_rate_delta_label">Verschil in snelheid:</string>
+    <string name="product_text_rate_min_label">Min. afgiftesnelheid:</string>
+    <string name="product_text_rate_max_label">Max. afgiftesnelheid:</string>
+    <string name="product_text_rate_one_label">Afg. snelheid 1:</string>
+    <string name="product_text_rate_two_label">Afg. snelheid 2:</string>
+    <string name="product_text_vacuum_fan_delta_label">Vac. stap:</string>
+    <string name="product_text_vacuum_fan_rate_label">Vac. snelheid:</string>
+
+    <string name="product_section_header">Producten</string>
+    <string name="product_section_subheader">Totaal: 0 producten</string>
+    <plurals name="product_section_subheader_format">
+        <item quantity="zero">Totaal: 0 producten</item>
+        <item quantity="one">Totaal: 1 product</item>
+        <item quantity="other">Totaal: %1$d producten</item>
+    </plurals>
+    <string name="product_search_hint">Product, vorm, snelheid</string>
+
+    <string name="tab_product_library">Productbibliotheek</string>
+    <string name="create_product_button">Product toevoegen +</string>
+    <string name="no_available_products">U hebt geen producten toegevoegd.</string>
+    <string name="add_product_instructions">Voeg een product toe met de bovenstaande knop \"Product toevoegen\".</string>
+    <string name="add_product_mix_instructions">Voeg een productmengsel toe met de bovenstaande knop \"Productmengsel toevoegen\".</string>
+
+    <string name="unit_gal_per_acre">gal/ac</string>
+
+    <string name="delete_dialog_confirm_button_text">Verw.</string>
+    <string name="delete_product_dialog_body_text">Dit verwijdert dit product en de instellingen permanent.</string>
+
+    <string name="alert_title">Alarm</string>
+    <string name="alert_dismiss">Sluiten</string>
+    <string name="alert_in_use">Dit product is momenteel in gebruik door een controller.</string>
+
+    <string name="variety_title">Variëteiten</string>
+    <string name="variety_section_subheader">Totaal: 0 variëteiten</string>
+    <plurals name="variety_section_subheader_format">
+        <item quantity="zero">Totaal: 0 variëteiten</item>
+        <item quantity="one">Totaal: 1 variëteit</item>
+        <item quantity="other">Totaal: %1$d variëteiten</item>
+    </plurals>
+    <string name="variety_button_add_text">Variëteit toevoegen +</string>
+    <string name="variety_add_dialog_title_text">Variëteit toevoegen</string>
+    <string name="variety_add_or_edit_dialog_crop_type_header_text">Gewas</string>
+    <string name="variety_add_or_edit_dialog_name_header_text">Naam</string>
+    <string name="variety_delete_dialog_delete_title_text">Variëteit verwijderen</string>
+    <string name="variety_delete_dialog_body_text_delete_allowed">Dit verwijdert deze variëteit en de instellingen permanent.</string>
+    <string name="variety_dialog_cancel_button_text">Annul.</string>
+    <string name="variety_dialog_save_button_text">Opslaan</string>
+    <string name="variety_edit_dialog_title">Variëteit bewerken</string>
+    <string name="variety_instruction_add">Voeg een variëteit toe met de bovenstaande knop \"Variëteit toevoegen\".</string>
+    <string name="variety_list_header_crop_type_text">GEWASTYPE</string>
+    <string name="variety_list_header_color">KLEUR</string>
+    <string name="variety_list_header_name_text">NAAM</string>
+    <string name="variety_not_available">U hebt geen variëteiten toegevoegd.</string>
+    <string name="variety_search_hint">Variëteit, gewastype</string>
+    <string name="tab_management">Beheer</string>
+    <string name="edit_field_name">Naam</string>
+    <string name="edit_dialog_header">Bewerk naam</string>
+    <string name="edit_dialog_save">Opslaan</string>
+    <string name="edit_dialog_cancel">Annul.</string>
+    <string name="tab_mng_none_header">Selecteer item(s) om te bewerken, kopiëren of verwijderen</string>
+    <string name="tab_mng_items_header">%1$d item(s) geselecteerd</string>
+   <!-- end of productlibrary-package usage -->
+   <string name="edit_name_warning">Het item met deze naam bestaat reeds. Kies een andere naam</string>
+    <string name="edit_update_title">Item wordt bijgewerkt</string>
+</resources>

@@ -1,0 +1,232 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  ~ Copyright (C) 2016 CNH Industrial NV. All rights reserved.
+  ~
+  ~ This software contains proprietary information of CNH Industrial NV. Neither
+  ~ receipt nor possession thereof confers any right to reproduce, use, or
+  ~ disclose in whole or in part any such information without written
+  ~ authorization from CNH Industrial NV.
+  -->
+<resources>
+    <string name="app_name">Date memorate</string>
+    <string name="tab_import">Import</string>
+    <string name="tab_import_test">Import test</string>
+    <string name="import_source">Import sursă</string>
+    <string name="destination">Destinaţie</string>
+    <string name="collapse_button_content_description">Ascund. buton</string>
+    <string name="import_selected">Import selectat</string>
+    <string name="export_selected">Export selectat</string>
+    <string name="done">Realizat</string>
+    <string name="type">Tip:</string>
+    <string name="name">Nume:</string>
+    <string name="target">Ţintă</string>
+    <string name="select_target">Select. ţintă</string>
+    <string name="copy_and_replace">Înloc.</string>
+    <string name="dont_copy">Nu copia</string>
+    <string name="keep_both">Pstr amb.</string>
+    <string name="conflict">Conflict</string>
+    <string name="new_id_title">Intr. ident. nou</string>
+    <string name="new_id_label">Identif. nou:</string>
+    <string name="calculating_targets">Se calc. ţinte</string>
+    <string name="checking_targets">Se verif. ţinte pot....</string>
+    <string name="checking_conflicts">Se verif. confl...</string>
+    <string name="importing">Importare...</string>
+    <string name="select_path">Selec. cale...</string>
+    <string name="continue_string">Continuare</string>
+    <string name="next">Urm.</string>
+
+    <string name="pfds">Ctlv. / Fermă / Câmp</string>
+    <string name="vehicles">Vehicule</string>
+    <string name="imps">Instrum.</string>
+    <string name="prescriptions">Prescripţii</string>
+    <string name="tasks">Sarc.</string>
+    <string name="boundaries">Delimitări</string>
+    <string name="obstacles">Obstacole</string>
+    <string name="guidance_groups">Brazde</string>
+    <string name="guidance_patterns">Mod. ghidare</string>
+    <string name="notes">Note</string>
+
+    <string name="products">Produse</string>
+    <string name="product_mixes">Amst. produs</string>
+    <string name="select_source">Select. sursă import</string>
+    <string name="import_drag_and_drop"><![CDATA[Glis. & pl. \npt. import \nla PCM/afişaj]]></string>
+    <string name="export_drag_and_drop"><![CDATA[Glis & pl. \npt. export]]></string>
+    <string name="select_all">Selec. tot</string>
+    <string formatted="false" name="x_of_y_format">%d din%d</string>
+    <string name="usb_string">USB</string>
+    <string name="display_string">Afişaj</string>
+    <string name="display_numbered">Afişaj %d</string>
+    <string name="display_named">Afişaj %s</string>
+    <string name="select_string">Select</string>
+    <string name="export_to">Destinaţie:</string>
+    <string name="export_format">Format export:</string>
+    <string name="tab_export">Export</string>
+    <string name="percent_complete">% finaliz.</string>
+    <string name="loading_string">Indice de</string>
+    <string name="exporting_string">Exportare</string>
+    <string name="importing_string">Importare</string>
+    <string name="exporting_data">Exportare date</string>
+    <string name="importing_data">Importare date</string>
+    <string name="select_source_first">La început, \nselectaţi \nsursa de import</string>
+    <string name="no_import_source">0 disp. sursă import detectate. \nVerif. conexiunea dispozitivului.</string>
+    <string name="deselect_all">Deselec. tot</string>
+    <string formatted="false" name="duplicate_file">Un %s cu numele \"%s\" există</string>
+    <string name="existing_file">Exist.</string>
+    <string name="existing_file_typed">%s exist.</string>
+    <string name="new_file">Nou</string>
+    <string name="new_file_typed">%s nou</string>
+    <string name="data_conflict">Conflict date</string>
+    <string name="rename_file">Reden %s</string>
+    <string name="file_name">Nume fişier</string>
+    <string name="empty_discovery">0 date găsite</string>
+    <string name="export_cancel_confirmation">Aceasta va anula exportul curent.\nContinuaţi?</string>
+
+    <string name="format_description">ISOXML: \nToate fiş. pot fi export. în ISOXML. \n \nFiş formă: \nPrescripţii.</string>
+
+    <string name="error_no_data">0 date</string>
+    <string name="error_no_source">0 sursă date sursă</string>
+    <string name="error_no_target">0 sursă date ţintă</string>
+    <string name="error_perform_ops">Eroare efect. operaţii</string>
+    <string name="error_calculate_conflicts">Eroare calcul conflicte</string>
+    <string name="error_calculate_operations">Eroare calcul ţinte</string>
+    <string name="error_discovery">Eroare descop.</string>
+    <string name="status_cancelled">Anulată</string>
+    <string name="status_cancelling">Anulare...</string>
+    <string name="status_successful">Succes</string>
+    <string name="status_starting">Pornire...</string>
+    <string name="import_complete">Import finalizat</string>
+    <string name="import_cancel">Import anulat</string>
+    <string name="export_complete">Export finalizat</string>
+    <string name="export_cancel">Export anulat</string>
+
+    <string name="usb_data_available">Date USB dispon.</string>
+    <string name="usb_no_data_available">Nu sunt date USB dis.</string>
+    <string name="usb_scanning">Scanare stick USB...</string>
+
+    <string name="stop">Stop</string>
+    <string name="status_progress">%1$s %2$d/%3$d</string>
+   <!-- starting here everything is used by the productlibrary-package -->
+   <string name="product_default_rate">Rată implicită</string>
+    <string name="product_form">Frml</string>
+    <string name="product_name">Nume</string>
+   <!-- Product Mix -->
+   <string name="product_mix_add_button_title">Adăugare</string>
+    <string name="product_mix_default_text_edittext">Nume produs</string>
+    <string name="product_mix_default_text_picklist">Formular produs</string>
+    <string name="product_mix_search_hint">Am. prd., formul., rată</string>
+    <string name="product_mix_subheader_total_mix">Total: 0 ames. prod.</string>
+    <plurals name="product_mix_subheader_total_mix_format">
+        <item quantity="zero">Total: 0 ames. prod.</item>
+        <item quantity="one">Total: 1 ames. prod.</item>
+        <item quantity="other">Total: %1$d ames. prod.</item>
+    </plurals>
+    <string name="product_mix_title">Ames. prod.</string>
+    <string name="product_mix_text_button_add_product_mix">Ad. ames.prod. +</string>
+    <string name="product_mix_title_dialog_add_product_mix">Ad. ames.prod.</string>
+    <string name="product_mix_title_dialog_edit_product_mix">Ed. ames.prod.</string>
+    <string name="product_mix_title_dialog_copy_product_mix">Cop. ames.prod.</string>
+    <string name="product_mix_title_add_new_product">Ad. prod. nou</string>
+    <string name="product_mix_title_add_new_carrier">Ad. suport nou</string>
+    <string name="product_mix_text_button_remove">Elim. x</string>
+    <string name="product_mix_text_button_add_more">Ad. alte +</string>
+    <string name="product_mix_title_category_button_title_mix_products">Ames. prod.</string>
+    <string name="product_mix_title_name">Nume ames. prod.</string>
+    <string name="product_mix_title_carrier">Ag. opt</string>
+    <string name="product_mix_title_total_mix_amount">Val. tot. ames.</string>
+    <string name="product_mix_title_carrier_amount">Val. suport</string>
+    <string name="product_mix_title_mix_products">Ames. prod.</string>
+    <string name="product_mix_title_product">Produs %1$d</string>
+    <string name="product_mix_title_product_amount">Val.</string>
+    <string name="product_mix_title_units">Unităţi</string>
+    <string name="product_mix_title_application_rates">Rate de aplicare</string>
+    <string name="product_mix_title_application_rate_1">Rată aplic. 1 (implic.)</string>
+    <string name="product_mix_title_application_rate_2">Rată aplicare 2</string>
+    <string name="product_mix_title_application_rate_1_short">Rată ap. 1</string>
+    <string name="product_mix_title_application_rate_2_short">Rată ap. 2</string>
+    <string name="product_mix_title_application_rate_1_short_point">Rată ap. 1:</string>
+    <string name="product_mix_title_application_rate_2_short_point">Rată ap. 2:</string>
+    <string name="product_mix_title_min_application_rate">Rată aplicare min.</string>
+    <string name="product_mix_title_max_application_rate">Rată aplicare max.</string>
+    <string name="product_mix_title_delta_application_rate">Var. rată de aplicare</string>
+    <string name="product_mix_title_application_rates_per_product">Rate aplic. per prod.</string>
+    <string name="product_mix_title_products">Produse</string>
+    <string name="product_mix_title_advanced">Avansat</string>
+    <string name="product_mix_title_usage">Utilizare</string>
+    <string name="product_mix_title_package_size">Dim. pachet</string>
+    <string name="product_mix_title_package_size_units">Unit. dim. pachet</string>
+    <string name="product_mix_title_density">Densitate</string>
+    <string name="product_mix_title_density_unit">Unit. densit.</string>
+    <string name="product_mix_title_picklist_default_select">Select</string>
+    <string name="product_mix_title_product_mix_form">Form. am. prod.</string>
+    <string name="product_mix_unittext_default_text">--,-</string>
+
+    <string name="product_text_bulk_fill_fan_delta_label">Pas vrac:</string>
+    <string name="product_text_bulk_fill_fan_rate_label">Rată vrac:</string>
+    <string name="product_text_density_label">Densit.:</string>
+    <string name="product_text_density_units_label">Unit. densit.:</string>
+    <string name="product_text_package_label">Dim. pachet:</string>
+    <string name="product_text_rate_delta_label">Rată Delta:</string>
+    <string name="product_text_rate_min_label">Rată ap.min.:</string>
+    <string name="product_text_rate_max_label">Rată ap.max.:</string>
+    <string name="product_text_rate_one_label">Rată ap. 1:</string>
+    <string name="product_text_rate_two_label">Rată ap. 2:</string>
+    <string name="product_text_vacuum_fan_delta_label">Pas vac.:</string>
+    <string name="product_text_vacuum_fan_rate_label">Rată vac.:</string>
+
+    <string name="product_section_header">Produse</string>
+    <string name="product_section_subheader">Total: 0 produse</string>
+    <plurals name="product_section_subheader_format">
+        <item quantity="zero">Total: 0 produse</item>
+        <item quantity="one">Total: 1 produs</item>
+        <item quantity="other">Total: %1$d produse</item>
+    </plurals>
+    <string name="product_search_hint">Produs, form., rată</string>
+
+    <string name="tab_product_library">Bibl. produse</string>
+    <string name="create_product_button">Ad. Produs +</string>
+    <string name="no_available_products">Nu aveţi prod. adăug.</string>
+    <string name="add_product_instructions">Ad. un produs cu butonul \"Ad. produs\" de mai sus.</string>
+    <string name="add_product_mix_instructions">Ad. un am. prod. cu butonul \"Ad. ams. produs\" de mai sus.</string>
+
+    <string name="unit_gal_per_acre">gal/ac</string>
+
+    <string name="delete_dialog_confirm_button_text">Şterge</string>
+    <string name="delete_product_dialog_body_text">Aceasta va şterge definitiv prod. şi setările sale.</string>
+
+    <string name="alert_title">Alertă</string>
+    <string name="alert_dismiss">Ignor.</string>
+    <string name="alert_in_use">Acest prod. este utiliz. de un controler.</string>
+
+    <string name="variety_title">Soiuri</string>
+    <string name="variety_section_subheader">Total: 0 soiuri</string>
+    <plurals name="variety_section_subheader_format">
+        <item quantity="zero">Total: 0 soiuri</item>
+        <item quantity="one">Total: 1 soi</item>
+        <item quantity="other">Total: %1$d soiuri</item>
+    </plurals>
+    <string name="variety_button_add_text">Adăug. soi +</string>
+    <string name="variety_add_dialog_title_text">Adăug. soi</string>
+    <string name="variety_add_or_edit_dialog_crop_type_header_text">Tip cultură</string>
+    <string name="variety_add_or_edit_dialog_name_header_text">Nume</string>
+    <string name="variety_delete_dialog_delete_title_text">Şterg. soi</string>
+    <string name="variety_delete_dialog_body_text_delete_allowed">Aceasta va şterge definitiv soiul şi setările sale.</string>
+    <string name="variety_dialog_cancel_button_text">Anulare</string>
+    <string name="variety_dialog_save_button_text">Salv.</string>
+    <string name="variety_edit_dialog_title">Edit. soi</string>
+    <string name="variety_instruction_add">Ad. un soi cu butonul \"Adăug. soi\" de mai sus.</string>
+    <string name="variety_list_header_crop_type_text">TIP CULT.</string>
+    <string name="variety_list_header_color">CUL.</string>
+    <string name="variety_list_header_name_text">DENUMIRE</string>
+    <string name="variety_not_available">Nu aveţi soiuri adăugate.</string>
+    <string name="variety_search_hint">Soi, tip cultură</string>
+    <string name="tab_management">Gestionare</string>
+    <string name="edit_field_name">Nume</string>
+    <string name="edit_dialog_header">Editare nume</string>
+    <string name="edit_dialog_save">Salv.</string>
+    <string name="edit_dialog_cancel">Anulare</string>
+    <string name="tab_mng_none_header">Sel. art(icole) de edit., cop., şters.</string>
+    <string name="tab_mng_items_header">%1$d art(icole) sel.</string>
+   <!-- end of productlibrary-package usage -->
+   <string name="edit_name_warning">Art. cu ac. nume există deja. Alegeţi alt nume</string>
+    <string name="edit_update_title">Actual. art.</string>
+</resources>

@@ -1,0 +1,232 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  ~ Copyright (C) 2016 CNH Industrial NV. All rights reserved.
+  ~
+  ~ This software contains proprietary information of CNH Industrial NV. Neither
+  ~ receipt nor possession thereof confers any right to reproduce, use, or
+  ~ disclose in whole or in part any such information without written
+  ~ authorization from CNH Industrial NV.
+  -->
+<resources>
+    <string name="app_name">Datu pārvaldība</string>
+    <string name="tab_import">Importēt</string>
+    <string name="tab_import_test">Importēt pārbaudi</string>
+    <string name="import_source">Importēt avotu</string>
+    <string name="destination">Galamērķis</string>
+    <string name="collapse_button_content_description">Sakļaut pogu</string>
+    <string name="import_selected">Importēt atlasīto</string>
+    <string name="export_selected">Eksportēt atlasīto</string>
+    <string name="done">Gatavs</string>
+    <string name="type">Veids:</string>
+    <string name="name">Nosaukums:</string>
+    <string name="target">Mērķis</string>
+    <string name="select_target">Atlasīt mērķi</string>
+    <string name="copy_and_replace">Nomainīt</string>
+    <string name="dont_copy">Nekopēt</string>
+    <string name="keep_both">Paturēt abus</string>
+    <string name="conflict">Neatbilstība</string>
+    <string name="new_id_title">Ievadīt jaunu identifikatoru</string>
+    <string name="new_id_label">Jauns identifikators:</string>
+    <string name="calculating_targets">Mērķu aprēķināšana</string>
+    <string name="checking_targets">Notiek potenciālo mērķu pārbaude...</string>
+    <string name="checking_conflicts">Notiek neatbilstību pārbaude..</string>
+    <string name="importing">Notiek importēšana...</string>
+    <string name="select_path">Ceļa atlase...</string>
+    <string name="continue_string">Turpināt</string>
+    <string name="next">Tālāk</string>
+
+    <string name="pfds">Lauksaimnieks/saimniecība/lauks</string>
+    <string name="vehicles">Transportlīdzekļi</string>
+    <string name="imps">Agregāti</string>
+    <string name="prescriptions">Norādes</string>
+    <string name="tasks">Uzdevumi</string>
+    <string name="boundaries">Robežas</string>
+    <string name="obstacles">Šķēršļi</string>
+    <string name="guidance_groups">Vāli</string>
+    <string name="guidance_patterns">Vadības shēmas</string>
+    <string name="notes">Piezīmes</string>
+
+    <string name="products">Līdzekļi</string>
+    <string name="product_mixes">Produktu maisījumi</string>
+    <string name="select_source">Atlasīt importēšanas avotu</string>
+    <string name="import_drag_and_drop"><![CDATA[Velciet un nometiet, \nlai importētu \nPCM/displejā]]></string>
+    <string name="export_drag_and_drop"><![CDATA[Velciet un nometiet, \nlai eksportētu]]></string>
+    <string name="select_all">Atlasīt visu</string>
+    <string formatted="false" name="x_of_y_format">%d no %d</string>
+    <string name="usb_string">USB</string>
+    <string name="display_string">Rādīt</string>
+    <string name="display_numbered">Displejs %d</string>
+    <string name="display_named">Displejs %s</string>
+    <string name="select_string">Atlasīt</string>
+    <string name="export_to">Galamērķis:</string>
+    <string name="export_format">Eksportēšanas formāts:</string>
+    <string name="tab_export">Eksportēt</string>
+    <string name="percent_complete">% pabeigts</string>
+    <string name="loading_string">Ielāde</string>
+    <string name="exporting_string">Eksportēšana</string>
+    <string name="importing_string">Importēšana</string>
+    <string name="exporting_data">Datu eksportēšana</string>
+    <string name="importing_data">Datu importēšana</string>
+    <string name="select_source_first">Lai sāktu, \nvispirms atlasiet \nimportēšanas avotu.</string>
+    <string name="no_import_source">Nav uztverta neviena importēšanas avota ierīce. \nLūdzu, pārbaudiet ierīču savienojumu.</string>
+    <string name="deselect_all">Atcelt visu atlasi</string>
+    <string formatted="false" name="duplicate_file">%s ar nosaukumu \"%s\" jau pastāv</string>
+    <string name="existing_file">Esošs</string>
+    <string name="existing_file_typed">Esošs %s</string>
+    <string name="new_file">Jauns</string>
+    <string name="new_file_typed">Jauns %s</string>
+    <string name="data_conflict">Datu neatbilstība</string>
+    <string name="rename_file">Pārdēvēt %s</string>
+    <string name="file_name">Faila nosaukums</string>
+    <string name="empty_discovery">Nav atrasti dati</string>
+    <string name="export_cancel_confirmation">Šādi tiks atcelta pašreizējā eksportēšana.\nVai vēlaties turpināt?</string>
+
+    <string name="format_description">ISOXML: \nVisus failus var eksportēt ISOXML. \n \nShapefile: \nNorādes.</string>
+
+    <string name="error_no_data">Nav datu</string>
+    <string name="error_no_source">Nav avota datu avota</string>
+    <string name="error_no_target">Nav mērķa datu avota</string>
+    <string name="error_perform_ops">Darbību veikšanas kļūda</string>
+    <string name="error_calculate_conflicts">Neatbilstību aprēķināšanas kļūda</string>
+    <string name="error_calculate_operations">Mērķu aprēķināšanas kļūda</string>
+    <string name="error_discovery">Atklāšanas kļūda</string>
+    <string name="status_cancelled">Atcelts</string>
+    <string name="status_cancelling">Notiek atcelšana...</string>
+    <string name="status_successful">Sekmīgi</string>
+    <string name="status_starting">Notiek uzsākšana...</string>
+    <string name="import_complete">Importēšana pabeigta</string>
+    <string name="import_cancel">Importēšana atcelta</string>
+    <string name="export_complete">Eksportēšana pabeigta</string>
+    <string name="export_cancel">Eksportēšana atcelta</string>
+
+    <string name="usb_data_available">Pieejami USB dati</string>
+    <string name="usb_no_data_available">Nav pieejamu USB datu</string>
+    <string name="usb_scanning">Notiek USB kartes skenēšana...</string>
+
+    <string name="stop">Apturēt</string>
+    <string name="status_progress">%1$s %2$d/%3$d</string>
+   <!-- starting here everything is used by the productlibrary-package -->
+   <string name="product_default_rate">Noklusējuma rād.</string>
+    <string name="product_form">Veids</string>
+    <string name="product_name">Nosaukums</string>
+   <!-- Product Mix -->
+   <string name="product_mix_add_button_title">Pievienot</string>
+    <string name="product_mix_default_text_edittext">Izstrādājuma nosaukums</string>
+    <string name="product_mix_default_text_picklist">Izstrādājuma veids</string>
+    <string name="product_mix_search_hint">Produktu maisījums, veids, apjoms</string>
+    <string name="product_mix_subheader_total_mix">Kopā: 0 produktu maisījumu</string>
+    <plurals name="product_mix_subheader_total_mix_format">
+        <item quantity="zero">Kopā: 0 produktu maisījumu</item>
+        <item quantity="one">Kopā: 1 produktu maisījums</item>
+        <item quantity="other">Kopā: %1$d produktu maisījumi</item>
+    </plurals>
+    <string name="product_mix_title">Prod. mais.</string>
+    <string name="product_mix_text_button_add_product_mix">Pievienot produktu maisījumu +</string>
+    <string name="product_mix_title_dialog_add_product_mix">Pievienot produktu maisījumu</string>
+    <string name="product_mix_title_dialog_edit_product_mix">Rediģēt produktu maisījumu</string>
+    <string name="product_mix_title_dialog_copy_product_mix">Kopēt produktu maisījumu</string>
+    <string name="product_mix_title_add_new_product">Pievienot jaunu produktu</string>
+    <string name="product_mix_title_add_new_carrier">Pievienot jaunu turētāju</string>
+    <string name="product_mix_text_button_remove">Noņemt x</string>
+    <string name="product_mix_text_button_add_more">Papildināt +</string>
+    <string name="product_mix_title_category_button_title_mix_products">Maisīt produktus</string>
+    <string name="product_mix_title_name">Prod. mais. nos.</string>
+    <string name="product_mix_title_carrier">Transportieris</string>
+    <string name="product_mix_title_total_mix_amount">Kopējais maisījuma daudzums</string>
+    <string name="product_mix_title_carrier_amount">Turētāja daudzums</string>
+    <string name="product_mix_title_mix_products">Maisīt produktus</string>
+    <string name="product_mix_title_product">Produkts %1$d</string>
+    <string name="product_mix_title_product_amount">Daudzums</string>
+    <string name="product_mix_title_units">Mērvienības</string>
+    <string name="product_mix_title_application_rates">Apstrādes ātrums</string>
+    <string name="product_mix_title_application_rate_1">Apstrādes ātrums, 1 (noklusējums)</string>
+    <string name="product_mix_title_application_rate_2">Apstrādes ātrums, 2</string>
+    <string name="product_mix_title_application_rate_1_short">Apstrādes ātrums, 1</string>
+    <string name="product_mix_title_application_rate_2_short">Apstrādes ātrums, 2</string>
+    <string name="product_mix_title_application_rate_1_short_point">Apstrādes ātrums, 1:</string>
+    <string name="product_mix_title_application_rate_2_short_point">Apstrādes ātrums, 2:</string>
+    <string name="product_mix_title_min_application_rate">Min. apstrādes ātrums</string>
+    <string name="product_mix_title_max_application_rate">Maks. apstrādes ātrums</string>
+    <string name="product_mix_title_delta_application_rate">Delta apstrādes ātrums</string>
+    <string name="product_mix_title_application_rates_per_product">Produktu apstrādes ātrums</string>
+    <string name="product_mix_title_products">Līdzekļi</string>
+    <string name="product_mix_title_advanced">Uzlabots</string>
+    <string name="product_mix_title_usage">Lietojums</string>
+    <string name="product_mix_title_package_size">Iepakojuma izmērs</string>
+    <string name="product_mix_title_package_size_units">Iepakošanas izmēra mērvienības</string>
+    <string name="product_mix_title_density">Blīvums</string>
+    <string name="product_mix_title_density_unit">Blīvuma mērvienības</string>
+    <string name="product_mix_title_picklist_default_select">Atlasīt</string>
+    <string name="product_mix_title_product_mix_form">Produktu maisījuma veids</string>
+    <string name="product_mix_unittext_default_text">--.-</string>
+
+    <string name="product_text_bulk_fill_fan_delta_label">Lielapjoma darbība:</string>
+    <string name="product_text_bulk_fill_fan_rate_label">Lielapjoma ātrums:</string>
+    <string name="product_text_density_label">Blīvums:</string>
+    <string name="product_text_density_units_label">Blīvuma mērvienības:</string>
+    <string name="product_text_package_label">Iepakojuma izmērs:</string>
+    <string name="product_text_rate_delta_label">Delta ātrums:</string>
+    <string name="product_text_rate_min_label">Min. apstrādes ātrums:</string>
+    <string name="product_text_rate_max_label">Maks. apstrādes ātrums:</string>
+    <string name="product_text_rate_one_label">Apstrādes ātrums, 1:</string>
+    <string name="product_text_rate_two_label">Apstrādes ātrums, 2:</string>
+    <string name="product_text_vacuum_fan_delta_label">Vakuuma darbība:</string>
+    <string name="product_text_vacuum_fan_rate_label">Vakuuma ātrums:</string>
+
+    <string name="product_section_header">Līdzekļi</string>
+    <string name="product_section_subheader">Kopā: 0 produkti;</string>
+    <plurals name="product_section_subheader_format">
+        <item quantity="zero">Kopā: 0 produkti;</item>
+        <item quantity="one">Kopā: 1 produkts</item>
+        <item quantity="other">Kopā: %1$d produkti</item>
+    </plurals>
+    <string name="product_search_hint">Produkts, veids, apjoms</string>
+
+    <string name="tab_product_library">Produktu bibliotēka</string>
+    <string name="create_product_button">Pievienot produktu +</string>
+    <string name="no_available_products">Nav pievienots neviens produkts.</string>
+    <string name="add_product_instructions">Pievienojiet produktu, izmantojot augstāk esošo pogu \"Pievienot produktu\".</string>
+    <string name="add_product_mix_instructions">Pievienojiet produktu maisījumu, izmantojot augstāk esošo pogu \"Pievienot produktu maisījumu\".</string>
+
+    <string name="unit_gal_per_acre">galoni/akri</string>
+
+    <string name="delete_dialog_confirm_button_text">Dzēst</string>
+    <string name="delete_product_dialog_body_text">Šādi produkts un tā iestatījumi tiks neatgriezeniski dzēsti.</string>
+
+    <string name="alert_title">Brīdinājums</string>
+    <string name="alert_dismiss">Noraidīt</string>
+    <string name="alert_in_use">Šo produktu pašlaik izmanto kontrollers.</string>
+
+    <string name="variety_title">Sugas</string>
+    <string name="variety_section_subheader">Kopā: 0 šķirņu</string>
+    <plurals name="variety_section_subheader_format">
+        <item quantity="zero">Kopā: 0 šķirņu</item>
+        <item quantity="one">Kopā: 1 šķirne</item>
+        <item quantity="other">Kopā: %1$d šķirnes</item>
+    </plurals>
+    <string name="variety_button_add_text">Pievienot šķirni +</string>
+    <string name="variety_add_dialog_title_text">Pievienot šķirni</string>
+    <string name="variety_add_or_edit_dialog_crop_type_header_text">Labības veids</string>
+    <string name="variety_add_or_edit_dialog_name_header_text">Nosaukums</string>
+    <string name="variety_delete_dialog_delete_title_text">Dzēst šķirni</string>
+    <string name="variety_delete_dialog_body_text_delete_allowed">Šādi šķirne un tās iestatījumi tiks neatgriezeniski dzēsti.</string>
+    <string name="variety_dialog_cancel_button_text">Atcelt</string>
+    <string name="variety_dialog_save_button_text">Saglabāt</string>
+    <string name="variety_edit_dialog_title">Rediģēt šķirni</string>
+    <string name="variety_instruction_add">Pievienojiet šķirni, izmantojot augstāk esošo pogu \"Pievienot šķirni\".</string>
+    <string name="variety_list_header_crop_type_text">MATERIĀLA VEIDS</string>
+    <string name="variety_list_header_color">KRĀSA</string>
+    <string name="variety_list_header_name_text">NOSAUKUMS</string>
+    <string name="variety_not_available">Nav pievienota neviena šķirne.</string>
+    <string name="variety_search_hint">Šķirne, labības veids</string>
+    <string name="tab_management">Pārvaldība</string>
+    <string name="edit_field_name">Nosaukums</string>
+    <string name="edit_dialog_header">Rediģēt nosaukumu</string>
+    <string name="edit_dialog_save">Saglabāt</string>
+    <string name="edit_dialog_cancel">Atcelt</string>
+    <string name="tab_mng_none_header">Atlasiet vienumu(s), lai rediģētu, kopētu vai dzēstu.</string>
+    <string name="tab_mng_items_header">Atlasīts(-i) %1$d vienums(-i)</string>
+   <!-- end of productlibrary-package usage -->
+   <string name="edit_name_warning">Vienums ar šādu nosaukumu jau pastāv. Lūdzu, izvēlieties citu nosaukumu.</string>
+    <string name="edit_update_title">Vienuma atjaunināšana</string>
+</resources>

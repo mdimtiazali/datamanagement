@@ -1,0 +1,232 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  ~ Copyright (C) 2016 CNH Industrial NV. All rights reserved.
+  ~
+  ~ This software contains proprietary information of CNH Industrial NV. Neither
+  ~ receipt nor possession thereof confers any right to reproduce, use, or
+  ~ disclose in whole or in part any such information without written
+  ~ authorization from CNH Industrial NV.
+  -->
+<resources>
+    <string name="app_name">数据管理</string>
+    <string name="tab_import">导入</string>
+    <string name="tab_import_test">导入测试</string>
+    <string name="import_source">导入源</string>
+    <string name="destination">目标位置</string>
+    <string name="collapse_button_content_description">收起按钮</string>
+    <string name="import_selected">已选择导入</string>
+    <string name="export_selected">已选择导出</string>
+    <string name="done">完成</string>
+    <string name="type">类型：</string>
+    <string name="name">名称：</string>
+    <string name="target">目标</string>
+    <string name="select_target">选择目标</string>
+    <string name="copy_and_replace">更换</string>
+    <string name="dont_copy">切勿复制</string>
+    <string name="keep_both">保留两者</string>
+    <string name="conflict">冲突</string>
+    <string name="new_id_title">输入新标识符</string>
+    <string name="new_id_label">新标识符：</string>
+    <string name="calculating_targets">正在计算目标</string>
+    <string name="checking_targets">正在检查潜在目标...</string>
+    <string name="checking_conflicts">正在检查冲突...</string>
+    <string name="importing">正在导入...</string>
+    <string name="select_path">选择路径...</string>
+    <string name="continue_string">继续</string>
+    <string name="next">下一步</string>
+
+    <string name="pfds">种植商/农场/田地</string>
+    <string name="vehicles">车辆</string>
+    <string name="imps">机具</string>
+    <string name="prescriptions">配方</string>
+    <string name="tasks">任务</string>
+    <string name="boundaries">边界</string>
+    <string name="obstacles">障碍</string>
+    <string name="guidance_groups">割道</string>
+    <string name="guidance_patterns">导向模式</string>
+    <string name="notes">注意</string>
+
+    <string name="products">产品</string>
+    <string name="product_mixes">产品混合</string>
+    <string name="select_source">选择导入源</string>
+    <string name="import_drag_and_drop"><![CDATA[拖放\n以导入\n至处理和连接模块/显示屏]]></string>
+    <string name="export_drag_and_drop"><![CDATA[拖放\n以导出]]></string>
+    <string name="select_all">选择全部</string>
+    <string formatted="false" name="x_of_y_format">%d/%d</string>
+    <string name="usb_string">USB</string>
+    <string name="display_string">显示屏</string>
+    <string name="display_numbered">显示屏 %d</string>
+    <string name="display_named">显示屏 %s</string>
+    <string name="select_string">选择</string>
+    <string name="export_to">目标位置：</string>
+    <string name="export_format">导出格式：</string>
+    <string name="tab_export">导出</string>
+    <string name="percent_complete">完成百分比</string>
+    <string name="loading_string">正在加载</string>
+    <string name="exporting_string">正在导出</string>
+    <string name="importing_string">正在导入</string>
+    <string name="exporting_data">正在导出数据</string>
+    <string name="importing_data">正在导入数据</string>
+    <string name="select_source_first">最开始\n请首先选择\n导入源</string>
+    <string name="no_import_source">未检测到导入源设备。\n请检查设备连接。</string>
+    <string name="deselect_all">取消选择全部</string>
+    <string formatted="false" name="duplicate_file">名为 \"%s\" 的 %s 已存在</string>
+    <string name="existing_file">现有</string>
+    <string name="existing_file_typed">现有 %s</string>
+    <string name="new_file">新建</string>
+    <string name="new_file_typed">新建 %s</string>
+    <string name="data_conflict">数据冲突</string>
+    <string name="rename_file">重命名 %s</string>
+    <string name="file_name">文件名</string>
+    <string name="empty_discovery">未找到数据</string>
+    <string name="export_cancel_confirmation">这将取消当前导出。\n是否要继续？</string>
+
+    <string name="format_description">ISOXML：\n所有文件都能以 ISOXML 格式导出。 \n \nShapefile：\n配方。</string>
+
+    <string name="error_no_data">无数据</string>
+    <string name="error_no_source">没有源数据源</string>
+    <string name="error_no_target">没有目标数据源</string>
+    <string name="error_perform_ops">执行操作错误</string>
+    <string name="error_calculate_conflicts">计算冲突错误</string>
+    <string name="error_calculate_operations">计算目标错误</string>
+    <string name="error_discovery">发现错误</string>
+    <string name="status_cancelled">已取消</string>
+    <string name="status_cancelling">正在取消...</string>
+    <string name="status_successful">成功</string>
+    <string name="status_starting">正在开始...</string>
+    <string name="import_complete">已完成导入</string>
+    <string name="import_cancel">已取消导入</string>
+    <string name="export_complete">已完成导出</string>
+    <string name="export_cancel">已取消导出</string>
+
+    <string name="usb_data_available">USB 数据可用</string>
+    <string name="usb_no_data_available">没有可用的 USB 数据</string>
+    <string name="usb_scanning">正在扫描 U 盘...</string>
+
+    <string name="stop">停止</string>
+    <string name="status_progress">%1$s %2$d/%3$d</string>
+   <!-- starting here everything is used by the productlibrary-package -->
+   <string name="product_default_rate">默认速率</string>
+    <string name="product_form">形式</string>
+    <string name="product_name">名称</string>
+   <!-- Product Mix -->
+   <string name="product_mix_add_button_title">添加</string>
+    <string name="product_mix_default_text_edittext">产品名称</string>
+    <string name="product_mix_default_text_picklist">产品形式</string>
+    <string name="product_mix_search_hint">产品混合、形式、速率</string>
+    <string name="product_mix_subheader_total_mix">总计：0 个产品混合</string>
+    <plurals name="product_mix_subheader_total_mix_format">
+        <item quantity="zero">总计：0 个产品混合</item>
+        <item quantity="one">总计：1 个产品混合</item>
+        <item quantity="other">总计：%1$d 个产品混合</item>
+    </plurals>
+    <string name="product_mix_title">产品混合</string>
+    <string name="product_mix_text_button_add_product_mix">添加产品混合 +</string>
+    <string name="product_mix_title_dialog_add_product_mix">添加产品混合</string>
+    <string name="product_mix_title_dialog_edit_product_mix">编辑产品混合</string>
+    <string name="product_mix_title_dialog_copy_product_mix">复制产品混合</string>
+    <string name="product_mix_title_add_new_product">添加新产品</string>
+    <string name="product_mix_title_add_new_carrier">添加新载体</string>
+    <string name="product_mix_text_button_remove">移除 x</string>
+    <string name="product_mix_text_button_add_more">添加更多 +</string>
+    <string name="product_mix_title_category_button_title_mix_products">混合产品</string>
+    <string name="product_mix_title_name">产品混合名称</string>
+    <string name="product_mix_title_carrier">载体</string>
+    <string name="product_mix_title_total_mix_amount">总混合量</string>
+    <string name="product_mix_title_carrier_amount">载体量</string>
+    <string name="product_mix_title_mix_products">混合产品</string>
+    <string name="product_mix_title_product">产品 %1$d</string>
+    <string name="product_mix_title_product_amount">数量</string>
+    <string name="product_mix_title_units">单位</string>
+    <string name="product_mix_title_application_rates">施用率</string>
+    <string name="product_mix_title_application_rate_1">施用率 1（默认值）</string>
+    <string name="product_mix_title_application_rate_2">施用率 2</string>
+    <string name="product_mix_title_application_rate_1_short">施用率 1</string>
+    <string name="product_mix_title_application_rate_2_short">施用率 2</string>
+    <string name="product_mix_title_application_rate_1_short_point">施用率 1：</string>
+    <string name="product_mix_title_application_rate_2_short_point">施用率 2：</string>
+    <string name="product_mix_title_min_application_rate">最低施用率</string>
+    <string name="product_mix_title_max_application_rate">最高施用率</string>
+    <string name="product_mix_title_delta_application_rate">施用率变化量</string>
+    <string name="product_mix_title_application_rates_per_product">每种产品的施用率</string>
+    <string name="product_mix_title_products">产品</string>
+    <string name="product_mix_title_advanced">高级</string>
+    <string name="product_mix_title_usage">用途</string>
+    <string name="product_mix_title_package_size">包装尺寸</string>
+    <string name="product_mix_title_package_size_units">包装尺寸单位</string>
+    <string name="product_mix_title_density">密度</string>
+    <string name="product_mix_title_density_unit">密度单位</string>
+    <string name="product_mix_title_picklist_default_select">选择</string>
+    <string name="product_mix_title_product_mix_form">产品混合形式</string>
+    <string name="product_mix_unittext_default_text">--.-</string>
+
+    <string name="product_text_bulk_fill_fan_delta_label">批量处理增量：</string>
+    <string name="product_text_bulk_fill_fan_rate_label">批量处理速率：</string>
+    <string name="product_text_density_label">密度：</string>
+    <string name="product_text_density_units_label">密度单位：</string>
+    <string name="product_text_package_label">包装尺寸：</string>
+    <string name="product_text_rate_delta_label">速率变化量：</string>
+    <string name="product_text_rate_min_label">最低施用率：</string>
+    <string name="product_text_rate_max_label">最高施用率：</string>
+    <string name="product_text_rate_one_label">施用率 1：</string>
+    <string name="product_text_rate_two_label">施用率 2：</string>
+    <string name="product_text_vacuum_fan_delta_label">抽真空增量：</string>
+    <string name="product_text_vacuum_fan_rate_label">抽真空速率：</string>
+
+    <string name="product_section_header">产品</string>
+    <string name="product_section_subheader">总计：0 个产品</string>
+    <plurals name="product_section_subheader_format">
+        <item quantity="zero">总计：0 个产品</item>
+        <item quantity="one">总计：1 个产品</item>
+        <item quantity="other">总计：%1$d 个产品</item>
+    </plurals>
+    <string name="product_search_hint">产品、形式、速率</string>
+
+    <string name="tab_product_library">产品库</string>
+    <string name="create_product_button">添加产品 +</string>
+    <string name="no_available_products">您没有添加任何产品。</string>
+    <string name="add_product_instructions">使用上面的 \"添加产品\" 按钮添加产品。</string>
+    <string name="add_product_mix_instructions">使用上面的 \"添加产品混合\" 按钮添加产品混合。</string>
+
+    <string name="unit_gal_per_acre">加仑/英亩</string>
+
+    <string name="delete_dialog_confirm_button_text">删除</string>
+    <string name="delete_product_dialog_body_text">这将永久删除此产品及其设置。</string>
+
+    <string name="alert_title">警告</string>
+    <string name="alert_dismiss">解除</string>
+    <string name="alert_in_use">此产品目前正由控制器使用。</string>
+
+    <string name="variety_title">品种</string>
+    <string name="variety_section_subheader">总计：0 个品种</string>
+    <plurals name="variety_section_subheader_format">
+        <item quantity="zero">总计：0 个品种</item>
+        <item quantity="one">总计：1 个品种</item>
+        <item quantity="other">总计：%1$d 个品种</item>
+    </plurals>
+    <string name="variety_button_add_text">添加品种 +</string>
+    <string name="variety_add_dialog_title_text">添加品种</string>
+    <string name="variety_add_or_edit_dialog_crop_type_header_text">作物类型</string>
+    <string name="variety_add_or_edit_dialog_name_header_text">名称</string>
+    <string name="variety_delete_dialog_delete_title_text">删除品种</string>
+    <string name="variety_delete_dialog_body_text_delete_allowed">这将永久删除此品种及其设置。</string>
+    <string name="variety_dialog_cancel_button_text">取消</string>
+    <string name="variety_dialog_save_button_text">保存</string>
+    <string name="variety_edit_dialog_title">编辑品种</string>
+    <string name="variety_instruction_add">使用上面的 \"添加品种\" 按钮添加品种。</string>
+    <string name="variety_list_header_crop_type_text">作物类型</string>
+    <string name="variety_list_header_color">颜色</string>
+    <string name="variety_list_header_name_text">名称</string>
+    <string name="variety_not_available">您没有添加任何品种。</string>
+    <string name="variety_search_hint">品种，作物类型</string>
+    <string name="tab_management">管理</string>
+    <string name="edit_field_name">名称</string>
+    <string name="edit_dialog_header">编辑名称</string>
+    <string name="edit_dialog_save">保存</string>
+    <string name="edit_dialog_cancel">取消</string>
+    <string name="tab_mng_none_header">选择要编辑、复制或删除的项目</string>
+    <string name="tab_mng_items_header">已选定 %1$d 个项目</string>
+   <!-- end of productlibrary-package usage -->
+   <string name="edit_name_warning">具有此名称的项目已存在。请选择其他名称</string>
+    <string name="edit_update_title">更新项目</string>
+</resources>

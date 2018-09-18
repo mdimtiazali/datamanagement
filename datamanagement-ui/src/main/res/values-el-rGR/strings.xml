@@ -1,0 +1,232 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  ~ Copyright (C) 2016 CNH Industrial NV. All rights reserved.
+  ~
+  ~ This software contains proprietary information of CNH Industrial NV. Neither
+  ~ receipt nor possession thereof confers any right to reproduce, use, or
+  ~ disclose in whole or in part any such information without written
+  ~ authorization from CNH Industrial NV.
+  -->
+<resources>
+    <string name="app_name">Διαχείριση δεδομ.</string>
+    <string name="tab_import">Εισαγωγή</string>
+    <string name="tab_import_test">Δοκιμή εισαγ.</string>
+    <string name="import_source">Πηγή εισαγ.</string>
+    <string name="destination">Προορισμός</string>
+    <string name="collapse_button_content_description">Κουμπί σύμπτυξης</string>
+    <string name="import_selected">Επιλέχθηκε εισαγ.</string>
+    <string name="export_selected">Επιλέχθηκε εξαγ.</string>
+    <string name="done">Ολοκληρώθηκε</string>
+    <string name="type">Τύπος:</string>
+    <string name="name">Όνομα:</string>
+    <string name="target">Στόχος</string>
+    <string name="select_target">Επιλ. στόχου</string>
+    <string name="copy_and_replace">Αντικατ.</string>
+    <string name="dont_copy">Χωρίς αντιγρ.</string>
+    <string name="keep_both">Και τα δύο</string>
+    <string name="conflict">Διένεξη</string>
+    <string name="new_id_title">Εισαγ. νέου αναγνωρ.</string>
+    <string name="new_id_label">Νέο αναγνωρ.:</string>
+    <string name="calculating_targets">Υπολογισμός στόχων</string>
+    <string name="checking_targets">Έλεγχος πιθανών στόχων...</string>
+    <string name="checking_conflicts">Έλεγχος διενέξεων...</string>
+    <string name="importing">Εισαγωγή...</string>
+    <string name="select_path">Επιλ. διαδρ...</string>
+    <string name="continue_string">Συνέχεια</string>
+    <string name="next">Επόμ.</string>
+
+    <string name="pfds">Παραγ./Αγρόκτ./Αγροτεμ.</string>
+    <string name="vehicles">Οχήματα</string>
+    <string name="imps">Παρελκόµενα</string>
+    <string name="prescriptions">Συνταγές</string>
+    <string name="tasks">Εργασίες</string>
+    <string name="boundaries">Όρια</string>
+    <string name="obstacles">Εμπόδια</string>
+    <string name="guidance_groups">Λωρίδες</string>
+    <string name="guidance_patterns">Μοτίβα καθοδήγησης</string>
+    <string name="notes">Σημειώσεις</string>
+
+    <string name="products">Προϊόντα</string>
+    <string name="product_mixes">Μίγμ. προϊόντων</string>
+    <string name="select_source">Επιλ. πηγή εισαγωγής</string>
+    <string name="import_drag_and_drop"><![CDATA[Σύρ. και αποθ. \nγια εισαγωγή \nσε PCM/Οθόνη]]></string>
+    <string name="export_drag_and_drop"><![CDATA[Σύρ. και αποθ. \nγια εξαγ.]]></string>
+    <string name="select_all">Επιλ. όλων</string>
+    <string formatted="false" name="x_of_y_format">%d από %d</string>
+    <string name="usb_string">USB</string>
+    <string name="display_string">Οθόνη</string>
+    <string name="display_numbered">Οθόνη %d</string>
+    <string name="display_named">Οθόνη %s</string>
+    <string name="select_string">Επιλογή</string>
+    <string name="export_to">Προορισμός:</string>
+    <string name="export_format">Μορφή εξαγ.:</string>
+    <string name="tab_export">Εξαγωγή</string>
+    <string name="percent_complete">% ολοκλήρ.</string>
+    <string name="loading_string">Φόρτωση</string>
+    <string name="exporting_string">Εξαγωγή</string>
+    <string name="importing_string">Εισαγωγή</string>
+    <string name="exporting_data">Εξαγωγή δεδομ.</string>
+    <string name="importing_data">Εισαγωγή δεδομ.</string>
+    <string name="select_source_first">Αρχικά \nεπιλέξτε \nπηγή εισαγωγής</string>
+    <string name="no_import_source">Δεν εντοπίστηκε συσκ. πηγής εισαγωγής. \nΕλέγξτε τη σύνδεση της συσκευής.</string>
+    <string name="deselect_all">Ακύρ. επιλ. όλων</string>
+    <string formatted="false" name="duplicate_file">Υπάρχει ήδη %s με όνομα \"%s\"</string>
+    <string name="existing_file">Υπάρχει</string>
+    <string name="existing_file_typed">Υπάρχει %s</string>
+    <string name="new_file">Νέο</string>
+    <string name="new_file_typed">Νέο %s</string>
+    <string name="data_conflict">Ασυμφ. δεδομ.</string>
+    <string name="rename_file">Μετονομ. %s</string>
+    <string name="file_name">Όνομα αρχείου</string>
+    <string name="empty_discovery">Δεν βρέθ. δεδομ.</string>
+    <string name="export_cancel_confirmation">Θα ακυρωθεί η τρέχουσα εξαγ.\nΘέλετε να συνεχίσετε;</string>
+
+    <string name="format_description">ISOXML: \nΌλα τα αρχεία μπορούν να εξαχθούν ως ISOXML. \n \nShapefile: \nΣυνταγές.</string>
+
+    <string name="error_no_data">Χωρίς δεδ.</string>
+    <string name="error_no_source">Καμία πηγή δεδομένων</string>
+    <string name="error_no_target">Κανένας στόχος δεδομ.</string>
+    <string name="error_perform_ops">Σφάλμα εκτέλ. διαδικασ.</string>
+    <string name="error_calculate_conflicts">Σφάλμα διενέξ. υπολογ.</string>
+    <string name="error_calculate_operations">Σφάλμα υπολογ. στόχων</string>
+    <string name="error_discovery">Σφάλμα ανακάλυψης</string>
+    <string name="status_cancelled">Ακυρώθηκε</string>
+    <string name="status_cancelling">Ακυρώνεται...</string>
+    <string name="status_successful">Επιτυχής</string>
+    <string name="status_starting">Έναρξη...</string>
+    <string name="import_complete">Η εισαγ. ολοκληρ.</string>
+    <string name="import_cancel">Η εισαγ. ακυρώθ.</string>
+    <string name="export_complete">Η εξαγ. ολοκληρώθ.</string>
+    <string name="export_cancel">Η εξαγ. ακυρώθ.</string>
+
+    <string name="usb_data_available">Διαθέσ. δεδομ. USB</string>
+    <string name="usb_no_data_available">Μη διαθέσ. δεδομ. USB</string>
+    <string name="usb_scanning">Σάρωση συσκ. USB...</string>
+
+    <string name="stop">Στοπ</string>
+    <string name="status_progress">%1$s %2$d/%3$d</string>
+   <!-- starting here everything is used by the productlibrary-package -->
+   <string name="product_default_rate">Προεπιλεγμ. ρυθμός</string>
+    <string name="product_form">Μορφή</string>
+    <string name="product_name">Όνομα</string>
+   <!-- Product Mix -->
+   <string name="product_mix_add_button_title">Προσθ.</string>
+    <string name="product_mix_default_text_edittext">Όνομα προϊόντος</string>
+    <string name="product_mix_default_text_picklist">Μορφή προϊόντος</string>
+    <string name="product_mix_search_hint">Μείγμα προϊόν., μορφ., ρυθμ.</string>
+    <string name="product_mix_subheader_total_mix">Σύνολο: 0 μίγμ. προϊόντων</string>
+    <plurals name="product_mix_subheader_total_mix_format">
+        <item quantity="zero">Σύνολο: 0 μίγμ. προϊόντων</item>
+        <item quantity="one">Σύνολο: 1 μίγμα προϊόντων</item>
+        <item quantity="other">Σύνολο: %1$d μίγμ. προϊόντων</item>
+    </plurals>
+    <string name="product_mix_title">Μίγμα πρ.</string>
+    <string name="product_mix_text_button_add_product_mix">Προσθ. μίγμ. προϊόν. +</string>
+    <string name="product_mix_title_dialog_add_product_mix">Προσθ. μίγμ. πρ.</string>
+    <string name="product_mix_title_dialog_edit_product_mix">Επεξ. μίγμ. πρ.</string>
+    <string name="product_mix_title_dialog_copy_product_mix">Αντιγρ. μίγμ. πρ.</string>
+    <string name="product_mix_title_add_new_product">Προσθ. νέου πρ.</string>
+    <string name="product_mix_title_add_new_carrier">Προσθ. νέου φορέα</string>
+    <string name="product_mix_text_button_remove">Κατάργ. x</string>
+    <string name="product_mix_text_button_add_more">Πρ. περισσ. +</string>
+    <string name="product_mix_title_category_button_title_mix_products">Μίγμα προϊόντων</string>
+    <string name="product_mix_title_name">Όν. μίγμ. προϊόντ.</string>
+    <string name="product_mix_title_carrier">Φορέας</string>
+    <string name="product_mix_title_total_mix_amount">Συνολική ποσότ. μίγματος</string>
+    <string name="product_mix_title_carrier_amount">Ποσ. φορέα</string>
+    <string name="product_mix_title_mix_products">Μίγμα προϊόντων</string>
+    <string name="product_mix_title_product">Προϊόν %1$d</string>
+    <string name="product_mix_title_product_amount">Ποσότητα</string>
+    <string name="product_mix_title_units">Μονάδες</string>
+    <string name="product_mix_title_application_rates">Ρυθμοί εφαρμογής</string>
+    <string name="product_mix_title_application_rate_1">Ρυθμός εφαρμογής 1 (Προεπιλ.)</string>
+    <string name="product_mix_title_application_rate_2">Ρυθμός εφαρμογής 2</string>
+    <string name="product_mix_title_application_rate_1_short">Ρυθμ. εφ. 1</string>
+    <string name="product_mix_title_application_rate_2_short">Ρυθμ. εφ. 2</string>
+    <string name="product_mix_title_application_rate_1_short_point">Ρυθμ. εφ. 1:</string>
+    <string name="product_mix_title_application_rate_2_short_point">Ρυθμ. εφ. 2:</string>
+    <string name="product_mix_title_min_application_rate">Ελάχ. ρυθμ. εφαρμ.</string>
+    <string name="product_mix_title_max_application_rate">Μέγ. ρυθμ. εφαρμ.</string>
+    <string name="product_mix_title_delta_application_rate">Διαφορά ρυθμ. εφαρμ.</string>
+    <string name="product_mix_title_application_rates_per_product">Ρυθμοί εφαρμογής ανά προϊόν</string>
+    <string name="product_mix_title_products">Προϊόντα</string>
+    <string name="product_mix_title_advanced">Προηγμένο</string>
+    <string name="product_mix_title_usage">Χρήση</string>
+    <string name="product_mix_title_package_size">Μέγεθος πακέτου</string>
+    <string name="product_mix_title_package_size_units">Μονάδες μεγ. πακέτου</string>
+    <string name="product_mix_title_density">Πυκνότητα</string>
+    <string name="product_mix_title_density_unit">Μονάδες πυκνότ.</string>
+    <string name="product_mix_title_picklist_default_select">Επιλογή</string>
+    <string name="product_mix_title_product_mix_form">Μορφή μίγμ. προϊόντ.</string>
+    <string name="product_mix_unittext_default_text">--.-</string>
+
+    <string name="product_text_bulk_fill_fan_delta_label">Βήμα ασυσκ.:</string>
+    <string name="product_text_bulk_fill_fan_rate_label">Ρυθμ.ασυσκ.:</string>
+    <string name="product_text_density_label">Πυκνότητα:</string>
+    <string name="product_text_density_units_label">Μονάδ. πυκνότ.:</string>
+    <string name="product_text_package_label">Μέγεθος πακέτ.:</string>
+    <string name="product_text_rate_delta_label">Διαφ. ρυθμών:</string>
+    <string name="product_text_rate_min_label">Ελάχ. ρυθμ. εφ.:</string>
+    <string name="product_text_rate_max_label">Μέγ. ρυθμ. εφ.:</string>
+    <string name="product_text_rate_one_label">Ρυθμ. εφ. 1:</string>
+    <string name="product_text_rate_two_label">Ρυθμ. εφ. 2:</string>
+    <string name="product_text_vacuum_fan_delta_label">Βήμα κεν.:</string>
+    <string name="product_text_vacuum_fan_rate_label">Ρυθμ. κεν.:</string>
+
+    <string name="product_section_header">Προϊόντα</string>
+    <string name="product_section_subheader">Σύνολο: 0 προϊόντα</string>
+    <plurals name="product_section_subheader_format">
+        <item quantity="zero">Σύνολο: 0 προϊόντα</item>
+        <item quantity="one">Σύνολο: 1 προϊόν</item>
+        <item quantity="other">Σύνολο: %1$d προϊόντα</item>
+    </plurals>
+    <string name="product_search_hint">Προϊόν, μορφή, ρυθμός</string>
+
+    <string name="tab_product_library">Βιβλιοθ. προϊόντων</string>
+    <string name="create_product_button">Προσθ. πρ. +</string>
+    <string name="no_available_products">Δεν προσθέσατε κανένα προϊόν.</string>
+    <string name="add_product_instructions">Προσθέστε ένα προϊόν με το κουμπί \"Προσθ. προϊόντος\" παραπάνω.</string>
+    <string name="add_product_mix_instructions">Προσθ. μίγμα προϊόντ. με το κουμπί \"Προσθ. μείγματος πρ.\" παραπάνω.</string>
+
+    <string name="unit_gal_per_acre">g/ac</string>
+
+    <string name="delete_dialog_confirm_button_text">Διαγραφή</string>
+    <string name="delete_product_dialog_body_text">Θα διαγραφεί οριστικά το προϊόν και οι ρυθμίσεις του.</string>
+
+    <string name="alert_title">Ειδοποίηση</string>
+    <string name="alert_dismiss">Ακύρωση</string>
+    <string name="alert_in_use">Το προϊόν χρησιμοποιείται από έναν ελεγκτή.</string>
+
+    <string name="variety_title">Ποικιλίες</string>
+    <string name="variety_section_subheader">Σύνολο: 0 ποικιλίες</string>
+    <plurals name="variety_section_subheader_format">
+        <item quantity="zero">Σύνολο: 0 ποικιλίες</item>
+        <item quantity="one">Σύνολο: 1 ποικιλία</item>
+        <item quantity="other">Σύνολο: %1$d ποικιλίες</item>
+    </plurals>
+    <string name="variety_button_add_text">Προσθ. ποικ. +</string>
+    <string name="variety_add_dialog_title_text">Προσθ. ποικ.</string>
+    <string name="variety_add_or_edit_dialog_crop_type_header_text">Τύπος καρπού</string>
+    <string name="variety_add_or_edit_dialog_name_header_text">Όνομα</string>
+    <string name="variety_delete_dialog_delete_title_text">Διαγρ. ποικιλίας</string>
+    <string name="variety_delete_dialog_body_text_delete_allowed">Θα διαγραφεί μόνιμα η ποικιλία και οι ρυθμίσεις της.</string>
+    <string name="variety_dialog_cancel_button_text">Ακύρωση</string>
+    <string name="variety_dialog_save_button_text">Αποθήκευση</string>
+    <string name="variety_edit_dialog_title">Επεξ. ποικιλίας</string>
+    <string name="variety_instruction_add">Προσθέστε μια ποικιλία με το κουμπί \"Προσθ. ποικ.\" παραπάνω.</string>
+    <string name="variety_list_header_crop_type_text">ΤΥΠΟΣ ΚΑΡΠΟΥ</string>
+    <string name="variety_list_header_color">ΧΡΩΜΑ</string>
+    <string name="variety_list_header_name_text">ΟΝΟΜΑΣΙΑ</string>
+    <string name="variety_not_available">Δεν έχετε προσθ. ποικιλίες.</string>
+    <string name="variety_search_hint">Ποικιλ., τύπ. καρπού</string>
+    <string name="tab_management">Διαχείριση</string>
+    <string name="edit_field_name">Όνομα</string>
+    <string name="edit_dialog_header">Επεξ. ονόμ.</string>
+    <string name="edit_dialog_save">Αποθήκευση</string>
+    <string name="edit_dialog_cancel">Ακύρωση</string>
+    <string name="tab_mng_none_header">Επιλέξτε στοιχ. για επεξ., αντιγρ. ή διαγρ.</string>
+    <string name="tab_mng_items_header">%1$d στοιχεία επιλεγμένα</string>
+   <!-- end of productlibrary-package usage -->
+   <string name="edit_name_warning">Υπάρχει ήδη στοιχείο με αυτό το όνομα. Επιλέξτε διαφορετικό όνομα</string>
+    <string name="edit_update_title">Ενημέρ. στοιχ.</string>
+</resources>

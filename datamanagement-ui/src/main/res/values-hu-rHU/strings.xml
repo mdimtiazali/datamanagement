@@ -1,0 +1,232 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  ~ Copyright (C) 2016 CNH Industrial NV. All rights reserved.
+  ~
+  ~ This software contains proprietary information of CNH Industrial NV. Neither
+  ~ receipt nor possession thereof confers any right to reproduce, use, or
+  ~ disclose in whole or in part any such information without written
+  ~ authorization from CNH Industrial NV.
+  -->
+<resources>
+    <string name="app_name">Adatkezelés</string>
+    <string name="tab_import">Importál.</string>
+    <string name="tab_import_test">Tesztimportálás</string>
+    <string name="import_source">Importálás forrása</string>
+    <string name="destination">Cél</string>
+    <string name="collapse_button_content_description">Összecsuk gomb</string>
+    <string name="import_selected">Kiválasztott importálása</string>
+    <string name="export_selected">Kiválasztott exportálása</string>
+    <string name="done">Elvégezve</string>
+    <string name="type">Típus:</string>
+    <string name="name">Név:</string>
+    <string name="target">Cél:</string>
+    <string name="select_target">Cél kiválasztása</string>
+    <string name="copy_and_replace">Csere</string>
+    <string name="dont_copy">Ne másolja</string>
+    <string name="keep_both">Tartsa meg mindkettőt</string>
+    <string name="conflict">Ütközés</string>
+    <string name="new_id_title">Adjon meg új azonosítót</string>
+    <string name="new_id_label">Új azonosító:</string>
+    <string name="calculating_targets">Célok kiszámítása</string>
+    <string name="checking_targets">Lehetséges célok ellenőrzése...</string>
+    <string name="checking_conflicts">Konfliktusok ellenőrzése...</string>
+    <string name="importing">Importálás...</string>
+    <string name="select_path">Útvonal kiválasztása...</string>
+    <string name="continue_string">Folyt.</string>
+    <string name="next">Követk.</string>
+
+    <string name="pfds">Termelő/gazdaság/szántóföld</string>
+    <string name="vehicles">Járművek</string>
+    <string name="imps">Munkaeszközök</string>
+    <string name="prescriptions">Előírások</string>
+    <string name="tasks">Feladatok</string>
+    <string name="boundaries">Határok</string>
+    <string name="obstacles">Akadályok</string>
+    <string name="guidance_groups">Rend</string>
+    <string name="guidance_patterns">Sorvezetés mintái</string>
+    <string name="notes">Megjegyzések</string>
+
+    <string name="products">Termények</string>
+    <string name="product_mixes">Terménykeverékek</string>
+    <string name="select_source">Import. forrás kiválasztása</string>
+    <string name="import_drag_and_drop"><![CDATA[Húzza át \na PCM-re/kijelzőre \nimportáláshoz]]></string>
+    <string name="export_drag_and_drop"><![CDATA[Húzza át \naz exportáláshoz]]></string>
+    <string name="select_all">Összes kiválasztása</string>
+    <string formatted="false" name="x_of_y_format">%d/%d</string>
+    <string name="usb_string">USB</string>
+    <string name="display_string">Kijelző</string>
+    <string name="display_numbered">Kijelző %d</string>
+    <string name="display_named">Kijelző %s</string>
+    <string name="select_string">Választ</string>
+    <string name="export_to">Cél:</string>
+    <string name="export_format">Exportálási formátum:</string>
+    <string name="tab_export">Exportálás</string>
+    <string name="percent_complete">% kész</string>
+    <string name="loading_string">Betöltés</string>
+    <string name="exporting_string">Exportálás</string>
+    <string name="importing_string">Importálás</string>
+    <string name="exporting_data">Adat exportálása</string>
+    <string name="importing_data">Adat importálása</string>
+    <string name="select_source_first">A kezdéshez \nválassza ki \naz importálás forrását</string>
+    <string name="no_import_source">Nem található importálási forráseszköz. \nEllenőrizze az eszköz csatlakozását.</string>
+    <string name="deselect_all">Összes kijelölés megszüntetése</string>
+    <string formatted="false" name="duplicate_file">Már létezik \"%s\" nevű %s</string>
+    <string name="existing_file">Meglévő</string>
+    <string name="existing_file_typed">Meglévő %s</string>
+    <string name="new_file">Új</string>
+    <string name="new_file_typed">Új %s</string>
+    <string name="data_conflict">Adatkonfliktus</string>
+    <string name="rename_file">Átnevezés %s</string>
+    <string name="file_name">Fájlnév</string>
+    <string name="empty_discovery">Nem található adat</string>
+    <string name="export_cancel_confirmation">Ezzel megszakítja a jelenlegi exportálást.\nBiztosan folytatja?</string>
+
+    <string name="format_description">ISOXML: \nMinden fájl exportálható ISOXML formátumba. \n \nAlakfájl: \nElőírások.</string>
+
+    <string name="error_no_data">Nincs adat</string>
+    <string name="error_no_source">Nincs forrás adatcél</string>
+    <string name="error_no_target">Nincs cél adatcél</string>
+    <string name="error_perform_ops">Műveletek elvégzése hiba</string>
+    <string name="error_calculate_conflicts">Konfliktusok kiszámítása hiba</string>
+    <string name="error_calculate_operations">Célok kiszámítása hiba</string>
+    <string name="error_discovery">Felfedezés hiba</string>
+    <string name="status_cancelled">Leállítva</string>
+    <string name="status_cancelling">Leállítás...</string>
+    <string name="status_successful">Sikeres</string>
+    <string name="status_starting">Indítás...</string>
+    <string name="import_complete">Importálás kész</string>
+    <string name="import_cancel">Importálás megszakítva</string>
+    <string name="export_complete">Exportálás kész</string>
+    <string name="export_cancel">Exportálás megszakítva</string>
+
+    <string name="usb_data_available">USB adat elérhető</string>
+    <string name="usb_no_data_available">Nincs elérhető USB adat</string>
+    <string name="usb_scanning">USB-eszköz beolvasása...</string>
+
+    <string name="stop">Leállás</string>
+    <string name="status_progress">%1$s %2$d/%3$d</string>
+   <!-- starting here everything is used by the productlibrary-package -->
+   <string name="product_default_rate">Alap tartomány</string>
+    <string name="product_form">Forma</string>
+    <string name="product_name">Név</string>
+   <!-- Product Mix -->
+   <string name="product_mix_add_button_title">Hozzáad</string>
+    <string name="product_mix_default_text_edittext">Termék Név</string>
+    <string name="product_mix_default_text_picklist">Termék Forma</string>
+    <string name="product_mix_search_hint">Terménykeverék, forma, arány</string>
+    <string name="product_mix_subheader_total_mix">Összesen: 0 terménykeverék</string>
+    <plurals name="product_mix_subheader_total_mix_format">
+        <item quantity="zero">Összesen: 0 terménykeverék</item>
+        <item quantity="one">Összesen: 1 terménykeverék</item>
+        <item quantity="other">Összesen: %1$d terménykeverék</item>
+    </plurals>
+    <string name="product_mix_title">Terménykeverék</string>
+    <string name="product_mix_text_button_add_product_mix">Terménykeverék hozzáad. +</string>
+    <string name="product_mix_title_dialog_add_product_mix">Terménykeverék hozzáad.</string>
+    <string name="product_mix_title_dialog_edit_product_mix">Terménykeverék szerk.</string>
+    <string name="product_mix_title_dialog_copy_product_mix">Terménykeverék másol.</string>
+    <string name="product_mix_title_add_new_product">Új termény hozzáad.</string>
+    <string name="product_mix_title_add_new_carrier">Új hordozó hozzáad.</string>
+    <string name="product_mix_text_button_remove">Eltávolítás x</string>
+    <string name="product_mix_text_button_add_more">Több hozzáad. +</string>
+    <string name="product_mix_title_category_button_title_mix_products">Termények keverése</string>
+    <string name="product_mix_title_name">Terménykeverék név</string>
+    <string name="product_mix_title_carrier">Hordozóanyag</string>
+    <string name="product_mix_title_total_mix_amount">Össz Mix mennyiség</string>
+    <string name="product_mix_title_carrier_amount">Hordozó mennyisége</string>
+    <string name="product_mix_title_mix_products">Termények keverése</string>
+    <string name="product_mix_title_product">%1$d termény</string>
+    <string name="product_mix_title_product_amount">Mennyiség</string>
+    <string name="product_mix_title_units">Mérték</string>
+    <string name="product_mix_title_application_rates">Alkalmazási arányok</string>
+    <string name="product_mix_title_application_rate_1">Adagolási arány 1 (alapért.)</string>
+    <string name="product_mix_title_application_rate_2">Adagolási arány 2</string>
+    <string name="product_mix_title_application_rate_1_short">Adag. arány 1</string>
+    <string name="product_mix_title_application_rate_2_short">Adag. arány 2</string>
+    <string name="product_mix_title_application_rate_1_short_point">Adag. arány 1:</string>
+    <string name="product_mix_title_application_rate_2_short_point">Adag. arány 2:</string>
+    <string name="product_mix_title_min_application_rate">Min. adagolási arány</string>
+    <string name="product_mix_title_max_application_rate">Max. adagolási arány</string>
+    <string name="product_mix_title_delta_application_rate">Delta adagolási arány</string>
+    <string name="product_mix_title_application_rates_per_product">Alkalmazási arányok terményenként</string>
+    <string name="product_mix_title_products">Termények</string>
+    <string name="product_mix_title_advanced">Speciális</string>
+    <string name="product_mix_title_usage">Alkalmazás</string>
+    <string name="product_mix_title_package_size">Csomag Mérete</string>
+    <string name="product_mix_title_package_size_units">Csomagméret Mért.egys</string>
+    <string name="product_mix_title_density">Fajsúly</string>
+    <string name="product_mix_title_density_unit">Fajsúly egységei:</string>
+    <string name="product_mix_title_picklist_default_select">Választ</string>
+    <string name="product_mix_title_product_mix_form">Terménykeverék forma</string>
+    <string name="product_mix_unittext_default_text">--.-</string>
+
+    <string name="product_text_bulk_fill_fan_delta_label">Tömeges lépés:</string>
+    <string name="product_text_bulk_fill_fan_rate_label">Tömeges seb.:</string>
+    <string name="product_text_density_label">Fajsúly:</string>
+    <string name="product_text_density_units_label">Fajsúly egységei:</string>
+    <string name="product_text_package_label">Csomag mérete:</string>
+    <string name="product_text_rate_delta_label">Delta arány:</string>
+    <string name="product_text_rate_min_label">Min. adag. arány:</string>
+    <string name="product_text_rate_max_label">Max. adag. arány:</string>
+    <string name="product_text_rate_one_label">Adag. arány 1:</string>
+    <string name="product_text_rate_two_label">Adag. arány 2:</string>
+    <string name="product_text_vacuum_fan_delta_label">Vák. lépés:</string>
+    <string name="product_text_vacuum_fan_rate_label">Vák. seb.:</string>
+
+    <string name="product_section_header">Termények</string>
+    <string name="product_section_subheader">Összesen: 0 termény</string>
+    <plurals name="product_section_subheader_format">
+        <item quantity="zero">Összesen: 0 termény</item>
+        <item quantity="one">Összesen: 1 termény</item>
+        <item quantity="other">Összesen: %1$d termény</item>
+    </plurals>
+    <string name="product_search_hint">Termény, forma, arány</string>
+
+    <string name="tab_product_library">Terménykönyvtár</string>
+    <string name="create_product_button">Termény hozzáad. +</string>
+    <string name="no_available_products">Nincs hozzáadott termény.</string>
+    <string name="add_product_instructions">Adjon hozzá terményt a fenti \"Termény hozzáad.\" gombbal.</string>
+    <string name="add_product_mix_instructions">Adjon hozzá terménykeveréket a fenti \"Terménykeverék hozzáad.\" gombbal.</string>
+
+    <string name="unit_gal_per_acre">gal/ac</string>
+
+    <string name="delete_dialog_confirm_button_text">Törlés</string>
+    <string name="delete_product_dialog_body_text">Ezzel véglegesen törli ezt a terményt és a beállításait.</string>
+
+    <string name="alert_title">Riasztás</string>
+    <string name="alert_dismiss">Bezár</string>
+    <string name="alert_in_use">A terményt jelenleg egy vezérlő használja.</string>
+
+    <string name="variety_title">Fajták</string>
+    <string name="variety_section_subheader">Összesen: 0 változat</string>
+    <plurals name="variety_section_subheader_format">
+        <item quantity="zero">Összesen: 0 változat</item>
+        <item quantity="one">Összesen: 1 változat</item>
+        <item quantity="other">Összesen: %1$d változat</item>
+    </plurals>
+    <string name="variety_button_add_text">Változat hozzáad. +</string>
+    <string name="variety_add_dialog_title_text">Változat hozzáad.</string>
+    <string name="variety_add_or_edit_dialog_crop_type_header_text">Terményfajta</string>
+    <string name="variety_add_or_edit_dialog_name_header_text">Név</string>
+    <string name="variety_delete_dialog_delete_title_text">Változat törlése</string>
+    <string name="variety_delete_dialog_body_text_delete_allowed">Ezzel véglegesen törli ezt a változatot és a beállításait.</string>
+    <string name="variety_dialog_cancel_button_text">Mégse</string>
+    <string name="variety_dialog_save_button_text">Mentés</string>
+    <string name="variety_edit_dialog_title">Változat szerk.</string>
+    <string name="variety_instruction_add">Adjon hozzá változatot a fenti \"Változat hozzáad.\" gombbal.</string>
+    <string name="variety_list_header_crop_type_text">TERMÉNYTÍPUS</string>
+    <string name="variety_list_header_color">SZÍN</string>
+    <string name="variety_list_header_name_text">NÉV</string>
+    <string name="variety_not_available">Nincs hozzáadott változat.</string>
+    <string name="variety_search_hint">Változat, terménytípus</string>
+    <string name="tab_management">Kezelés</string>
+    <string name="edit_field_name">Név</string>
+    <string name="edit_dialog_header">Név szerk.</string>
+    <string name="edit_dialog_save">Mentés</string>
+    <string name="edit_dialog_cancel">Mégse</string>
+    <string name="tab_mng_none_header">Tételeket szerkeszthet, másolhat vagy törölhet</string>
+    <string name="tab_mng_items_header">%1$d tétel kiválasztva</string>
+   <!-- end of productlibrary-package usage -->
+   <string name="edit_name_warning">Már létezik ilyen nevű tétel Válasszon másik nevet</string>
+    <string name="edit_update_title">Tétel frissítése</string>
+</resources>
