@@ -58,5 +58,11 @@
     <attr name="state_sort_asc" format="boolean" />
     <attr name="state_sort_desc" format="boolean" />
     <attr name="state_no_sort" format="boolean" />
+    <attr name="tree_line_color" format="color" />
+    <attr name="tree_line_width" format="float" />
+    <declare-styleable name="TreeLineWidget">
+        <attr name="tree_line_color"/>
+        <attr name="tree_line_width"/>
+    </declare-styleable>
 
 </resources>

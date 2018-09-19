@@ -1,0 +1,232 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  ~ Copyright (C) 2016 CNH Industrial NV. All rights reserved.
+  ~
+  ~ This software contains proprietary information of CNH Industrial NV. Neither
+  ~ receipt nor possession thereof confers any right to reproduce, use, or
+  ~ disclose in whole or in part any such information without written
+  ~ authorization from CNH Industrial NV.
+  -->
+<resources>
+    <string name="app_name">Duom. tvarkymas</string>
+    <string name="tab_import">Įvesti</string>
+    <string name="tab_import_test">Įvedimo bandymas</string>
+    <string name="import_source">Įvedimo šaltinis</string>
+    <string name="destination">Paskirtis</string>
+    <string name="collapse_button_content_description">Suskleidimo mygtukas</string>
+    <string name="import_selected">Įvesti pasirinktus</string>
+    <string name="export_selected">Eksportuoti pasirinktus</string>
+    <string name="done">Atlikta</string>
+    <string name="type">Tipas:</string>
+    <string name="name">Pavadinimas:</string>
+    <string name="target">Tikslas</string>
+    <string name="select_target">Pasirinkite tikslą</string>
+    <string name="copy_and_replace">Pakeisti</string>
+    <string name="dont_copy">Nekopijuoti</string>
+    <string name="keep_both">Palikti abu</string>
+    <string name="conflict">Konfliktas</string>
+    <string name="new_id_title">Įveskite naują atpažinimo numerį</string>
+    <string name="new_id_label">Naujas atpažinimo numeris:</string>
+    <string name="calculating_targets">Apskaičiuojami tikslai</string>
+    <string name="checking_targets">Tikrinami galimi tikslai...</string>
+    <string name="checking_conflicts">Tikrinami konfliktai...</string>
+    <string name="importing">Įvedama...</string>
+    <string name="select_path">Pasirinkite kelią...</string>
+    <string name="continue_string">Tęsti</string>
+    <string name="next">Tolesnis</string>
+
+    <string name="pfds">Augintojas / ūkis / laukas</string>
+    <string name="vehicles">Transporto priemonės</string>
+    <string name="imps">Padargai</string>
+    <string name="prescriptions">Nurodymai</string>
+    <string name="tasks">Užduotys</string>
+    <string name="boundaries">Ribos</string>
+    <string name="obstacles">Kliūtys</string>
+    <string name="guidance_groups">Pradalgės</string>
+    <string name="guidance_patterns">Valdymo schemos</string>
+    <string name="notes">Pastabos</string>
+
+    <string name="products">Priemonės</string>
+    <string name="product_mixes">Produktų mišiniai</string>
+    <string name="select_source">Pasirinkti įvedimo šaltinį</string>
+    <string name="import_drag_and_drop"><![CDATA[Vilkite ir paleiskite,\nkad įvestumėte\nį PCM / ekraną]]></string>
+    <string name="export_drag_and_drop"><![CDATA[Vilkite ir paleiskite,\nkad eksportuotumėte]]></string>
+    <string name="select_all">Pasirinkti viską</string>
+    <string formatted="false" name="x_of_y_format">%d iš %d</string>
+    <string name="usb_string">USB</string>
+    <string name="display_string">Ekranas</string>
+    <string name="display_numbered">Ekranas%d</string>
+    <string name="display_named">Ekranas%s</string>
+    <string name="select_string">Pasirinkite</string>
+    <string name="export_to">Paskirtis:</string>
+    <string name="export_format">Eksportavimo formatas:</string>
+    <string name="tab_export">Eksportui</string>
+    <string name="percent_complete">% baigta</string>
+    <string name="loading_string">Pakrovimas</string>
+    <string name="exporting_string">Eksportuojama</string>
+    <string name="importing_string">Įvedama</string>
+    <string name="exporting_data">Eksportuojami duomenys</string>
+    <string name="importing_data">Įvedami duomenys</string>
+    <string name="select_source_first">Kad galėtumėte pradėti, \npirmiausia pasirinkite \nįvedimo šaltinį</string>
+    <string name="no_import_source">Neaptikta įvedimo šaltinių įrenginių. \nPatikrinkite įrenginių jungtis.</string>
+    <string name="deselect_all">Panaikinti visko pasirinkimą</string>
+    <string formatted="false" name="duplicate_file">%s pavadintas „%s“ jau yra</string>
+    <string name="existing_file">Esantis</string>
+    <string name="existing_file_typed">Esantis %s</string>
+    <string name="new_file">Naujas</string>
+    <string name="new_file_typed">Naujas %s</string>
+    <string name="data_conflict">Duomenų konfliktas</string>
+    <string name="rename_file">Pervardyti %s</string>
+    <string name="file_name">Rinkmenos pavadinimas</string>
+    <string name="empty_discovery">Nerasta duomenų</string>
+    <string name="export_cancel_confirmation">Tai nutrauks dabartinį eksportavimą.\nAr norite tęsti?</string>
+
+    <string name="format_description">ISOXML: \nVisos rinkmenos gali būti eksportuotos ISOXML formatu. \n \nShapefile: \nNurodymai.</string>
+
+    <string name="error_no_data">Nėra duomenų</string>
+    <string name="error_no_source">Nėra šaltinio duomenų šaltinio</string>
+    <string name="error_no_target">Nėra tikslo duomenų šaltinio</string>
+    <string name="error_perform_ops">Veiksmų atlikimo klaida</string>
+    <string name="error_calculate_conflicts">Konfliktų skaičiavimo klaida</string>
+    <string name="error_calculate_operations">Tikslų skaičiavimo klaida</string>
+    <string name="error_discovery">Suradimo klaida</string>
+    <string name="status_cancelled">Atšaukta</string>
+    <string name="status_cancelling">Atšaukiama...</string>
+    <string name="status_successful">Sėkmingai</string>
+    <string name="status_starting">Pradedama...</string>
+    <string name="import_complete">Įvedimas baigtas</string>
+    <string name="import_cancel">Įvedimas atšauktas</string>
+    <string name="export_complete">Eksportavimas baigtas</string>
+    <string name="export_cancel">Eksportavimas atšauktas</string>
+
+    <string name="usb_data_available">Galimi USB duomenys</string>
+    <string name="usb_no_data_available">Nėra galimų USB duomenų</string>
+    <string name="usb_scanning">Nuskaitoma USB atmintinė...</string>
+
+    <string name="stop">Sust.</string>
+    <string name="status_progress">%1$s %2$d/%3$d</string>
+   <!-- starting here everything is used by the productlibrary-package -->
+   <string name="product_default_rate">Numatyt. greitis</string>
+    <string name="product_form">Forma</string>
+    <string name="product_name">Pavadinimas</string>
+   <!-- Product Mix -->
+   <string name="product_mix_add_button_title">Pridėkite</string>
+    <string name="product_mix_default_text_edittext">Produkto pavadinimas</string>
+    <string name="product_mix_default_text_picklist">Produkto forma</string>
+    <string name="product_mix_search_hint">Produkto mišinys, forma, sparta</string>
+    <string name="product_mix_subheader_total_mix">Viso: 0 produktų mišinių</string>
+    <plurals name="product_mix_subheader_total_mix_format">
+        <item quantity="zero">Viso: 0 produktų mišinių</item>
+        <item quantity="one">Viso: 1 produktų mišinys</item>
+        <item quantity="other">Viso: %1$d produktų mišinių</item>
+    </plurals>
+    <string name="product_mix_title">Prod. miš.</string>
+    <string name="product_mix_text_button_add_product_mix">Pridėti produktų mišinį +</string>
+    <string name="product_mix_title_dialog_add_product_mix">Pridėti produktų mišinį</string>
+    <string name="product_mix_title_dialog_edit_product_mix">Taisyti produktų mišinį</string>
+    <string name="product_mix_title_dialog_copy_product_mix">Kopijuoti produktų mišinį</string>
+    <string name="product_mix_title_add_new_product">Pridėti naują produktą</string>
+    <string name="product_mix_title_add_new_carrier">Pridėti naują laikiklį</string>
+    <string name="product_mix_text_button_remove">Šalinti x</string>
+    <string name="product_mix_text_button_add_more">Pridėti daugiau +</string>
+    <string name="product_mix_title_category_button_title_mix_products">Maišyti produktus</string>
+    <string name="product_mix_title_name">Prod. miš. pav.</string>
+    <string name="product_mix_title_carrier">Vežėjas</string>
+    <string name="product_mix_title_total_mix_amount">Bendras mišinio kiekis</string>
+    <string name="product_mix_title_carrier_amount">Laikiklių kiekis</string>
+    <string name="product_mix_title_mix_products">Maišyti produktus</string>
+    <string name="product_mix_title_product">Produktas %1$d</string>
+    <string name="product_mix_title_product_amount">Kiekis</string>
+    <string name="product_mix_title_units">Matavimo vienetai</string>
+    <string name="product_mix_title_application_rates">Paskleidimo spartos</string>
+    <string name="product_mix_title_application_rate_1">Paskleidimo sparta 1 (numatytoji)</string>
+    <string name="product_mix_title_application_rate_2">Paskleidimo sparta 2</string>
+    <string name="product_mix_title_application_rate_1_short">Paskleidimo sparta 1</string>
+    <string name="product_mix_title_application_rate_2_short">Paskleidimo sparta 2</string>
+    <string name="product_mix_title_application_rate_1_short_point">Paskleidimo sparta 1:</string>
+    <string name="product_mix_title_application_rate_2_short_point">Paskleidimo sparta 2:</string>
+    <string name="product_mix_title_min_application_rate">Mažiausia paskleidimo sparta</string>
+    <string name="product_mix_title_max_application_rate">Didžiausia paskleidimo sparta</string>
+    <string name="product_mix_title_delta_application_rate">Paskleidimo spartos skirtumas</string>
+    <string name="product_mix_title_application_rates_per_product">Produktų paskleidimo spartos</string>
+    <string name="product_mix_title_products">Priemonės</string>
+    <string name="product_mix_title_advanced">Išplėstinis</string>
+    <string name="product_mix_title_usage">Naudojimas</string>
+    <string name="product_mix_title_package_size">Pakuotės dydis</string>
+    <string name="product_mix_title_package_size_units">Pakuotės dydžio vienetai</string>
+    <string name="product_mix_title_density">Tankis</string>
+    <string name="product_mix_title_density_unit">Tankio matavimo vienetai</string>
+    <string name="product_mix_title_picklist_default_select">Pasirinkite</string>
+    <string name="product_mix_title_product_mix_form">Produktų mišinio forma</string>
+    <string name="product_mix_unittext_default_text">--.-</string>
+
+    <string name="product_text_bulk_fill_fan_delta_label">Tūrio žingsnis:</string>
+    <string name="product_text_bulk_fill_fan_rate_label">Tūrio sparta:</string>
+    <string name="product_text_density_label">Tankis:</string>
+    <string name="product_text_density_units_label">Tankio matavimo vienetai:</string>
+    <string name="product_text_package_label">Pakuotės dydis:</string>
+    <string name="product_text_rate_delta_label">Spartos skirtumas:</string>
+    <string name="product_text_rate_min_label">Mažiausia paskleidimo sparta:</string>
+    <string name="product_text_rate_max_label">Didžiausia paskleidimo sparta:</string>
+    <string name="product_text_rate_one_label">Paskleidimo sparta 1:</string>
+    <string name="product_text_rate_two_label">Paskleidimo sparta 2:</string>
+    <string name="product_text_vacuum_fan_delta_label">Vakuumo žingsnis:</string>
+    <string name="product_text_vacuum_fan_rate_label">Vakuumo sparta:</string>
+
+    <string name="product_section_header">Priemonės</string>
+    <string name="product_section_subheader">Viso: 0 produktų;</string>
+    <plurals name="product_section_subheader_format">
+        <item quantity="zero">Viso: 0 produktų;</item>
+        <item quantity="one">Viso: 1 produktas</item>
+        <item quantity="other">Viso: %1$d produktų</item>
+    </plurals>
+    <string name="product_search_hint">Produktas, forma, sparta</string>
+
+    <string name="tab_product_library">Produkto biblioteka</string>
+    <string name="create_product_button">Pridėti produktą +</string>
+    <string name="no_available_products">Nepridėjote jokio produkto.</string>
+    <string name="add_product_instructions">Pridėkite produktą, naudodami aukščiau esantį mygtuką „Pridėti produktą“.</string>
+    <string name="add_product_mix_instructions">Pridėkite produktų mišinį, naudodami aukščiau esantį mygtuką „Pridėti produktų mišinį“.</string>
+
+    <string name="unit_gal_per_acre">gal./akr.</string>
+
+    <string name="delete_dialog_confirm_button_text">Ištrinti</string>
+    <string name="delete_product_dialog_body_text">Tai visam laikui pašalins šį produktą ir jo nuostatas.</string>
+
+    <string name="alert_title">Įspėjimas</string>
+    <string name="alert_dismiss">Atmesti</string>
+    <string name="alert_in_use">Šį produktą dabar naudoja valdiklis.</string>
+
+    <string name="variety_title">Rūšys</string>
+    <string name="variety_section_subheader">Viso: 0 rūšių</string>
+    <plurals name="variety_section_subheader_format">
+        <item quantity="zero">Viso: 0 rūšių</item>
+        <item quantity="one">Viso: 1 rūšis</item>
+        <item quantity="other">Viso: %1$d rūšių</item>
+    </plurals>
+    <string name="variety_button_add_text">Pridėti rūšį +</string>
+    <string name="variety_add_dialog_title_text">Pridėti rūšį</string>
+    <string name="variety_add_or_edit_dialog_crop_type_header_text">Grūdų tipas</string>
+    <string name="variety_add_or_edit_dialog_name_header_text">Pavadinimas</string>
+    <string name="variety_delete_dialog_delete_title_text">Šalinti rūšį</string>
+    <string name="variety_delete_dialog_body_text_delete_allowed">Tai visam laikui pašalins šią rūšį ir jos nuostatas.</string>
+    <string name="variety_dialog_cancel_button_text">Atšaukti</string>
+    <string name="variety_dialog_save_button_text">Išsaugoti</string>
+    <string name="variety_edit_dialog_title">Taisyti rūšį</string>
+    <string name="variety_instruction_add">Pridėkite rūšį, naudodami aukščiau esantį mygtuką „Pridėti rūšį“.</string>
+    <string name="variety_list_header_crop_type_text">GRŪDŲ TIPAS</string>
+    <string name="variety_list_header_color">SPALVA</string>
+    <string name="variety_list_header_name_text">PAVADINIMAS</string>
+    <string name="variety_not_available">Nepridėjote jokios rūšies.</string>
+    <string name="variety_search_hint">Tūšis, pasėlių tipas</string>
+    <string name="tab_management">Administracija</string>
+    <string name="edit_field_name">Pavadinimas</string>
+    <string name="edit_dialog_header">„Edit Name“ (Redaguoti pavadinimą)</string>
+    <string name="edit_dialog_save">Išsaugoti</string>
+    <string name="edit_dialog_cancel">Atšaukti</string>
+    <string name="tab_mng_none_header">Pasirinkite elementą (-us), kad galėtumėte taisyti, kopijuoti ar šalinti</string>
+    <string name="tab_mng_items_header">Pasirinkta %1$d elementų</string>
+   <!-- end of productlibrary-package usage -->
+   <string name="edit_name_warning">Elementas tokiu pavadinimu jau yra. Pasirinkite kitą pavadinimą</string>
+    <string name="edit_update_title">Naujinamas elementas</string>
+</resources>

@@ -1,0 +1,232 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  ~ Copyright (C) 2016 CNH Industrial NV. All rights reserved.
+  ~
+  ~ This software contains proprietary information of CNH Industrial NV. Neither
+  ~ receipt nor possession thereof confers any right to reproduce, use, or
+  ~ disclose in whole or in part any such information without written
+  ~ authorization from CNH Industrial NV.
+  -->
+<resources>
+    <string name="app_name">Data Management</string>
+    <string name="tab_import">Unos</string>
+    <string name="tab_import_test">Test uvoza</string>
+    <string name="import_source">Izvor uvoza</string>
+    <string name="destination">Odredište</string>
+    <string name="collapse_button_content_description">Gumb za sažimanje</string>
+    <string name="import_selected">Odabran uvoz</string>
+    <string name="export_selected">Odabran izvoz</string>
+    <string name="done">Dovršeno</string>
+    <string name="type">Vrsta:</string>
+    <string name="name">Naziv:</string>
+    <string name="target">Cilj</string>
+    <string name="select_target">Odabir cilja</string>
+    <string name="copy_and_replace">Zamjena</string>
+    <string name="dont_copy">Nemoj kopirati</string>
+    <string name="keep_both">Zadrži oba</string>
+    <string name="conflict">Sukob</string>
+    <string name="new_id_title">Unesite novi identifikator</string>
+    <string name="new_id_label">Novi identifikator:</string>
+    <string name="calculating_targets">Izračun ciljeva</string>
+    <string name="checking_targets">Provjera potencijalnih ciljeva...</string>
+    <string name="checking_conflicts">Provjera sukoba...</string>
+    <string name="importing">Uvoz...</string>
+    <string name="select_path">Odabir putanje...</string>
+    <string name="continue_string">Nastavi</string>
+    <string name="next">Sljedeće</string>
+
+    <string name="pfds">Uzgajivač / Farma / Njiva</string>
+    <string name="vehicles">Vozila</string>
+    <string name="imps">Priključni strojevi</string>
+    <string name="prescriptions">Upute</string>
+    <string name="tasks">Zadaci</string>
+    <string name="boundaries">Granice</string>
+    <string name="obstacles">Prepreka</string>
+    <string name="guidance_groups">Otkosi</string>
+    <string name="guidance_patterns">Uzorci navođenja</string>
+    <string name="notes">Napomene</string>
+
+    <string name="products">Proizvodi</string>
+    <string name="product_mixes">Smjese proizvoda</string>
+    <string name="select_source">Odabir izvora uvoza</string>
+    <string name="import_drag_and_drop"><![CDATA[Povucite i ispustite \nza uvoz \nu PCM/zaslon]]></string>
+    <string name="export_drag_and_drop"><![CDATA[Povucite i ispustite \nza izvoz]]></string>
+    <string name="select_all">Odaberi sve</string>
+    <string formatted="false" name="x_of_y_format">%d od %d</string>
+    <string name="usb_string">USB</string>
+    <string name="display_string">Zaslon</string>
+    <string name="display_numbered">Zaslon %d</string>
+    <string name="display_named">Zaslon %s</string>
+    <string name="select_string">Odabir</string>
+    <string name="export_to">Odredište:</string>
+    <string name="export_format">Format izvoza:</string>
+    <string name="tab_export">Izvoz</string>
+    <string name="percent_complete">% dovršeno</string>
+    <string name="loading_string">Učitavanje</string>
+    <string name="exporting_string">Izvoz u tijeku</string>
+    <string name="importing_string">Uvoz u tijeku</string>
+    <string name="exporting_data">Izvoz podataka</string>
+    <string name="importing_data">Uvoz podataka</string>
+    <string name="select_source_first">Za početak \nnajprije odaberite \nizvor uvoza</string>
+    <string name="no_import_source">Nije otkriven uređaj s izvorom za uvoz. \nProvjerite vezu uređaja.</string>
+    <string name="deselect_all">Poništi sve odabire</string>
+    <string formatted="false" name="duplicate_file">%s pod nazivom \"%s\" već postoji</string>
+    <string name="existing_file">Postojeći</string>
+    <string name="existing_file_typed">Postoji %s</string>
+    <string name="new_file">Novo</string>
+    <string name="new_file_typed">Novi %s</string>
+    <string name="data_conflict">Sukob podataka</string>
+    <string name="rename_file">Preimenuj %s</string>
+    <string name="file_name">Naziv datoteke</string>
+    <string name="empty_discovery">Nisu pronađeni podaci</string>
+    <string name="export_cancel_confirmation">Otkazat ćete trenutačni izvoz.\nŽelite li nastaviti?</string>
+
+    <string name="format_description">ISOXML: \nsve će datoteke biti izvezene u ISOXML. \n \nDat. oblika: \nupute.</string>
+
+    <string name="error_no_data">Nema podataka</string>
+    <string name="error_no_source">Nema izvor. izv. podataka</string>
+    <string name="error_no_target">Nema ciljnog izv. podataka</string>
+    <string name="error_perform_ops">Pogr. izvođenja operacija</string>
+    <string name="error_calculate_conflicts">Pogr. izračuna sukoba</string>
+    <string name="error_calculate_operations">Pogr. izračuna ciljeva</string>
+    <string name="error_discovery">Pogr. otkrivanja</string>
+    <string name="status_cancelled">Otkazano</string>
+    <string name="status_cancelling">Otkazivanje...</string>
+    <string name="status_successful">Uspješno</string>
+    <string name="status_starting">Pokretanje...</string>
+    <string name="import_complete">Uvoz dovršen</string>
+    <string name="import_cancel">Uvoz otkazan</string>
+    <string name="export_complete">Izvoz dovršen</string>
+    <string name="export_cancel">Izvoz otkazan</string>
+
+    <string name="usb_data_available">Dostupni USB podaci</string>
+    <string name="usb_no_data_available">USB podaci nedostupni</string>
+    <string name="usb_scanning">Pregled USB uređaja...</string>
+
+    <string name="stop">Zaustavi</string>
+    <string name="status_progress">%1$s %2$d/%3$d</string>
+   <!-- starting here everything is used by the productlibrary-package -->
+   <string name="product_default_rate">Zadana stopa</string>
+    <string name="product_form">Oblik</string>
+    <string name="product_name">Naziv</string>
+   <!-- Product Mix -->
+   <string name="product_mix_add_button_title">Dodaj</string>
+    <string name="product_mix_default_text_edittext">Naziv proizvoda</string>
+    <string name="product_mix_default_text_picklist">Oblik proizvoda</string>
+    <string name="product_mix_search_hint">Smjesa, oblik, brzina proizvoda</string>
+    <string name="product_mix_subheader_total_mix">Ukupno: 0 smjesa proizvoda</string>
+    <plurals name="product_mix_subheader_total_mix_format">
+        <item quantity="zero">Ukupno: 0 smjesa proizvoda</item>
+        <item quantity="one">Ukupno: 1 smjesa proizvoda</item>
+        <item quantity="other">Ukupno: %1$d smj. proizvoda</item>
+    </plurals>
+    <string name="product_mix_title">Smj. proiz.</string>
+    <string name="product_mix_text_button_add_product_mix">Dodaj smj. proizvoda +</string>
+    <string name="product_mix_title_dialog_add_product_mix">Dodaj smj. proizvoda</string>
+    <string name="product_mix_title_dialog_edit_product_mix">Uređ. smj. proizvoda</string>
+    <string name="product_mix_title_dialog_copy_product_mix">Kopir. smj. proizvoda</string>
+    <string name="product_mix_title_add_new_product">Dodaj novi proizvod</string>
+    <string name="product_mix_title_add_new_carrier">Dodaj novi nosač</string>
+    <string name="product_mix_text_button_remove">Ukloni x</string>
+    <string name="product_mix_text_button_add_more">Dodaj još +</string>
+    <string name="product_mix_title_category_button_title_mix_products">Miješ. proizvoda</string>
+    <string name="product_mix_title_name">Naziv sm. proiz.</string>
+    <string name="product_mix_title_carrier">Nosač</string>
+    <string name="product_mix_title_total_mix_amount">Ukupna količina mješavine</string>
+    <string name="product_mix_title_carrier_amount">Količ. nosača</string>
+    <string name="product_mix_title_mix_products">Miješ. proizvoda</string>
+    <string name="product_mix_title_product">Proizvod %1$d</string>
+    <string name="product_mix_title_product_amount">Količina</string>
+    <string name="product_mix_title_units">Jedin.</string>
+    <string name="product_mix_title_application_rates">Brzine primjene</string>
+    <string name="product_mix_title_application_rate_1">Brzina primjene 1 (zadano)</string>
+    <string name="product_mix_title_application_rate_2">Brzina primjene 2</string>
+    <string name="product_mix_title_application_rate_1_short">Brz. primj. 1</string>
+    <string name="product_mix_title_application_rate_2_short">Brz. primj. 2</string>
+    <string name="product_mix_title_application_rate_1_short_point">Brz. primj. 1:</string>
+    <string name="product_mix_title_application_rate_2_short_point">Brz. primj. 2:</string>
+    <string name="product_mix_title_min_application_rate">Min. brz. primjene</string>
+    <string name="product_mix_title_max_application_rate">Maks. brz. primjene</string>
+    <string name="product_mix_title_delta_application_rate">Brzina delta-primjene</string>
+    <string name="product_mix_title_application_rates_per_product">Brzine primjene po proizvodu</string>
+    <string name="product_mix_title_products">Proizvodi</string>
+    <string name="product_mix_title_advanced">Napredni korisnici</string>
+    <string name="product_mix_title_usage">Upotreba</string>
+    <string name="product_mix_title_package_size">Veličina paketa</string>
+    <string name="product_mix_title_package_size_units">Jed. velič. pakir.</string>
+    <string name="product_mix_title_density">Gustoća</string>
+    <string name="product_mix_title_density_unit">Jedinice gustoće</string>
+    <string name="product_mix_title_picklist_default_select">Odabir</string>
+    <string name="product_mix_title_product_mix_form">Oblik smj. proizvoda</string>
+    <string name="product_mix_unittext_default_text">--.-</string>
+
+    <string name="product_text_bulk_fill_fan_delta_label">Korak rasutog:</string>
+    <string name="product_text_bulk_fill_fan_rate_label">Brzina rasutog:</string>
+    <string name="product_text_density_label">Gustoća:</string>
+    <string name="product_text_density_units_label">Jedinice gustoće:</string>
+    <string name="product_text_package_label">Veličina paketa:</string>
+    <string name="product_text_rate_delta_label">Delta-brzina:</string>
+    <string name="product_text_rate_min_label">Min. brzina primjene:</string>
+    <string name="product_text_rate_max_label">Maks. brzina primjene:</string>
+    <string name="product_text_rate_one_label">Brz. primj. 1:</string>
+    <string name="product_text_rate_two_label">Brz. primj. 2:</string>
+    <string name="product_text_vacuum_fan_delta_label">Korak vak.:</string>
+    <string name="product_text_vacuum_fan_rate_label">Brzina vak.:</string>
+
+    <string name="product_section_header">Proizvodi</string>
+    <string name="product_section_subheader">Ukupno: 0 proizvoda</string>
+    <plurals name="product_section_subheader_format">
+        <item quantity="zero">Ukupno: 0 proizvoda</item>
+        <item quantity="one">Ukupno: 1 proizvod</item>
+        <item quantity="other">Ukupno: %1$d proizv.</item>
+    </plurals>
+    <string name="product_search_hint">Proizv., oblik, brzina</string>
+
+    <string name="tab_product_library">Biblioteka proizvoda</string>
+    <string name="create_product_button">Dodaj proizvod +</string>
+    <string name="no_available_products">Niste dodali nijedan proizvod.</string>
+    <string name="add_product_instructions">Dodajte proizvod gornjim gumbom \"Dodaj proizvod\".</string>
+    <string name="add_product_mix_instructions">Dodajte smjesu proizvoda gornjim gumbom \"Dodaj smj. proizvoda\".</string>
+
+    <string name="unit_gal_per_acre">gal/jutro</string>
+
+    <string name="delete_dialog_confirm_button_text">Izbriši</string>
+    <string name="delete_product_dialog_body_text">Trajno ćete izbrisati proizvod i njegove postavke.</string>
+
+    <string name="alert_title">Upozorenje</string>
+    <string name="alert_dismiss">Odbaci</string>
+    <string name="alert_in_use">Kontroler trenutačno koristi taj proizvod.</string>
+
+    <string name="variety_title">Varijacije</string>
+    <string name="variety_section_subheader">Ukupno: 0 varijacija</string>
+    <plurals name="variety_section_subheader_format">
+        <item quantity="zero">Ukupno: 0 varijacija</item>
+        <item quantity="one">Ukupno: 1 varijacija</item>
+        <item quantity="other">Ukupno: %1$d varijac.</item>
+    </plurals>
+    <string name="variety_button_add_text">Dodaj varijaciju +</string>
+    <string name="variety_add_dialog_title_text">Dodaj varijaciju</string>
+    <string name="variety_add_or_edit_dialog_crop_type_header_text">Tip usjeva</string>
+    <string name="variety_add_or_edit_dialog_name_header_text">Naziv</string>
+    <string name="variety_delete_dialog_delete_title_text">Izbriši varijaciju</string>
+    <string name="variety_delete_dialog_body_text_delete_allowed">Trajno ćete izbrisati varijaciju i njezine postavke.</string>
+    <string name="variety_dialog_cancel_button_text">Prekid</string>
+    <string name="variety_dialog_save_button_text">Spremi</string>
+    <string name="variety_edit_dialog_title">Uredi varijaciju</string>
+    <string name="variety_instruction_add">Dodajte varijaciju gornjim gumbom \"Dodaj varijaciju\".</string>
+    <string name="variety_list_header_crop_type_text">TIP USJEVA</string>
+    <string name="variety_list_header_color">BOJA</string>
+    <string name="variety_list_header_name_text">NAZIV</string>
+    <string name="variety_not_available">Niste dodali nijednu varijaciju.</string>
+    <string name="variety_search_hint">Varijacija, vrsta usjeva</string>
+    <string name="tab_management">Upravljanje</string>
+    <string name="edit_field_name">Naziv</string>
+    <string name="edit_dialog_header">Uredite naziv</string>
+    <string name="edit_dialog_save">Spremi</string>
+    <string name="edit_dialog_cancel">Prekid</string>
+    <string name="tab_mng_none_header">Odaberite stavke za uređ., kopir. ili brisanje</string>
+    <string name="tab_mng_items_header">Odabrano stavki: %1$d</string>
+   <!-- end of productlibrary-package usage -->
+   <string name="edit_name_warning">Stavka s tim nazivom već postoji. Odaberite neki drugi naziv</string>
+    <string name="edit_update_title">Ažuriranje stavke</string>
+</resources>

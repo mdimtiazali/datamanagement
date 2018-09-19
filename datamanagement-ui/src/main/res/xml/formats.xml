@@ -42,10 +42,4 @@
       <type>VARIETY_MAP</type>
    </format>
 
-   <format name="PF Database" pcm="true" standalone="true" path="PFDATABASE">
-      <type>!RX_PLAN</type>
-      <type>!RX</type>
-      <type>!RX_ZONE</type>
-   </format>
-
 </formats>

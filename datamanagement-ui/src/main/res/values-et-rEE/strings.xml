@@ -1,0 +1,232 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  ~ Copyright (C) 2016 CNH Industrial NV. All rights reserved.
+  ~
+  ~ This software contains proprietary information of CNH Industrial NV. Neither
+  ~ receipt nor possession thereof confers any right to reproduce, use, or
+  ~ disclose in whole or in part any such information without written
+  ~ authorization from CNH Industrial NV.
+  -->
+<resources>
+    <string name="app_name">Andmehaldus</string>
+    <string name="tab_import">Import</string>
+    <string name="tab_import_test">Testi importimine</string>
+    <string name="import_source">Allika importimine</string>
+    <string name="destination">Sihtkoht</string>
+    <string name="collapse_button_content_description">Kokkupanemise nupp</string>
+    <string name="import_selected">Valitud import</string>
+    <string name="export_selected">Valitud eksport</string>
+    <string name="done">Valmis</string>
+    <string name="type">Tüüp:</string>
+    <string name="name">Nimi:</string>
+    <string name="target">Sihtmärk</string>
+    <string name="select_target">Sihtmärgi valimine</string>
+    <string name="copy_and_replace">Vaheta</string>
+    <string name="dont_copy">Ära kopeeri</string>
+    <string name="keep_both">Säilita mõlemad</string>
+    <string name="conflict">Vastuolu</string>
+    <string name="new_id_title">Sisesta uus identifikaator</string>
+    <string name="new_id_label">Uus identifikaator:</string>
+    <string name="calculating_targets">Sihtmärkide arvutamine</string>
+    <string name="checking_targets">Potentsiaalsete sihtmärkide kontrollimine...</string>
+    <string name="checking_conflicts">Konfliktide kontrollimine...</string>
+    <string name="importing">Importimine...</string>
+    <string name="select_path">Vali tee...</string>
+    <string name="continue_string">Jätka</string>
+    <string name="next">Järgmine</string>
+
+    <string name="pfds">Kasvataja / Talu / Põld</string>
+    <string name="vehicles">Sõidukid</string>
+    <string name="imps">Tööseadmed</string>
+    <string name="prescriptions">Tööplaanid</string>
+    <string name="tasks">Tööd</string>
+    <string name="boundaries">Põllupiirid</string>
+    <string name="obstacles">Takistused</string>
+    <string name="guidance_groups">Vaalud</string>
+    <string name="guidance_patterns">Juhendamise mustrid</string>
+    <string name="notes">Märkmed</string>
+
+    <string name="products">Tooted</string>
+    <string name="product_mixes">Tootesegud</string>
+    <string name="select_source">Vali importimise allikas</string>
+    <string name="import_drag_and_drop"><![CDATA[Lohista ja vabasta \nimportimiseks \nPCM-i/kuvale]]></string>
+    <string name="export_drag_and_drop"><![CDATA[Lohista ja vabasta \neksportimiseks]]></string>
+    <string name="select_all">Vali kõik</string>
+    <string formatted="false" name="x_of_y_format">%d%d</string>
+    <string name="usb_string">USB-d</string>
+    <string name="display_string">Kuvar</string>
+    <string name="display_numbered">Kuva %d</string>
+    <string name="display_named">Kuva %s</string>
+    <string name="select_string">Vali</string>
+    <string name="export_to">Sihtkoht:</string>
+    <string name="export_format">Ekspordivorming:</string>
+    <string name="tab_export">Ekspordi</string>
+    <string name="percent_complete">% lõpetatud</string>
+    <string name="loading_string">Laadimine</string>
+    <string name="exporting_string">Eksportimine</string>
+    <string name="importing_string">Impordi</string>
+    <string name="exporting_data">Andmete eksportimine</string>
+    <string name="importing_data">Andmete importimine</string>
+    <string name="select_source_first">Alustamiseks \nvalige esmalt \nimportimise allikas</string>
+    <string name="no_import_source">Ühtegi importimise lähteseadet ei tuvastatud. \nKontrolli seadme ühendust.</string>
+    <string name="deselect_all">Tühista kõik valikud</string>
+    <string formatted="false" name="duplicate_file">%s Nimega \"%s\" on juba olemas</string>
+    <string name="existing_file">Olemasolev</string>
+    <string name="existing_file_typed">Olemasolev %s</string>
+    <string name="new_file">Uus</string>
+    <string name="new_file_typed">Uus %s</string>
+    <string name="data_conflict">Andmete konflikt</string>
+    <string name="rename_file">Nimeta ümber %s</string>
+    <string name="file_name">Failinimi</string>
+    <string name="empty_discovery">Andmeid ei leitud</string>
+    <string name="export_cancel_confirmation">See tühistab aktiivse ekspordi.\nKas soovid jätkata?</string>
+
+    <string name="format_description">ISOXML: \nKõiki faile saab eksportida vormingus ISOXML. \n \nKujundifail: \nTööplaanid.</string>
+
+    <string name="error_no_data">Puuduvad andmed</string>
+    <string name="error_no_source">Puudub lähte andmeallikas</string>
+    <string name="error_no_target">Puudub sihtkoha andmeallikas</string>
+    <string name="error_perform_ops">Tee tööde viga</string>
+    <string name="error_calculate_conflicts">Arvuta konfliktide viga</string>
+    <string name="error_calculate_operations">Arvuta sihtkohtade viga</string>
+    <string name="error_discovery">Avastamisviga</string>
+    <string name="status_cancelled">Tühistatud</string>
+    <string name="status_cancelling">Tühistatakse...</string>
+    <string name="status_successful">Edukas</string>
+    <string name="status_starting">Käivitamine...</string>
+    <string name="import_complete">Importimine lõpetatud</string>
+    <string name="import_cancel">Importimine tühistatud</string>
+    <string name="export_complete">Eksportimine lõpetatud</string>
+    <string name="export_cancel">Eksportimine tühistatud</string>
+
+    <string name="usb_data_available">USB-andmed saadaval</string>
+    <string name="usb_no_data_available">USB-andmed pole saadaval</string>
+    <string name="usb_scanning">USB-mälupulga skaneerimine...</string>
+
+    <string name="stop">Peata</string>
+    <string name="status_progress">%1$s %2$d/%3$d</string>
+   <!-- starting here everything is used by the productlibrary-package -->
+   <string name="product_default_rate">Vaikemäär</string>
+    <string name="product_form">Vorm</string>
+    <string name="product_name">Nimi</string>
+   <!-- Product Mix -->
+   <string name="product_mix_add_button_title">Lisa</string>
+    <string name="product_mix_default_text_edittext">Toote nimi</string>
+    <string name="product_mix_default_text_picklist">Toote vorm</string>
+    <string name="product_mix_search_hint">Tootesegu, vorm, määr</string>
+    <string name="product_mix_subheader_total_mix">Kokku: 0 tootesegu</string>
+    <plurals name="product_mix_subheader_total_mix_format">
+        <item quantity="zero">Kokku: 0 tootesegu</item>
+        <item quantity="one">Kokku: 1 tootesegu</item>
+        <item quantity="other">Kokku: %1$d tootesegu</item>
+    </plurals>
+    <string name="product_mix_title">Tootesegu</string>
+    <string name="product_mix_text_button_add_product_mix">Lisa tootesegu +</string>
+    <string name="product_mix_title_dialog_add_product_mix">Lisa tootesegu</string>
+    <string name="product_mix_title_dialog_edit_product_mix">Muuda tootesegu</string>
+    <string name="product_mix_title_dialog_copy_product_mix">Kopeeri tootesegu</string>
+    <string name="product_mix_title_add_new_product">Lisa uus toode</string>
+    <string name="product_mix_title_add_new_carrier">Lisa uus kandur</string>
+    <string name="product_mix_text_button_remove">Eemalda x</string>
+    <string name="product_mix_text_button_add_more">Lisa veel +</string>
+    <string name="product_mix_title_category_button_title_mix_products">Tootesegud</string>
+    <string name="product_mix_title_name">Tootesegu nimi</string>
+    <string name="product_mix_title_carrier">Kandur</string>
+    <string name="product_mix_title_total_mix_amount">Kokku segu</string>
+    <string name="product_mix_title_carrier_amount">Kanduri kogus</string>
+    <string name="product_mix_title_mix_products">Tootesegud</string>
+    <string name="product_mix_title_product">Toode %1$d</string>
+    <string name="product_mix_title_product_amount">Kogus</string>
+    <string name="product_mix_title_units">Ühikud</string>
+    <string name="product_mix_title_application_rates">Rakendusmäärad</string>
+    <string name="product_mix_title_application_rate_1">Rakendusmäär 1 (vaikimisi)</string>
+    <string name="product_mix_title_application_rate_2">Rakendusmäär 2</string>
+    <string name="product_mix_title_application_rate_1_short">Rak.määr 1</string>
+    <string name="product_mix_title_application_rate_2_short">Rak.määr 2</string>
+    <string name="product_mix_title_application_rate_1_short_point">Rak.määr 1:</string>
+    <string name="product_mix_title_application_rate_2_short_point">Rak.määr 2:</string>
+    <string name="product_mix_title_min_application_rate">Min rakendusmäär</string>
+    <string name="product_mix_title_max_application_rate">Maks rakendusmäär</string>
+    <string name="product_mix_title_delta_application_rate">Delta rakendusmäär</string>
+    <string name="product_mix_title_application_rates_per_product">Rakendusmäärad toote kohta</string>
+    <string name="product_mix_title_products">Tooted</string>
+    <string name="product_mix_title_advanced">Täpsem</string>
+    <string name="product_mix_title_usage">Kasutamine</string>
+    <string name="product_mix_title_package_size">Pakendi suurus</string>
+    <string name="product_mix_title_package_size_units">Pakendi suuruse mõõtühikud</string>
+    <string name="product_mix_title_density">Tihedus</string>
+    <string name="product_mix_title_density_unit">Tiheduse ühikud</string>
+    <string name="product_mix_title_picklist_default_select">Vali</string>
+    <string name="product_mix_title_product_mix_form">Tootesegu vorm</string>
+    <string name="product_mix_unittext_default_text">--.-</string>
+
+    <string name="product_text_bulk_fill_fan_delta_label">Lahtine etapp:</string>
+    <string name="product_text_bulk_fill_fan_rate_label">Lahtise määr:</string>
+    <string name="product_text_density_label">Tihedus:</string>
+    <string name="product_text_density_units_label">Tiheduse ühikud:</string>
+    <string name="product_text_package_label">Pakendi suurus:</string>
+    <string name="product_text_rate_delta_label">Delta määr:</string>
+    <string name="product_text_rate_min_label">Min rakend. määr:</string>
+    <string name="product_text_rate_max_label">Maks rakend. määr:</string>
+    <string name="product_text_rate_one_label">Rak.määr 1:</string>
+    <string name="product_text_rate_two_label">Rak.määr 2:</string>
+    <string name="product_text_vacuum_fan_delta_label">Vaakumi samm:</string>
+    <string name="product_text_vacuum_fan_rate_label">Vaakumi määr:</string>
+
+    <string name="product_section_header">Tooted</string>
+    <string name="product_section_subheader">Kokku: 0 toodet</string>
+    <plurals name="product_section_subheader_format">
+        <item quantity="zero">Kokku: 0 toodet</item>
+        <item quantity="one">Kokku: 1 toode</item>
+        <item quantity="other">Kokku: %1$d toodet</item>
+    </plurals>
+    <string name="product_search_hint">Toode, vorm, määr</string>
+
+    <string name="tab_product_library">Toote teek</string>
+    <string name="create_product_button">Lisa toode +</string>
+    <string name="no_available_products">Tooteid ei ole lisatud.</string>
+    <string name="add_product_instructions">Lisage toode, kasutades ülalolevat nuppu \"Lisa toode\".</string>
+    <string name="add_product_mix_instructions">Lisage tootesegu, kasutades ülalolevat nuppu \"Lisa tootesegu\".</string>
+
+    <string name="unit_gal_per_acre">gal/aaker</string>
+
+    <string name="delete_dialog_confirm_button_text">Kustuta</string>
+    <string name="delete_product_dialog_body_text">See kustutab jäävalt selle toote koos seadetega.</string>
+
+    <string name="alert_title">Hoiatus</string>
+    <string name="alert_dismiss">Keeldu</string>
+    <string name="alert_in_use">Seda toodet kasutab kontroller praegu.</string>
+
+    <string name="variety_title">Sordid</string>
+    <string name="variety_section_subheader">Kokku: 0 sorti</string>
+    <plurals name="variety_section_subheader_format">
+        <item quantity="zero">Kokku: 0 sorti</item>
+        <item quantity="one">Kokku: 1 sort</item>
+        <item quantity="other">Kokku: %1$d sorti</item>
+    </plurals>
+    <string name="variety_button_add_text">Lisa sort +</string>
+    <string name="variety_add_dialog_title_text">Lisa sort</string>
+    <string name="variety_add_or_edit_dialog_crop_type_header_text">Viljatüüp</string>
+    <string name="variety_add_or_edit_dialog_name_header_text">Nimi</string>
+    <string name="variety_delete_dialog_delete_title_text">Kustuta sort</string>
+    <string name="variety_delete_dialog_body_text_delete_allowed">See kustutab jäävalt selle sordi koos seadetega.</string>
+    <string name="variety_dialog_cancel_button_text">Loobu</string>
+    <string name="variety_dialog_save_button_text">Salvesta</string>
+    <string name="variety_edit_dialog_title">Muuda sorti</string>
+    <string name="variety_instruction_add">Lisa sort, kasutades ülalolevat nuppu \"Lisa sort\".</string>
+    <string name="variety_list_header_crop_type_text">VILJATÜÜP</string>
+    <string name="variety_list_header_color">VÄRVUS</string>
+    <string name="variety_list_header_name_text">NIMI</string>
+    <string name="variety_not_available">Sorte ei ole lisatud.</string>
+    <string name="variety_search_hint">Sort, viljatüüp</string>
+    <string name="tab_management">Haldamine</string>
+    <string name="edit_field_name">Nimi</string>
+    <string name="edit_dialog_header">Muuda nime</string>
+    <string name="edit_dialog_save">Salvesta</string>
+    <string name="edit_dialog_cancel">Loobu</string>
+    <string name="tab_mng_none_header">Vali üksus(ed), mida soovid muuta, kopida või kustutada</string>
+    <string name="tab_mng_items_header">%1$d üksus(t) valitud</string>
+   <!-- end of productlibrary-package usage -->
+   <string name="edit_name_warning">Selle nimega üksus on juba olemas. Valige erinev nimi</string>
+    <string name="edit_update_title">Üksuse uuendamine</string>
+</resources>

@@ -11,6 +11,7 @@ package com.cnh.pf.android.data.management;
 
 import static com.cnh.pf.android.data.management.utility.UtilityHelper.EXPORT_DEST_POPOVER_DEFAULT_HEIGHT;
 import static com.cnh.pf.android.data.management.utility.UtilityHelper.EXPORT_FORMAT_POPOVER_DEFAULT_HEIGHT;
+import static com.cnh.pf.android.data.management.utility.UtilityHelper.EXPORT_FORMAT_POPOVER_DEFAULT_WIDTH;
 import static com.cnh.pf.android.data.management.utility.UtilityHelper.MAX_TREE_SELECTIONS_FOR_DEFAULT_TEXT_SIZE;
 import static com.cnh.pf.android.data.management.utility.UtilityHelper.NEGATIVE_BINARY_ERROR;
 import static com.cnh.pf.android.data.management.utility.UtilityHelper.POPOVER_DEFAULT_WIDTH;
@@ -49,6 +50,7 @@ import com.cnh.jgroups.DataTypes;
 import com.cnh.jgroups.Datasource;
 import com.cnh.jgroups.ObjectGraph;
 import com.cnh.jgroups.Operation;
+import com.cnh.pf.android.data.management.adapter.ObjectTreeViewAdapter;
 import com.cnh.pf.android.data.management.helper.DataExchangeProcessOverlay;
 import com.cnh.pf.android.data.management.helper.IVIPDataHelper;
 import com.cnh.pf.android.data.management.helper.VIPDataHandler;
@@ -58,6 +60,7 @@ import com.cnh.pf.android.data.management.session.Session;
 import com.cnh.pf.android.data.management.session.SessionExtra;
 import com.cnh.pf.android.data.management.session.SessionUtil;
 import com.cnh.pf.android.data.management.utility.UtilityHelper;
+import com.cnh.pf.datamng.Process;
 import com.cnh.pf.model.vip.vehimp.VehicleCurrent;
 import com.google.inject.Inject;
 
@@ -338,7 +341,7 @@ public class ExportFragment extends BaseDataFragment {
       });
 
       exportFinishedStatePanel.setVisibility(View.GONE);
-      exportFinishedText.setText(R.string.export_complete);
+      exportFinishedText.setText(R.string.export_complete_left_layout);
       startText.setVisibility(View.GONE);
       operationName.setText(R.string.exporting_string);
    }
@@ -376,7 +379,7 @@ public class ExportFragment extends BaseDataFragment {
 
    private void formatInfoButtonClicked() {
       Context popoverContext = getActivity().getApplicationContext();
-      PopoverWindowInfoView infoPopupWindow = new PopoverWindowInfoView(popoverContext, POPOVER_DEFAULT_WIDTH, EXPORT_FORMAT_POPOVER_DEFAULT_HEIGHT, Popover.Style.LIGHT_INFO);
+      PopoverWindowInfoView infoPopupWindow = new PopoverWindowInfoView(popoverContext, EXPORT_FORMAT_POPOVER_DEFAULT_WIDTH, EXPORT_FORMAT_POPOVER_DEFAULT_HEIGHT, Popover.Style.LIGHT_INFO);
       infoPopupWindow.setDescription(getString(R.string.format_description));
       infoPopupWindow.setTitle(getString(R.string.format_description_title));
       infoPopupWindow.showAt(formatInfoButton, Gravity.END, Popover.ArrowPosition.LEFT_TOP);
@@ -414,7 +417,6 @@ public class ExportFragment extends BaseDataFragment {
       if (updateNeeded) {
          hideTreeList();
          showLoadingOverlay();
-
          discovery();
       }
    }
@@ -513,9 +515,16 @@ public class ExportFragment extends BaseDataFragment {
       for (Map.Entry<UtilityHelper.MediumVariant, Integer> entry : resourceMap.entrySet()) {
          UtilityHelper.MediumVariant mediumVariant = entry.getKey();
 
-         if (SessionExtra.USB == mediumVariant.getExtraType()) {
+         if (SessionExtra.USB == mediumVariant.getExtraType() && Environment.getExternalStorageState().equals(Environment.MEDIA_MOUNTED)) {
             Integer resId = resourceMap.get(mediumVariant);
             SessionExtra newExtra = new SessionExtra(SessionExtra.USB, getResources().getString(resId), mediumVariant.getValue());
+            newExtra.setBasePath(basePath);
+            newExtra.setUseInternalFileSystem(useInternalFileSystem);
+            list.add(newExtra);
+         }
+         else if (((mediumVariant.getExtraType() & SessionExtra.CLOUD) == SessionExtra.CLOUD) && getSessionManager().isCloudPresent()){
+            Integer resId = resourceMap.get(mediumVariant);
+            SessionExtra newExtra = new SessionExtra(SessionExtra.CLOUD | SessionExtra.USB, getResources().getString(resId), mediumVariant.getValue());
             newExtra.setBasePath(basePath);
             newExtra.setUseInternalFileSystem(useInternalFileSystem);
             list.add(newExtra);
@@ -551,7 +560,7 @@ public class ExportFragment extends BaseDataFragment {
          logger.info("Unable to check if internal flash need to be used.", e);
       }
 
-      if (!resourceMap.isEmpty() && useInternalFileSystem == false && Environment.getExternalStorageState().equals(Environment.MEDIA_MOUNTED)) {
+      if (!resourceMap.isEmpty() && useInternalFileSystem == false && (Environment.getExternalStorageState().equals(Environment.MEDIA_MOUNTED) || getSessionManager().isCloudPresent())) {
          list = createMediumVariants(resourceMap, Environment.getExternalStorageDirectory().getPath());
       }
       return list;
@@ -675,13 +684,14 @@ public class ExportFragment extends BaseDataFragment {
 
    @Override
    public void onMyselfSessionCancelled(Session session) {
-      logger.debug("onSessionCancelled(): {}, {}", session.getType(), session.getAction());
+      logger.debug("onMyselfSessionCancelled(): {}, {}", session.getType(), session.getAction());
       if (SessionUtil.isPerformOperationsTask(session) || SessionUtil.isDiscoveryTask(session)) {
          ToastMessageCustom.makeToastMessageText(getActivity().getApplicationContext(), getString(R.string.export_cancel), Gravity.TOP | Gravity.CENTER_HORIZONTAL,
                getResources().getInteger(R.integer.toast_message_xoffset), getResources().getInteger(R.integer.toast_message_yoffset)).show();
          clearTreeSelection();
       }
 
+      resetSession();
       updateExportButton();
       processOverlay.setMode(DataExchangeProcessOverlay.MODE.HIDDEN);
       setExportPicklistsReadOnly(false);
@@ -735,14 +745,14 @@ public class ExportFragment extends BaseDataFragment {
    public void onMyselfSessionError(Session session, ErrorCode errorCode) {
       logger.debug("onMyselfSessionError(): {}", session.getType());
       if (SessionUtil.isPerformOperationsTask(session)) {
-         ToastMessageCustom.makeToastMessageText(getActivity().getApplicationContext(), getString(R.string.export_cancel), Gravity.TOP | Gravity.CENTER_HORIZONTAL,
-               getResources().getInteger(R.integer.toast_message_xoffset), getResources().getInteger(R.integer.toast_message_yoffset)).show();
-         showDragAndDropZone();
          clearTreeSelection();
-         updateExportButton();
+
          processOverlay.setMode(DataExchangeProcessOverlay.MODE.HIDDEN);
          setExportPicklistsReadOnly(false);
+         showFinishedStatePanel(false);
+         resetSession();
          updateSelectAllState();
+         updateExportButton();
       }
    }
 
@@ -871,6 +881,7 @@ public class ExportFragment extends BaseDataFragment {
          showProgressPanel();
          processOverlay.setMode(DataExchangeProcessOverlay.MODE.EXPORT_PROCESS);
          setExportPicklistsReadOnly(true);
+         updateExportButton();
 
          performOperations(extra, operations);
          updateExportButton();
@@ -887,6 +898,7 @@ public class ExportFragment extends BaseDataFragment {
       exportFinishedStatePanel.setVisibility(View.GONE);
       exportDropZone.setVisibility(View.VISIBLE);
       leftStatusPanel.setVisibility(View.GONE);
+      progressBar.setProgress(0);
    }
 
    /**
@@ -904,7 +916,11 @@ public class ExportFragment extends BaseDataFragment {
       }
       else {
          //error appeared
-         progressBar.setErrorProgress(progressBar.getProgress(), getResources().getString(R.string.pb_error));
+         logger.debug("Set Progress bar error");
+         Resources resources = getResources();
+         String errorString = resources.getString(R.string.pb_error);
+         progressBar.setSecondText(true, errorString, null, true);
+         progressBar.setErrorProgress(resources.getInteger(R.integer.error_percentage_value), errorString);
          stopButton.setVisibility(View.GONE);
       }
       //post cleanup to show drag and drop zone after time X
@@ -927,9 +943,9 @@ public class ExportFragment extends BaseDataFragment {
       logger.debug("showProgressPanel");
       //reset button and process
       stopButton.setVisibility(View.VISIBLE);
-      progressBar.setErrorProgress(progressBar.getProgress(), getResources().getString(R.string.pb_error));
+      progressBar.setProgress(0);
+      progressBar.setShowProgress(false);
       progressBar.setSecondText(true, loading_string, null, true);
-      progressBar.setProgress(0); //resets error if set
       //set visibility of sections
       exportFinishedStatePanel.setVisibility(View.GONE);
       exportDropZone.setVisibility(View.GONE);
@@ -938,12 +954,13 @@ public class ExportFragment extends BaseDataFragment {
 
    private void updateExportButton() {
       Session s = getSession();
-      boolean isActiveOperation = SessionUtil.isPerformOperationsTask(s) && s.getResultCode() == null;
+      boolean isActiveOperation = SessionUtil.isPerformOperationsTask(s) && (s.getResultCode() == null || Process.Result.ERROR.equals(s.getResultCode()));
       boolean useDefaultText = true;
+      final ObjectTreeViewAdapter treeViewAdapter = getTreeAdapter();
 
-      if (getTreeAdapter() != null && getTreeAdapter().getSelectionMap() != null) {
+      if (treeViewAdapter != null && treeViewAdapter.getSelectionMap() != null) {
          int selectedItemCount = countSelectedItem();
-         if (selectedItemCount > 0) {
+         if (selectedItemCount > 0 && !isActiveOperation) {
             useDefaultText = false;
             Resources resources = getResources();
             exportSelectedBtn.setText(resources.getString(R.string.export_selected) + " (" + selectedItemCount + ")");
@@ -973,11 +990,14 @@ public class ExportFragment extends BaseDataFragment {
          exportSelectedBtn.setEnabled(true);
          exportDropZone.setBackgroundResource(R.drawable.dashed_border_selected);
       }
+      else if (isActiveOperation) {
+         exportSelectedBtn.setEnabled(false);
+         exportSelectedBtn.setText(getResources().getString(R.string.export_selected));
+      }
       else {
          exportSelectedBtn.setEnabled(false);
          exportDropZone.setBackgroundResource(R.drawable.dashed_border_initial);
       }
-
    }
 
    @Override

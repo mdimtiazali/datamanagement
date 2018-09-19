@@ -1,0 +1,232 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  ~ Copyright (C) 2016 CNH Industrial NV. All rights reserved.
+  ~
+  ~ This software contains proprietary information of CNH Industrial NV. Neither
+  ~ receipt nor possession thereof confers any right to reproduce, use, or
+  ~ disclose in whole or in part any such information without written
+  ~ authorization from CNH Industrial NV.
+  -->
+<resources>
+    <string name="app_name">การจัดการข้อมูล</string>
+    <string name="tab_import">นำเข้า</string>
+    <string name="tab_import_test">ทดสอบการนําเข้า</string>
+    <string name="import_source">ต้นทางการนำเข้า</string>
+    <string name="destination">ปลายทาง</string>
+    <string name="collapse_button_content_description">ปุ่มย่อ</string>
+    <string name="import_selected">นําเข้าที่เลือกไว้</string>
+    <string name="export_selected">ส่งออกที่เลือกไว้</string>
+    <string name="done">เสร็จ</string>
+    <string name="type">ประเภท:</string>
+    <string name="name">ชื่อ:</string>
+    <string name="target">เป้าหมาย</string>
+    <string name="select_target">เลือกเป้าหมาย</string>
+    <string name="copy_and_replace">แทนที่</string>
+    <string name="dont_copy">ไม่คัดลอก</string>
+    <string name="keep_both">เก็บทั้งคู่</string>
+    <string name="conflict">ความขัดแย้ง</string>
+    <string name="new_id_title">ป้อนตัวระบุใหม่</string>
+    <string name="new_id_label">ตัวระบุใหม่:</string>
+    <string name="calculating_targets">กำลังคํานวณเป้าหมาย</string>
+    <string name="checking_targets">กำลังตรวจสอบเป้าหมายที่เป็นไปได้...</string>
+    <string name="checking_conflicts">กำลังตรวจสอบความขัดแย้ง...</string>
+    <string name="importing">กำลังนำเข้า...</string>
+    <string name="select_path">เลือกพาธ...</string>
+    <string name="continue_string">ทำต่อ</string>
+    <string name="next">ถัดไป</string>
+
+    <string name="pfds">ผู้ปลูก/ฟาร์ม/ไร่</string>
+    <string name="vehicles">รถ</string>
+    <string name="imps">อุปกรณ์ต่อพ่วง</string>
+    <string name="prescriptions">คำสั่ง</string>
+    <string name="tasks">งาน</string>
+    <string name="boundaries">ขอบเขต</string>
+    <string name="obstacles">สิ่งกีดขวาง</string>
+    <string name="guidance_groups">การตัด</string>
+    <string name="guidance_patterns">รูปแบบการชี้แนว</string>
+    <string name="notes">บันทึก</string>
+
+    <string name="products">ผลิตภัณฑ์</string>
+    <string name="product_mixes">การผสมผลิตภัณฑ์</string>
+    <string name="select_source">เลือกต้นทางการนำเข้า</string>
+    <string name="import_drag_and_drop"><![CDATA[ลากและวาง \nเพื่อนําเข้า \nไปยัง PCM/จอแสดงผล]]></string>
+    <string name="export_drag_and_drop"><![CDATA[ลากและวาง \nเพื่อส่งออก]]></string>
+    <string name="select_all">เลือกทั้งหมด</string>
+    <string formatted="false" name="x_of_y_format">%d จาก %d</string>
+    <string name="usb_string">USB</string>
+    <string name="display_string">จอแสดงผล</string>
+    <string name="display_numbered">จอแสดงผล %d</string>
+    <string name="display_named">จอแสดงผล %s</string>
+    <string name="select_string">เลือก</string>
+    <string name="export_to">ปลายทาง:</string>
+    <string name="export_format">รูปแบบการส่งออก:</string>
+    <string name="tab_export">ส่งออก</string>
+    <string name="percent_complete">% เสร็จสมบูรณ์</string>
+    <string name="loading_string">กำลังโหลด</string>
+    <string name="exporting_string">กำลังส่งออก</string>
+    <string name="importing_string">กำลังนำเข้า</string>
+    <string name="exporting_data">กำลังส่งออกข้อมูล</string>
+    <string name="importing_data">กำลังนําเข้าข้อมูล</string>
+    <string name="select_source_first">เมื่อต้องการเริ่มต้นใช้งาน \nให้เลือกต้นทางการนำเข้า\nของคุณก่อน</string>
+    <string name="no_import_source">ตรวจไม่พบอุปกรณ์ต้นทางการนำเข้า \nโปรดตรวจสอบการเชื่อมต่ออุปกรณ์ดังกล่าว</string>
+    <string name="deselect_all">ยกเลิกการเลือกทั้งหมด</string>
+    <string formatted="false" name="duplicate_file">มี %s ที่ชื่อ \"%s\" อยู่แล้ว</string>
+    <string name="existing_file">ที่มีอยู่</string>
+    <string name="existing_file_typed">%s ที่มีอยู่</string>
+    <string name="new_file">ใหม่</string>
+    <string name="new_file_typed">%s ใหม่</string>
+    <string name="data_conflict">ข้อมูลขัดแย้งกัน</string>
+    <string name="rename_file">เปลี่ยนชื่อ %s</string>
+    <string name="file_name">ชื่อไฟล์</string>
+    <string name="empty_discovery">ไม่พบข้อมูล</string>
+    <string name="export_cancel_confirmation">การดําเนินการนี้จะยกเลิกการส่งออกในปัจจุบัน\nคุณต้องการดําเนินการต่อหรือไม่</string>
+
+    <string name="format_description">ISOXML: \nไฟล์ทั้งหมดสามารถส่งออกได้ใน ISOXML \n \nShapefile: \nคำสั่ง</string>
+
+    <string name="error_no_data">ไม่มีข้อมูล</string>
+    <string name="error_no_source">ไม่มีแหล่งข้อมูลต้นทาง</string>
+    <string name="error_no_target">ไม่มีแหล่งข้อมูลเป้าหมาย</string>
+    <string name="error_perform_ops">ข้อผิดพลาดในการปฏิบัติการ</string>
+    <string name="error_calculate_conflicts">ข้อผิดพลาดในการคํานวณความขัดแย้ง</string>
+    <string name="error_calculate_operations">ข้อผิดพลาดในการคํานวณเป้าหมาย</string>
+    <string name="error_discovery">ข้อผิดพลาดการค้นหา</string>
+    <string name="status_cancelled">ยกเลิกแล้ว</string>
+    <string name="status_cancelling">กําลังยกเลิก...</string>
+    <string name="status_successful">สําเร็จ</string>
+    <string name="status_starting">กำลังเริ่ม...</string>
+    <string name="import_complete">การนำเข้าเสร็จสมบูรณ์แล้ว</string>
+    <string name="import_cancel">การนําเข้าถูกยกเลิกแล้ว</string>
+    <string name="export_complete">การส่งออกเสร็จสมบูรณ์แล้ว</string>
+    <string name="export_cancel">การส่งออกถูกยกเลิกแล้ว</string>
+
+    <string name="usb_data_available">มีข้อมูล USB</string>
+    <string name="usb_no_data_available">ไม่มีข้อมูล USB</string>
+    <string name="usb_scanning">กำลังสแกน USB Stick...</string>
+
+    <string name="stop">หยุด</string>
+    <string name="status_progress">%1$s %2$d/%3$d</string>
+   <!-- starting here everything is used by the productlibrary-package -->
+   <string name="product_default_rate">อัตราเริ่มต้น</string>
+    <string name="product_form">รูปแบบ</string>
+    <string name="product_name">ชื่อ</string>
+   <!-- Product Mix -->
+   <string name="product_mix_add_button_title">เพิ่ม</string>
+    <string name="product_mix_default_text_edittext">ชื่อผลิตภัณฑ์</string>
+    <string name="product_mix_default_text_picklist">รูปแบบผลิตภัณฑ์</string>
+    <string name="product_mix_search_hint">การผสมผลิตภัณฑ์, รูปแบบ, อัตรา</string>
+    <string name="product_mix_subheader_total_mix">รวม: 0 การผสมผลิตภัณฑ์</string>
+    <plurals name="product_mix_subheader_total_mix_format">
+        <item quantity="zero">รวม: 0 การผสมผลิตภัณฑ์</item>
+        <item quantity="one">รวม: 1 การผสมผลิตภัณฑ์</item>
+        <item quantity="other">รวม: %1$d การผสมผลิตภัณฑ์</item>
+    </plurals>
+    <string name="product_mix_title">การผสมผลิตภัณฑ์</string>
+    <string name="product_mix_text_button_add_product_mix">เพิ่มการผสมผลิตภัณฑ์ +</string>
+    <string name="product_mix_title_dialog_add_product_mix">เพิ่มการผสมผลิตภัณฑ์</string>
+    <string name="product_mix_title_dialog_edit_product_mix">แก้ไขการผสมผลิตภัณฑ์</string>
+    <string name="product_mix_title_dialog_copy_product_mix">คัดลอกการผสมผลิตภัณฑ์</string>
+    <string name="product_mix_title_add_new_product">เพิ่มผลิตภัณฑ์ใหม่</string>
+    <string name="product_mix_title_add_new_carrier">เพิ่มสารตัวพาใหม่</string>
+    <string name="product_mix_text_button_remove">ลบ x</string>
+    <string name="product_mix_text_button_add_more">เพิ่มอีก +</string>
+    <string name="product_mix_title_category_button_title_mix_products">การผสมผลิตภัณฑ์</string>
+    <string name="product_mix_title_name">ชื่อการผสมผลิตภัณฑ์</string>
+    <string name="product_mix_title_carrier">สารตัวพา</string>
+    <string name="product_mix_title_total_mix_amount">ปริมาณผสมทั้งหมด</string>
+    <string name="product_mix_title_carrier_amount">ปริมาณสารตัวพา</string>
+    <string name="product_mix_title_mix_products">การผสมผลิตภัณฑ์</string>
+    <string name="product_mix_title_product">ผลิตภัณฑ์ %1$d</string>
+    <string name="product_mix_title_product_amount">ปริมาณ</string>
+    <string name="product_mix_title_units">หน่วย</string>
+    <string name="product_mix_title_application_rates">อัตราการใช้</string>
+    <string name="product_mix_title_application_rate_1">อัตราการใช้ 1 (ค่าเริ่มต้น)</string>
+    <string name="product_mix_title_application_rate_2">อัตราการใช้ 2</string>
+    <string name="product_mix_title_application_rate_1_short">อัตราการใช้ 1</string>
+    <string name="product_mix_title_application_rate_2_short">อัตราการใช้ 2</string>
+    <string name="product_mix_title_application_rate_1_short_point">อัตราการใช้ 1:</string>
+    <string name="product_mix_title_application_rate_2_short_point">อัตราการใช้ 2:</string>
+    <string name="product_mix_title_min_application_rate">อัตราการใช้ต่ำสุด</string>
+    <string name="product_mix_title_max_application_rate">อัตราการใช้สูงสุด</string>
+    <string name="product_mix_title_delta_application_rate">อัตราการใช้เดลตา</string>
+    <string name="product_mix_title_application_rates_per_product">อัตราการใช้ต่อผลิตภัณฑ์</string>
+    <string name="product_mix_title_products">ผลิตภัณฑ์</string>
+    <string name="product_mix_title_advanced">ขั้นสูง</string>
+    <string name="product_mix_title_usage">การใช้งาน</string>
+    <string name="product_mix_title_package_size">ขนาดหีบห่อ</string>
+    <string name="product_mix_title_package_size_units">หน่วยขนาดหีบห่อ</string>
+    <string name="product_mix_title_density">ความหนาแน่น</string>
+    <string name="product_mix_title_density_unit">หน่วยความหนาแน่น</string>
+    <string name="product_mix_title_picklist_default_select">เลือก</string>
+    <string name="product_mix_title_product_mix_form">รูปแบบการผสมผลิตภัณฑ์</string>
+    <string name="product_mix_unittext_default_text">--.-</string>
+
+    <string name="product_text_bulk_fill_fan_delta_label">ขั้นตอนแบบเทกอง:</string>
+    <string name="product_text_bulk_fill_fan_rate_label">อัตราแบบเทกอง:</string>
+    <string name="product_text_density_label">ความหนาแน่น:</string>
+    <string name="product_text_density_units_label">หน่วยความหนาแน่น:</string>
+    <string name="product_text_package_label">ขนาดหีบห่อ:</string>
+    <string name="product_text_rate_delta_label">อัตราเดลตา:</string>
+    <string name="product_text_rate_min_label">อัตราการใช้ต่ำสุด:</string>
+    <string name="product_text_rate_max_label">อัตราการใช้สูงสุด:</string>
+    <string name="product_text_rate_one_label">อัตราการใช้ 1:</string>
+    <string name="product_text_rate_two_label">อัตราการใช้ 2:</string>
+    <string name="product_text_vacuum_fan_delta_label">ขั้นตอนสุญญากาศ:</string>
+    <string name="product_text_vacuum_fan_rate_label">อัตราสุญญากาศ:</string>
+
+    <string name="product_section_header">ผลิตภัณฑ์</string>
+    <string name="product_section_subheader">รวม: 0 ผลิตภัณฑ์</string>
+    <plurals name="product_section_subheader_format">
+        <item quantity="zero">รวม: 0 ผลิตภัณฑ์</item>
+        <item quantity="one">รวม: 1 ผลิตภัณฑ์</item>
+        <item quantity="other">รวม: %1$d ผลิตภัณฑ์</item>
+    </plurals>
+    <string name="product_search_hint">ผลิตภัณฑ์, รูปแบบ, อัตรา</string>
+
+    <string name="tab_product_library">ไลบรารีผลิตภัณฑ์</string>
+    <string name="create_product_button">เพิ่มผลิตภัณฑ์ +</string>
+    <string name="no_available_products">คุณไม่มีผลิตภัณฑ์ที่เพิ่ม</string>
+    <string name="add_product_instructions">เพิ่มผลิตภัณฑ์โดยใช้ปุ่ม \"เพิ่มผลิตภัณฑ์\" ด้านบน</string>
+    <string name="add_product_mix_instructions">เพิ่มการผสมผลิตภัณฑ์โดยใช้ปุ่ม \"เพิ่มการผสมผลิตภัณฑ์\" ด้านบน</string>
+
+    <string name="unit_gal_per_acre">gal/ac</string>
+
+    <string name="delete_dialog_confirm_button_text">ลบ</string>
+    <string name="delete_product_dialog_body_text">การดําเนินการนี้จะลบผลิตภัณฑ์นี้และการตั้งค่าของผลิตภัณฑ์อย่างถาวร</string>
+
+    <string name="alert_title">การแจ้งเตือน</string>
+    <string name="alert_dismiss">ยกเลิก</string>
+    <string name="alert_in_use">ตัวควบคุมกำลังใช้ผลิตภัณฑ์นี้อยู่</string>
+
+    <string name="variety_title">พันธุ์พืช</string>
+    <string name="variety_section_subheader">รวม: 0 พันธุ์</string>
+    <plurals name="variety_section_subheader_format">
+        <item quantity="zero">รวม: 0 พันธุ์</item>
+        <item quantity="one">รวม: 1 พันธุ์</item>
+        <item quantity="other">รวม: %1$d พันธุ์</item>
+    </plurals>
+    <string name="variety_button_add_text">เพิ่มพันธุ์ +</string>
+    <string name="variety_add_dialog_title_text">เพิ่มพันธุ์พืช</string>
+    <string name="variety_add_or_edit_dialog_crop_type_header_text">ชนิดพืชผล</string>
+    <string name="variety_add_or_edit_dialog_name_header_text">ชื่อ</string>
+    <string name="variety_delete_dialog_delete_title_text">ลบพันธุ์พืช</string>
+    <string name="variety_delete_dialog_body_text_delete_allowed">การดําเนินการนี้จะลบพันธุ์พืชนี้และการตั้งค่าพันธุ์พืชอย่างถาวร</string>
+    <string name="variety_dialog_cancel_button_text">ยกเลิก</string>
+    <string name="variety_dialog_save_button_text">บันทึก</string>
+    <string name="variety_edit_dialog_title">แก้ไขพันธุ์พืช</string>
+    <string name="variety_instruction_add">เพิ่มพันธุ์พืชโดยใช้ปุ่ม \"เพิ่มพันธุ์พืช\" ด้านบน</string>
+    <string name="variety_list_header_crop_type_text">ชนิดพืชผล</string>
+    <string name="variety_list_header_color">สี</string>
+    <string name="variety_list_header_name_text">ชื่อ</string>
+    <string name="variety_not_available">คุณไม่มีพันธุ์พืชที่เพิ่ม</string>
+    <string name="variety_search_hint">พันธุ์พืช, ชนิดพืชผล</string>
+    <string name="tab_management">การจัดการ</string>
+    <string name="edit_field_name">ชื่อ</string>
+    <string name="edit_dialog_header">แก้ไขชื่อ</string>
+    <string name="edit_dialog_save">บันทึก</string>
+    <string name="edit_dialog_cancel">ยกเลิก</string>
+    <string name="tab_mng_none_header">เลือกรายการที่จะแก้ไข คัดลอก หรือลบ</string>
+    <string name="tab_mng_items_header">เลือกแล้ว %1$d รายการ</string>
+   <!-- end of productlibrary-package usage -->
+   <string name="edit_name_warning">มีรายการที่มีชื่อนี้อยู่แล้ว โปรดเลือกชื่ออื่น</string>
+    <string name="edit_update_title">กำลังอัพเดทรายการ</string>
+</resources>

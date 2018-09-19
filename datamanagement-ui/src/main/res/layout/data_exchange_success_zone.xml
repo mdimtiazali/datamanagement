@@ -22,11 +22,11 @@
             android:background="@drawable/checkmark"/>
 
     <TextView
-            android:layout_width="wrap_content"
+            android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_gravity="center_horizontal"
+            android:gravity="center"
             style="@style/TextAppearance.Import.Entity"
             android:id="@+id/dataexchange_success_text"
-            android:text="@string/import_complete"/>
+            android:text="@string/import_complete_left_layout"/>
 
 </LinearLayout>

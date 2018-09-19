@@ -31,7 +31,7 @@ import pl.polidea.treeview.TreeViewList;
  */
 public class PathTreeViewAdapter extends BaseTreeViewAdapter<IconizedFile> {
    private OnPathSelectedListener listener;
-   private TreeNodeInfo selectedNode;
+   private boolean automaticSelection = true;
 
    public PathTreeViewAdapter(Activity activity, TreeStateManager treeStateManager, int numberOfLevels) {
       super(activity, treeStateManager, numberOfLevels);
@@ -41,9 +41,11 @@ public class PathTreeViewAdapter extends BaseTreeViewAdapter<IconizedFile> {
    public void handleItemClick(final AdapterView<?> parent, final View view, final int position, final Object id) {
       super.handleItemClick(parent, view, position, id);
       setListeners(parent);
-      this.selectionImpl(id);
-      this.updateViewSelection(parent);
-      selectedNode = getTreeNodeInfo(position);
+      if (automaticSelection) {
+         this.selectionImpl(id);
+         this.updateViewSelection(parent);
+      }
+      TreeNodeInfo selectedNode = getTreeNodeInfo(position);
       if (listener != null) {
          listener.onPathSelected((IconizedFile) id, selectedNode);
       }
@@ -81,7 +83,7 @@ public class PathTreeViewAdapter extends BaseTreeViewAdapter<IconizedFile> {
       this.listener = listener;
    }
 
-   private void setListeners(final AdapterView<?> parent) {
+   public void setListeners(final AdapterView<?> parent) {
       parent.setOnHierarchyChangeListener(new ViewGroup.OnHierarchyChangeListener() {
          @Override
          public void onChildViewAdded(View p, View child) {
@@ -104,6 +106,14 @@ public class PathTreeViewAdapter extends BaseTreeViewAdapter<IconizedFile> {
             updateViewSelection(view);
          }
       });
+   }
+
+   /**
+    * Defines weather selected node should be automatically selected or not
+    * @param automaticSelection True if click on node should lead to selection, false otherwise
+    */
+   public void setAutomaticSelection(boolean automaticSelection) {
+      this.automaticSelection = automaticSelection;
    }
 
    /**

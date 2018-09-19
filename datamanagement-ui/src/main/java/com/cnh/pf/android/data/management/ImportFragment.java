@@ -34,8 +34,10 @@ import com.android.annotations.Nullable;
 import com.cnh.android.dialog.DialogViewInterface;
 import com.cnh.android.dialog.TextDialogView;
 import com.cnh.android.pf.widget.controls.ToastMessageCustom;
+import com.cnh.android.pf.widget.view.DisabledOverlay;
 import com.cnh.android.widget.activity.TabActivity;
 import com.cnh.android.widget.control.ProgressBarView;
+import com.cnh.jgroups.DataTypes;
 import com.cnh.jgroups.ObjectGraph;
 import com.cnh.jgroups.Operation;
 import com.cnh.pf.android.data.management.adapter.DataConflictViewAdapter;
@@ -46,6 +48,7 @@ import com.cnh.pf.android.data.management.dialog.ProcessDialog;
 import com.cnh.pf.android.data.management.helper.DataExchangeProcessOverlay;
 import com.cnh.pf.android.data.management.session.ErrorCode;
 import com.cnh.pf.android.data.management.session.Session;
+import com.cnh.pf.android.data.management.session.SessionContract;
 import com.cnh.pf.android.data.management.session.SessionExtra;
 import com.cnh.pf.android.data.management.session.SessionUtil;
 import com.cnh.pf.android.data.management.utility.UtilityHelper;
@@ -58,12 +61,12 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
+import javax.annotation.Nonnull;
+
 import roboguice.event.EventThread;
 import roboguice.event.Observes;
 import roboguice.inject.InjectResource;
 import roboguice.inject.InjectView;
-
-import javax.annotation.Nonnull;
 
 /**
  * Import Tab Fragment, Handles import from external mediums {USB, External Display}.
@@ -233,19 +236,21 @@ public class ImportFragment extends BaseDataFragment {
 
    @Override
    public void onMyselfSessionCancelled(Session session) {
-      ToastMessageCustom.makeToastMessageText(getActivity().getApplicationContext(), getString(R.string.import_cancel), Gravity.TOP | Gravity.CENTER_HORIZONTAL,
-            getResources().getInteger(R.integer.toast_message_xoffset), getResources().getInteger(R.integer.toast_message_yoffset)).show();
+      logger.debug("onMyselfSessionCancelled(): {}, {}", session.getType(), session.getAction());
+      if (SessionUtil.isPerformOperationsTask(session) || SessionUtil.isDiscoveryTask(session)) {
+         ToastMessageCustom.makeToastMessageText(getActivity().getApplicationContext(), getString(R.string.export_cancel), Gravity.TOP | Gravity.CENTER_HORIZONTAL,
+               getResources().getInteger(R.integer.toast_message_xoffset), getResources().getInteger(R.integer.toast_message_yoffset)).show();
+         clearTreeSelection();
+      }
 
       //close cancel dialog if still open
-      closeCancelDialog();
-      showDragAndDropZone();
+      showErrorStatePanel();
 
       if (SessionUtil.isDiscoveryTask(session)) {
-         showDragAndDropZone();
          showStartMessage();
       }
       else if (SessionUtil.isPerformOperationsTask(session)) {
-         hideDisabledOverlay();
+         hideDataTreeLoadingOverlay();
          showTreeList();
       }
       updateImportButton();
@@ -273,7 +278,7 @@ public class ImportFragment extends BaseDataFragment {
       if (SessionUtil.isDiscoveryTask(session)) {
          initAndPopulateTree(session.getObjectData());
 
-         hideDisabledOverlay();
+         hideDataTreeLoadingOverlay();
          showTreeList();
          updateSelectAllState();
 
@@ -392,9 +397,9 @@ public class ImportFragment extends BaseDataFragment {
                   hideAndDismissProcessDialog();
                   showProgressPanel();
                   processOverlay.setMode(DataExchangeProcessOverlay.MODE.IMPORT_PROCESS);
+                  performOperations(extra, operations);
                   updateImportButton();
                   updateSelectAllState();
-                  performOperations(extra, operations);
                }
             });
             processDialog.setOnDismissListener(new DialogViewInterface.OnDismissListener() {
@@ -419,9 +424,9 @@ public class ImportFragment extends BaseDataFragment {
             hideAndDismissProcessDialog();
             showProgressPanel();
             processOverlay.setMode(DataExchangeProcessOverlay.MODE.IMPORT_PROCESS);
+            performOperations(extra, session.getOperations());
             updateImportButton();
             updateSelectAllState();
-            performOperations(extra, session.getOperations());
          }
       }
       else if (SessionUtil.isPerformOperationsTask(session)) {
@@ -438,10 +443,21 @@ public class ImportFragment extends BaseDataFragment {
          ToastMessageCustom.makeToastMessageText(getActivity().getApplicationContext(), getString(R.string.import_complete), Gravity.TOP | Gravity.CENTER_HORIZONTAL,
                getResources().getInteger(R.integer.toast_message_xoffset), getResources().getInteger(R.integer.toast_message_yoffset)).show();
 
+         resetSession();
+         hideTreeList();
+         setHeaderText("");
+         showStartMessage();
          updateSelectAllState();
 
          //close cancel dialog if still open
          closeCancelDialog();
+
+         File tmpFolder = new File(UtilityHelper.CommonPaths.PATH_TMP.getPathString());
+         if (tmpFolder.exists()) {
+            if (!UtilityHelper.deleteRecursively(tmpFolder)) {
+               logger.error("unable to delete temporary folder:{}", tmpFolder.getPath());
+            }
+         }
       }
    }
 
@@ -458,25 +474,25 @@ public class ImportFragment extends BaseDataFragment {
       logger.debug("onMyselfSessionError(): {}, {}", session.getType(), errorCode);
       //disable overlays
       processOverlay.setMode(DataExchangeProcessOverlay.MODE.HIDDEN);
-      hideDisabledOverlay();
+      hideDataTreeLoadingOverlay();
       closeCancelDialog();
+      showErrorStatePanel();
 
       if (ErrorCode.USB_REMOVED.equals(errorCode)) {
-         showErrorStatePanel();
          //USB was removed, no tree available anymore
          hideTreeList();
          showStartMessage();
+         clearTreeSelection();
+         treeAdapter.setData(new ArrayList<ObjectGraph>());
       }
       else {
          if (SessionUtil.isDiscoveryTask(session)) {
             //if task was discovery, just reset UI to beginning state
-            showDragAndDropZone();
             hideTreeList();
             showStartMessage();
          }
          else {
             //if import was active, show error indicator
-            showErrorStatePanel();
             //tree is still available
             showTreeList();
             restoreTreeViewSession();
@@ -535,20 +551,54 @@ public class ImportFragment extends BaseDataFragment {
    private void onImportSourceSelected(@Observes(EventThread.UI) ImportSourceDialog.ImportSourceSelectedEvent event) {
       logger.debug("onImportSourceSelected( {} )", event.getExtra());
       SessionExtra extra = new SessionExtra(event.getExtra());
-
       hideTreeList();
       hideStartMessage();
-      showLoadingOverlay();
-
+      showDataTreeLoadingOverlay();
+      //update header text
+      String filename = UtilityHelper.filenameOnly(extra.getPath());
+      if (filename == null) filename = "";
+      setHeaderText(filename);
+      //reset enable select all button
+      enableSelectAllButton(false);
+      selectAllBtn.setText(R.string.select_all);
+      //reset import selected btn
+      importSelectedBtn.setText(getResources().getString(R.string.import_selected));
+      float defaultButtonSize = getResources().getDimension(R.dimen.button_default_text_size);
+      if (importSelectedBtn.getTextSize() < defaultButtonSize) importSelectedBtn.setTextSize(defaultButtonSize);
+      importSelectedBtn.setEnabled(false);
       final String tempPath = UtilityHelper.CommonPaths.PATH_TMP.getPathString();
       File tmpFolder = new File(tempPath);
       if (!tmpFolder.exists() && !tmpFolder.mkdirs()) {
          logger.error("unable to create tmp folder");
       }
-      else if(!grantAllPermissionsRecursive(tmpFolder)) {
+      else if (!grantAllPermissionsRecursive(tmpFolder)) {
          logger.error("unable to grant permissions for tmp folder");
       }
       discovery(extra);
+   }
+
+   /**
+    * Show loading overlay that blocks the data-tree
+    */
+   private void showDataTreeLoadingOverlay() {
+      if (treeLoadingOverlay != null) {
+         treeLoadingOverlay.setMode(DisabledOverlay.MODE.LOADING);
+      }
+      //As soon as "pfhmi-dev-defects-13486 - Data Mgmt: Discovery task cannot be canceled" is solved
+      //the following line is to be deleted.
+      importSourceBtn.setEnabled(false);
+   }
+
+   /**
+    * Hide loading overlay that blocks the data-tree
+    */
+   private void hideDataTreeLoadingOverlay() {
+      if (treeLoadingOverlay != null) {
+         treeLoadingOverlay.setMode(DisabledOverlay.MODE.HIDDEN);
+      }
+      //As soon as "pfhmi-dev-defects-13486 - Data Mgmt: Discovery task cannot be canceled" is solved
+      //the following line is to be deleted.
+      importSourceBtn.setEnabled(true);
    }
 
    @Override
@@ -599,7 +649,7 @@ public class ImportFragment extends BaseDataFragment {
    @Override
    public void onPCMConnected() {
       logger.trace("PCM is online.");
-      showLoadingOverlay();
+      hideDisabledOverlay();
       onResumeSession();
    }
 
@@ -621,8 +671,6 @@ public class ImportFragment extends BaseDataFragment {
             // In that case, reset session & tree selection before updating UI.
             resetSession();
             clearTreeSelection();
-            updateImportButton();
-            updateSelectAllState();
          }
 
          if (SessionUtil.isDiscoveryTask(session) && (SessionUtil.isInProgress(session) || SessionUtil.isComplete(session))) {
@@ -630,7 +678,7 @@ public class ImportFragment extends BaseDataFragment {
             if (session.getObjectData() != null && !session.getObjectData().isEmpty()) {
                restoreTreeViewSession();
                showTreeList();
-               hideDisabledOverlay();
+               hideDataTreeLoadingOverlay();
                updateSelectAllState();
 
                if (session.getExtra() != null && session.getExtra().isUsbExtra()) {
@@ -641,7 +689,7 @@ public class ImportFragment extends BaseDataFragment {
                logger.info("Still loading data from media.");
                hideTreeList();
                hideStartMessage();
-               showLoadingOverlay();
+               showDataTreeLoadingOverlay();
             }
          }
          else if (SessionUtil.isPerformOperationsTask(session) && SessionUtil.isInProgress(session)) {
@@ -654,7 +702,7 @@ public class ImportFragment extends BaseDataFragment {
          }
          else {
             hideTreeList();
-            hideDisabledOverlay();
+            hideDataTreeLoadingOverlay();
             showStartMessage();
          }
          updateImportButton();
@@ -711,8 +759,9 @@ public class ImportFragment extends BaseDataFragment {
       //only update UI if no visual success/failure feedback is currently active
       if (!visualFeedbackActive) {
          importDropZone.setVisibility(View.GONE);
-         progressBar.setSecondText(true, loadingString, null, true);
          progressBar.setProgress(0);
+         progressBar.setShowProgress(false);
+         progressBar.setSecondText(true, loadingString, null, true);
          importFinishedStatePanel.setVisibility(View.GONE);
          leftStatus.setVisibility(View.VISIBLE);
       }
@@ -725,6 +774,7 @@ public class ImportFragment extends BaseDataFragment {
          leftStatus.setVisibility(View.GONE);
          importFinishedStatePanel.setVisibility(View.GONE);
          importDropZone.setVisibility(View.VISIBLE);
+         progressBar.setProgress(0);
       }
    }
 
@@ -757,7 +807,11 @@ public class ImportFragment extends BaseDataFragment {
       importDropZone.setVisibility(View.GONE);
       importFinishedStatePanel.setVisibility(View.GONE);
       leftStatus.setVisibility(View.VISIBLE);
-      progressBar.setErrorProgress(progressBar.getProgress(), getResources().getString(R.string.pb_error));
+      Resources resources = getResources();
+      String errorString = resources.getString(R.string.pb_error);
+      progressBar.setSecondText(true, errorString, null, true);
+      progressBar.setErrorProgress(resources.getInteger(R.integer.error_percentage_value), errorString);
+
       //post cleanup to show drag and drop zone after time X
       final Handler handler = new Handler();
       handler.postDelayed(new Runnable() {
@@ -811,25 +865,30 @@ public class ImportFragment extends BaseDataFragment {
     * @param onClickListener Listener to be hooked to he cancel button
     */
    private void showCancelDialog(@Nullable final DialogViewInterface.OnButtonClickListener onClickListener) {
-      final Resources resources = getResources();
-      final TextDialogView cancelDialogue = new TextDialogView(ImportFragment.this.getActivity());
-      cancelDialogue.setFirstButtonText(resources.getString(R.string.yes));
-      cancelDialogue.setSecondButtonText(resources.getString(R.string.no));
-      cancelDialogue.showThirdButton(false);
-      cancelDialogue.setTitle(resources.getString(R.string.cancel));
-      cancelDialogue.setBodyText(resources.getString(R.string.import_cancel_confirmation));
-      cancelDialogue.setIcon(resources.getDrawable(R.drawable.ic_alert_red));
-      cancelDialogue.setOnButtonClickListener(onClickListener);
-      cancelDialogue.setDialogWidth(CANCEL_DIALOG_WIDTH);
-      ((TabActivity) getActivity()).showModalPopup(cancelDialogue);
-      cancelDialogue.setOnDismissListener(new DialogViewInterface.OnDismissListener() {
-         @Override
-         public void onDismiss(DialogViewInterface dialogViewInterface) {
-            //remove reference just closed dialogue
-            lastCancelDialogView = null;
-         }
-      });
-      lastCancelDialogView = cancelDialogue;
+      if (lastCancelDialogView == null) {
+         final Resources resources = getResources();
+         final TextDialogView cancelDialogue = new TextDialogView(ImportFragment.this.getActivity());
+         cancelDialogue.setFirstButtonText(resources.getString(R.string.yes));
+         cancelDialogue.setSecondButtonText(resources.getString(R.string.no));
+         cancelDialogue.showThirdButton(false);
+         cancelDialogue.setTitle(resources.getString(R.string.cancel));
+         cancelDialogue.setBodyText(resources.getString(R.string.import_cancel_confirmation));
+         cancelDialogue.setIcon(resources.getDrawable(R.drawable.ic_alert_red));
+         cancelDialogue.setOnButtonClickListener(onClickListener);
+         cancelDialogue.setDialogWidth(CANCEL_DIALOG_WIDTH);
+         ((TabActivity) getActivity()).showModalPopup(cancelDialogue);
+         cancelDialogue.setOnDismissListener(new DialogViewInterface.OnDismissListener() {
+            @Override
+            public void onDismiss(DialogViewInterface dialogViewInterface) {
+               //remove reference just closed dialogue
+               lastCancelDialogView = null;
+            }
+         });
+         lastCancelDialogView = cancelDialogue;
+      }
+      else {
+         logger.error("Could not show/create cancel dialog, since one cancel dialog instance is already open!");
+      }
    }
 
    /**
@@ -854,6 +913,12 @@ public class ImportFragment extends BaseDataFragment {
    private void runImport() {
       logger.debug("Run Import!");
       List<ObjectGraph> selected = new ArrayList<ObjectGraph>(getTreeAdapter().getSelected());
+      ArrayList<ObjectGraph> ddopsSelect = new ArrayList<ObjectGraph>(getTreeAdapter().getData());
+      for (ObjectGraph object : ddopsSelect) {
+         if (object.getType().equals(DataTypes.DDOP)) {
+            selected.add(object);
+         }
+      }
       if (!selected.isEmpty()) {
          processDialog.init();
          processDialog.setTitle(getResources().getString(R.string.checking_targets));
@@ -926,6 +991,17 @@ public class ImportFragment extends BaseDataFragment {
 
    private void onSelectImportSource() {
       logger.debug("onSelectImportSource");
+      SessionContract.SessionManager sessionManager = getSessionManager();
+      if (sessionManager != null && sessionManager.actionIsActive(getAction())) {
+         //As soon as "pfhmi-dev-defects-13486 - Data Mgmt: Discovery task cannot be canceled" is solved,
+         //the line below is to be uncommented again.
+         //sessionManager.cancel();
+         showStartMessage();
+         hideTreeList();
+         resetSession();
+         updateImportButton();
+         updateSelectAllState();
+      }
       importSourceDialog = new ImportSourceDialog(getActivity(), generateImportExtras());
       importSourceDialog.setOnDismissListener(new DialogViewInterface.OnDismissListener() {
          @Override
@@ -953,17 +1029,12 @@ public class ImportFragment extends BaseDataFragment {
    @Override
    public void onMediumUpdate() {
       super.onMediumUpdate();
-      logger.trace("onMediumUpdate()");
+      logger.trace("ImportFragment onMediumUpdate()");
       if (Environment.getExternalStorageState().equals(MEDIA_BAD_REMOVAL)) {
-         logger.debug("onMediumUpdate() - Reset the import screen and session state.");
-         hideAndDismissProcessDialog();
-         showDragAndDropZone();
+         logger.debug("onMediumUpdate() - Reset the import screen.");
          setHeaderText("");
-         showStartMessage();
-         clearTreeSelection();
-         resetSession();
-         updateSelectAllState();
          updateImportButton();
+         updateSelectAllState();
       }
       if (importSourceDialog != null) {
          importSourceDialog.updateView(generateImportExtras());

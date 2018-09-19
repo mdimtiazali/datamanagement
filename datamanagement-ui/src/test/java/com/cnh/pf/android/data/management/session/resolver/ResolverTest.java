@@ -95,7 +95,7 @@ public class ResolverTest {
    @Test
    public void testPerformOperationsResolve() {
       SessionExtra exportExtra = new SessionExtra(SessionExtra.USB, "test extra", 1);
-      exportExtra.setFormat("PF Database");
+      exportExtra.setFormat("ISOXML");
 
       Session session = new Session();
       session.setType(Session.Type.PERFORM_OPERATIONS);
