@@ -83,6 +83,7 @@
                         cnh:allowItemManagement="false"/>
 
                 <pl.polidea.treeview.TreeViewList
+                        style="@style/DataManagementTreeViewStyle"
                         android:id="@+id/source_path_usb_tree_view"
                         android:paddingLeft="@dimen/import_source_datatree_padding_left"
                         android:paddingRight="@dimen/import_source_datatree_padding_right"
@@ -90,23 +91,8 @@
                         android:layout_height="wrap_content"
                         android:visibility="gone"
                         android:divider="@color/import_data_tree_divider_color"
-                        android:dividerHeight="@dimen/import_source_layout_tree_view_divider_height"
-                        android:choiceMode="none"
-                        android:listSelector="@color/import_data_tree_list_selector_color"
-                        cnh:collapsible="true"
-                        cnh:draw_line="true"
-                        cnh:indent_width="@dimen/import_source_layout_tree_view_cnh_indent_width"
-                        cnh:indicator_background="@android:color/transparent"
-                        cnh:indicator_gravity="center_vertical|right"
-                        cnh:line_color="@color/tree_line"
-                        cnh:line_width="@dimen/import_source_layout_tree_view_cnh_line_width"
-                        cnh:src_collapsed="@drawable/ic_action_expand"
-                        cnh:src_expanded="@drawable/ic_action_collapse"/>
-                <!--
-                     TODO: The buttons src_collapsed and src_expanded are not the most recent ones!
-                           Those are to be replaced as soon as svn access to ui/ux space is granted.
-                           This keeps workitem pfhmi-dev-defects-10484 open!
-                 -->
+                        android:paddingTop="@dimen/datamanagement_select_import_source_padding_top"
+                        android:paddingBottom="@dimen/datamanagement_select_import_source_padding_bottom"/>
 
                 <LinearLayout
                         android:layout_width="match_parent"
@@ -114,9 +100,10 @@
                         android:id="@+id/source_path_usb_disabled"
                         android:paddingLeft="@dimen/import_source_datatree_padding_left"
                         android:orientation="horizontal"
-                        android:layout_margin="@dimen/import_source_datatree_disabled_margin"
-                        android:gravity="center_vertical">
-                    <!--android:visibility="gone">-->
+                        android:gravity="center_vertical"
+                        android:paddingBottom="@dimen/datamanagement_select_import_source_padding_bottom"
+                        android:layout_marginLeft="@dimen/import_source_datatree_disabled_left_padding"
+                        android:visibility="gone">
                     <ImageView
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
@@ -129,6 +116,7 @@
                     <TextView
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
+                            android:paddingLeft="@dimen/import_source_datatree_disabled_spacing_image_text"
                             android:text="@string/usb_string"
                             android:textColor="@color/color_grey"
                             android:textSize="@dimen/import_source_datatree_disabled_font_size"
@@ -142,6 +130,7 @@
                         android:background="@color/bar_grey_light"/>
 
                 <pl.polidea.treeview.TreeViewList
+                        style="@style/DataManagementTreeViewStyle"
                         android:id="@+id/source_path_cloud_tree_view"
                         android:paddingLeft="@dimen/import_source_datatree_padding_left"
                         android:paddingRight="@dimen/import_source_datatree_padding_right"
@@ -149,27 +138,18 @@
                         android:layout_height="wrap_content"
                         android:visibility="gone"
                         android:divider="@color/import_data_tree_divider_color"
-                        android:dividerHeight="@dimen/import_source_layout_tree_view_divider_height"
-                        android:choiceMode="none"
-                        android:listSelector="@color/import_data_tree_list_selector_color"
-                        cnh:collapsible="true"
-                        cnh:draw_line="true"
-                        cnh:indent_width="@dimen/import_source_layout_tree_view_cnh_indent_width"
-                        cnh:indicator_background="@android:color/transparent"
-                        cnh:indicator_gravity="center_vertical|right"
-                        cnh:line_color="@color/tree_line"
-                        cnh:line_width="@dimen/import_source_layout_tree_view_cnh_line_width"
-                        cnh:src_collapsed="@drawable/ic_action_expand"
-                        cnh:src_expanded="@drawable/ic_action_collapse"/>
+                        android:paddingTop="@dimen/datamanagement_select_import_source_padding_top"
+                        android:paddingBottom="@dimen/datamanagement_select_import_source_padding_bottom"/>
 
                 <LinearLayout
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
                         android:id="@+id/source_path_cloud_disabled"
                         android:paddingLeft="@dimen/import_source_datatree_padding_left"
+                        android:paddingBottom="@dimen/datamanagement_select_import_source_padding_bottom"
                         android:orientation="horizontal"
-                        android:layout_margin="@dimen/import_source_datatree_disabled_margin"
                         android:gravity="center_vertical"
+                        android:layout_marginLeft="@dimen/import_source_datatree_disabled_left_padding"
                         android:visibility="gone">
                     <ImageView
                             android:layout_width="wrap_content"
@@ -183,6 +163,7 @@
                     <TextView
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
+                            android:paddingLeft="@dimen/import_source_datatree_disabled_spacing_image_text"
                             android:text="@string/import_cloud_inbox"
                             android:textColor="@color/color_grey"
                             android:textSize="@dimen/import_source_datatree_disabled_font_size"
@@ -191,5 +172,9 @@
 
             </LinearLayout>
         </ScrollView>
+        <Gallery
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:id="@+id/gallery"/>
     </LinearLayout>
 </LinearLayout>

@@ -10,6 +10,7 @@
 package com.cnh.pf.android.data.management;
 
 import static android.os.Environment.MEDIA_BAD_REMOVAL;
+import static android.os.Environment.MEDIA_MOUNTED;
 
 import static com.cnh.pf.android.data.management.utility.UtilityHelper.MAX_TREE_SELECTIONS_FOR_DEFAULT_TEXT_SIZE;
 
@@ -430,7 +431,7 @@ public class ImportFragment extends BaseDataFragment {
          }
       }
       else if (SessionUtil.isPerformOperationsTask(session)) {
-         logger.trace("Import process has been completed. Reset session.");
+         logger.trace("Import process has been completed. Resume session.");
 
          hideStartMessage();
          showTreeList();
@@ -443,10 +444,6 @@ public class ImportFragment extends BaseDataFragment {
          ToastMessageCustom.makeToastMessageText(getActivity().getApplicationContext(), getString(R.string.import_complete), Gravity.TOP | Gravity.CENTER_HORIZONTAL,
                getResources().getInteger(R.integer.toast_message_xoffset), getResources().getInteger(R.integer.toast_message_yoffset)).show();
 
-         resetSession();
-         hideTreeList();
-         setHeaderText("");
-         showStartMessage();
          updateSelectAllState();
 
          //close cancel dialog if still open
@@ -666,8 +663,10 @@ public class ImportFragment extends BaseDataFragment {
       if (!requestAndUpdateBlockedOverlay(getBlockingActions())) {
          final Session session = getSession();
 
-         if ((SessionUtil.isPerformOperationsTask(session) && SessionUtil.isComplete(session)) || SessionUtil.isCancelled(session)) {
-            // This could happen when the import completes while the user focus is on other tab.
+         if (!MEDIA_MOUNTED.equals(Environment.getExternalStorageState()) || (SessionUtil.isPerformOperationsTask(session) && SessionUtil.isComplete(session))
+               || SessionUtil.isCancelled(session)) {
+            // This could happen when the import completes while the user focus is on other tab
+            // OR the usb stick was removed while import was not open.
             // In that case, reset session & tree selection before updating UI.
             resetSession();
             clearTreeSelection();
@@ -761,7 +760,7 @@ public class ImportFragment extends BaseDataFragment {
          importDropZone.setVisibility(View.GONE);
          progressBar.setProgress(0);
          progressBar.setShowProgress(false);
-         progressBar.setSecondText(true, loadingString, null, true);
+         progressBar.setTitle(loadingString);
          importFinishedStatePanel.setVisibility(View.GONE);
          leftStatus.setVisibility(View.VISIBLE);
       }
@@ -809,7 +808,7 @@ public class ImportFragment extends BaseDataFragment {
       leftStatus.setVisibility(View.VISIBLE);
       Resources resources = getResources();
       String errorString = resources.getString(R.string.pb_error);
-      progressBar.setSecondText(true, errorString, null, true);
+      progressBar.setTitle(errorString);
       progressBar.setErrorProgress(resources.getInteger(R.integer.error_percentage_value), errorString);
 
       //post cleanup to show drag and drop zone after time X
@@ -840,7 +839,7 @@ public class ImportFragment extends BaseDataFragment {
          else {
             //non targets / conflict operations are supposed to be performing progress updates
             progressBar.setProgress(percent);
-            progressBar.setSecondText(true, loadingString, String.format(xOfYFormat, progress, max), true);
+            progressBar.setTitle(loadingString);
          }
       }
       else {
@@ -1032,7 +1031,11 @@ public class ImportFragment extends BaseDataFragment {
       logger.trace("ImportFragment onMediumUpdate()");
       if (Environment.getExternalStorageState().equals(MEDIA_BAD_REMOVAL)) {
          logger.debug("onMediumUpdate() - Reset the import screen.");
+         resetSession();
          setHeaderText("");
+         hideTreeList();
+         processOverlay.setMode(DataExchangeProcessOverlay.MODE.HIDDEN);
+         showStartMessage();
          updateImportButton();
          updateSelectAllState();
       }

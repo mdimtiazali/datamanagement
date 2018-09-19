@@ -20,6 +20,18 @@
         <item name="android:textColor">#333333</item>
     </style>
 
+    <style name="TextAppearance.Import.DragAndDrop" parent="@style/TextAppearance.Roboto.Bold">
+        <item name="android:textSize">26sp</item>
+        <item name="android:lineSpacingExtra">10dp</item>
+        <item name="android:textColor">#777777</item>
+    </style>
+
+    <style name="TextAppearance.Import.SelectSourceFirst" parent="@style/TextAppearance.Roboto.Bold">
+        <item name="android:textSize">26sp</item>
+        <item name="android:lineSpacingExtra">10dp</item>
+        <item name="android:textColor">#333333</item>
+    </style>
+
     <style name="TextAppearance.Data.Conflict" parent="@style/TextAppearance.Roboto.Bold">
         <item name="android:textSize">22sp</item>
         <item name="android:textColor">@color/defaultTextColor</item>
@@ -96,5 +108,21 @@
     <style name="ImportConfigTableBody" parent="ImportConfigTableBase">
         <item name="android:textSize">@dimen/import_conflict_dialog_table_body_text_size</item>
         <item name="android:background">@drawable/data_conflict_cell</item>
+    </style>
+
+    <style name="DataManagementTreeViewStyle">
+        <item name="android:listSelector">@color/import_data_tree_list_selector_color</item>
+        <item name="android:choiceMode">none</item>
+        <item name="android:dividerHeight">@dimen/import_source_layout_tree_view_divider_height</item>
+        <!-- CNH attributes -->
+        <item name="indent_width">@dimen/import_source_layout_tree_view_cnh_indent_width</item>
+        <item name="indicator_background">@android:color/transparent</item>
+        <item name="indicator_gravity">center_vertical|right</item>
+        <item name="src_collapsed">@drawable/data_tree_expand_active</item>
+        <item name="src_expanded">@drawable/data_tree_collapse_active</item>
+        <item name="collapsible">true</item>
+        <item name="draw_line">true</item>
+        <item name="line_color">@color/tree_line</item>
+        <item name="line_width">@dimen/import_source_layout_tree_view_cnh_line_width</item>
     </style>
 </resources>
