@@ -326,11 +326,16 @@ public class UtilityHelper {
     * @return           string containing file name & extension
     */
     public static String filenameOnly(String fullPath) {
+       if (fullPath == null) {
+          return null;
+       }
+
        int lastPath = fullPath.lastIndexOf(File.separator);
        if (lastPath < 0) {
           return null;
        }
        return fullPath.substring(lastPath + 1);
+
     }
 
    /**
