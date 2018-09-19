@@ -138,6 +138,7 @@ public class ProductMixDialog extends DialogView implements DialogHandlerListene
    private DialogDensityHandler dialogDensityHandler;
    private DialogPackageSizeHandler dialogPackageSizeHandler;
    private DialogUsageAndCropTypeHandler dialogUsageAndCropTypeHandler;
+   private AdvancedProductInformation advancedProductInformation;
    private Widget.ErrorIndicator productMixNameErrorIndicator = Widget.ErrorIndicator.NONE;
 
    private CategoryButtonsEventListener eventListener = new CategoryButtonsEventListener() {
@@ -271,6 +272,7 @@ public class ProductMixDialog extends DialogView implements DialogHandlerListene
       this.pvipService = pvipService;
       this.callback = callBack;
       this.productMixes = new ArrayList<ProductMix>(productMixes);
+      this.advancedProductInformation = new AdvancedProductInformation(context);
       if (vipService != null) {
          try {
             vipService.register(identifier, vipListener);
@@ -332,11 +334,20 @@ public class ProductMixDialog extends DialogView implements DialogHandlerListene
       initializeMixProductsView();
       initializeApplicationRatesView();
       initializeAdvancedView();
+      initializeAdvancedProductInformationViews(this);
       isInitialized = true;
       overlay.setMode(MODE.HIDDEN);
       if (log.isTraceEnabled()) {
          log.trace("initializeViews duration {}", System.currentTimeMillis() - initializeViewsStart);
       }
+   }
+
+   /**
+    * Initialize the Advanced Product Information View
+    * @param productMixDialog product mix dialog
+    */
+   private void initializeAdvancedProductInformationViews(ProductMixDialog productMixDialog) {
+      advancedProductInformation.initializeViews(productMixDialog);
    }
 
    private void initializeGUI() {
@@ -512,6 +523,7 @@ public class ProductMixDialog extends DialogView implements DialogHandlerListene
          dialogPackageSizeHandler.setValuesToUi(productMixParameters);
          dialogDensityHandler.setValuesToUi(productMixParameters);
          dialogUsageAndCropTypeHandler.setValuesToUi(productMixParameters);
+         advancedProductInformation.setValuesToUi(productMixParameters);
       }
       if (actionType == DialogActionType.COPY) {
          if (productMix != null && productMix.getProductMixParameters() != null) {
@@ -915,6 +927,7 @@ public class ProductMixDialog extends DialogView implements DialogHandlerListene
          dialogPackageSizeHandler.setValuesToProduct(productMixParameters);
          dialogDensityHandler.setValuesToProduct(productMixParameters);
          productDialogsApplicationRateHandler.setValuesToProduct(productMixParameters);
+         advancedProductInformation.setValuesToProduct(productMixParameters);
 
          ProductUnits carrierUnit = null;
          if (carrierProductHolder.getProductPickList().getTag() != null) {
