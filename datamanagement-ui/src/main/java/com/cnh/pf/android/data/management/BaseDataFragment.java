@@ -124,12 +124,24 @@ public abstract class BaseDataFragment extends RoboFragment implements SessionCo
       public int compare(InMemoryTreeNode<ObjectGraph> lhs, InMemoryTreeNode<ObjectGraph> rhs) {
          // Do the case-insensitive check first
          if ((lhs != null) && (rhs != null) && (lhs.getId() != null) && (rhs.getId() != null) && (lhs.getId().getName() != null) && (rhs.getId().getName() != null)) {
-            int comparison = lhs.getId().getName().compareToIgnoreCase(rhs.getId().getName());
-            if (comparison != 0) {
-               return comparison;
+            if ((lhs.getId() instanceof  GroupObjectGraph) && (rhs.getId() instanceof  GroupObjectGraph)) {
+               int lhsOrder = TreeEntityHelper.groupSortData.get(lhs.getId().getType());
+               int rhsOrder = TreeEntityHelper.groupSortData.get(rhs.getId().getType());
+               if (lhsOrder < rhsOrder) {
+                  return -1;
+               }
+               else {
+                  return 1;
+               }
             }
-            // If the case-insensitive check is same, do the case-sensitive check to make upper-case come first
-            return lhs.getId().getName().compareTo(rhs.getId().getName());
+            else {
+               int comparison = lhs.getId().getName().compareToIgnoreCase(rhs.getId().getName());
+               if (comparison != 0) {
+                  return comparison;
+               }
+               // If the case-insensitive check is same, do the case-sensitive check to make upper-case come first
+               return lhs.getId().getName().compareTo(rhs.getId().getName());
+            }
          }
          // error case, return after
          return 1;
@@ -684,8 +696,8 @@ public abstract class BaseDataFragment extends RoboFragment implements SessionCo
       }
       else {
          addToTree(objectGraphs);
+         sortTreeList();
       }
-      sortTreeList();
       createTreeAdapter();
 
       treeAdapter.setData(objectGraphs);

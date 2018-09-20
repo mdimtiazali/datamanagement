@@ -9,8 +9,13 @@
 
 package com.cnh.pf.android.data.management;
 
+import android.graphics.Region;
+import com.cnh.autoguidance.boundary.BoundaryItem;
+import com.cnh.autoguidance.boundary.GeometryType;
+import com.cnh.autoguidance.boundary.Impassable;
 import com.cnh.autoguidance.shared.SwathType;
 import com.cnh.pf.android.data.management.graph.GroupObjectGraph;
+import com.cnh.pf.model.vip.vehimp.Operation;
 import com.cnh.pf.model.product.library.ProductForm;
 import com.google.gson.Gson;
 
@@ -46,6 +51,12 @@ public class TreeEntityHelper {
    private static final Map<String, Integer> TYPE_ICONS = new HashMap<String, Integer>();
    private static final Map<SwathType, Integer> SWATH_ICONS = new EnumMap<SwathType, Integer>(SwathType.class);
    private static final Map<ProductForm, Integer> PRODUCTFORM_ICONS = new EnumMap<ProductForm, Integer>(ProductForm.class);
+   private static final Map<GeometryType, Integer> LANDMARK_ICONS = new EnumMap<GeometryType, Integer>(GeometryType.class);
+   private static final Map<Impassable, Integer> BOUNDARY_ICONS = new EnumMap<Impassable, Integer>(Impassable.class);
+   private static final Map<Operation, Integer> TASK_ICONS = new EnumMap<Operation, Integer>(Operation.class);
+
+
+
    public static final String HIDDEN_ITEM = "HIDDEN_ITEM";
    public static final String FOLLOW_SOURCE = "FOLLOW_SOURCE";
    public static final String CHILDREN_COUNT = "CHILDREN_COUNT";
@@ -61,6 +72,7 @@ public class TreeEntityHelper {
    protected static final Map<String, Integer> group2name = new HashMap<String, Integer>();
    protected static final Map<String, String> obj2group = new HashMap<String, String>();
    protected static final Map<String, String> group2group = new HashMap<String, String>();
+   protected static final Map<String, Integer> groupSortData = new HashMap<String, Integer>();
 
    public static final String SUB_TYPE = "_subtype";
    public static final String GROWERS = "GROWERS";
@@ -120,10 +132,23 @@ public class TreeEntityHelper {
       SWATH_ICONS.put(SwathType.PIVOT, R.drawable.ic_data_tree_pivot);
       SWATH_ICONS.put(SwathType.SPIRAL_PIVOT, R.drawable.ic_data_tree_spiral_swath);
 
+      PRODUCTFORM_ICONS.put(ProductForm.ANHYDROUS, R.drawable.ic_data_tree_anhydrous);
       PRODUCTFORM_ICONS.put(ProductForm.GRANULAR, R.drawable.ic_data_tree_granular);
       PRODUCTFORM_ICONS.put(ProductForm.BULK_SEED, R.drawable.ic_data_tree_bulk_seed);
       PRODUCTFORM_ICONS.put(ProductForm.LIQUID, R.drawable.ic_data_tree_liquid);
       PRODUCTFORM_ICONS.put(ProductForm.SEED, R.drawable.ic_data_tree_seed_control);
+
+      LANDMARK_ICONS.put(GeometryType.AREA, R.drawable.ic_data_tree_landmark_area);
+      LANDMARK_ICONS.put(GeometryType.POINT, R.drawable.ic_data_tree_landmark_point);
+      LANDMARK_ICONS.put(GeometryType.LINE, R.drawable.ic_data_tree_landmark_line);
+
+      BOUNDARY_ICONS.put(Impassable.YES, R.drawable.ic_data_tree_impassable_boundary);
+      BOUNDARY_ICONS.put(Impassable.NO, R.drawable.ic_data_tree_passable_boundary);
+
+      TASK_ICONS.put(Operation.CART_HAULING, R.drawable.ic_data_tree_hauling_task);
+      TASK_ICONS.put(Operation.HARVESTING, R.drawable.ic_data_tree_harvesting);
+      TASK_ICONS.put(Operation.SPRAYING, R.drawable.ic_data_tree_sprayer_task);
+      TASK_ICONS.put(Operation.TILLAGE, R.drawable.ic_data_tree_tilling_task);
 
       group2name.put(GROWERS, R.string.pfds);
       group2name.put(TASKS, R.string.tasks);
@@ -158,6 +183,41 @@ public class TreeEntityHelper {
       group2group.put(PRODUCTS, PRODUCT_MIX_VARIETY);
       group2group.put(PRODUCT_MIXS, PRODUCT_MIX_VARIETY);
       group2group.put(VARIETIES, PRODUCT_MIX_VARIETY);
+
+      groupSortData.put(GROWERS, 1);
+      groupSortData.put(DataTypes.GROWER, 2);
+      groupSortData.put(DataTypes.FARM, 21);
+      groupSortData.put(DataTypes.FIELD, 31);
+      groupSortData.put(TASKS, 41);
+      groupSortData.put(DataTypes.RX, 51);
+      groupSortData.put(RXS, 42);
+      groupSortData.put(DataTypes.RX_PLAN, 52);
+      groupSortData.put(PRODUCTS, 11);
+      groupSortData.put(DataTypes.PRODUCT, 21);
+      groupSortData.put(DataTypes.PRODUCT_MIX, 22);
+      groupSortData.put(PRODUCT_MIXS, 12);
+      groupSortData.put(DataTypes.BOUNDARY, 53);
+      groupSortData.put(BOUNDARIES, 43);
+      groupSortData.put(DataTypes.LANDMARK, 54);
+      groupSortData.put(LANDMARKS, 44);
+      groupSortData.put(GUIDANCE_GROUPS, 45);
+      groupSortData.put(DataTypes.GUIDANCE_PATTERN, 55);
+      groupSortData.put(DataTypes.GUIDANCE_CONFIGURATION, 56);
+      groupSortData.put(GUIDANCE_CONFIGURATIONS, 46);
+      groupSortData.put(DataTypes.COVERAGE, 47);
+      groupSortData.put(DataTypes.NOTE, 57);
+      groupSortData.put(NOTES, 48);
+      groupSortData.put(DataTypes.FILE, 49);
+      groupSortData.put(DataTypes.VEHICLE, 31);
+      groupSortData.put(VEHICLES, 3);
+      groupSortData.put(DataTypes.VEHICLE_IMPLEMENT, 32);
+      groupSortData.put(DataTypes.VEHICLE_IMPLEMENT_CONFIG, 33);
+      groupSortData.put(DataTypes.IMPLEMENT, 34);
+      groupSortData.put(IMPLEMENTS, 32);
+      groupSortData.put(DataTypes.IMPLEMENT_PRODUCT_CONFIG, 35);
+      groupSortData.put(VARIETIES, 13);
+      groupSortData.put(PRODUCT_MIX_VARIETY, 2);
+
    }
 
    private TreeEntityHelper() {
@@ -284,6 +344,21 @@ public class TreeEntityHelper {
             int subType = objectGraph.getDataInt(SUB_TYPE);
             SwathType sType = SwathType.findByValue(subType);
             return SWATH_ICONS.containsKey(sType) ? SWATH_ICONS.get(sType) : 0;
+         }
+         else if (DataTypes.LANDMARK.equals(objectGraph.getType())) {
+            int subType = objectGraph.getDataInt(SUB_TYPE);
+            GeometryType gType = GeometryType.findByValue(subType);
+            return LANDMARK_ICONS.containsKey(gType) ? LANDMARK_ICONS.get(gType) : 0;
+         }
+         else if (DataTypes.BOUNDARY.equals(objectGraph.getType())) {
+            int subType = objectGraph.getDataInt(SUB_TYPE);
+            Impassable iType = Impassable.findByValue(subType);
+            return BOUNDARY_ICONS.containsKey(iType) ? BOUNDARY_ICONS.get(iType) : 0;
+         }
+         else if (DataTypes.TASK.equals(objectGraph.getType())) {
+            int subType = objectGraph.getDataInt(SUB_TYPE);
+            Operation opType = Operation.findByValue(subType);
+            return TASK_ICONS.containsKey(opType) ? BOUNDARY_ICONS.get(opType) : 0;
          }
          else if (DataTypes.PRODUCT.equals(objectGraph.getType())) {
             int form = objectGraph.getDataInt(SUB_TYPE);
