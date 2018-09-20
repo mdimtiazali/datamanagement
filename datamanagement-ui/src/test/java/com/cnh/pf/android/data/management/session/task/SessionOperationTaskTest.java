@@ -12,6 +12,7 @@ package com.cnh.pf.android.data.management.session.task;
 import com.cnh.jgroups.Mediator;
 import com.cnh.jgroups.ObjectGraph;
 import com.cnh.jgroups.Operation;
+import com.cnh.pf.android.data.management.BaseDataFragment;
 import com.cnh.pf.android.data.management.TestApp;
 import com.cnh.pf.android.data.management.fault.DMFaultHandler;
 import com.cnh.pf.android.data.management.parser.FormatManager;
@@ -164,7 +165,9 @@ public class SessionOperationTaskTest {
       Robolectric.getBackgroundThreadScheduler().unPause();
       session.setType(Session.Type.DISCOVERY);
       session.setSources(sources);
+      BaseDataFragment.setDsPerfFlag(false);
       DiscoveryTask task = new DiscoveryTask(mediator, notifier);
+
 
       // Used AsyncTask.execute() instead of SessionOperationTask.executeTask() due to a
       // problem with ShadowAyncTask in Robolectric. It'll achieve same except it doesn't

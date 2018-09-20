@@ -25,14 +25,23 @@ import com.cnh.pf.android.data.management.session.SessionUtil;
 import com.cnh.pf.android.data.management.session.StatusSender;
 import com.cnh.pf.android.data.management.utility.UtilityHelper;
 import com.cnh.pf.datamng.Process;
+import com.cnh.pf.util.ZipHelper;
 import com.google.common.io.Files;
+import org.apache.commons.io.FileUtils;
 import org.jgroups.Address;
+import org.jgroups.JChannel;
+import org.jgroups.Message;
+import org.jgroups.View;
+import org.jgroups.conf.ClassConfigurator;
+import org.jgroups.protocols.FILE_FRAG2;
 import org.jgroups.util.Rsp;
+import org.jgroups.util.Util;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import javax.annotation.Nonnull;
 import java.io.File;
+import java.io.FileInputStream;
 import java.io.IOException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayDeque;
@@ -51,13 +60,17 @@ public class PerformOperationsTask extends SessionOperationTask<Void> {
    private final StatusSender statusSender;
    private final DMFaultHandler faultHandler;
    private final FormatManager formatManager;
+   private final SessionNotifier notifier;
    private final String tempPath = UtilityHelper.CommonPaths.PATH_TMP.getPathString();
+
+   protected String   filename;
 
    public PerformOperationsTask(@Nonnull Mediator mediator, @Nonnull SessionNotifier notifier, @Nonnull DMFaultHandler faultHandler, @Nonnull FormatManager formatManager, StatusSender statusSender) {
       super(mediator, notifier);
       this.faultHandler = faultHandler;
       this.formatManager = formatManager;
       this.statusSender = statusSender;
+      this.notifier = notifier;
    }
 
    @Override
@@ -72,7 +85,9 @@ public class PerformOperationsTask extends SessionOperationTask<Void> {
             logger.debug("PerformOperations-Dst Addresses: {}", SessionUtil.addressToString(addresses));
 
             session.setResults(getMediator().performOperations(session.getOperations(), addresses));
-            boolean hasCancelled = Process.Result.CANCEL.equals(session.getResultCode());
+            Process.Result resultCode = session.getResultCode();
+            boolean hasCancelled = Process.Result.CANCEL.equals(resultCode);
+            boolean hasError = Process.Result.ERROR.equals(resultCode);
 
             for (Rsp<Process> ret : session.getResults()) {
                if (ret.hasException()) throw ret.getException();
@@ -86,80 +101,17 @@ public class PerformOperationsTask extends SessionOperationTask<Void> {
                }
             }
 
-            if (hasCancelled) {
+            if (hasCancelled && !hasError) {
                session.setResultCode(Process.Result.CANCEL);
             }
             else {
                SessionExtra extra = session.getExtra();
-               if (extra != null && extra.isUsbExtra() && SessionUtil.isExportAction(session)) {
-                  boolean moveWasSuccessfull = false;
-                  File tmpFolder = new File(tempPath);
 
-                  if (extra.isUseInternalFileSystem()) {
-                     moveWasSuccessfull = moveFilesToInternalFlash(session.getExtra());
-                     if (moveWasSuccessfull) {
-                        session.setResultCode(Process.Result.SUCCESS);
-                     }
-                     else {
-                        session.setResultCode(Process.Result.ERROR);
-                        throw new SessionException(ErrorCode.PERFORM_ERROR);
-                     }
-                  }
-                  else {
-                     final String USB_EXPORT_PATH = UtilityHelper.CommonPaths.PATH_USB_PORT.getPathString();
-
-                     final String PFDATABASE_FOLDER = UtilityHelper.CommonPaths.PATH_DESIGNATOR.getPathString() +
-                             formatManager.getFormat(UtilityHelper.CommonFormats.PFDATABASEFORMAT.getName()).getPath() + UtilityHelper.CommonPaths.PATH_DESIGNATOR.getPathString();
-
-                     UtilityHelper.MediumVariant mediumVariant = UtilityHelper.MediumVariant.fromValue(extra.getOrder());
-                     final String ISOXML_FOLDER;
-                     if (null != mediumVariant && UtilityHelper.MediumVariant.USB_FRED.equals(mediumVariant)) {
-                        ISOXML_FOLDER = UtilityHelper.CommonPaths.PATH_USB_FRED.getPathString() + UtilityHelper.CommonPaths.PATH_DESIGNATOR.getPathString() +
-                                formatManager.getFormat(UtilityHelper.CommonFormats.ISOXMLFORMAT.getName()).getPath() + UtilityHelper.CommonPaths.PATH_DESIGNATOR.getPathString();
-                     }
-                     else {
-                        ISOXML_FOLDER = UtilityHelper.CommonPaths.PATH_DESIGNATOR.getPathString() +
-                                formatManager.getFormat(UtilityHelper.CommonFormats.ISOXMLFORMAT.getName()).getPath() + UtilityHelper.CommonPaths.PATH_DESIGNATOR.getPathString();
-                     }
-
-                     if (Environment.getExternalStorageState().equals(MEDIA_MOUNTED) && tmpFolder.exists()) {
-
-                        if (extra.getFormat().equals(UtilityHelper.CommonFormats.PFDATABASEFORMAT.getName())) {
-                           logger.info("start moving files from: {} to {}{}", tempPath, USB_EXPORT_PATH, PFDATABASE_FOLDER);
-                           moveWasSuccessfull = moveFiles(tempPath, USB_EXPORT_PATH, PFDATABASE_FOLDER);
-                        }
-                        else if (extra.getFormat().equals(UtilityHelper.CommonFormats.ISOXMLFORMAT.getName())) {
-                           logger.info("start moving files from: {} to {}{}", tempPath, USB_EXPORT_PATH, ISOXML_FOLDER);
-                           moveWasSuccessfull = moveFiles(tempPath, USB_EXPORT_PATH, ISOXML_FOLDER);
-                        }
-                        else {
-                           logger.info("Unknown destination on export");
-                        }
-
-                        logger.info("finished moving files");
-
-                        session.setResultCode( (moveWasSuccessfull) ? Process.Result.SUCCESS : Process.Result.ERROR);
-                     }
-                     else {
-                        logger.info("Either USB is not mounted or temporary folder doesn't exist.");
-                        faultHandler.getFault(FaultCode.USB_REMOVED_DURING_EXPORT).reset();
-                        faultHandler.getFault(FaultCode.USB_REMOVED_DURING_EXPORT).alert();
-                        session.setResultCode(Process.Result.ERROR);
-                     }
-                  }
-
-                  if (tmpFolder.exists()) {
-                     if (!UtilityHelper.deleteRecursively(tmpFolder)){
-                        logger.error("unable to delete temporary folder:{}", tmpFolder.getPath());
-                     }
-                  }
-
-                  if (SessionUtil.isErroneous(session)) {
-                     throw new SessionException(ErrorCode.PERFORM_ERROR);
-                  }
+               if(extra.isCloudExtra()) {
+                  moveFilesToPCM(session, getCloudDestination(addresses));
                }
                else {
-                  session.setResultCode(Process.Result.SUCCESS);
+                  moveFilesToUSB(session, extra);
                }
             }
          }
@@ -171,7 +123,160 @@ public class PerformOperationsTask extends SessionOperationTask<Void> {
       catch (Throwable e) {
          logger.error("Exception in PERFORM_OPERATIONS: ", e);
          session.setResultCode(Process.Result.ERROR);
+         if (!Environment.getExternalStorageState().equals(MEDIA_MOUNTED)) {
+            notifier.notifySessionError(session, ErrorCode.USB_REMOVED);
+            throw new SessionException(ErrorCode.USB_REMOVED);
+         }
+         else {
+            throw new SessionException(ErrorCode.PERFORM_ERROR);
+         }
+      }
+   }
+
+   private org.jgroups.Address getCloudDestination(Address[] addresses) {
+      for (Address addr : addresses) {
+         logger.info("cloud destination: {}", addr.toString());
+         if (addr.toString().contains("CLOUD")) {
+            return addr;
+         }
+      }
+      return null;
+   }
+
+   private void moveFilesToPCM(@Nonnull Session session, Address cloudAddress) throws IOException, SessionException {
+
+      final String PATH_TMP_CLOUD = UtilityHelper.CommonPaths.PATH_TMP_CLOUD.getPathString();
+
+      final String TASKDATA_FOLDER = UtilityHelper.CommonPaths.PATH_DESIGNATOR.getPathString() + "TASKDATA" +
+                                 UtilityHelper.CommonPaths.PATH_DESIGNATOR.getPathString();
+
+      final File zippedCloudDir = new File(PATH_TMP_CLOUD + TASKDATA_FOLDER);
+      File tmpFolder = new File(tempPath);
+
+      if (tmpFolder.exists()) {
+
+         FileUtils.deleteQuietly(zippedCloudDir);
+
+         logger.info("moving cloud files from: {} to {}{}", tempPath, PATH_TMP_CLOUD, TASKDATA_FOLDER);
+         try {
+            FileUtils.moveDirectory(tmpFolder, zippedCloudDir);
+            session.setResultCode(Process.Result.SUCCESS);
+         }
+         catch (IOException e) {
+            /* move failed, clear temporary source folder */
+            if (!UtilityHelper.deleteRecursively(tmpFolder)) {
+               logger.error("failing to delete contents of temporary folder:{}", tmpFolder.getPath());
+            }
+            session.setResultCode(Process.Result.ERROR);
+         }
+      } else {
+         logger.info("temporary folder doesn't exist.");
+         session.setResultCode(Process.Result.ERROR);
+      }
+
+      if (SessionUtil.isErroneous(session)) {
+       throw new SessionException(ErrorCode.PERFORM_ERROR);
+      }
+
+      /* zip up temporary cloud export directory */
+      final String ZIP_EXT = ".zip";
+      final String CLOUD_FILENAME = String.format("CLOUD.%s", new SimpleDateFormat("yyyyMMddHHmmssSSS").format(new Date()));
+      final String zippedCloudFileName = PATH_TMP_CLOUD + File.separator + CLOUD_FILENAME + ZIP_EXT;
+      logger.debug("GET FILE zipping {} as {}", PATH_TMP_CLOUD + TASKDATA_FOLDER, zippedCloudFileName);
+
+      String suffixFilter = "*";
+      new ZipHelper().zipDirectory(new File(PATH_TMP_CLOUD), zippedCloudFileName, suffixFilter);
+
+      /* send file */
+      if (null != cloudAddress) {
+         getMediator().sendFile(cloudAddress, zippedCloudFileName);
+         session.setResultCode(Process.Result.SUCCESS);
+      }
+      else {
+         session.setResultCode(Process.Result.ERROR);
+      }
+
+      File tempCloudRoot = new File(PATH_TMP_CLOUD);
+      FileUtils.deleteQuietly(tempCloudRoot);
+
+      if (SessionUtil.isErroneous(session)) {
          throw new SessionException(ErrorCode.PERFORM_ERROR);
+      }
+   }
+
+   private void moveFilesToUSB(@Nonnull Session session, @Nonnull SessionExtra extra) throws SessionException {
+      if (extra != null && extra.isUsbExtra() && SessionUtil.isExportAction(session)) {
+         if (!Environment.getExternalStorageState().equals(MEDIA_MOUNTED)) {
+            logger.info("USB is not mounted, so throw error.");
+            session.setResultCode(Process.Result.ERROR);
+            notifier.notifySessionError(session, ErrorCode.USB_REMOVED);
+            throw new SessionException(ErrorCode.USB_REMOVED);
+         }
+
+         boolean moveWasSuccessfull = false;
+         File tmpFolder = new File(tempPath);
+
+         if (extra.isUseInternalFileSystem()) {
+            moveWasSuccessfull = moveFilesToInternalFlash(session.getExtra());
+            if (moveWasSuccessfull) {
+               session.setResultCode(Process.Result.SUCCESS);
+            } else {
+               session.setResultCode(Process.Result.ERROR);
+               throw new SessionException(ErrorCode.PERFORM_ERROR);
+            }
+         } else {
+            final String USB_EXPORT_PATH = UtilityHelper.CommonPaths.PATH_USB_PORT.getPathString();
+
+            UtilityHelper.MediumVariant mediumVariant = UtilityHelper.MediumVariant.fromValue(extra.getOrder());
+            final String ISOXML_FOLDER;
+            if (null != mediumVariant && UtilityHelper.MediumVariant.USB_FRED.equals(mediumVariant)) {
+               ISOXML_FOLDER = UtilityHelper.CommonPaths.PATH_USB_FRED.getPathString() + UtilityHelper.CommonPaths.PATH_DESIGNATOR.getPathString() +
+                       formatManager.getFormat(UtilityHelper.CommonFormats.ISOXMLFORMAT.getName()).getPath() + UtilityHelper.CommonPaths.PATH_DESIGNATOR.getPathString();
+            } else {
+               ISOXML_FOLDER = UtilityHelper.CommonPaths.PATH_DESIGNATOR.getPathString() +
+                       formatManager.getFormat(UtilityHelper.CommonFormats.ISOXMLFORMAT.getName()).getPath() + UtilityHelper.CommonPaths.PATH_DESIGNATOR.getPathString();
+            }
+
+            if (Environment.getExternalStorageState().equals(MEDIA_MOUNTED) && tmpFolder.exists()) {
+
+               if (extra.getFormat().equals(UtilityHelper.CommonFormats.ISOXMLFORMAT.getName())) {
+                  logger.info("start moving files from: {} to {}{}", tempPath, USB_EXPORT_PATH, ISOXML_FOLDER);
+                  moveWasSuccessfull = moveFiles(tempPath, USB_EXPORT_PATH, ISOXML_FOLDER);
+               } else {
+                  logger.info("Unknown destination on export");
+               }
+
+               logger.info("finished moving files");
+
+               session.setResultCode((moveWasSuccessfull) ? Process.Result.SUCCESS : Process.Result.ERROR);
+            } else {
+               logger.info("Either USB is not mounted or temporary folder doesn't exist.");
+               session.setResultCode(Process.Result.ERROR);
+               notifier.notifySessionError(session, ErrorCode.USB_REMOVED);
+               throw new SessionException(ErrorCode.USB_REMOVED);
+            }
+         }
+
+         if (tmpFolder.exists()) {
+            if (!UtilityHelper.deleteRecursively(tmpFolder)) {
+               logger.error("unable to delete temporary folder:{}", tmpFolder.getPath());
+            }
+         }
+
+         if (SessionUtil.isErroneous(session)) {
+            throw new SessionException(ErrorCode.PERFORM_ERROR);
+         }
+      } else if (extra != null && extra.isUsbExtra() && SessionUtil.isImportAction(session)) {
+         if (!Environment.getExternalStorageState().equals(MEDIA_MOUNTED)) {
+            logger.info("USB is not mounted, so throw error.");
+            session.setResultCode(Process.Result.ERROR);
+            notifier.notifySessionError(session, ErrorCode.USB_REMOVED);
+            throw new SessionException(ErrorCode.USB_REMOVED);
+         } else {
+            session.setResultCode(Process.Result.SUCCESS);
+         }
+      } else {
+         session.setResultCode(Process.Result.SUCCESS);
       }
    }
 
@@ -182,9 +287,11 @@ public class PerformOperationsTask extends SessionOperationTask<Void> {
 
          if (SessionUtil.isErroneous(session)) {
             statusSender.sendStatus("Error", exporting);
-         } else if (SessionUtil.isCancelled(session)) {
+         }
+         else if (SessionUtil.isCancelled(session)) {
             statusSender.sendCancelledStatus(exporting);
-         } else if (SessionUtil.isSuccessful(session)) {
+         }
+         else if (SessionUtil.isSuccessful(session)) {
             statusSender.sendSuccessfulStatus(exporting);
          }
 
@@ -311,9 +418,6 @@ public class PerformOperationsTask extends SessionOperationTask<Void> {
       boolean moveStatus = false;
       File source = new File(tempPath);
       File dest = new File(extra.getPath());
-      final String PFDATABASE_FOLDER =
-         UtilityHelper.CommonPaths.PATH_DESIGNATOR.getPathString() + formatManager.getFormat(UtilityHelper.CommonFormats.PFDATABASEFORMAT.getName()).getPath() +
-            UtilityHelper.CommonPaths.PATH_DESIGNATOR.getPathString();
       final String ISOXML_FOLDER = UtilityHelper.CommonPaths.PATH_DESIGNATOR.getPathString() + formatManager.getFormat(UtilityHelper.CommonFormats.ISOXMLFORMAT.getName()).getPath()
          + UtilityHelper.CommonPaths.PATH_DESIGNATOR.getPathString();
 
@@ -329,10 +433,10 @@ public class PerformOperationsTask extends SessionOperationTask<Void> {
       try {
          File[] fileList = source.listFiles();
          if (fileList != null) {
-            logger.info("start copy {} files", fileList.length);
-            copyFileorFolders(source.getPath(), extra.getPath());
+            logger.info("start moving {} files", fileList.length);
+            moveFileorFolders(source.getPath(), extra.getPath());
          }
-         logger.info("finished copy files");
+         logger.info("finished moving files");
          moveStatus = true;
       }
       catch (Exception e) {
@@ -345,14 +449,14 @@ public class PerformOperationsTask extends SessionOperationTask<Void> {
       return moveStatus;
    }
 
-   void copyFileorFolders(String srcFolder, String destFolder) throws IOException {
+   void moveFileorFolders(String srcFolder, String destFolder) throws IOException {
       File src = new File(srcFolder);
       File dest = new File(destFolder);
       if(src.isDirectory()) {
          String files[] = src.list();
          for (String file: files) {
             String srcFile = srcFolder + UtilityHelper.CommonPaths.PATH_DESIGNATOR.getPathString() + file;
-            copyFileorFolders(srcFile, destFolder);
+            moveFileorFolders(srcFile, destFolder);
          }
       }
       else{

@@ -32,6 +32,8 @@
             style="@style/ProgressBarSmall"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
+            android:paddingStart="@dimen/progress_bar_padding"
+            android:paddingEnd="@dimen/progress_bar_padding"
             cnh:useSmallResources="true"
             cnh:pbTitle="@string/loading_string"/>
 

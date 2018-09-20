@@ -113,6 +113,13 @@ public interface SessionContract {
        * @return true if DM service is connected
        */
       boolean isServiceConnected();
+
+      /**
+       * Return true if the cloud is available
+       *
+       * @return True if Cloud is available
+       */
+      boolean isCloudPresent();
    }
 
    interface SessionView {

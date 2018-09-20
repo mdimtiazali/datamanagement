@@ -21,11 +21,11 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             cnh:defaultPickListTextId="@string/product_mix_title_picklist_default_select"
-            cnh:isPickListSorted="true"
             cnh:headerText="@string/product_mix_title_usage"
             android:layout_marginBottom="@dimen/product_dialog_input_margin_top"/>
 
     <include layout="@layout/product_dialog_package_size"/>
     <include layout="@layout/product_dialog_density"/>
+    <include layout="@layout/advanced_product_information"/>
 
 </com.cnh.android.widget.control.CategoryButtons>

@@ -1,0 +1,232 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  ~ Copyright (C) 2016 CNH Industrial NV. All rights reserved.
+  ~
+  ~ This software contains proprietary information of CNH Industrial NV. Neither
+  ~ receipt nor possession thereof confers any right to reproduce, use, or
+  ~ disclose in whole or in part any such information without written
+  ~ authorization from CNH Industrial NV.
+  -->
+<resources>
+    <string name="app_name">Datenverwaltung</string>
+    <string name="tab_import">Import</string>
+    <string name="tab_import_test">Test-Import</string>
+    <string name="import_source">Importquelle</string>
+    <string name="destination">Ziel</string>
+    <string name="collapse_button_content_description">Taste „Minimieren“</string>
+    <string name="import_selected">Ausgewählter Import</string>
+    <string name="export_selected">Ausgewählter Export</string>
+    <string name="done">Fertig</string>
+    <string name="type">Typ:</string>
+    <string name="name">Name:</string>
+    <string name="target">Ziel</string>
+    <string name="select_target">Ziel auswählen</string>
+    <string name="copy_and_replace">Ersetzen</string>
+    <string name="dont_copy">Nicht kopieren</string>
+    <string name="keep_both">Beide behalten</string>
+    <string name="conflict">Konflikt</string>
+    <string name="new_id_title">Neue Kennung eingeben</string>
+    <string name="new_id_label">Neue Kennung:</string>
+    <string name="calculating_targets">Ziele werden berechnet</string>
+    <string name="checking_targets">Potenzielle Ziele werden geprüft...</string>
+    <string name="checking_conflicts">Konflikte werden geprüft...</string>
+    <string name="importing">Wird importiert...</string>
+    <string name="select_path">Pfad auswählen...</string>
+    <string name="continue_string">Weiter</string>
+    <string name="next">Weiter</string>
+
+    <string name="pfds">Landwirt/Betrieb/Feld</string>
+    <string name="vehicles">Fahrzeuge</string>
+    <string name="imps">Anbaugeräte</string>
+    <string name="prescriptions">Vorschriften</string>
+    <string name="tasks">Aufträge</string>
+    <string name="boundaries">Feldgrenzen</string>
+    <string name="obstacles">Hindernis</string>
+    <string name="guidance_groups">Spur</string>
+    <string name="guidance_patterns">Spurführungsmuster</string>
+    <string name="notes">Hinweise</string>
+
+    <string name="products">Erntegut</string>
+    <string name="product_mixes">Gemischtes Erntegut</string>
+    <string name="select_source">Importquelle auswählen</string>
+    <string name="import_drag_and_drop"><![CDATA[Drag & Drop \nzu Import \nzu PCM/Anzeige]]></string>
+    <string name="export_drag_and_drop"><![CDATA[Drag & Drop \nzu Export]]></string>
+    <string name="select_all">Alles auswählen</string>
+    <string formatted="false" name="x_of_y_format">%d von %d</string>
+    <string name="usb_string">USB</string>
+    <string name="display_string">Display</string>
+    <string name="display_numbered">Display %d</string>
+    <string name="display_named">Display %s</string>
+    <string name="select_string">Auswählen</string>
+    <string name="export_to">Ziel:</string>
+    <string name="export_format">Exportformat:</string>
+    <string name="tab_export">Exportieren</string>
+    <string name="percent_complete">% abgeschlossen</string>
+    <string name="loading_string">Wird geladen</string>
+    <string name="exporting_string">Exportieren</string>
+    <string name="importing_string">Importieren</string>
+    <string name="exporting_data">Export der Daten</string>
+    <string name="importing_data">Import der Daten</string>
+    <string name="select_source_first">Wählen Sie \nzuerst Ihre \nImportquelle</string>
+    <string name="no_import_source">Keine Gerät als Importquelle erkannt. \nPrüfen Sie die Geräteverbindung.</string>
+    <string name="deselect_all">Auswahl aufheben</string>
+    <string formatted="false" name="duplicate_file">Ein %s namens \„%s\“ ist bereits vorhanden</string>
+    <string name="existing_file">Vorhanden</string>
+    <string name="existing_file_typed">%s vorhanden</string>
+    <string name="new_file">Neu</string>
+    <string name="new_file_typed">%s neu</string>
+    <string name="data_conflict">Datenkonflikt</string>
+    <string name="rename_file">%s umbenennen</string>
+    <string name="file_name">Dateiname</string>
+    <string name="empty_discovery">Keine Daten gefunden</string>
+    <string name="export_cancel_confirmation">So brechen Sie den aktuellen Export ab.\nMöchten Sie fortfahren?</string>
+
+    <string name="format_description">ISOXML: \nAlle Dateien können als ISOXML exportiert werden. \n \nShapefile: \nVorschriften.</string>
+
+    <string name="error_no_data">Keine Daten</string>
+    <string name="error_no_source">Keine Quell-Datenquelle</string>
+    <string name="error_no_target">Keine Ziel-Datenquelle</string>
+    <string name="error_perform_ops">Fehler beim Ausführen des Vorgangs</string>
+    <string name="error_calculate_conflicts">Fehler beim Berechnen von Konflikten</string>
+    <string name="error_calculate_operations">Fehler beim Berechnen von Zielen</string>
+    <string name="error_discovery">Fehler beim Erkennen</string>
+    <string name="status_cancelled">Abgebr.</string>
+    <string name="status_cancelling">Abbrechen...</string>
+    <string name="status_successful">Erfolgreich</string>
+    <string name="status_starting">Wird gestartet...</string>
+    <string name="import_complete">Import abgeschlossen</string>
+    <string name="import_cancel">Import abgebrochen</string>
+    <string name="export_complete">Export abgeschlossen</string>
+    <string name="export_cancel">Export abgebrochen</string>
+
+    <string name="usb_data_available">USB-Daten verfügbar</string>
+    <string name="usb_no_data_available">Keine USB-Daten verfügbar</string>
+    <string name="usb_scanning">USB-Stick wird gescannt</string>
+
+    <string name="stop">Stopp</string>
+    <string name="status_progress">%1$s %2$d/%3$d</string>
+   <!-- starting here everything is used by the productlibrary-package -->
+   <string name="product_default_rate">Standardrate</string>
+    <string name="product_form">Formular</string>
+    <string name="product_name">Name</string>
+   <!-- Product Mix -->
+   <string name="product_mix_add_button_title">Hinzufüg.</string>
+    <string name="product_mix_default_text_edittext">Produktname</string>
+    <string name="product_mix_default_text_picklist">Erntegutform</string>
+    <string name="product_mix_search_hint">Produktmischung, Formular, Menge</string>
+    <string name="product_mix_subheader_total_mix">Gesamt: 0 Produktmischungen</string>
+    <plurals name="product_mix_subheader_total_mix_format">
+        <item quantity="zero">Gesamt: 0 Produktmischungen</item>
+        <item quantity="one">Gesamt: 1 Produktmischung</item>
+        <item quantity="other">Gesamt: %1$d Produktmischungen</item>
+    </plurals>
+    <string name="product_mix_title">Produktmischung</string>
+    <string name="product_mix_text_button_add_product_mix">Produktmischung hinzufügen +</string>
+    <string name="product_mix_title_dialog_add_product_mix">Produktmischung hinzufügen</string>
+    <string name="product_mix_title_dialog_edit_product_mix">Produktmischung bearbeiten</string>
+    <string name="product_mix_title_dialog_copy_product_mix">Produktmischung kopieren</string>
+    <string name="product_mix_title_add_new_product">Neues Produkt hinzufügen</string>
+    <string name="product_mix_title_add_new_carrier">Neuen Halter hinzufügen</string>
+    <string name="product_mix_text_button_remove">Entfernen x</string>
+    <string name="product_mix_text_button_add_more">Weitere hinzufügen +</string>
+    <string name="product_mix_title_category_button_title_mix_products">Mischprodukte</string>
+    <string name="product_mix_title_name">Name der Produktmischung</string>
+    <string name="product_mix_title_carrier">Halter</string>
+    <string name="product_mix_title_total_mix_amount">Mischgesamtmenge</string>
+    <string name="product_mix_title_carrier_amount">Haltermenge</string>
+    <string name="product_mix_title_mix_products">Mischprodukte</string>
+    <string name="product_mix_title_product">Produkt %1$d</string>
+    <string name="product_mix_title_product_amount">Menge</string>
+    <string name="product_mix_title_units">Maschinen</string>
+    <string name="product_mix_title_application_rates">Ausbringungsmengen</string>
+    <string name="product_mix_title_application_rate_1">Ausbringungsmenge 1 (Standard)</string>
+    <string name="product_mix_title_application_rate_2">Ausbringungsmenge 2</string>
+    <string name="product_mix_title_application_rate_1_short">Menge 1</string>
+    <string name="product_mix_title_application_rate_2_short">Menge 2</string>
+    <string name="product_mix_title_application_rate_1_short_point">Menge 1:</string>
+    <string name="product_mix_title_application_rate_2_short_point">Menge 2:</string>
+    <string name="product_mix_title_min_application_rate">Min. Ausbringungsmenge</string>
+    <string name="product_mix_title_max_application_rate">Max. Ausbringungsmenge</string>
+    <string name="product_mix_title_delta_application_rate">Ausbringungsmengenänderung</string>
+    <string name="product_mix_title_application_rates_per_product">Ausbringungsmenge je Hektar:</string>
+    <string name="product_mix_title_products">Erntegut</string>
+    <string name="product_mix_title_advanced">Erweitert</string>
+    <string name="product_mix_title_usage">Verwendung</string>
+    <string name="product_mix_title_package_size">Verpackungsgröße</string>
+    <string name="product_mix_title_package_size_units">Verpackungsgrößeneinheiten</string>
+    <string name="product_mix_title_density">Dichte</string>
+    <string name="product_mix_title_density_unit">Dichte Einheiten</string>
+    <string name="product_mix_title_picklist_default_select">Auswählen</string>
+    <string name="product_mix_title_product_mix_form">Formular Produktmischung</string>
+    <string name="product_mix_unittext_default_text">--.-</string>
+
+    <string name="product_text_bulk_fill_fan_delta_label">Schüttgutschritt:</string>
+    <string name="product_text_bulk_fill_fan_rate_label">Schüttgutmenge:</string>
+    <string name="product_text_density_label">Dichte:</string>
+    <string name="product_text_density_units_label">Dichteeinheiten:</string>
+    <string name="product_text_package_label">Verpackungsgröße:</string>
+    <string name="product_text_rate_delta_label">Änderungsmenge:</string>
+    <string name="product_text_rate_min_label">Min. Austragungsmenge:</string>
+    <string name="product_text_rate_max_label">Max. Austragungsmenge:</string>
+    <string name="product_text_rate_one_label">Menge 1:</string>
+    <string name="product_text_rate_two_label">Menge 2:</string>
+    <string name="product_text_vacuum_fan_delta_label">Vak. Schritt:</string>
+    <string name="product_text_vacuum_fan_rate_label">Vak. Rate:</string>
+
+    <string name="product_section_header">Erntegut</string>
+    <string name="product_section_subheader">Gesamt: 0 Produkte</string>
+    <plurals name="product_section_subheader_format">
+        <item quantity="zero">Gesamt: 0 Produkte</item>
+        <item quantity="one">Gesamt: 1 Produkt</item>
+        <item quantity="other">Gesamt: %1$d Produkte</item>
+    </plurals>
+    <string name="product_search_hint">Produkt, Formular, Menge</string>
+
+    <string name="tab_product_library">Produktbibliothek</string>
+    <string name="create_product_button">Produkt hinzufügen +</string>
+    <string name="no_available_products">Sie haben keine Produkte hinzugefügt</string>
+    <string name="add_product_instructions">Fügen Sie ein Produkt mithilfe der Taste \„Produkt hinzufügen\“ oben hinzu.</string>
+    <string name="add_product_mix_instructions">Fügen Sie eine Produktmischung mithilfe der Schaltfläche \„Produktmischung hinzufügen\“ oben hinzu.</string>
+
+    <string name="unit_gal_per_acre">Gal/ac</string>
+
+    <string name="delete_dialog_confirm_button_text">Löschen</string>
+    <string name="delete_product_dialog_body_text">Damit werden dieses Produkt und seine Einstellungen dauerhaft gelöscht.</string>
+
+    <string name="alert_title">Achtung</string>
+    <string name="alert_dismiss">Schließen</string>
+    <string name="alert_in_use">Dieses Produkt wird derzeit von einer Steuerung verwendet.</string>
+
+    <string name="variety_title">Sorten</string>
+    <string name="variety_section_subheader">Gesamt: 0 Sorten</string>
+    <plurals name="variety_section_subheader_format">
+        <item quantity="zero">Gesamt: 0 Sorten</item>
+        <item quantity="one">Gesamt: 1 Sorte</item>
+        <item quantity="other">Gesamt: %1$d Sorten</item>
+    </plurals>
+    <string name="variety_button_add_text">Sorte hinzufügen +</string>
+    <string name="variety_add_dialog_title_text">Sorte hinzufügen</string>
+    <string name="variety_add_or_edit_dialog_crop_type_header_text">Ernteguttyp</string>
+    <string name="variety_add_or_edit_dialog_name_header_text">Name</string>
+    <string name="variety_delete_dialog_delete_title_text">Sorte löschen</string>
+    <string name="variety_delete_dialog_body_text_delete_allowed">Damit werden diese Sorte und ihre Einstellungen dauerhaft gelöscht.</string>
+    <string name="variety_dialog_cancel_button_text">Abbrechen</string>
+    <string name="variety_dialog_save_button_text">Speichern</string>
+    <string name="variety_edit_dialog_title">Sorte bearbeiten</string>
+    <string name="variety_instruction_add">Fügen Sie eine Sorte mithilfe der Taste \„Sorte hinzufügen\“ oben hinzu.</string>
+    <string name="variety_list_header_crop_type_text">ERNTEGUTTYP</string>
+    <string name="variety_list_header_color">FARBE</string>
+    <string name="variety_list_header_name_text">NAME</string>
+    <string name="variety_not_available">Sie haben keine Sorten hinzugefügt</string>
+    <string name="variety_search_hint">Sorte, Ernteguttyp</string>
+    <string name="tab_management">Verwaltung</string>
+    <string name="edit_field_name">Name</string>
+    <string name="edit_dialog_header">Namen ändern</string>
+    <string name="edit_dialog_save">Speichern</string>
+    <string name="edit_dialog_cancel">Abbrechen</string>
+    <string name="tab_mng_none_header">Wählen Sie die Elemente aus, die Sie bearbeiten, kopieren oder löschen möchten.</string>
+    <string name="tab_mng_items_header">%1$D Element(e) ausgewählt</string>
+   <!-- end of productlibrary-package usage -->
+   <string name="edit_name_warning">Ein Element mit diesem Namen ist bereits vorhanden. Bitte wählen Sie einen anderen Namen.</string>
+    <string name="edit_update_title">Element wird aktualisiert</string>
+</resources>

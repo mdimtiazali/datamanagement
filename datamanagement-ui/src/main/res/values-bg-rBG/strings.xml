@@ -1,0 +1,232 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  ~ Copyright (C) 2016 CNH Industrial NV. All rights reserved.
+  ~
+  ~ This software contains proprietary information of CNH Industrial NV. Neither
+  ~ receipt nor possession thereof confers any right to reproduce, use, or
+  ~ disclose in whole or in part any such information without written
+  ~ authorization from CNH Industrial NV.
+  -->
+<resources>
+    <string name="app_name">Управление на данни</string>
+    <string name="tab_import">Импортиране</string>
+    <string name="tab_import_test">Тест за импортиране</string>
+    <string name="import_source">Източник на импортиране</string>
+    <string name="destination">Дестинация</string>
+    <string name="collapse_button_content_description">Бутон за свиване</string>
+    <string name="import_selected">Материал за импорт. избран</string>
+    <string name="export_selected">Материал за експорт. избран</string>
+    <string name="done">Готово</string>
+    <string name="type">Тип:</string>
+    <string name="name">Име:</string>
+    <string name="target">Цел</string>
+    <string name="select_target">Изберете цел</string>
+    <string name="copy_and_replace">Сменете</string>
+    <string name="dont_copy">Не копирайте</string>
+    <string name="keep_both">Запазете двете</string>
+    <string name="conflict">Конфликт</string>
+    <string name="new_id_title">Във. нов идентификатор</string>
+    <string name="new_id_label">Нов идентификатор:</string>
+    <string name="calculating_targets">Калкулиране на целите</string>
+    <string name="checking_targets">Проверка на потенц. цели...</string>
+    <string name="checking_conflicts">Проверка за конфликти...</string>
+    <string name="importing">Импортиране...</string>
+    <string name="select_path">Изберете път...</string>
+    <string name="continue_string">Продължение</string>
+    <string name="next">Напред</string>
+
+    <string name="pfds">Фермер / Стопанство / Поле</string>
+    <string name="vehicles">Машини</string>
+    <string name="imps">Работни машини</string>
+    <string name="prescriptions">Предписания</string>
+    <string name="tasks">Задачи</string>
+    <string name="boundaries">Граници</string>
+    <string name="obstacles">Препятствия</string>
+    <string name="guidance_groups">Откоси</string>
+    <string name="guidance_patterns">Форми на водене</string>
+    <string name="notes">Бележки</string>
+
+    <string name="products">Продукти</string>
+    <string name="product_mixes">Смеси на продукти</string>
+    <string name="select_source">Изберете източник на импорт.</string>
+    <string name="import_drag_and_drop"><![CDATA[Плъзнете и пуснете \nза импортиране \nв PCM/дисплея]]></string>
+    <string name="export_drag_and_drop"><![CDATA[Плъзнете и пуснете \nза експорт.]]></string>
+    <string name="select_all">Избор на всичко</string>
+    <string formatted="false" name="x_of_y_format">%d от %d</string>
+    <string name="usb_string">USB</string>
+    <string name="display_string">Дисплей</string>
+    <string name="display_numbered">Дисплей %d</string>
+    <string name="display_named">Дисплей %s</string>
+    <string name="select_string">Изберете</string>
+    <string name="export_to">Дестинация:</string>
+    <string name="export_format">Формат на експортиране:</string>
+    <string name="tab_export">Експортиране</string>
+    <string name="percent_complete">% завършени</string>
+    <string name="loading_string">Зареждане</string>
+    <string name="exporting_string">Експортиране</string>
+    <string name="importing_string">Импортиране</string>
+    <string name="exporting_data">Експортиране на данни</string>
+    <string name="importing_data">Импортиране на данни</string>
+    <string name="select_source_first">За да започнете, \nизберете най-напред \nизточник на импортиране</string>
+    <string name="no_import_source">Не е открито устройство-източник на импортиране. \nПроверете връзката на устройството.</string>
+    <string name="deselect_all">Отм. избора на всичко</string>
+    <string formatted="false" name="duplicate_file">%s с име \"%s\" вече съществува</string>
+    <string name="existing_file">Съществуващо</string>
+    <string name="existing_file_typed">Съществува %s</string>
+    <string name="new_file">Нов</string>
+    <string name="new_file_typed">Нов %s</string>
+    <string name="data_conflict">Конфликт в данните</string>
+    <string name="rename_file">Преименуване на %s</string>
+    <string name="file_name">Име на файл</string>
+    <string name="empty_discovery">Не са открити данни</string>
+    <string name="export_cancel_confirmation">Това ще отмени текущото експортиране.\nИскате ли да продължите?</string>
+
+    <string name="format_description">ISOXML: \nВсички файлове могат да се експортират във формат ISOXML. \n \nShapefile: \nПредписания.</string>
+
+    <string name="error_no_data">Няма данни</string>
+    <string name="error_no_source">Няма изт. на данни в източника</string>
+    <string name="error_no_target">Няма изт. на данни в целта</string>
+    <string name="error_perform_ops">Грешка в изп. на операцията</string>
+    <string name="error_calculate_conflicts">Грешка в калк. на конфликтите</string>
+    <string name="error_calculate_operations">Грешка в калкулиране на целите</string>
+    <string name="error_discovery">Грешка в откриването</string>
+    <string name="status_cancelled">Отменено</string>
+    <string name="status_cancelling">Отменяне...</string>
+    <string name="status_successful">Успешно</string>
+    <string name="status_starting">Започване...</string>
+    <string name="import_complete">Импорт. е завършено</string>
+    <string name="import_cancel">Импорт. е отменено</string>
+    <string name="export_complete">Експорт. е завършено</string>
+    <string name="export_cancel">Експорт. е отменено</string>
+
+    <string name="usb_data_available">Налични са USB данни</string>
+    <string name="usb_no_data_available">Няма налични USB данни</string>
+    <string name="usb_scanning">Сканиране на USB стик...</string>
+
+    <string name="stop">Стоп</string>
+    <string name="status_progress">%1$s %2$d/%3$d</string>
+   <!-- starting here everything is used by the productlibrary-package -->
+   <string name="product_default_rate">Норма подразб.</string>
+    <string name="product_form">Форма</string>
+    <string name="product_name">Име</string>
+   <!-- Product Mix -->
+   <string name="product_mix_add_button_title">Добавяне</string>
+    <string name="product_mix_default_text_edittext">Име на продукта</string>
+    <string name="product_mix_default_text_picklist">Форма на продукта</string>
+    <string name="product_mix_search_hint">Смес, форма, норма на продукта</string>
+    <string name="product_mix_subheader_total_mix">Общо: 0 смеси на продукти</string>
+    <plurals name="product_mix_subheader_total_mix_format">
+        <item quantity="zero">Общо: 0 смеси на продукти</item>
+        <item quantity="one">Общо: 1 смес на продукти</item>
+        <item quantity="other">Общо: %1$d смеси на продукти</item>
+    </plurals>
+    <string name="product_mix_title">Смес на продукта</string>
+    <string name="product_mix_text_button_add_product_mix">Добавяне смес на прод. +</string>
+    <string name="product_mix_title_dialog_add_product_mix">Добавяне смес на прод.</string>
+    <string name="product_mix_title_dialog_edit_product_mix">Редактиране смес на прод.</string>
+    <string name="product_mix_title_dialog_copy_product_mix">Копиране смес на прод.</string>
+    <string name="product_mix_title_add_new_product">Добавяне нов продукт +</string>
+    <string name="product_mix_title_add_new_carrier">Добавяне нов носител +</string>
+    <string name="product_mix_text_button_remove">Премахване x</string>
+    <string name="product_mix_text_button_add_more">Добав. на още +</string>
+    <string name="product_mix_title_category_button_title_mix_products">Смес на продукти</string>
+    <string name="product_mix_title_name">Име за смес на продукти</string>
+    <string name="product_mix_title_carrier">Носител</string>
+    <string name="product_mix_title_total_mix_amount">Общо кол. смес</string>
+    <string name="product_mix_title_carrier_amount">Количество на носителя</string>
+    <string name="product_mix_title_mix_products">Смес на продукти</string>
+    <string name="product_mix_title_product">Продукт %1$d</string>
+    <string name="product_mix_title_product_amount">Количество</string>
+    <string name="product_mix_title_units">Единици</string>
+    <string name="product_mix_title_application_rates">Норми на прилагане</string>
+    <string name="product_mix_title_application_rate_1">Норма на прилагане 1 (по подразб.)</string>
+    <string name="product_mix_title_application_rate_2">Норма на прилагане 2</string>
+    <string name="product_mix_title_application_rate_1_short">Норма на пр. 1</string>
+    <string name="product_mix_title_application_rate_2_short">Норма на пр. 2</string>
+    <string name="product_mix_title_application_rate_1_short_point">Норма на пр. 1:</string>
+    <string name="product_mix_title_application_rate_2_short_point">Норма на пр. 2:</string>
+    <string name="product_mix_title_min_application_rate">Мин. норма прил.</string>
+    <string name="product_mix_title_max_application_rate">Макс. норма прил.</string>
+    <string name="product_mix_title_delta_application_rate">Делта норма прил.</string>
+    <string name="product_mix_title_application_rates_per_product">Норми на прилагане за продукт</string>
+    <string name="product_mix_title_products">Продукти</string>
+    <string name="product_mix_title_advanced">Разширен</string>
+    <string name="product_mix_title_usage">Употреба</string>
+    <string name="product_mix_title_package_size">Размер на опаковката</string>
+    <string name="product_mix_title_package_size_units">Единици за размер опак.</string>
+    <string name="product_mix_title_density">Плътност</string>
+    <string name="product_mix_title_density_unit">Единици за плътност</string>
+    <string name="product_mix_title_picklist_default_select">Изберете</string>
+    <string name="product_mix_title_product_mix_form">Форма на смес на прод.</string>
+    <string name="product_mix_unittext_default_text">--,-</string>
+
+    <string name="product_text_bulk_fill_fan_delta_label">Стъпка насипв.:</string>
+    <string name="product_text_bulk_fill_fan_rate_label">Норма насип.:</string>
+    <string name="product_text_density_label">Плътност:</string>
+    <string name="product_text_density_units_label">Единици за плътност:</string>
+    <string name="product_text_package_label">Размер на опаковката:</string>
+    <string name="product_text_rate_delta_label">Делта норма:</string>
+    <string name="product_text_rate_min_label">Мин. норма на пр.:</string>
+    <string name="product_text_rate_max_label">Макс. норма на пр.:</string>
+    <string name="product_text_rate_one_label">Норма на пр. 1:</string>
+    <string name="product_text_rate_two_label">Норма на пр. 2:</string>
+    <string name="product_text_vacuum_fan_delta_label">Стъпка на вак:</string>
+    <string name="product_text_vacuum_fan_rate_label">Норма на вак.:</string>
+
+    <string name="product_section_header">Продукти</string>
+    <string name="product_section_subheader">Общо: 0 продукта</string>
+    <plurals name="product_section_subheader_format">
+        <item quantity="zero">Общо: 0 продукта</item>
+        <item quantity="one">Общо: 1 продукт</item>
+        <item quantity="other">Общо: %1$d продукта</item>
+    </plurals>
+    <string name="product_search_hint">Продукт, форма, норма</string>
+
+    <string name="tab_product_library">Библиотека на прод.</string>
+    <string name="create_product_button">Добав. на продукт +</string>
+    <string name="no_available_products">Нямате добавени продукти.</string>
+    <string name="add_product_instructions">Добавяне на продукт чрез горния бутон \"Добави продукт\".</string>
+    <string name="add_product_mix_instructions">Доб. на смес на продукти чрез горния бутон \"Добави смес на продукти\".</string>
+
+    <string name="unit_gal_per_acre">гал/акър</string>
+
+    <string name="delete_dialog_confirm_button_text">Изтрий</string>
+    <string name="delete_product_dialog_body_text">Това ще изтрие окончателно този продукт и настройките му.</string>
+
+    <string name="alert_title">Предупреждение</string>
+    <string name="alert_dismiss">Отменяне</string>
+    <string name="alert_in_use">Този продукт се използва в момента от контролер.</string>
+
+    <string name="variety_title">Сортове</string>
+    <string name="variety_section_subheader">Общо: 0 сорта</string>
+    <plurals name="variety_section_subheader_format">
+        <item quantity="zero">Общо: 0 сорта</item>
+        <item quantity="one">Общо: 1 сорт</item>
+        <item quantity="other">Общо: %1$d сорта</item>
+    </plurals>
+    <string name="variety_button_add_text">Добавете сорт +</string>
+    <string name="variety_add_dialog_title_text">Добавете сорт</string>
+    <string name="variety_add_or_edit_dialog_crop_type_header_text">Тип култура</string>
+    <string name="variety_add_or_edit_dialog_name_header_text">Име</string>
+    <string name="variety_delete_dialog_delete_title_text">Изтриване на сорта</string>
+    <string name="variety_delete_dialog_body_text_delete_allowed">Това ще изтрие окончателно този сорт и настройките му.</string>
+    <string name="variety_dialog_cancel_button_text">Отмяна</string>
+    <string name="variety_dialog_save_button_text">Запазване</string>
+    <string name="variety_edit_dialog_title">Редактиране на сорт</string>
+    <string name="variety_instruction_add">Добавяне на сорт чрез горния бутон \"Добави сорт\".</string>
+    <string name="variety_list_header_crop_type_text">ТИП КУЛТУРА</string>
+    <string name="variety_list_header_color">ЦВЯТ</string>
+    <string name="variety_list_header_name_text">НАИМЕНОВАНИЕ</string>
+    <string name="variety_not_available">Не сте добавили сортове.</string>
+    <string name="variety_search_hint">Сорт, тип култура</string>
+    <string name="tab_management">Управление</string>
+    <string name="edit_field_name">Име</string>
+    <string name="edit_dialog_header">Редактиране на име</string>
+    <string name="edit_dialog_save">Запази</string>
+    <string name="edit_dialog_cancel">Отмяна</string>
+    <string name="tab_mng_none_header">Изберете елементи за ред., копиране или изтриване</string>
+    <string name="tab_mng_items_header">%1$d елемент(а) са избрани</string>
+   <!-- end of productlibrary-package usage -->
+   <string name="edit_name_warning">Елемент с това име вече съществува. Изберете различно име</string>
+    <string name="edit_update_title">Актуализиране на елемента</string>
+</resources>

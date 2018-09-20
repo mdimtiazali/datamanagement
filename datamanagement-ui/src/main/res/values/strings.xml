@@ -56,7 +56,7 @@
     <string name="product_mixes">Product Mixes</string>
     <string name="varieties">Varieties</string>
     <string name="select_source">Select Import Source</string>
-    <string name="import_drag_and_drop"><![CDATA[Drag & Drop \nto Import \nto PCM/Display]]></string>
+    <string name="import_drag_and_drop"><![CDATA[Drag & Drop\nto Import\nto Vehicle]]></string>
     <string name="export_drag_and_drop"><![CDATA[Drag & Drop \nto Export]]></string>
     <string name="select_all">Select All</string>
     <string formatted="false" name="x_of_y_format">%d of %d</string>
@@ -89,21 +89,7 @@
     <string name="export_cancel_confirmation">This will cancel current export.\nDo you want to proceed?</string>
     <string name="import_cancel_confirmation">This will cancel current import.\nDo you want to proceed?</string>
     <string name="format_description_title">Export Formats</string>
-    <string name="format_description">ISOXML:
-        \n- Grower, Farm, Field, and Task Folders
-        \n- Task Data:
-        \n\t\t- AsApplied Logs
-        \n\t\t- Harvest Logs
-        \n\t\t- Coverage Logs
-        \n\t\t- Trip Computer Logs
-        \n- Products, Varieties, and Product Mixes
-        \n- Variety Maps
-        \n- Prescriptions
-        \n- Guidance Lines (Except Field and Multi-Swaths)
-        \n- Boundaries
-        \n- Landmarks:
-        \n\t\t- Point, Line, and Area Features
-    </string>
+    <string name="format_description">ISOXML is the only format available. All files can\nbe exported in ISOXML.</string>
     <string name="destination_title">Supported Export Destinations:</string>
     <string name="case_destination_info">Please select the proper destination to ensure the export file structure is
         compatible with the destination file structure.
@@ -139,15 +125,17 @@
     <string name="error_calculate_conflicts">Calculate Conflicts Error</string>
     <string name="error_calculate_operations">Calculate Targets Error</string>
     <string name="error_discovery">Discovery Error</string>
-    <string name="error_drag_drop">Select destination and/or format</string>
+    <string name="error_drag_drop">Please select destination.</string>
     <string name="error_usb_removal">USB Removal Error</string>
     <string name="status_cancelled">Cancelled</string>
     <string name="status_cancelling">Cancelling...</string>
     <string name="status_successful">Successful</string>
     <string name="status_starting">Starting...</string>
     <string name="import_complete">Import Completed</string>
+    <string name="import_complete_left_layout">Import\nCompleted</string>
     <string name="import_cancel">Import Cancelled</string>
     <string name="export_complete">Export Completed</string>
+    <string name="export_complete_left_layout">Export\nCompleted</string>
     <string name="export_cancel">Export Cancelled</string>
     <string name="export_in_progress">Export in Progress</string>
     <string name="import_in_progress">Import in Progress</string>
@@ -267,6 +255,10 @@
     <string name="delete_dialog_confirm_button_text">Delete</string>
     <string name="delete_product_dialog_body_text">This will permanently delete this product and its settings.</string>
     <string name="undelete_objects_headline">The followings cannot be deleted</string>
+    <plurals name="delete_complete">
+        <item quantity="one">1 item deleted</item>
+        <item quantity="other">%1$d items deleted</item>
+    </plurals>
     <string name="alert_title">Alert</string>
     <string name="alert_dismiss">Dismiss</string>
     <string name="alert_in_use">This product is currently in use by a controller.</string>
@@ -307,7 +299,7 @@
         <item quantity="other">%1$d Items Selected</item>
     </plurals>
     <!-- end of productlibrary-package usage -->
-    <string name="edit_name_warning">The item with this name already exists. Please choose a different name</string>
+    <string name="edit_name_warning">Duplicate Entry Found.\nPlease Enter New Input</string>
     <string name="edit_update_title">Updating item</string>
     <string name="edit_update_content">In progress ...</string>
     <string name="copy_paste_update_content">In progress ...</string>
@@ -324,7 +316,6 @@
     <string name="case_pro700_usb">USB for Pro 700</string>
     <string name="case_desktopsw_usb">USB for Desktop Software</string>
     <string name="case_cloud_connect_outbox">AFS Connect</string>
-    <string name="case_cloud_connect_inbox">AFS Connect / INBOX</string>
     <string name="case_display">Display</string>
     <string name="case_internal">Internal</string>
 
@@ -333,7 +324,6 @@
     <string name="new_holland_intelli4_usb">USB for Intelliview IV</string>
     <string name="new_holland_desktopsw_usb">USB for Desktop Software</string>
     <string name="new_holland_cloud_connect_outbox">PLM Connect</string>
-    <string name="new_holland_cloud_connect_inbox">PLM Connect / INBOX</string>
     <string name="new_holland_display">Display</string>
     <string name="new_holland_internal">Internal</string>
 
@@ -341,8 +331,7 @@
     <string name="steyr_8_usb">USB for Steyr 8</string>
     <string name="steyr_4_usb">USB for Steyr 7</string>
     <string name="steyr_desktopsw_usb">USB for Desktop Software</string>
-    <string name="steyr_cloud_connect_outbox">Cloud Connect / OUTBOX</string>
-    <string name="steyr_cloud_connect_inbox">Cloud Connect / INBOX</string>
+    <string name="steyr_cloud_connect_outbox">Cloud Connect</string>
     <string name="steyr_display">Display</string>
     <string name="steyr_internal">Internal</string>
 
@@ -350,8 +339,7 @@
     <string name="generic_tractor_8_usb">USB for 800</string>
     <string name="generic_tractor_4_usb">USB for 700</string>
     <string name="generic_tractor_desktopsw_usb">USB for Desktop Software</string>
-    <string name="generic_tractor_cloud_connect_outbox">Cloud Connect / OUTBOX</string>
-    <string name="generic_tractor_cloud_connect_inbox">Cloud Connect / INBOX</string>
+    <string name="generic_tractor_cloud_connect_outbox">Cloud Connect</string>
     <string name="generic_tractor_display">Display</string>
     <string name="generic_tractor_internal">Internal</string>
 
@@ -365,11 +353,24 @@
     <string name="copy_paste_header">Copying <![CDATA[<b><font color=#006ab1>&quot;%1$s&quot;</font></b>]]>
         <![CDATA[<br/>]]> Please select a desired destination.
     </string>
-
+    <string name="copy">Copy</string>
+    <string name="cp_complete_content">Copied to \"%1$s\":</string>
     <string name="import_conflict_dialog_textual_process_feedback_text" formatted="false">%d of %d</string>
     <string name="import_conflict_dialog_reuse_action_text">Reuse action for all remaining naming conflicts</string>
     <string name="import_conflict_dialog_existing_field_text">Existing Field</string>
     <string name="import_conflict_dialog_new_field_text">New Field</string>
+    <string name="import_select_source_dialog_introduction">Please select the folder that contains the desired
+        files.\nYou can select only one folder at a time.
+    </string>
+    <string name="import_cloud_inbox">Inbox</string>
+
+    <!-- Advanced Product Information -->
+    <string name="advanced_product_information_toggle_button_yes">Yes</string>
+    <string name="advanced_product_information_toggle_button_no">No</string>
+    <string name="advanced_product_information_buffer_distance_in_ft">ft</string>
+    <string name="advanced_product_information_max_wind_speed_in_mph">mph</string>
+    <string name="advanced_product_information_buffer_distance_in_mts">mts</string>
+    <string name="advanced_product_information_max_wind_speed_in_kph">kph</string>
 
 </resources>
 

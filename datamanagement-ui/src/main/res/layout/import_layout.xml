@@ -34,6 +34,13 @@
             android:layout_width="0dp"
             android:layout_height="match_parent">
 
+
+        <com.cnh.android.pf.widget.view.DisabledOverlay
+                android:id="@+id/tree_loading_overlay"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"/>
+
+
         <LinearLayout
                 android:layout_width="match_parent"
                 android:layout_height="match_parent"
@@ -73,8 +80,9 @@
                     android:id="@+id/start_text"
                     android:layout_width="match_parent"
                     android:layout_height="match_parent"
-                    android:gravity="center"
-                    style="@style/TextAppearance.Import.Entity"
+                    android:paddingTop="@dimen/import_select_source_first_text_padding_top"
+                    android:gravity="center_horizontal"
+                    style="@style/TextAppearance.Import.SelectSourceFirst"
                     android:text="@string/select_source_first"/>
             <ImageButton android:id="@+id/dm_refresh"
                          android:layout_height="wrap_content"
@@ -86,6 +94,7 @@
                          android:background="@android:color/transparent"
                          android:visibility="gone"/>
             <pl.polidea.treeview.TreeViewList
+                    style="@style/DataManagementTreeViewStyle"
                     android:id="@+id/tree_view_list"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
@@ -93,19 +102,8 @@
                     android:layout_marginTop="16dp"
                     android:layout_marginRight="10dp"
                     android:visibility="gone"
-                    android:choiceMode="none"
-                    android:dividerHeight="8dp"
                     android:divider="@android:color/transparent"
-                    cnh:indent_width="18dp"
-                    cnh:row_background="@drawable/complex_selector_background"
-                    cnh:indicator_background="@android:color/transparent"
-                    cnh:indicator_gravity="center_vertical|right"
-                    cnh:src_collapsed="@drawable/ic_action_expand"
-                    cnh:src_expanded="@drawable/ic_action_collapse"
-                    cnh:collapsible="true"
-                    cnh:draw_line="true"
-                    cnh:line_color="@color/tree_line"
-                    cnh:line_width="2dp"/>
+                    cnh:row_background="@drawable/complex_selector_background"/>
         </LinearLayout>
 
         <com.cnh.pf.android.data.management.helper.DataExchangeProcessOverlay

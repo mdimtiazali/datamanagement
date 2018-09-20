@@ -9,6 +9,7 @@
 package com.cnh.pf.android.data.management;
 
 import static com.cnh.pf.android.data.management.session.Session.Type.DISCOVERY;
+
 import static org.hamcrest.core.Is.is;
 import static org.hamcrest.core.IsNull.notNullValue;
 import static org.junit.Assert.assertEquals;
@@ -31,6 +32,9 @@ import android.view.View;
 
 import com.cnh.android.widget.activity.TabActivity;
 import com.cnh.android.widget.control.PickList;
+import com.cnh.autoguidance.boundary.BoundaryItem;
+import com.cnh.autoguidance.boundary.LandmarkItem;
+import com.cnh.autoguidance.model.GuidanceGroup;
 import com.cnh.jgroups.DataTypes;
 import com.cnh.jgroups.ObjectGraph;
 import com.cnh.pf.android.data.management.adapter.ObjectTreeViewAdapter;
@@ -42,12 +46,15 @@ import com.cnh.pf.android.data.management.productlibrary.views.AddOrEditVarietyD
 import com.cnh.pf.android.data.management.service.DataManagementService;
 import com.cnh.pf.android.data.management.session.Session;
 import com.cnh.pf.android.data.management.session.SessionExtra;
+import com.cnh.pf.model.pfds.*;
 import com.cnh.pf.model.product.configuration.Variety;
 import com.cnh.pf.model.product.library.CropType;
+import com.cnh.pf.model.product.library.Product;
+import com.google.common.base.Strings;
+import com.google.common.io.Files;
 import com.google.inject.Key;
 import com.google.inject.name.Names;
 
-import java.io.File;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
@@ -63,10 +70,16 @@ import org.robolectric.annotation.Config;
 import org.robolectric.util.ActivityController;
 import org.xmlpull.v1.XmlPullParserException;
 
+import java.io.File;
 import java.io.IOException;
+import java.text.ParseException;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
+import java.util.HashMap;
 import java.util.Set;
+import java.util.UUID;
+import java.util.regex.Matcher;
 
 import roboguice.RoboGuice;
 import roboguice.config.DefaultRoboModule;
@@ -79,10 +92,10 @@ import roboguice.event.EventManager;
 @RunWith(RobolectricMavenTestRunner.class)
 @Config(manifest = "src/main/AndroidManifest.xml", application = TestApp.class)
 public class DataManagementUITest {
-   private static int MANAGE_SOURCE_TAB_POSITION = 0;
-   private static int IMPORT_SOURCE_TAB_POSITION = 1;
-   private static int EXPORT_SOURCE_TAB_POSITION = 2;
-   private static int PRODUCT_LIBRARY_TAB_POSITION = 3;
+   protected static int MANAGE_SOURCE_TAB_POSITION = 0;
+   protected static int IMPORT_SOURCE_TAB_POSITION = 1;
+   protected static int EXPORT_SOURCE_TAB_POSITION = 2;
+   protected static int PRODUCT_LIBRARY_TAB_POSITION = 3;
 
    ActivityController<DataManagementActivity> controller;
    DataManagementActivity activity;
@@ -129,10 +142,6 @@ public class DataManagementUITest {
       assertTrue("xml specifies isoxml format", formats.contains("ISOXML"));
       assertTrue("isoxml supporrts customery type", parser.formatSupportsType("ISOXML", DataTypes.GROWER));
       assertFalse("isoxml does not support VEHICLE type", parser.formatSupportsType("ISOXML", "VEHICLE"));
-      assertTrue("xml specifies cnh format", formats.contains("PF Database"));
-      assertTrue("cnh supports vehicle type", parser.formatSupportsType("PF Database", "VEHICLE"));
-      assertTrue("cnh does not support customer type", parser.formatSupportsType("PF Database", DataTypes.GROWER));
-      assertFalse("cnh does not support prescription type", parser.formatSupportsType("PF Database", DataTypes.RX));
    }
 
    @Test
@@ -156,7 +165,6 @@ public class DataManagementUITest {
       assertThat(manageFragment.getTreeAdapter(), is(notNullValue()));
       assertThat(manageFragment.getTreeAdapter().getCount() > 0, is(true));
    }
-
 
    @Test
    public void testISOSupport() throws RemoteException {
@@ -296,5 +304,99 @@ public class DataManagementUITest {
       //verifying method calls in the ImportSourceDialog class
       verify(importSourceDialog).getCurrentExtra();
       verify(importSourceDialog).checkUSBType();
+   }
+
+   @Test
+   public void testDynamicUITree() throws RemoteException {
+      activateTab(MANAGE_SOURCE_TAB_POSITION);
+      final ManageFragment manageFragment = (ManageFragment) ((TabActivity) activity).getFragmentManager().findFragmentByTag("Data Management");
+      BaseDataFragment.setDsPerfFlag(true);
+      final Session session = new Session();
+      session.setType(Session.Type.DISCOVERY);
+      session.setAction(Session.Action.MANAGE);
+      doAnswer(new Answer<Void>() {
+         @Override
+         public Void answer(InvocationOnMock invocation) throws Throwable {
+            session.setObjectData(getAllKindOfData());
+            manageFragment.onMyselfSessionSuccess(session);
+            return null;
+         }
+      }).when(service).processSession(any(Session.class));
+
+      service.processSession(session);
+      assertThat(manageFragment.getTreeAdapter(), is(notNullValue()));
+      assertThat(manageFragment.getTreeAdapter().getCount() > 0, is(true));
+   }
+
+   private List<ObjectGraph> getAllKindOfData() {
+      List<ObjectGraph> graphList = new ArrayList<ObjectGraph>();
+      graphList.addAll(getTestObjectGraphMap(Customer.class).values());
+      graphList.addAll(getTestObjectGraphMap(Product.class).values());
+      graphList.addAll(getTestObjectGraphMap(Variety.class).values());
+      return graphList;
+   }
+
+   private <T> Map<T, ObjectGraph> getTestObjectGraphMap(Class<T> type) {
+      Map<T, ObjectGraph> map = new HashMap<T, ObjectGraph>();
+      if (type.equals(Customer.class)) {
+         ObjectGraph cust = new ObjectGraph(null, DataTypes.GROWER, "Oscar");
+         cust.setId(UUID.randomUUID().toString());
+         ObjectGraph farm = new ObjectGraph(null, DataTypes.FARM, "Dekalp");
+         farm.setId(UUID.randomUUID().toString());
+         ObjectGraph field = new ObjectGraph(null, DataTypes.FIELD, "North");
+         field.setId(UUID.randomUUID().toString());
+         ObjectGraph task = new ObjectGraph(null, DataTypes.TASK, "Task1");
+         task.setId(UUID.randomUUID().toString());
+         ObjectGraph task2 = new ObjectGraph(null, DataTypes.TASK, "Task2");
+         task2.setId(UUID.randomUUID().toString());
+
+         ObjectGraph prescription1 = new ObjectGraph(null, DataTypes.RX, "Prescription1");
+         prescription1.setId(UUID.randomUUID().toString());
+         ObjectGraph prescription2 = new ObjectGraph(null, DataTypes.RX, "Prescription2");
+         prescription2.setId(UUID.randomUUID().toString());
+
+         ObjectGraph boundary1 = new ObjectGraph(null, DataTypes.BOUNDARY, "Boundary1");
+         boundary1.setId(UUID.randomUUID().toString());
+         ObjectGraph boundary2 = new ObjectGraph(null, DataTypes.BOUNDARY, "Boundary2");
+         boundary2.setId(UUID.randomUUID().toString());
+
+         ObjectGraph landmark1 = new ObjectGraph(null, DataTypes.LANDMARK, "Landmark1");
+         landmark1.setId(UUID.randomUUID().toString());
+         ObjectGraph landmark2 = new ObjectGraph(null, DataTypes.LANDMARK, "Landmark2");
+         landmark1.setId(UUID.randomUUID().toString());
+
+         ObjectGraph gg = new ObjectGraph(null, DataTypes.GUIDANCE_GROUP, "GG2");
+         gg.setId(UUID.randomUUID().toString());
+         ObjectGraph gf = new ObjectGraph(null, DataTypes.GUIDANCE_CONFIGURATION, "GC");
+         gf.setId(UUID.randomUUID().toString());
+         ObjectGraph testObject = new ObjectGraph(null, "com.cnh.prescription.shapefile", "Shapefile Prescription"); // Not real object, used to demostrate format support
+         testObject.setId(UUID.randomUUID().toString());
+         field.addChild(testObject);
+         field.addChild(task);
+         field.addChild(task2);
+         field.addChild(prescription1);
+         field.addChild(prescription2);
+         field.addChild(boundary1);
+         field.addChild(boundary2);
+         field.addChild(landmark1);
+         field.addChild(landmark2);
+
+         field.addChild(gg);
+         field.addChild(gf);
+
+         farm.addChild(field);
+         cust.addChild(farm);
+
+         map.put((T) Customer.class, cust);
+      }
+      else if (type.equals(Product.class)) {
+         ObjectGraph pr1 = new ObjectGraph(null, DataTypes.PRODUCT, "Pord1");
+         ObjectGraph pr2 = new ObjectGraph(null, DataTypes.PRODUCT, "Pord2");
+         map.put((T) Product.class, pr1);
+         map.put((T) Product.class, pr2);
+      }
+      else if (type.equals(Variety.class)) {
+      }
+      return map;
    }
 }
