@@ -91,11 +91,12 @@
                 android:layout_height="match_parent"
                 android:id="@+id/import_conflict_dialog_reuse_action_checkbox"/>
         <TextView
+                android:id="@+id/import_conflict_dialog_reuse_action_checkbox_label"
                 style="@style/CheckBoxLabelBig"
                 android:layout_marginLeft="@dimen/import_conflict_dialog_checkbox_label_spacing"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="@string/import_conflict_dialog_reuse_action_text"/>
+                android:text="@string/import_conflict_dialog_reuse_other_action_text"/>
     </LinearLayout>
 
 </LinearLayout>

@@ -109,6 +109,10 @@ public class ImportFragment extends BaseDataFragment {
    String selectTargetStr;
    @InjectResource(R.string.next)
    String nextStr;
+   @InjectResource(R.string.skip)
+   String skipStr;
+   @InjectResource(R.string.merge)
+   String mergeStr;
    @InjectView(R.id.operation_name)
    TextView operationName;
 
@@ -353,24 +357,65 @@ public class ImportFragment extends BaseDataFragment {
             processDialog.setDimensionsNoPadding(conflictDialogWidth, conflictDialogHeight);
             processDialog.setAdapter(adapter);
             processDialog.setTitle(dataConflictStr);
-            processDialog.showFirstButton(true);
-            processDialog.setFirstButtonText(keepBothStr);
+            //default button behaviour
+            processDialog.showFirstButton(false);
             processDialog.showSecondButton(true);
-            processDialog.setSecondButtonText(replaceStr);
+            processDialog.setSecondButtonText(keepBothStr);
+            processDialog.setThirdButtonEnabled(true);
+            processDialog.setThirdButtonText(replaceStr);
+            processDialog.setFourthButtonEnabled(true);
+            processDialog.setFourthButtonText(skipStr);
             processDialog.clearLoading();
-
+            adapter.setOnConflictTypeChangedListener(new DataConflictViewAdapter.OnConflictTypeChangedListener() {
+               @Override
+               public void onConflictTypeChanged(DataConflictViewAdapter.ConflictDataType currentConflictType) {
+                  //react on config type changed
+                  if (DataConflictViewAdapter.ConflictDataType.GFF.equals(currentConflictType)) {
+                     //is gff, show merge
+                     processDialog.showFirstButton(true);
+                     processDialog.setFirstButtonText(mergeStr);
+                     processDialog.showSecondButton(true);
+                     processDialog.setSecondButtonText(keepBothStr);
+                     processDialog.setThirdButtonEnabled(true);
+                     processDialog.setThirdButtonText(replaceStr);
+                     processDialog.setFourthButtonEnabled(true);
+                     processDialog.setFourthButtonText(skipStr);
+                  }
+                  else {
+                     //is other, hide merge
+                     processDialog.showFirstButton(false);
+                     processDialog.showSecondButton(true);
+                     processDialog.setSecondButtonText(keepBothStr);
+                     processDialog.setThirdButtonEnabled(true);
+                     processDialog.setThirdButtonText(replaceStr);
+                     processDialog.setFourthButtonEnabled(true);
+                     processDialog.setFourthButtonText(skipStr);
+                  }
+               }
+            });
             //show add custom cancel handling
             final DataManagementBaseAdapter.OnActionSelectedListener listener = adapter.getActionListener();
             processDialog.setOnButtonClickListener(new DialogViewInterface.OnButtonClickListener() {
                @Override
                public void onButtonClick(DialogViewInterface dialog, int which) {
                   if (which == DialogViewInterface.BUTTON_FIRST) {
+                     //merge button
                      listener.onButtonSelected(processDialog, DataManagementBaseAdapter.Action.ACTION1);
                   }
                   else if (which == DialogViewInterface.BUTTON_SECOND) {
+                     //keep both button
                      listener.onButtonSelected(processDialog, DataManagementBaseAdapter.Action.ACTION2);
                   }
                   else if (which == DialogViewInterface.BUTTON_THIRD) {
+                     //replace button
+                     listener.onButtonSelected(processDialog, DataManagementBaseAdapter.Action.ACTION3);
+                  }
+                  else if (which == DialogViewInterface.BUTTON_FOURTH) {
+                     //skip button
+                     listener.onButtonSelected(processDialog, DataManagementBaseAdapter.Action.ACTION4);
+                  }
+                  else if (which == DialogViewInterface.BUTTON_FIFTH) {
+                     //cancel button
                      listener.onButtonSelected(processDialog, null);
                      //Show confirmation cancel-dialog
                      DialogViewInterface.OnButtonClickListener onButtonClickListener = new DialogViewInterface.OnButtonClickListener() {
