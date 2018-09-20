@@ -9,22 +9,21 @@
 
 package com.cnh.pf.android.data.management;
 
-import com.cnh.autoguidance.shared.SwathType;
-import com.cnh.pf.android.data.management.graph.GroupObjectGraph;
-import com.cnh.pf.model.product.library.ProductForm;
-import com.google.gson.Gson;
-
 import android.content.Context;
 
+import com.cnh.autoguidance.shared.SwathType;
 import com.cnh.jgroups.DataTypes;
 import com.cnh.jgroups.ObjectGraph;
+import com.cnh.pf.android.data.management.graph.GroupObjectGraph;
 import com.cnh.pf.android.data.management.helper.DMTreeJsonData;
+import com.cnh.pf.model.product.library.ProductForm;
 import com.google.common.base.CaseFormat;
+import com.google.gson.Gson;
 import com.google.gson.JsonIOException;
 import com.google.gson.JsonSyntaxException;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import pl.polidea.treeview.TreeBuilder;
 
 import java.io.Closeable;
 import java.io.IOException;
@@ -35,6 +34,8 @@ import java.util.EnumMap;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.UUID;
+
+import pl.polidea.treeview.TreeBuilder;
 
 /**
  * Helper class deals with entity grouping for all Groups {PFDS, VIP, ...}
@@ -50,10 +51,8 @@ public class TreeEntityHelper {
    public static final String FOLLOW_SOURCE = "FOLLOW_SOURCE";
    public static final String CHILDREN_COUNT = "CHILDREN_COUNT";
 
-   private static final Map<String, GroupObjectGraph> GroupObjectGraphMap =
-      new HashMap<String, GroupObjectGraph>();
-   protected static final Map<String, GroupObjectGraph> NeedtoFindParentGroup =
-         new HashMap<String, GroupObjectGraph>();
+   private static final Map<String, GroupObjectGraph> GroupObjectGraphMap = new HashMap<String, GroupObjectGraph>();
+   protected static final Map<String, GroupObjectGraph> NeedtoFindParentGroup = new HashMap<String, GroupObjectGraph>();
 
    /**
     * Map lists all entities which are groupable in ui, entities with types specified in this lists will be grouped in ui.
@@ -61,6 +60,7 @@ public class TreeEntityHelper {
    protected static final Map<String, Integer> group2name = new HashMap<String, Integer>();
    protected static final Map<String, String> obj2group = new HashMap<String, String>();
    protected static final Map<String, String> group2group = new HashMap<String, String>();
+   protected static final Map<String, Integer> datatype2name = new HashMap<String, Integer>();
 
    public static final String SUB_TYPE = "_subtype";
    public static final String GROWERS = "GROWERS";
@@ -112,7 +112,7 @@ public class TreeEntityHelper {
       TYPE_ICONS.put(DataTypes.IMPLEMENT_PRODUCT_CONFIG, R.drawable.ic_datatree_screenshots);
       TYPE_ICONS.put(VARIETIES, R.drawable.dt_icon_varieties);
       TYPE_ICONS.put(DataTypes.USB, R.drawable.ic_data_tree_usb_active);
-      TYPE_ICONS.put(DataTypes.CLOUD,R.drawable.ic_data_tree_cloud_active);
+      TYPE_ICONS.put(DataTypes.CLOUD, R.drawable.ic_data_tree_cloud_active);
 
       SWATH_ICONS.put(SwathType.STRAIGHT, R.drawable.dt_icon_swath_straight);
       SWATH_ICONS.put(SwathType.HEADING, R.drawable.dt_icon_swath_heading);
@@ -140,6 +140,20 @@ public class TreeEntityHelper {
       group2name.put(GUIDANCE_CONFIGURATIONS, R.string.guidance_configurations);
       group2name.put(PRODUCT_MIX_VARIETY, R.string.product_mix_variety);
 
+      datatype2name.put(DataTypes.GROWER, R.string.grower);
+      datatype2name.put(DataTypes.TASK, R.string.task);
+      datatype2name.put(DataTypes.RX, R.string.prescription);
+      datatype2name.put(DataTypes.BOUNDARY, R.string.boundary);
+      datatype2name.put(DataTypes.GUIDANCE_GROUP, R.string.guidance_group);
+      datatype2name.put(DataTypes.LANDMARK, R.string.obstacle);
+      datatype2name.put(DataTypes.PRODUCT, R.string.product);
+      datatype2name.put(DataTypes.PRODUCT_MIX, R.string.product_mix);
+      datatype2name.put(DataTypes.VARIETY, R.string.variety);
+      datatype2name.put(DataTypes.VEHICLE, R.string.vehicle);
+      datatype2name.put(DataTypes.IMPLEMENT, R.string.implement);
+      datatype2name.put(DataTypes.NOTE, R.string.note);
+      datatype2name.put(DataTypes.GUIDANCE_CONFIGURATION, R.string.guidance_configuration);
+
       obj2group.put(DataTypes.GROWER, GROWERS);
       obj2group.put(DataTypes.TASK, TASKS);
       obj2group.put(DataTypes.RX, RXS);
@@ -165,13 +179,29 @@ public class TreeEntityHelper {
    }
 
    /**
+    * This method returns the resource id of the translation of the given dataType
+    * @param dataType DataType (upper case) as a string
+    * @return Resource id of the translation of the given dataType
+    */
+   public static Integer getDataTypeName(String dataType) {
+      if (datatype2name.containsKey(dataType)) {
+         return datatype2name.get(dataType);
+      }
+      else {
+         logger.debug("Could not find a matching translation for {} in datatype2name mapping!", dataType);
+         return 0;
+      }
+   }
+
+   /**
     * Returns if a given type is representing a Guidance groups
     * @param type Type in question to be a groupType
     * @return True if type is a guidance groups, false otherwise
     */
-   public static boolean isGuidanceGroups(String type){
+   public static boolean isGuidanceGroups(String type) {
       return type.equals(GUIDANCE_GROUPS);
    }
+
    /**
     * Returns if a given type is representing a groupType
     * @param type Type in question to be a groupType
@@ -307,7 +337,7 @@ public class TreeEntityHelper {
     * @param context
     * @param builder
     */
-   public static void LoadDMTreeFromJson(Context context, TreeBuilder<ObjectGraph> builder)  {
+   public static void LoadDMTreeFromJson(Context context, TreeBuilder<ObjectGraph> builder) {
       InputStream inputStream = null;
       InputStreamReader inputStreamReader = null;
       try {
@@ -342,11 +372,12 @@ public class TreeEntityHelper {
     */
    private static void closeQuietly(Closeable closeable) {
       try {
-         if(closeable != null) {
+         if (closeable != null) {
             closeable.close();
          }
-      } catch( Exception ex ) {
-         logger.error("Exception during Resource.close()", ex );
+      }
+      catch (Exception ex) {
+         logger.error("Exception during Resource.close()", ex);
       }
    }
 
@@ -356,10 +387,9 @@ public class TreeEntityHelper {
     * @param parent
     * @param builder
     */
-   public static void addToTree(DMTreeJsonData  entry, GroupObjectGraph parent, TreeBuilder<ObjectGraph> builder) {
-      if(entry != null) {
-         GroupObjectGraph gGroup = new GroupObjectGraph(null, entry.getGroupDataType(),
-                 entry.getTitle(), null, parent);
+   public static void addToTree(DMTreeJsonData entry, GroupObjectGraph parent, TreeBuilder<ObjectGraph> builder) {
+      if (entry != null) {
+         GroupObjectGraph gGroup = new GroupObjectGraph(null, entry.getGroupDataType(), entry.getTitle(), null, parent);
          gGroup.setId(UUID.randomUUID().toString());
          gGroup.addData(HIDDEN_ITEM, entry.getHidden());
          gGroup.addData(FOLLOW_SOURCE, entry.getFollowSource());
@@ -382,7 +412,7 @@ public class TreeEntityHelper {
     */
    public static GroupObjectGraph findGroupNode(String dataType) {
       GroupObjectGraph retNode = null;
-      if(GroupObjectGraphMap.containsKey(dataType)){
+      if (GroupObjectGraphMap.containsKey(dataType)) {
          retNode = GroupObjectGraphMap.get(dataType);
       }
       return retNode;
@@ -390,9 +420,9 @@ public class TreeEntityHelper {
 
    public static GroupObjectGraph findParentNeededGroup(String objId, String dataType) {
       GroupObjectGraph retNode = null;
-      if(NeedtoFindParentGroup.containsKey(objId)){
+      if (NeedtoFindParentGroup.containsKey(objId)) {
          retNode = NeedtoFindParentGroup.get(objId);
-         if(retNode.getType().equals(dataType) == false) {
+         if (retNode.getType().equals(dataType) == false) {
             retNode = null;
          }
       }

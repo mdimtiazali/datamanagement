@@ -52,6 +52,20 @@
     <string name="product_mix_variety">Crop and Product Library</string>
     <string name="guidance_configurations">GuidanceConfigurations</string>
 
+    <string name="grower">Grower</string>
+    <string name="task">Task</string>
+    <string name="prescription">Prescription</string>
+    <string name="boundary">Boundary</string>
+    <string name="guidance_group">Guidance Group</string>
+    <string name="obstacle">Obstacle</string>
+    <string name="product">Product</string>
+    <string name="product_mix">Product Mix</string>
+    <string name="variety">Variety</string>
+    <string name="vehicle">Vehicle</string>
+    <string name="implement">Implement</string>
+    <string name="note">Note</string>
+    <string name="guidance_configuration">Guidance Configuration</string>
+
     <string name="products">Products</string>
     <string name="product_mixes">Product Mixes</string>
     <string name="varieties">Varieties</string>
@@ -357,8 +371,8 @@
     <string name="cp_complete_content">Copied to \"%1$s\":</string>
     <string name="import_conflict_dialog_textual_process_feedback_text" formatted="false">%d of %d</string>
     <string name="import_conflict_dialog_reuse_action_text">Reuse action for all remaining naming conflicts</string>
-    <string name="import_conflict_dialog_existing_field_text">Existing Field</string>
-    <string name="import_conflict_dialog_new_field_text">New Field</string>
+    <string name="import_conflict_dialog_existing_text">Existing %1$s</string>
+    <string name="import_conflict_dialog_new_text">New %1$s</string>
     <string name="import_select_source_dialog_introduction">Please select the folder that contains the desired
         files.\nYou can select only one folder at a time.
     </string>
