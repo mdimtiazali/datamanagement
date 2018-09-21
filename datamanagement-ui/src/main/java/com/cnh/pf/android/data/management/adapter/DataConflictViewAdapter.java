@@ -18,9 +18,9 @@ import android.widget.TextView;
 
 import com.cnh.android.dialog.DialogView;
 import com.cnh.android.widget.control.CheckBox;
-import com.cnh.jgroups.DataTypes;
 import com.cnh.jgroups.Operation;
 import com.cnh.pf.android.data.management.R;
+import com.cnh.pf.android.data.management.TreeEntityHelper;
 import com.google.inject.Inject;
 
 import java.util.List;
@@ -52,6 +52,10 @@ public class DataConflictViewAdapter extends DataManagementBaseAdapter {
       progressTotalConflicts = 0;
       for (int currentOperationPosition = 0; currentOperationPosition < operationList.size(); currentOperationPosition++) {
          if (operationList.get(currentOperationPosition).isConflict()) {
+            //set position to first conflict
+            if (progressTotalConflicts == 0) {
+               position = currentOperationPosition;
+            }
             progressTotalConflicts++;
          }
       }
@@ -61,6 +65,8 @@ public class DataConflictViewAdapter extends DataManagementBaseAdapter {
       final TextView conflictFileTv;
       final TextView newName;
       final TextView oldName;
+      final TextView newNameTitle;
+      final TextView oldNameTitle;
       final CheckBox reuseActionCheckBox;
       final TextView textualFeedback;
       final LinearLayout textualFeedbackContainer;
@@ -71,6 +77,8 @@ public class DataConflictViewAdapter extends DataManagementBaseAdapter {
          conflictFileTv = (TextView) root.findViewById(R.id.conflict_file_tv);
          newName = (TextView) root.findViewById(R.id.import_conflict_dialog_new_field_text);
          oldName = (TextView) root.findViewById(R.id.import_conflict_dialog_existing_field_text);
+         newNameTitle = (TextView) root.findViewById(R.id.import_conflict_dialog_new_title);
+         oldNameTitle = (TextView) root.findViewById(R.id.import_conflict_dialog_existing_title);
 
          reuseActionCheckBox = (CheckBox) root.findViewById(R.id.import_conflict_dialog_reuse_action_checkbox);
          reuseActionContainer = (LinearLayout) root.findViewById(R.id.import_conflict_dialog_reuse_action_container);
@@ -142,20 +150,23 @@ public class DataConflictViewAdapter extends DataManagementBaseAdapter {
    protected ViewHolder updateView(ViewHolder convertView) {
       final Operation operation = operationList.get(position);
       final DialogViewHolder viewHolder = (DialogViewHolder) convertView;
-      //a <type> named <name> already exists
-      if ((operation.getData().getType().equals(DataTypes.PRODUCT_MIX)) || (operation.getData().getType().equals(DataTypes.PRODUCT))) {
-         viewHolder.conflictFileTv
-               .setText(context.getResources().getString(R.string.duplicate_file, DataTypes.PRODUCT + " / " + DataTypes.PRODUCT_MIX, operation.getData().getName()));
-      }
-      else {
-         viewHolder.conflictFileTv.setText(context.getResources().getString(R.string.duplicate_file, getTypeString(operation.getData().getType()), operation.getData().getName()));
-      }
+
+      String dataFieldName = getTypeString(operation.getData().getType());
+
+      viewHolder.conflictFileTv.setText(context.getResources().getString(R.string.duplicate_file, dataFieldName, operation.getData().getName()));
 
       String oldName = operation.getData().getName();
-      String newName = operation.getNewName();
+      //keep this line until the uiux spec contains the suggested name instead of 3 times the same already existing name
+      //String suggestedNewName = operation.getNewName();
 
       viewHolder.oldName.setText(oldName);
-      viewHolder.newName.setText(newName);
+      viewHolder.newName.setText(oldName); //should be suggestedNewName, but uiux spec currently contains the old name 3 times
+
+      String newNameTitle = context.getResources().getString(R.string.import_conflict_dialog_new_text);
+      String existingNameTitle = context.getResources().getString(R.string.import_conflict_dialog_existing_text);
+
+      viewHolder.oldNameTitle.setText(String.format(existingNameTitle, dataFieldName));
+      viewHolder.newNameTitle.setText(String.format(newNameTitle, dataFieldName));
 
       //update textual progress
       if (operationList.size() > 1) {
@@ -189,8 +200,20 @@ public class DataConflictViewAdapter extends DataManagementBaseAdapter {
 
    }
 
+   /**
+    * Translates the given type from upper case to translation. If no translation is found, the type is reused.
+    * @param type DataType as string
+    * @return Translation of given type to country specific string
+    */
    private String getTypeString(String type) {
-      return type.substring(type.lastIndexOf('.') + 1);
+      String typeUpperCase = type.substring(type.lastIndexOf('.') + 1);
+      int resourceIDOfDataType = TreeEntityHelper.getDataTypeName(typeUpperCase);
+      if (resourceIDOfDataType > 0) {
+         return context.getResources().getString(resourceIDOfDataType);
+      }
+      else {
+         return type;
+      }
    }
 
    @Override

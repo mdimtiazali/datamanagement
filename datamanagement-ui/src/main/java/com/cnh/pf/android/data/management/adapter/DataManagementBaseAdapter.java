@@ -104,11 +104,13 @@ public abstract class DataManagementBaseAdapter {
       while (position < operationList.size() && !shouldShowView()) {
          position++;
       }
-      if (position == operationList.size()) {
-         onTargetsSelectedListener.onCompletion(operationList);
-      }
-      else {
-         onTargetSelectedListener.onTargetSelected();
+      if (onTargetsSelectedListener != null) {
+         if (position == operationList.size()) {
+            onTargetsSelectedListener.onCompletion(operationList);
+         }
+         else {
+            onTargetSelectedListener.onTargetSelected();
+         }
       }
    }
 
