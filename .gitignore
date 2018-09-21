@@ -1,6 +1,7 @@
 target
 *.iml
 .idea
+captures
 datamanagement-ui/velocity.*
 gen-external-apklibs
 **/.DS_Store
