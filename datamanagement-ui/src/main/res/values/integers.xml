@@ -22,7 +22,7 @@
     <integer name="copy_paste_dialog_high_threld">5</integer>
     <integer name="copy_paste_dialog_height_low">320</integer>
     <integer name="copy_paste_dialog_height_high">420</integer>
-    <integer name="copy_paste_dialog_width">585</integer>
+    <integer name="copy_paste_dialog_width">605</integer>
 
     <!--Import Source Dialog-->
     <integer name="import_source_dialog_width">585</integer>

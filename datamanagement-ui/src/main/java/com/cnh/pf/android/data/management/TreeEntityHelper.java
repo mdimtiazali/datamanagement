@@ -108,6 +108,7 @@ public class TreeEntityHelper {
       TYPE_ICONS.put(DataTypes.LANDMARK, R.drawable.dt_icon_landmark);
       TYPE_ICONS.put(LANDMARKS, R.drawable.dt_icon_landmark);
       TYPE_ICONS.put(GUIDANCE_GROUPS, R.drawable.ic_data_tree_swaths);
+      TYPE_ICONS.put(DataTypes.GUIDANCE_GROUP, R.drawable.ic_data_tree_swaths);
       TYPE_ICONS.put(DataTypes.GUIDANCE_PATTERN, R.drawable.ic_data_tree_swaths);
       TYPE_ICONS.put(DataTypes.GUIDANCE_CONFIGURATION, R.drawable.ic_data_tree_guidance);
       TYPE_ICONS.put(GUIDANCE_CONFIGURATIONS, R.drawable.ic_data_tree_guidance);

@@ -7,41 +7,34 @@
   ~ disclose in whole or in part any such information without written
   ~ authorization from CNH Industrial NV.
   -->
-<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
                 xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
-    android:minHeight="42dp"
-    android:gravity="center_vertical">
-    <View
-            android:id="@+id/indent"
-            android:layout_width="48dp"
-            android:layout_height="match_parent"/>
+              android:orientation="horizontal"
+              android:layout_gravity="center_horizontal"
+              android:gravity="center_vertical"
+    android:minHeight="44dp">
     <com.cnh.pf.android.data.management.misc.TreeLineWidget
             android:id="@+id/line"
             android:layout_width="48dp"
             android:layout_height="42dp"
-            android:layout_alignParentTop="true"
-            android:layout_toRightOf="@+id/indent"
             app:tree_line_color = "@color/tree_line"
             app:tree_line_width="2"/>
     <ImageView
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:id="@+id/icon"
-            android:layout_toRightOf="@+id/line"
-            android:gravity="center"
-            android:paddingStart="4dp"
-            android:paddingEnd="4dp"/>
+            android:layout_marginLeft="2dp"
+            android:layout_marginRight="8dp"/>
     <TextView
-            android:layout_width="wrap_content"
+            android:layout_width="0dp"
             android:layout_height="match_parent"
+            android:layout_weight="1"
             android:id="@+id/content"
-            android:layout_toRightOf="@+id/icon"
-            android:gravity="center_vertical"
             android:lines="1"
             android:ellipsize="middle"
-            android:textSize="20sp"
-            android:textStyle="bold"/>
+            android:textSize="22sp"
+            android:textColor="@color/copy_title_text_color"/>
 
-</RelativeLayout>
+</LinearLayout>

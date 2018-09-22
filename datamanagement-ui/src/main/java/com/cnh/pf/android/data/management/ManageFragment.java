@@ -473,11 +473,12 @@ public class ManageFragment extends BaseDataFragment implements DmAccessibleObse
             List<Integer> ids = new LinkedList<Integer>();
             List<String> names = new LinkedList<String>();
             for(ObjectGraph o:pasteObjects){
-               ids.add(TreeEntityHelper.getSubtypeIcon(o));
+               ids.add(TreeEntityHelper.getIcon(o));
                names.add(o.getName());
             }
             ((TabActivity)getActivity()).showModalPopup(new CpCompleteDialog(getActivity(),lastDestinationObj.getName(),swathFolderIcon,swathFolderName,ids,names));
             lastDestinationObj = null;
+            clearTreeSelection();
          }
       }
       else if (SessionUtil.isDeleteTask(session)) {
@@ -751,18 +752,18 @@ public class ManageFragment extends BaseDataFragment implements DmAccessibleObse
                      copyButton.setVisibility(View.VISIBLE);
                   }
                   else {
-                     copyButton.setVisibility(View.INVISIBLE);
+                     copyButton.setVisibility(View.GONE);
                   }
                   if (isSupportedEdit(node)) {
                      editButton.setVisibility(View.VISIBLE);
                   }
                   else {
-                     editButton.setVisibility(View.INVISIBLE);
+                     editButton.setVisibility(View.GONE);
                   }
                }
                else {
-                  copyButton.setVisibility(View.INVISIBLE);
-                  editButton.setVisibility(View.INVISIBLE);
+                  copyButton.setVisibility(View.GONE);
+                  editButton.setVisibility(View.GONE);
                }
             }
 

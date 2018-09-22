@@ -66,6 +66,7 @@
     <string name="note">Note</string>
     <string name="guidance_configuration">Guidance Configuration</string>
 
+    <string name="merge">Merge</string>
     <string name="products">Products</string>
     <string name="product_mixes">Product Mixes</string>
     <string name="varieties">Varieties</string>
@@ -103,7 +104,8 @@
     <string name="export_cancel_confirmation">This will cancel current export.\nDo you want to proceed?</string>
     <string name="import_cancel_confirmation">This will cancel current import.\nDo you want to proceed?</string>
     <string name="format_description_title">Export Formats</string>
-    <string name="format_description">ISOXML is the only format available. All files can\nbe exported in ISOXML.</string>
+    <string name="format_description">ISOXML is the only format available. All files can\nbe exported in ISOXML.
+    </string>
     <string name="destination_title">Supported Export Destinations:</string>
     <string name="case_destination_info">Please select the proper destination to ensure the export file structure is
         compatible with the destination file structure.
@@ -370,7 +372,12 @@
     <string name="copy">Copy</string>
     <string name="cp_complete_content">Copied to \"%1$s\":</string>
     <string name="import_conflict_dialog_textual_process_feedback_text" formatted="false">%d of %d</string>
-    <string name="import_conflict_dialog_reuse_action_text">Reuse action for all remaining naming conflicts</string>
+    <string name="import_conflict_dialog_reuse_gff_action_text">Apply this action to all remaining naming conflicts
+        for\nGrowers, Farms, and Fields.
+    </string>
+    <string name="import_conflict_dialog_reuse_other_action_text">Apply this action to all remaining data conflicts for
+        the\nappropriate file types.
+    </string>
     <string name="import_conflict_dialog_existing_text">Existing %1$s</string>
     <string name="import_conflict_dialog_new_text">New %1$s</string>
     <string name="import_select_source_dialog_introduction">Please select the folder that contains the desired

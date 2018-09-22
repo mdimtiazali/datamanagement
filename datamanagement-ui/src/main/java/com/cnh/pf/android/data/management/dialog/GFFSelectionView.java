@@ -50,8 +50,10 @@ public class GFFSelectionView extends DialogView{
 
             }
         });
-        setContentPaddings(0,0,0,32);
-        setFirstButtonText(getResources().getString(R.string.ok));
+        setTitle(getResources().getString(R.string.copy));
+        setContentPaddings(0,0,0,0);
+        setFirstButtonText(getResources().getString(R.string.next));
+        setFirstButtonAsNext(true);
         showFirstButton(true);
         disableButtonFirst(true);
         setSecondButtonText(getResources().getString(R.string.cancel));

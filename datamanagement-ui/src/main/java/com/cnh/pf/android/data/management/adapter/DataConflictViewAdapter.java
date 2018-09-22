@@ -18,11 +18,18 @@ import android.widget.TextView;
 
 import com.cnh.android.dialog.DialogView;
 import com.cnh.android.widget.control.CheckBox;
+import com.cnh.jgroups.DataTypes;
+import com.cnh.jgroups.ObjectGraph;
 import com.cnh.jgroups.Operation;
 import com.cnh.pf.android.data.management.R;
 import com.cnh.pf.android.data.management.TreeEntityHelper;
 import com.google.inject.Inject;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import java.util.ArrayList;
+import java.util.EnumMap;
 import java.util.List;
 
 import roboguice.RoboGuice;
@@ -32,6 +39,8 @@ import roboguice.RoboGuice;
  * @author oscar.salazar@cnhind.com
  */
 public class DataConflictViewAdapter extends DataManagementBaseAdapter {
+   private static final Logger logger = LoggerFactory.getLogger(DataManagementBaseAdapter.class);
+
    @Inject
    LayoutInflater layoutInflater;
 
@@ -42,22 +51,62 @@ public class DataConflictViewAdapter extends DataManagementBaseAdapter {
    protected int progressCurrentConflict; //keeps track of the already solved conflicts
    //position keeps track of the current position under consideration in the operations list
 
+   protected EnumMap<ConflictDataType, List<Integer>> conflictMapping;
+
+   protected ConflictDataType lastConflictDataType = null;
+
+   /**
+    * This enum groups different conflict data types to GFF (Grower, Farm, Field) and OTHER (all remaining)
+    */
+   public enum ConflictDataType {
+      GFF, OTHER;
+   }
+
+   protected OnConflictTypeChangedListener onConflictTypeChangedListener;
+
    public DataConflictViewAdapter(Activity context, List<Operation> operations) {
       super(context, operations);
       RoboGuice.getInjector(context).injectMembersWithoutViews(this);
 
       textualFeedbackString = context.getString(R.string.import_conflict_dialog_textual_process_feedback_text);
 
+      //initialize mapping
+      conflictMapping = new EnumMap<ConflictDataType, List<Integer>>(ConflictDataType.class);
+      conflictMapping.put(ConflictDataType.GFF, new ArrayList<Integer>());
+      conflictMapping.put(ConflictDataType.OTHER, new ArrayList<Integer>());
+
       progressCurrentConflict = 1;
       progressTotalConflicts = 0;
       for (int currentOperationPosition = 0; currentOperationPosition < operationList.size(); currentOperationPosition++) {
-         if (operationList.get(currentOperationPosition).isConflict()) {
-            //set position to first conflict
-            if (progressTotalConflicts == 0) {
-               position = currentOperationPosition;
+         Operation currentOperation = operationList.get(currentOperationPosition);
+         if (currentOperation.isConflict()) {
+            //fill mapping with conflicting operations
+            ObjectGraph operationData = currentOperation.getData();
+            if (operationData != null) {
+               String operationType = operationData.getType();
+               ConflictDataType insertAsDataType = getConflictDataTypeAsEnum(operationType);
+               conflictMapping.get(insertAsDataType).add(currentOperationPosition);
+               //count number of total conflicts
+               progressTotalConflicts++;
             }
-            progressTotalConflicts++;
+            else {
+               logger.error("Could not get operation data from operation! {}", currentOperation);
+            }
          }
+      }
+   }
+
+   /**
+    * This method returns the conflict data type as a enum corresponding the given operationType
+    * @param operationType conflict data type as string
+    * @return ConflictDataType that corresponds the given operationType (GFF or OTHER)
+    */
+   public static ConflictDataType getConflictDataTypeAsEnum(String operationType) {
+      if (DataTypes.GROWER.equals(operationType) || DataTypes.FARM.equals(operationType) || DataTypes.FIELD.equals(operationType)) {
+         return ConflictDataType.GFF;
+      }
+      else {
+         return ConflictDataType.OTHER;
       }
    }
 
@@ -68,6 +117,7 @@ public class DataConflictViewAdapter extends DataManagementBaseAdapter {
       final TextView newNameTitle;
       final TextView oldNameTitle;
       final CheckBox reuseActionCheckBox;
+      final TextView reuseActionCheckBoxLabel;
       final TextView textualFeedback;
       final LinearLayout textualFeedbackContainer;
       final LinearLayout reuseActionContainer;
@@ -81,6 +131,7 @@ public class DataConflictViewAdapter extends DataManagementBaseAdapter {
          oldNameTitle = (TextView) root.findViewById(R.id.import_conflict_dialog_existing_title);
 
          reuseActionCheckBox = (CheckBox) root.findViewById(R.id.import_conflict_dialog_reuse_action_checkbox);
+         reuseActionCheckBoxLabel = (TextView) root.findViewById(R.id.import_conflict_dialog_reuse_action_checkbox_label);
          reuseActionContainer = (LinearLayout) root.findViewById(R.id.import_conflict_dialog_reuse_action_container);
          textualFeedbackContainer = (LinearLayout) root.findViewById(R.id.import_conflict_dialog_textual_process_feedback_container);
          textualFeedback = (TextView) root.findViewById(R.id.import_conflict_dialog_textual_process_feedback_text_view);
@@ -96,14 +147,13 @@ public class DataConflictViewAdapter extends DataManagementBaseAdapter {
    private void setActionForOperationsBetween(int fromIndex, int toIndex, Operation.Action action) {
       if (fromIndex <= toIndex && operationList != null) {
          //verify proper set of limits
-         if (toIndex >= operationList.size()) {
-            toIndex = operationList.size() - 1;
-         }
-         if (fromIndex < 0) {
-            fromIndex = 0;
-         }
-         for (int currentIndex = fromIndex; currentIndex <= toIndex; currentIndex++) {
-            Operation op = operationList.get(currentIndex);
+         fromIndex = Math.max(0, fromIndex);
+         int maxIndex = conflictMapping.get(ConflictDataType.GFF).size() + conflictMapping.get(ConflictDataType.OTHER).size() - 1;
+         toIndex = Math.min(maxIndex, toIndex);
+         //apply action to the given range
+         for (int i = fromIndex; i <= toIndex; i++) {
+            int conflictId = getMappedConflictId(i);
+            Operation op = operationList.get(conflictId);
             if (op != null) {
                op.setAction(action);
             }
@@ -118,37 +168,111 @@ public class DataConflictViewAdapter extends DataManagementBaseAdapter {
    private void performAction(Operation.Action operationAction) {
       if (getReuseAction()) {
          //use selected action for all remaining conflicts
-         int lastIndex = operationList.size() - 1;
+         String currentTypeString = getType(getCurrentMappedConflictId());
+         ConflictDataType conflictDataType = getConflictDataTypeAsEnum(currentTypeString);
+         int lastIndex;
+         if (ConflictDataType.GFF.equals(conflictDataType)) {
+            //apply action to all remaining gff items
+            lastIndex = conflictMapping.get(ConflictDataType.GFF).size();
+         }
+         else {
+            //apply action to all remaining regular items
+            lastIndex = (conflictMapping.get(ConflictDataType.GFF).size()) + conflictMapping.get(ConflictDataType.OTHER).size();
+         }
          setActionForOperationsBetween(position, lastIndex, operationAction);
-         position = lastIndex + 1;
-         progressCurrentConflict = progressTotalConflicts;
+         position = lastIndex;
+         progressCurrentConflict = lastIndex;
       }
       else {
          //use selected action for single conflict
-         operationList.get(position).setAction(operationAction);
+         operationList.get(getCurrentMappedConflictId()).setAction(operationAction);
          position++;
          progressCurrentConflict++;
       }
       checkAndUpdateActive();
    }
 
+   @Override
+   protected void checkAndUpdateActive() {
+      if (onTargetsSelectedListener != null) {
+         if (!shouldShowView()) {
+            onTargetsSelectedListener.onCompletion(operationList);
+         }
+         else {
+            onTargetSelectedListener.onTargetSelected();
+            checkAndNotifyConflictTypeChange();
+         }
+      }
+   }
+
    private OnActionSelectedListener actionListener = new OnActionSelectedListener() {
       @Override
       public void onButtonSelected(final DialogView dialog, Action action) {
          if (Action.ACTION1.equals(action)) {
+            //Merge action
+            performAction(Operation.Action.MERGE);
+         }
+         else if (Action.ACTION2.equals(action)) {
             //Keep Both action
             performAction(Operation.Action.COPY_AND_KEEP);
          }
-         else if (Action.ACTION2.equals(action)) {
+         else if (Action.ACTION3.equals(action)) {
             //Replace action
             performAction(Operation.Action.COPY_AND_REPLACE);
+         }
+         else if (Action.ACTION4.equals(action)) {
+            //Skip action
+            performAction(Operation.Action.SKIP);
          }
       }
    };
 
+   /**
+    * This method returns the current conflict id (position in operationList)
+    * @return Current conflict id
+    */
+   private int getCurrentMappedConflictId() {
+      return getMappedConflictId(position);
+   }
+
+   /**
+    * This method returns the current conflict id (position in operationList)
+    * @return Current conflict id
+    */
+   private int getMappedConflictId(int temporaryPosition) {
+      final int operationId;
+      if (temporaryPosition < conflictMapping.get(ConflictDataType.GFF).size()) {
+         operationId = conflictMapping.get(ConflictDataType.GFF).get(temporaryPosition);
+      }
+      else {
+         final int positionOffset = temporaryPosition - conflictMapping.get(ConflictDataType.GFF).size();
+         if (positionOffset < conflictMapping.get(ConflictDataType.OTHER).size()) {
+            operationId = conflictMapping.get(ConflictDataType.OTHER).get(positionOffset);
+         }
+         else {
+            operationId = -1;
+            logger.error("Invalid position requested; conflictMapping does only contain {} ({} requested) elements for OTHER conflicts!",
+                  conflictMapping.get(ConflictDataType.OTHER).size(), positionOffset);
+         }
+      }
+      return operationId;
+   }
+
+   private void checkAndNotifyConflictTypeChange() {
+      String currentTypeString = getType(getCurrentMappedConflictId());
+      ConflictDataType currentTypeEnum = getConflictDataTypeAsEnum(currentTypeString);
+      if (onConflictTypeChangedListener != null && (lastConflictDataType == null || !lastConflictDataType.equals(currentTypeEnum))) {
+         lastConflictDataType = currentTypeEnum;
+         onConflictTypeChangedListener.onConflictTypeChanged(currentTypeEnum);
+      }
+   }
+
    @Override
    protected ViewHolder updateView(ViewHolder convertView) {
-      final Operation operation = operationList.get(position);
+      //if datatype changed, notify for change
+      checkAndNotifyConflictTypeChange();
+
+      final Operation operation = operationList.get(getCurrentMappedConflictId());
       final DialogViewHolder viewHolder = (DialogViewHolder) convertView;
 
       String dataFieldName = getTypeString(operation.getData().getType());
@@ -158,6 +282,20 @@ public class DataConflictViewAdapter extends DataManagementBaseAdapter {
       String oldName = operation.getData().getName();
       //keep this line until the uiux spec contains the suggested name instead of 3 times the same already existing name
       //String suggestedNewName = operation.getNewName();
+
+      //reset reuse checkbox
+      viewHolder.reuseActionCheckBox.setChecked(false);
+      setReuseAction(false);
+
+      //set label text
+      int reuseLabelId;
+      if (ConflictDataType.GFF.equals(getConflictDataTypeAsEnum(getType(getCurrentMappedConflictId())))) {
+         reuseLabelId = R.string.import_conflict_dialog_reuse_gff_action_text;
+      }
+      else {
+         reuseLabelId = R.string.import_conflict_dialog_reuse_other_action_text;
+      }
+      viewHolder.reuseActionCheckBoxLabel.setText(reuseLabelId);
 
       viewHolder.oldName.setText(oldName);
       viewHolder.newName.setText(oldName); //should be suggestedNewName, but uiux spec currently contains the old name 3 times
@@ -223,7 +361,7 @@ public class DataConflictViewAdapter extends DataManagementBaseAdapter {
 
    @Override
    protected boolean shouldShowView() {
-      return operationList.get(position).isConflict();
+      return position < progressTotalConflicts;
    }
 
    /**
@@ -240,5 +378,26 @@ public class DataConflictViewAdapter extends DataManagementBaseAdapter {
     */
    public boolean getReuseAction() {
       return this.reuseAction;
+   }
+
+   /**
+    * This method applies the given onConflictTypeChangedListener to this class
+    * This listener will become active as the conflict type changes from GFF to OTHER or vice versa
+    * @param onConflictTypeChangedListener Instance implementing the OnConflictTypeChangedListener interface
+    */
+   public void setOnConflictTypeChangedListener(OnConflictTypeChangedListener onConflictTypeChangedListener) {
+      this.onConflictTypeChangedListener = onConflictTypeChangedListener;
+      //if datatype changed, notify for change
+      checkAndNotifyConflictTypeChange();
+   }
+
+   /**
+    * This interface defines  the action to be performed as the conflict type is changing
+    */
+   public interface OnConflictTypeChangedListener {
+      /**
+       * Method to be called if the conflict type is changing
+       */
+      void onConflictTypeChanged(ConflictDataType currentConflictType);
    }
 }
