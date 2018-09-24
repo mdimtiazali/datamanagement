@@ -141,7 +141,6 @@ public class ExportFragment extends BaseDataFragment {
    private ProgressValue progressValue = ProgressValue.initProgress();
 
    private String loading_string;
-   private String x_of_y_format;
 
    private TextDialogView lastDialogView;
    private static final int CANCEL_DIALOG_WIDTH = 550;
@@ -241,7 +240,7 @@ public class ExportFragment extends BaseDataFragment {
       exportDefaultIcon = resources.getDrawable(R.drawable.export_icon);
 
       loading_string = resources.getString(R.string.loading_string);
-      x_of_y_format = resources.getString(R.string.x_of_y_format);
+
       vipDataHelperListener = new VipDataHelperListener();
    }
 

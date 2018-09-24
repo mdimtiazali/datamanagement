@@ -132,7 +132,7 @@ public class ImportFragment extends BaseDataFragment {
    private TextDialogView lastCancelDialogView; //used to keep track of the cancel dialog (should be closed if open if process is finished)
 
    private String loadingString;
-   private String xOfYFormat;
+
    private int whiteTextColor;
    private int defaultTextColor;
 
@@ -162,7 +162,6 @@ public class ImportFragment extends BaseDataFragment {
 
       final Resources resources = getResources();
       loadingString = resources.getString(R.string.loading_string);
-      xOfYFormat = resources.getString(R.string.x_of_y_format);
 
       whiteTextColor = resources.getColor(R.color.drag_drop_white_text_color);
       defaultTextColor = resources.getColor(R.color.drag_drop_default_text_color);
@@ -243,7 +242,7 @@ public class ImportFragment extends BaseDataFragment {
    public void onMyselfSessionCancelled(Session session) {
       logger.debug("onMyselfSessionCancelled(): {}, {}", session.getType(), session.getAction());
       if (SessionUtil.isPerformOperationsTask(session) || SessionUtil.isDiscoveryTask(session)) {
-         ToastMessageCustom.makeToastMessageText(getActivity().getApplicationContext(), getString(R.string.export_cancel), Gravity.TOP | Gravity.CENTER_HORIZONTAL,
+         ToastMessageCustom.makeToastMessageText(getActivity().getApplicationContext(), getString(R.string.import_cancel), Gravity.TOP | Gravity.CENTER_HORIZONTAL,
                getResources().getInteger(R.integer.toast_message_xoffset), getResources().getInteger(R.integer.toast_message_yoffset)).show();
          clearTreeSelection();
       }
@@ -971,7 +970,7 @@ public class ImportFragment extends BaseDataFragment {
          processDialog.setOnButtonClickListener(new DialogViewInterface.OnButtonClickListener() {
             @Override
             public void onButtonClick(DialogViewInterface dialog, int which) {
-               if (which == DialogViewInterface.BUTTON_THIRD) {
+               if (which == DialogViewInterface.BUTTON_FIFTH) {
                   //cancel button has been clicked
                   //Show confirmation cancel-dialog
                   DialogViewInterface.OnButtonClickListener onButtonClickListener = new DialogViewInterface.OnButtonClickListener() {

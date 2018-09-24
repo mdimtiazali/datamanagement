@@ -17,6 +17,7 @@ import com.cnh.android.pf.widget.view.DisabledOverlay;
 import com.cnh.jgroups.ObjectGraph;
 import com.cnh.pf.android.data.management.adapter.ObjectTreeViewAdapter;
 import com.cnh.pf.android.data.management.dialog.ImportSourceDialog;
+import com.cnh.pf.android.data.management.helper.DataExchangeBlockedOverlay;
 import com.cnh.pf.android.data.management.service.DataManagementService;
 import com.cnh.pf.android.data.management.session.Session;
 import com.cnh.pf.android.data.management.session.SessionExtra;
@@ -31,6 +32,7 @@ import org.robolectric.RobolectricMavenTestRunner;
 import org.robolectric.RuntimeEnvironment;
 import org.robolectric.annotation.Config;
 import org.robolectric.util.ActivityController;
+import pl.polidea.treeview.TreeViewList;
 import roboguice.RoboGuice;
 import roboguice.event.EventManager;
 
@@ -80,6 +82,41 @@ public class ImportFragmentTest {
       //Start activity
       controller.create().start().resume();
       //      sessionManager = activity.sessionManager;
+   }
+
+   @Test
+   public void onPCMDisconnected() {
+      activateTab(IMPORT_SOURCE_TAB_POSITION);
+      ImportFragment view = (ImportFragment) activity.getFragmentManager().findFragmentByTag("Import");
+      assertThat(view, notNullValue());
+
+      TreeViewList treeViewList = (TreeViewList) activity.findViewById(R.id.tree_view_list);
+
+      //init the treeView
+      view.initAndPopulateTree(DataManagementUITest.getAllKindOfData());
+
+      assertThat(treeViewList.getVisibility(), is(View.VISIBLE));
+
+      view.onPCMDisconnected();
+      assertThat(view.disabledOverlay.getMode(), is(DataExchangeBlockedOverlay.MODE.DISCONNECTED));
+      assertThat(treeViewList.getVisibility(), is(View.GONE));
+
+   }
+
+   @Test
+   public void onPCMConnected() {
+      activateTab(IMPORT_SOURCE_TAB_POSITION);
+      ImportFragment view = (ImportFragment) activity.getFragmentManager().findFragmentByTag("Import");
+      assertThat(view, notNullValue());
+
+      TreeViewList treeViewList = (TreeViewList) activity.findViewById(R.id.tree_view_list);
+      view.onPCMDisconnected();
+      assertThat(view.disabledOverlay.getMode(), is(DataExchangeBlockedOverlay.MODE.DISCONNECTED));
+      assertThat(treeViewList.getVisibility(), is(View.GONE));
+
+      view.onPCMConnected();
+      assertThat(view.disabledOverlay.getMode(), is(DataExchangeBlockedOverlay.MODE.HIDDEN));
+
    }
 
    @Test
