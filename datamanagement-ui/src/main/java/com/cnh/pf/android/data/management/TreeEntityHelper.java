@@ -463,6 +463,7 @@ public class TreeEntityHelper {
     * @param context
     * @param builder
     */
+   @java.lang.SuppressWarnings("squid:S2095") // suppress failure to properly close resource
    public static void LoadDMTreeFromJson(Context context, TreeBuilder<ObjectGraph> builder) {
       InputStream inputStream = null;
       InputStreamReader inputStreamReader = null;
