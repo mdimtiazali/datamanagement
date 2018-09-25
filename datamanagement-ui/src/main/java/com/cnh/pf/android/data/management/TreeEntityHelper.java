@@ -28,6 +28,7 @@ import com.cnh.autoguidance.shared.SwathType;
 import com.cnh.pf.android.data.management.graph.GroupObjectGraph;
 import com.cnh.pf.model.vip.vehimp.Operation;
 import com.cnh.pf.model.product.library.ProductForm;
+import com.cnh.android.persistence.PFConstantData;
 import com.cnh.jgroups.DataTypes;
 import com.cnh.jgroups.ObjectGraph;
 import com.cnh.pf.android.data.management.helper.DMTreeJsonData;
@@ -65,10 +66,6 @@ public class TreeEntityHelper {
    private static final Map<Integer, Integer> BOUNDARY_ICONS = new HashMap<Integer, Integer>();
    private static final Map<Operation, Integer> TASK_ICONS = new EnumMap<Operation, Integer>(Operation.class);
 
-
-   public static final String  NOGROWER_DESIGNATOR = "NoGrower";
-   public static final String  NOFARM_DESIGNATOR   = "NoFarm";
-   public static final String  NOFIELD_DESIGNATOR  = "NoField";
 
    public static final String HIDDEN_ITEM = "HIDDEN_ITEM";
    public static final String FOLLOW_SOURCE = "FOLLOW_SOURCE";
@@ -368,7 +365,7 @@ public class TreeEntityHelper {
          return getSubtypeIcon(objectGraph);
       }
       else if (DataTypes.GROWER.equals(objectGraph.getType())) {
-         if ((objectGraph.getName() != null) &&(objectGraph.getName().contains(NOGROWER_DESIGNATOR))) {
+         if ((objectGraph.getName() != null) &&(objectGraph.getName().contains(PFConstantData.NOGROWER_DESIGNATOR))) {
             return R.drawable.dm_nogrower_icon;
          }
          else {
@@ -376,7 +373,7 @@ public class TreeEntityHelper {
          }
       }
       else if (DataTypes.FARM.equals(objectGraph.getType())) {
-         if ((objectGraph.getName() != null) &&(objectGraph.getName().contains(NOFARM_DESIGNATOR))) {
+         if ((objectGraph.getName() != null) &&(objectGraph.getName().contains(PFConstantData.NOFARM_DESIGNATOR))) {
             return R.drawable.dm_nofarm_icon;
          }
          else {
@@ -384,7 +381,7 @@ public class TreeEntityHelper {
          }
       }
       else if (DataTypes.FIELD.equals(objectGraph.getType())) {
-         if ((objectGraph.getName() != null) &&(objectGraph.getName().contains(NOFIELD_DESIGNATOR))) {
+         if ((objectGraph.getName() != null) &&(objectGraph.getName().contains(PFConstantData.NOFIELD_DESIGNATOR))) {
             return R.drawable.dm_nofield_icon;
          }
          else {
