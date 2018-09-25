@@ -135,13 +135,13 @@ public abstract class BaseDataFragment extends RoboFragment implements SessionCo
                }
             }
             else {
-            int comparison = lhs.getId().getName().compareToIgnoreCase(rhs.getId().getName());
-            if (comparison != 0) {
-               return comparison;
+               int comparison = lhs.getId().getName().compareToIgnoreCase(rhs.getId().getName());
+               if (comparison != 0) {
+                  return comparison;
+               }
+               // If the case-insensitive check is same, do the case-sensitive check to make upper-case come first
+               return lhs.getId().getName().compareTo(rhs.getId().getName());
             }
-            // If the case-insensitive check is same, do the case-sensitive check to make upper-case come first
-            return lhs.getId().getName().compareTo(rhs.getId().getName());
-         }
          }
          // error case, return after
          return 1;
