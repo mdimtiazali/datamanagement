@@ -515,7 +515,7 @@ public class ExportFragment extends BaseDataFragment {
       for (Map.Entry<UtilityHelper.MediumVariant, Integer> entry : resourceMap.entrySet()) {
          UtilityHelper.MediumVariant mediumVariant = entry.getKey();
 
-         if (SessionExtra.USB == mediumVariant.getExtraType() && Environment.getExternalStorageState().equals(Environment.MEDIA_MOUNTED)) {
+         if ( (useInternalFileSystem) || (SessionExtra.USB == mediumVariant.getExtraType() && Environment.getExternalStorageState().equals(Environment.MEDIA_MOUNTED)) ) {
             Integer resId = resourceMap.get(mediumVariant);
             SessionExtra newExtra = new SessionExtra(SessionExtra.USB, getResources().getString(resId), mediumVariant.getValue());
             newExtra.setBasePath(basePath);
