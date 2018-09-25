@@ -764,7 +764,8 @@ public class ExportFragment extends BaseDataFragment {
 
    private void updateProgressbar(ProgressValue progressVal) {
       final Double percent = ((progressVal.getCurrentValue() * 1.0) / progressVal.getMaxValue()) * 100;
-      progressBar.setProgress(percent.intValue());
+      int calcProgress = percent.intValue();
+      progressBar.setProgress(calcProgress > 100 ? 100 : calcProgress);
       progressBar.setTitle(loading_string);
    }
 
