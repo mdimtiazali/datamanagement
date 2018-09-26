@@ -141,7 +141,7 @@ public abstract class BaseDataFragment extends RoboFragment implements SessionCo
                }
                // If the case-insensitive check is same, do the case-sensitive check to make upper-case come first
                return lhs.getId().getName().compareTo(rhs.getId().getName());
-         }
+            }
          }
          // error case, return after
          return 1;

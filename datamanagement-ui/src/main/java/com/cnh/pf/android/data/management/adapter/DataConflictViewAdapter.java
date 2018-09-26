@@ -268,6 +268,7 @@ public class DataConflictViewAdapter extends DataManagementBaseAdapter {
    }
 
    @Override
+   @SuppressWarnings("squid:CommentedOutCodeLine")
    protected ViewHolder updateView(ViewHolder convertView) {
       //if datatype changed, notify for change
       checkAndNotifyConflictTypeChange();

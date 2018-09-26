@@ -64,6 +64,11 @@ public class DatasourceHelper {
        * @param updateNeeded     true if view (UI) update is needed
        */
       void onConnectionChange(Address[] left, Address[] join, boolean updateNeeded);
+
+      /**
+       * Callback when there is a change in cloud datasource connection
+       */
+      void onCloudConnectionChange();
    }
 
    /**
@@ -82,15 +87,41 @@ public class DatasourceHelper {
          @Override
          public void run() {
             addJoinedAddresses(diff[0]);
+            boolean cloudChanged = cloudConnectionChanged(diff[1], diff[0]);
             boolean updateNeeded = viewUpdateNeeded(diff[1], diff[0]);
             // NOTE: viewUpdateNeeded() needs to look at info associated with LEFT addresses. Remove left
             // addresses after calling viewUpdateNeeded().
             removeLeftAddresses(diff[1]);
             if (listener != null) {
                listener.onConnectionChange(diff[1], diff[0], updateNeeded);
+               if (cloudChanged) listener.onCloudConnectionChange();
             }
          }
       }.start();
+   }
+
+   /**
+    * Return true if there is a change in CLOUD datasource connection.
+    *
+    * @param left       left nodes
+    * @param joined     joined nodes
+    * @return
+    */
+   private boolean cloudConnectionChanged(Address[] left, Address[] joined) {
+      // CLOUD datasource left the group.
+      for (Address addr : left) {
+         if (Datasource.LocationType.CLOUD.equals(findLocationType(addr))) {
+            return true;
+         }
+      }
+
+      // CLOUD datasource joined the group.
+      for (Address addr : joined) {
+         if (Datasource.LocationType.CLOUD.equals(findLocationType(addr))) {
+            return true;
+         }
+      }
+      return false;
    }
 
    /**
