@@ -60,11 +60,13 @@ public class ProcessDialog extends DialogView {
    }
 
    public void init() {
-      setThirdButtonText(cancelStr);
-      showSecondButton(false);
       showFirstButton(false);
+      showSecondButton(false);
+      showThirdButton(false);
+      showFourthButton(false);
+      setFifthButtonEnabled(true);
+      setFifthButtonText(cancelStr);
       setDismissOnButtonClick(false);
-
       LayoutInflater inflater = ((Activity) getContext()).getLayoutInflater();
       View view = inflater.inflate(R.layout.progress_layout, null);
       pbBar = (ProgressBarView) view.findViewById(R.id.progress_bar);

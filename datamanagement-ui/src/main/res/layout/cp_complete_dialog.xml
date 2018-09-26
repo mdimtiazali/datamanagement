@@ -12,28 +12,41 @@
               android:gravity="center_horizontal"
               android:layout_width="match_parent"
               android:layout_height="match_parent">
+    <View android:id="@+id/span"
+          android:layout_width="match_parent"
+          android:layout_height="44dp"/>
     <ImageView android:layout_width="wrap_content"
                android:layout_height="wrap_content"
                android:id="@+id/icon"
                android:src="@drawable/checkmark"
-               android:layout_marginTop="12dp"
-               android:layout_gravity="center_horizontal"/>
+               android:layout_marginTop="44dp"/>
     <TextView android:layout_width="wrap_content"
               android:layout_height="wrap_content"
               android:id="@+id/notice"
-              android:layout_marginTop="16dp"
-              android:textStyle="bold"
-              android:textSize="22sp"
-              android:gravity="center"/>
-    <com.cnh.pf.android.data.management.dialog.SimpleTreeView
-            android:layout_width="wrap_content"
-            android:layout_height="0dp"
-            android:layout_weight="1"
-            android:layout_marginTop="16dp"
-            android:divider="@null"
-            android:listSelector="#00000000"
-            android:id="@+id/simpletreeview"
-            android:layout_gravity="center"/>
-
+              android:layout_marginTop="32dp"
+              android:textSize="24sp"
+              style="@style/TextAppearance.Roboto.Bold"
+              android:textColor="@color/copy_title_text_color"/>
+    <RelativeLayout android:layout_width="match_parent"
+                    android:layout_height="0dp"
+                    android:layout_weight="1" >
+        <TextView android:layout_width="match_parent"
+                  android:layout_height="wrap_content"
+                  android:layout_marginTop="26dp"
+                  android:id="@+id/singleitem"
+                  android:gravity="center_horizontal"
+                  style="@style/TextAppearance.Roboto.Bold"
+                  android:textSize="22sp"
+                  android:textColor="@color/copy_title_text_color"/>
+        <com.cnh.pf.android.data.management.dialog.SimpleTreeView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="12dp"
+                android:divider="@null"
+                android:listSelector="#00000000"
+                android:id="@+id/simpletreeview"
+                android:paddingEnd="64dp"
+                android:paddingStart="64dp"/>
+    </RelativeLayout>
 
 </LinearLayout>

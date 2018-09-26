@@ -13,6 +13,7 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.BaseAdapter;
+import android.widget.ImageView;
 import android.widget.RadioButton;
 import android.widget.TextView;
 import com.cnh.jgroups.DataTypes;
@@ -94,14 +95,17 @@ public class GFFAdapter extends BaseAdapter {
                     fieldViewholder = new FieldViewHolder();
                     view = inflater.inflate(R.layout.field_item,null);
                     fieldViewholder.radioButton = (RadioButton) view.findViewById(R.id.checkbox);
+                    fieldViewholder.icon = (ImageView) view.findViewById(R.id.field_icon);
                     fieldViewholder.name = (TextView) view.findViewById(R.id.field_name);
                     view.setTag(fieldViewholder);
                 }
                 else{
                     fieldViewholder = (FieldViewHolder) view.getTag();
                 }
+                fieldViewholder.icon.setImageResource(TreeEntityHelper.getIcon(data.get(i).getType()));
                 fieldViewholder.name.setText(data.get(i).getName());
                 log.debug("the selectedPosition is {}",selectedPosition);
+                fieldViewholder.radioButton.setButtonDrawable(R.drawable.extended_radio_button_selector);
                 fieldViewholder.radioButton.setChecked(i == selectedPosition? true:false);
                 break;
             default:
@@ -152,6 +156,7 @@ public class GFFAdapter extends BaseAdapter {
     }
     class FieldViewHolder{
         RadioButton radioButton;
+        ImageView icon;
         TextView name;
     }
 }

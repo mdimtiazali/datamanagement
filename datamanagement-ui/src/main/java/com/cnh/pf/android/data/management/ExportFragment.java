@@ -141,7 +141,6 @@ public class ExportFragment extends BaseDataFragment {
    private ProgressValue progressValue = ProgressValue.initProgress();
 
    private String loading_string;
-   private String x_of_y_format;
 
    private TextDialogView lastDialogView;
    private static final int CANCEL_DIALOG_WIDTH = 550;
@@ -241,7 +240,7 @@ public class ExportFragment extends BaseDataFragment {
       exportDefaultIcon = resources.getDrawable(R.drawable.export_icon);
 
       loading_string = resources.getString(R.string.loading_string);
-      x_of_y_format = resources.getString(R.string.x_of_y_format);
+
       vipDataHelperListener = new VipDataHelperListener();
    }
 
@@ -515,7 +514,7 @@ public class ExportFragment extends BaseDataFragment {
       for (Map.Entry<UtilityHelper.MediumVariant, Integer> entry : resourceMap.entrySet()) {
          UtilityHelper.MediumVariant mediumVariant = entry.getKey();
 
-         if (SessionExtra.USB == mediumVariant.getExtraType() && Environment.getExternalStorageState().equals(Environment.MEDIA_MOUNTED)) {
+         if ( (useInternalFileSystem) || (SessionExtra.USB == mediumVariant.getExtraType() && Environment.getExternalStorageState().equals(Environment.MEDIA_MOUNTED)) ) {
             Integer resId = resourceMap.get(mediumVariant);
             SessionExtra newExtra = new SessionExtra(SessionExtra.USB, getResources().getString(resId), mediumVariant.getValue());
             newExtra.setBasePath(basePath);
@@ -765,8 +764,9 @@ public class ExportFragment extends BaseDataFragment {
 
    private void updateProgressbar(ProgressValue progressVal) {
       final Double percent = ((progressVal.getCurrentValue() * 1.0) / progressVal.getMaxValue()) * 100;
-      progressBar.setProgress(percent.intValue());
-      progressBar.setSecondText(true, loading_string, String.format(x_of_y_format, progressVal.getCurrentValue(), progressVal.getMaxValue()), true);
+      int calcProgress = percent.intValue();
+      progressBar.setProgress(calcProgress > 100 ? 100 : calcProgress);
+      progressBar.setTitle(loading_string);
    }
 
    @Override
@@ -919,7 +919,6 @@ public class ExportFragment extends BaseDataFragment {
          logger.debug("Set Progress bar error");
          Resources resources = getResources();
          String errorString = resources.getString(R.string.pb_error);
-         progressBar.setSecondText(true, errorString, null, true);
          progressBar.setErrorProgress(resources.getInteger(R.integer.error_percentage_value), errorString);
          stopButton.setVisibility(View.GONE);
       }
@@ -945,7 +944,7 @@ public class ExportFragment extends BaseDataFragment {
       stopButton.setVisibility(View.VISIBLE);
       progressBar.setProgress(0);
       progressBar.setShowProgress(false);
-      progressBar.setSecondText(true, loading_string, null, true);
+      progressBar.setTitle(loading_string);
       //set visibility of sections
       exportFinishedStatePanel.setVisibility(View.GONE);
       exportDropZone.setVisibility(View.GONE);

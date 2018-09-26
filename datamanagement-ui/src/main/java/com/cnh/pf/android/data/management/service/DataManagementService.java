@@ -457,6 +457,10 @@ public class DataManagementService extends RoboService implements SharedPreferen
             @Override
             public void onConnectionChange(Address[] left, Address[] join, boolean updateNeeded) {
                notifyChannelConnectionChange(updateNeeded);
+            }
+
+            @Override
+            public void onCloudConnectionChange() {
                notifyMediumUpdate();
             }
          });

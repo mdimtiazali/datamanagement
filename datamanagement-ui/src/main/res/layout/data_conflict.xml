@@ -45,7 +45,7 @@
                 android:layout_width="@dimen/import_conflict_dialog_title_width"
                 android:layout_height="@dimen/import_conflict_dialog_title_height"
                 android:layout_marginLeft="@dimen/import_conflict_dialog_title_margin_left"
-                android:gravity="left"
+                android:gravity="left|center_vertical"
                 style="@style/TextAppearance.Data.Conflict"
                 android:text="@string/duplicate_file"/>
     </LinearLayout>
@@ -58,10 +58,12 @@
                  android:gravity="center_vertical">
         <TableRow>
             <TextView
-                    android:text="@string/import_conflict_dialog_existing_field_text"
+                    android:id="@+id/import_conflict_dialog_existing_title"
+                    android:text="@string/import_conflict_dialog_existing_text"
                     style="@style/ImportConfigTableHeader"/>
             <TextView
-                    android:text="@string/import_conflict_dialog_new_field_text"
+                    android:id="@+id/import_conflict_dialog_new_title"
+                    android:text="@string/import_conflict_dialog_new_text"
                     style="@style/ImportConfigTableHeader"/>
         </TableRow>
         <TableRow>
@@ -89,11 +91,12 @@
                 android:layout_height="match_parent"
                 android:id="@+id/import_conflict_dialog_reuse_action_checkbox"/>
         <TextView
+                android:id="@+id/import_conflict_dialog_reuse_action_checkbox_label"
                 style="@style/CheckBoxLabelBig"
                 android:layout_marginLeft="@dimen/import_conflict_dialog_checkbox_label_spacing"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="@string/import_conflict_dialog_reuse_action_text"/>
+                android:text="@string/import_conflict_dialog_reuse_other_action_text"/>
     </LinearLayout>
 
 </LinearLayout>

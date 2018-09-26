@@ -473,11 +473,12 @@ public class ManageFragment extends BaseDataFragment implements DmAccessibleObse
             List<Integer> ids = new LinkedList<Integer>();
             List<String> names = new LinkedList<String>();
             for(ObjectGraph o:pasteObjects){
-               ids.add(TreeEntityHelper.getSubtypeIcon(o));
+               ids.add(TreeEntityHelper.getIcon(o));
                names.add(o.getName());
             }
             ((TabActivity)getActivity()).showModalPopup(new CpCompleteDialog(getActivity(),lastDestinationObj.getName(),swathFolderIcon,swathFolderName,ids,names));
             lastDestinationObj = null;
+            clearTreeSelection();
          }
       }
       else if (SessionUtil.isDeleteTask(session)) {
@@ -545,9 +546,9 @@ public class ManageFragment extends BaseDataFragment implements DmAccessibleObse
       return false;
    }
 
-   //remove the empty group item
+   //remove the empty group items
    private void removeParentEmptyGroup(List<ObjectGraph> list) {
-      Set<ObjectGraph> emptyGroup = new HashSet<ObjectGraph>();
+      List<ObjectGraph> emptyGroup = new LinkedList<ObjectGraph>();
       List<ObjectGraph> siblingsOrParent = null;
       for (ObjectGraph o : list) {
          if (TreeEntityHelper.obj2group.containsKey(o.getType())) {
@@ -557,6 +558,20 @@ public class ManageFragment extends BaseDataFragment implements DmAccessibleObse
                   for (ObjectGraph gg : ggoups) {
                      if (gg.getType().equals(TreeEntityHelper.group2group.get(TreeEntityHelper.obj2group.get(o.getType())))) {
                         siblingsOrParent = manager.getChildren(gg);
+                        boolean ggEmpty = true;
+                        if (siblingsOrParent != null && !siblingsOrParent.isEmpty()) {
+                           for (ObjectGraph obj : siblingsOrParent) {
+                              if (obj instanceof GroupObjectGraph && isEmptyGroup(obj) && !emptyGroup.contains(obj)) {
+                                 emptyGroup.add(obj);
+                              }
+                              else{
+                                 ggEmpty = false;
+                              }
+                           }
+                        }
+                        if(ggEmpty && !emptyGroup.contains(gg)){
+                           emptyGroup.add(gg);
+                        }
                         break;
                      }
                   }
@@ -564,19 +579,22 @@ public class ManageFragment extends BaseDataFragment implements DmAccessibleObse
             }
             else {
                siblingsOrParent = manager.getChildren(o.getParent());
-            }
-            if (siblingsOrParent != null && !siblingsOrParent.isEmpty()) {
-               for (ObjectGraph obj : siblingsOrParent) {
-                  if (obj instanceof GroupObjectGraph && isEmptyGroup(obj) && !emptyGroup.contains(obj)) {
-                     emptyGroup.add(obj);
+               if (siblingsOrParent != null && !siblingsOrParent.isEmpty()) {
+                  for (ObjectGraph obj : siblingsOrParent) {
+                     if (obj instanceof GroupObjectGraph && isEmptyGroup(obj) && !emptyGroup.contains(obj)) {
+                        emptyGroup.add(obj);
+                     }
                   }
                }
             }
+
          }
       }
       if (!emptyGroup.isEmpty()) {
          manager.removeNodesRecursively(new LinkedList<ObjectGraph>(emptyGroup));
       }
+
+
    }
 
    // find out what object in change were removed compared with base object.
@@ -751,18 +769,18 @@ public class ManageFragment extends BaseDataFragment implements DmAccessibleObse
                      copyButton.setVisibility(View.VISIBLE);
                   }
                   else {
-                     copyButton.setVisibility(View.INVISIBLE);
+                     copyButton.setVisibility(View.GONE);
                   }
                   if (isSupportedEdit(node)) {
                      editButton.setVisibility(View.VISIBLE);
                   }
                   else {
-                     editButton.setVisibility(View.INVISIBLE);
+                     editButton.setVisibility(View.GONE);
                   }
                }
                else {
-                  copyButton.setVisibility(View.INVISIBLE);
-                  editButton.setVisibility(View.INVISIBLE);
+                  copyButton.setVisibility(View.GONE);
+                  editButton.setVisibility(View.GONE);
                }
             }
 

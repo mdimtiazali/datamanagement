@@ -207,10 +207,12 @@ public class PerformOperationsTask extends SessionOperationTask<Void> {
    private void moveFilesToUSB(@Nonnull Session session, @Nonnull SessionExtra extra) throws SessionException {
       if (extra != null && extra.isUsbExtra() && SessionUtil.isExportAction(session)) {
          if (!Environment.getExternalStorageState().equals(MEDIA_MOUNTED)) {
+            if (!extra.isUseInternalFileSystem()) {
             logger.info("USB is not mounted, so throw error.");
             session.setResultCode(Process.Result.ERROR);
             notifier.notifySessionError(session, ErrorCode.USB_REMOVED);
             throw new SessionException(ErrorCode.USB_REMOVED);
+         }
          }
 
          boolean moveWasSuccessfull = false;
@@ -267,7 +269,7 @@ public class PerformOperationsTask extends SessionOperationTask<Void> {
             throw new SessionException(ErrorCode.PERFORM_ERROR);
          }
       } else if (extra != null && extra.isUsbExtra() && SessionUtil.isImportAction(session)) {
-         if (!Environment.getExternalStorageState().equals(MEDIA_MOUNTED)) {
+         if ( (!Environment.getExternalStorageState().equals(MEDIA_MOUNTED)) && (!extra.isUseInternalFileSystem()) ) {
             logger.info("USB is not mounted, so throw error.");
             session.setResultCode(Process.Result.ERROR);
             notifier.notifySessionError(session, ErrorCode.USB_REMOVED);

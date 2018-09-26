@@ -104,11 +104,13 @@ public abstract class DataManagementBaseAdapter {
       while (position < operationList.size() && !shouldShowView()) {
          position++;
       }
-      if (position == operationList.size()) {
-         onTargetsSelectedListener.onCompletion(operationList);
-      }
-      else {
-         onTargetSelectedListener.onTargetSelected();
+      if (onTargetsSelectedListener != null) {
+         if (position == operationList.size()) {
+            onTargetsSelectedListener.onCompletion(operationList);
+         }
+         else {
+            onTargetSelectedListener.onTargetSelected();
+         }
       }
    }
 
@@ -141,10 +143,16 @@ public abstract class DataManagementBaseAdapter {
     * Generic actions for the dialog buttons
     */
    public enum Action {
-      ACTION1, ACTION2;
+      ACTION1, ACTION2, ACTION3, ACTION4;
    }
 
+   /**
+    * This interface defines the action to be performed as a button is pressed
+    */
    public interface OnActionSelectedListener {
+      /**
+       * Method to be called if a button is pressed
+       */
       void onButtonSelected(DialogView dialog, Action action);
    }
 

@@ -10,6 +10,7 @@
 package com.cnh.pf.android.data.management;
 
 import static android.os.Environment.MEDIA_BAD_REMOVAL;
+import static android.os.Environment.MEDIA_MOUNTED;
 
 import static com.cnh.pf.android.data.management.utility.UtilityHelper.MAX_TREE_SELECTIONS_FOR_DEFAULT_TEXT_SIZE;
 
@@ -53,6 +54,7 @@ import com.cnh.pf.android.data.management.session.SessionExtra;
 import com.cnh.pf.android.data.management.session.SessionUtil;
 import com.cnh.pf.android.data.management.utility.UtilityHelper;
 
+import com.cnh.pf.datamng.Process;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -108,6 +110,10 @@ public class ImportFragment extends BaseDataFragment {
    String selectTargetStr;
    @InjectResource(R.string.next)
    String nextStr;
+   @InjectResource(R.string.skip)
+   String skipStr;
+   @InjectResource(R.string.merge)
+   String mergeStr;
    @InjectView(R.id.operation_name)
    TextView operationName;
 
@@ -127,7 +133,7 @@ public class ImportFragment extends BaseDataFragment {
    private TextDialogView lastCancelDialogView; //used to keep track of the cancel dialog (should be closed if open if process is finished)
 
    private String loadingString;
-   private String xOfYFormat;
+
    private int whiteTextColor;
    private int defaultTextColor;
 
@@ -157,7 +163,6 @@ public class ImportFragment extends BaseDataFragment {
 
       final Resources resources = getResources();
       loadingString = resources.getString(R.string.loading_string);
-      xOfYFormat = resources.getString(R.string.x_of_y_format);
 
       whiteTextColor = resources.getColor(R.color.drag_drop_white_text_color);
       defaultTextColor = resources.getColor(R.color.drag_drop_default_text_color);
@@ -238,7 +243,7 @@ public class ImportFragment extends BaseDataFragment {
    public void onMyselfSessionCancelled(Session session) {
       logger.debug("onMyselfSessionCancelled(): {}, {}", session.getType(), session.getAction());
       if (SessionUtil.isPerformOperationsTask(session) || SessionUtil.isDiscoveryTask(session)) {
-         ToastMessageCustom.makeToastMessageText(getActivity().getApplicationContext(), getString(R.string.export_cancel), Gravity.TOP | Gravity.CENTER_HORIZONTAL,
+         ToastMessageCustom.makeToastMessageText(getActivity().getApplicationContext(), getString(R.string.import_cancel), Gravity.TOP | Gravity.CENTER_HORIZONTAL,
                getResources().getInteger(R.integer.toast_message_xoffset), getResources().getInteger(R.integer.toast_message_yoffset)).show();
          clearTreeSelection();
       }
@@ -352,24 +357,65 @@ public class ImportFragment extends BaseDataFragment {
             processDialog.setDimensionsNoPadding(conflictDialogWidth, conflictDialogHeight);
             processDialog.setAdapter(adapter);
             processDialog.setTitle(dataConflictStr);
-            processDialog.showFirstButton(true);
-            processDialog.setFirstButtonText(keepBothStr);
+            //default button behaviour
+            processDialog.showFirstButton(false);
             processDialog.showSecondButton(true);
-            processDialog.setSecondButtonText(replaceStr);
+            processDialog.setSecondButtonText(keepBothStr);
+            processDialog.setThirdButtonEnabled(true);
+            processDialog.setThirdButtonText(replaceStr);
+            processDialog.setFourthButtonEnabled(true);
+            processDialog.setFourthButtonText(skipStr);
             processDialog.clearLoading();
-
+            adapter.setOnConflictTypeChangedListener(new DataConflictViewAdapter.OnConflictTypeChangedListener() {
+               @Override
+               public void onConflictTypeChanged(DataConflictViewAdapter.ConflictDataType currentConflictType) {
+                  //react on config type changed
+                  if (DataConflictViewAdapter.ConflictDataType.GFF.equals(currentConflictType)) {
+                     //is gff, show merge
+                     processDialog.showFirstButton(true);
+                     processDialog.setFirstButtonText(mergeStr);
+                     processDialog.showSecondButton(true);
+                     processDialog.setSecondButtonText(keepBothStr);
+                     processDialog.setThirdButtonEnabled(true);
+                     processDialog.setThirdButtonText(replaceStr);
+                     processDialog.setFourthButtonEnabled(true);
+                     processDialog.setFourthButtonText(skipStr);
+                  }
+                  else {
+                     //is other, hide merge
+                     processDialog.showFirstButton(false);
+                     processDialog.showSecondButton(true);
+                     processDialog.setSecondButtonText(keepBothStr);
+                     processDialog.setThirdButtonEnabled(true);
+                     processDialog.setThirdButtonText(replaceStr);
+                     processDialog.setFourthButtonEnabled(true);
+                     processDialog.setFourthButtonText(skipStr);
+                  }
+               }
+            });
             //show add custom cancel handling
             final DataManagementBaseAdapter.OnActionSelectedListener listener = adapter.getActionListener();
             processDialog.setOnButtonClickListener(new DialogViewInterface.OnButtonClickListener() {
                @Override
                public void onButtonClick(DialogViewInterface dialog, int which) {
                   if (which == DialogViewInterface.BUTTON_FIRST) {
+                     //merge button
                      listener.onButtonSelected(processDialog, DataManagementBaseAdapter.Action.ACTION1);
                   }
                   else if (which == DialogViewInterface.BUTTON_SECOND) {
+                     //keep both button
                      listener.onButtonSelected(processDialog, DataManagementBaseAdapter.Action.ACTION2);
                   }
                   else if (which == DialogViewInterface.BUTTON_THIRD) {
+                     //replace button
+                     listener.onButtonSelected(processDialog, DataManagementBaseAdapter.Action.ACTION3);
+                  }
+                  else if (which == DialogViewInterface.BUTTON_FOURTH) {
+                     //skip button
+                     listener.onButtonSelected(processDialog, DataManagementBaseAdapter.Action.ACTION4);
+                  }
+                  else if (which == DialogViewInterface.BUTTON_FIFTH) {
+                     //cancel button
                      listener.onButtonSelected(processDialog, null);
                      //Show confirmation cancel-dialog
                      DialogViewInterface.OnButtonClickListener onButtonClickListener = new DialogViewInterface.OnButtonClickListener() {
@@ -430,7 +476,7 @@ public class ImportFragment extends BaseDataFragment {
          }
       }
       else if (SessionUtil.isPerformOperationsTask(session)) {
-         logger.trace("Import process has been completed. Reset session.");
+         logger.trace("Import process has been completed. Resume session.");
 
          hideStartMessage();
          showTreeList();
@@ -443,10 +489,6 @@ public class ImportFragment extends BaseDataFragment {
          ToastMessageCustom.makeToastMessageText(getActivity().getApplicationContext(), getString(R.string.import_complete), Gravity.TOP | Gravity.CENTER_HORIZONTAL,
                getResources().getInteger(R.integer.toast_message_xoffset), getResources().getInteger(R.integer.toast_message_yoffset)).show();
 
-         resetSession();
-         hideTreeList();
-         setHeaderText("");
-         showStartMessage();
          updateSelectAllState();
 
          //close cancel dialog if still open
@@ -508,13 +550,13 @@ public class ImportFragment extends BaseDataFragment {
    private void updateImportButton() {
       Session s = getSession();
       boolean isActiveOperation = ((SessionUtil.isCalculateConflictsTask(s) || SessionUtil.isCalculateOperationsTask(s)) && Session.State.COMPLETE.equals(s.getState()))
-            || (SessionUtil.isPerformOperationsTask(s) && s.getResultCode() == null);
+            || (SessionUtil.isPerformOperationsTask(s) && (s.getResultCode() == null || Process.Result.ERROR.equals(s.getResultCode())));
       boolean connected = getSessionManager().isServiceConnected();
       boolean hasSelection = getTreeAdapter() != null && getTreeAdapter().hasSelection();
       boolean defaultButtonText = true;
       if (getTreeAdapter() != null && getTreeAdapter().getSelectionMap() != null) {
          int selectedItemCount = countSelectedItem();
-         if (selectedItemCount > 0) {
+         if (selectedItemCount > 0 && !isActiveOperation) {
             defaultButtonText = false;
             Resources resources = getResources();
             importSelectedBtn.setText(resources.getString(R.string.import_selected) + " (" + selectedItemCount + ")");
@@ -540,6 +582,10 @@ public class ImportFragment extends BaseDataFragment {
       if (connected && hasSelection && !isActiveOperation && s != null) {
          importSelectedBtn.setEnabled(true);
          importDropZone.setBackgroundResource(R.drawable.dashed_border_selected);
+      }
+      else if (isActiveOperation) {
+         importSelectedBtn.setEnabled(false);
+         importSelectedBtn.setText(getResources().getString(R.string.import_selected));
       }
       else {
          importSelectedBtn.setEnabled(false);
@@ -666,8 +712,10 @@ public class ImportFragment extends BaseDataFragment {
       if (!requestAndUpdateBlockedOverlay(getBlockingActions())) {
          final Session session = getSession();
 
-         if ((SessionUtil.isPerformOperationsTask(session) && SessionUtil.isComplete(session)) || SessionUtil.isCancelled(session)) {
-            // This could happen when the import completes while the user focus is on other tab.
+         if (!MEDIA_MOUNTED.equals(Environment.getExternalStorageState()) || (SessionUtil.isPerformOperationsTask(session) && SessionUtil.isComplete(session))
+               || SessionUtil.isCancelled(session)) {
+            // This could happen when the import completes while the user focus is on other tab
+            // OR the usb stick was removed while import was not open.
             // In that case, reset session & tree selection before updating UI.
             resetSession();
             clearTreeSelection();
@@ -761,7 +809,7 @@ public class ImportFragment extends BaseDataFragment {
          importDropZone.setVisibility(View.GONE);
          progressBar.setProgress(0);
          progressBar.setShowProgress(false);
-         progressBar.setSecondText(true, loadingString, null, true);
+         progressBar.setTitle(loadingString);
          importFinishedStatePanel.setVisibility(View.GONE);
          leftStatus.setVisibility(View.VISIBLE);
       }
@@ -809,7 +857,7 @@ public class ImportFragment extends BaseDataFragment {
       leftStatus.setVisibility(View.VISIBLE);
       Resources resources = getResources();
       String errorString = resources.getString(R.string.pb_error);
-      progressBar.setSecondText(true, errorString, null, true);
+      progressBar.setTitle(errorString);
       progressBar.setErrorProgress(resources.getInteger(R.integer.error_percentage_value), errorString);
 
       //post cleanup to show drag and drop zone after time X
@@ -839,8 +887,8 @@ public class ImportFragment extends BaseDataFragment {
          }
          else {
             //non targets / conflict operations are supposed to be performing progress updates
-            progressBar.setProgress(percent);
-            progressBar.setSecondText(true, loadingString, String.format(xOfYFormat, progress, max), true);
+            progressBar.setProgress(percent > 100 ? 100 : percent);
+            progressBar.setTitle(loadingString);
          }
       }
       else {
@@ -927,7 +975,7 @@ public class ImportFragment extends BaseDataFragment {
          processDialog.setOnButtonClickListener(new DialogViewInterface.OnButtonClickListener() {
             @Override
             public void onButtonClick(DialogViewInterface dialog, int which) {
-               if (which == DialogViewInterface.BUTTON_THIRD) {
+               if (which == DialogViewInterface.BUTTON_FIFTH) {
                   //cancel button has been clicked
                   //Show confirmation cancel-dialog
                   DialogViewInterface.OnButtonClickListener onButtonClickListener = new DialogViewInterface.OnButtonClickListener() {
@@ -1032,7 +1080,11 @@ public class ImportFragment extends BaseDataFragment {
       logger.trace("ImportFragment onMediumUpdate()");
       if (Environment.getExternalStorageState().equals(MEDIA_BAD_REMOVAL)) {
          logger.debug("onMediumUpdate() - Reset the import screen.");
+         resetSession();
          setHeaderText("");
+         hideTreeList();
+         processOverlay.setMode(DataExchangeProcessOverlay.MODE.HIDDEN);
+         showStartMessage();
          updateImportButton();
          updateSelectAllState();
       }
