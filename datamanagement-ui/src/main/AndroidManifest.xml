@@ -14,7 +14,7 @@
       <meta-data android:name="roboguice.annotations.packages" android:value="com.cnh.pf.android.data.management,com.cnh.pf.jgroups"/>
       <meta-data android:name="FILE_SYSTEM" android:value="INTERNAL_FLASH" />
       <meta-data android:name="FILE_SYSTEM_LOCATION" android:value="/tmp/datamanagement" />
-      <meta-data android:name="DATASOURCE_PERF_FLAG" android:value="Disabled" />
+      <meta-data android:name="DATASOURCE_PERF_FLAG" android:value="Enabled" />
       <activity android:label="@string/app_name" android:name=".DataManagementActivity" android:windowSoftInputMode="adjustPan">
          <intent-filter>
             <action android:name="android.intent.action.MAIN"/>
