@@ -422,18 +422,20 @@ public class DataManagementActivity extends TabActivity implements RoboContext {
       logger.debug("onCreate called");
 
       try {
-         ApplicationInfo appInfo = getPackageManager().getApplicationInfo(this.getPackageName(), PackageManager.GET_META_DATA);
-         Bundle bundle = appInfo.metaData;
-         String storageType = bundle.getString(PACKAGE_FILE_SYSTEM);
-         String storageLocation = bundle.getString(PACKAGE_FILE_SYSTEM_LOCATION);
-         if ((storageType != null) && (storageLocation != null)) {
-            UtilityHelper.setPreference(UtilityHelper.STORAGE_LOCATION_TYPE, storageType, this);
-            UtilityHelper.setPreference(UtilityHelper.STORAGE_LOCATION, storageLocation, this);
-         }
-         String dsPerfFlag = bundle.getString(PACKAGE_DS_PERF_FLAG);
-         BaseDataFragment.setDsPerfFlag(false);
-         if((dsPerfFlag != null) && dsPerfFlag.equals("Enabled")) {
-            BaseDataFragment.setDsPerfFlag(true);
+         if(getPackageManager() != null) {
+            ApplicationInfo appInfo = getPackageManager().getApplicationInfo(this.getPackageName(), PackageManager.GET_META_DATA);
+            Bundle bundle = appInfo.metaData;
+            String storageType = bundle.getString(PACKAGE_FILE_SYSTEM);
+            String storageLocation = bundle.getString(PACKAGE_FILE_SYSTEM_LOCATION);
+            if ((storageType != null) && (storageLocation != null)) {
+               UtilityHelper.setPreference(UtilityHelper.STORAGE_LOCATION_TYPE, storageType, this);
+               UtilityHelper.setPreference(UtilityHelper.STORAGE_LOCATION, storageLocation, this);
+            }
+            String dsPerfFlag = bundle.getString(PACKAGE_DS_PERF_FLAG);
+            BaseDataFragment.setDsPerfFlag(false);
+            if ((dsPerfFlag != null) && dsPerfFlag.equals("Enabled")) {
+               BaseDataFragment.setDsPerfFlag(true);
+            }
          }
       }
       catch (NameNotFoundException e) {

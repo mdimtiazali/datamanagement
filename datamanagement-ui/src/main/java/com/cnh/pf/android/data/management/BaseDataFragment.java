@@ -93,7 +93,7 @@ public abstract class BaseDataFragment extends RoboFragment implements SessionCo
    private SessionContract.SessionManager sessionManager;
 
    private List<String> dataTreeRootNodesWithAutomaticParentSelection = null;
-   private static boolean dsPerfFlag = false;
+   private static boolean dsPerfFlag = true;
 
    public static boolean isDsPerfFlag() {
       return dsPerfFlag;
@@ -696,8 +696,8 @@ public abstract class BaseDataFragment extends RoboFragment implements SessionCo
       }
       else {
          addToTree(objectGraphs);
-         sortTreeList();
       }
+      sortTreeList();
       createTreeAdapter();
 
       treeAdapter.setData(objectGraphs);
@@ -796,7 +796,6 @@ public abstract class BaseDataFragment extends RoboFragment implements SessionCo
          addOneObjectGraph(null, objectGraph);
       }
       removeEmptyNodes(null);
-      List<ObjectGraph> tmpLIst =  manager.getChildren(null);
    }
 
    private void removeEmptyNodes(ObjectGraph parent) {
