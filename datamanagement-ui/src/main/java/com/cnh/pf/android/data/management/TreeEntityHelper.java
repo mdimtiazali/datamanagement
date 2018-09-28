@@ -143,7 +143,7 @@ public class TreeEntityHelper {
       SWATH_ICONS.put(SwathType.HEADING, R.drawable.dt_icon_swath_heading);
       SWATH_ICONS.put(SwathType.CURVE, R.drawable.dt_icon_swath_curve);
       SWATH_ICONS.put(SwathType.PIVOT, R.drawable.ic_data_tree_pivot);
-      SWATH_ICONS.put(SwathType.SPIRAL_PIVOT, R.drawable.ic_data_tree_spiral_swath);
+      SWATH_ICONS.put(SwathType.SPIRAL_CURVE, R.drawable.ic_data_tree_spiral_swath);
 
       PRODUCTFORM_ICONS.put(ProductForm.ANHYDROUS, R.drawable.ic_data_anhydrous);
       PRODUCTFORM_ICONS.put(ProductForm.GRANULAR, R.drawable.ic_data_tree_granular);
