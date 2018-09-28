@@ -20,6 +20,7 @@ import android.widget.TextView;
 
 import com.cnh.jgroups.DataTypes;
 import com.cnh.jgroups.ObjectGraph;
+import com.cnh.pf.android.data.management.adapter.ObjectTreeViewAdapter;
 import com.cnh.pf.android.data.management.helper.DataExchangeBlockedOverlay;
 import com.cnh.pf.android.data.management.misc.DeleteButton;
 import com.cnh.pf.android.data.management.service.DataManagementService;
@@ -29,18 +30,16 @@ import com.cnh.pf.model.product.library.Product;
 
 import org.junit.Before;
 import org.junit.Test;
-import org.junit.runner.RunWith;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
 import org.robolectric.Robolectric;
-import org.robolectric.RobolectricMavenTestRunner;
 import org.robolectric.RuntimeEnvironment;
-import org.robolectric.annotation.Config;
 import org.robolectric.shadows.ShadowListView;
 import org.robolectric.util.ActivityController;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Set;
 import java.util.UUID;
 import pl.polidea.treeview.TreeViewList;
 import roboguice.RoboGuice;
@@ -55,9 +54,12 @@ import static org.junit.Assert.assertTrue;
 import static org.mockito.Mockito.when;
 import static org.robolectric.Shadows.shadowOf;
 
-@RunWith(RobolectricMavenTestRunner.class)
-@Config(manifest = "src/main/AndroidManifest.xml", application = TestApp.class)
-public class ManageFragmentTest {
+/**
+ *  Tests for the manage fragment
+ *
+ * @author vogt
+ */
+public class ManageFragmentTest extends BaseTestRobolectric {
    private DataManagementActivity activity;
    @Mock
    DataManagementService service;
@@ -71,11 +73,10 @@ public class ManageFragmentTest {
       ActivityController<DataManagementActivity> controller = Robolectric.buildActivity(DataManagementActivity.class);
       activity = controller.get();
       when(binder.getService()).thenReturn(service);
-      shadowOf(RuntimeEnvironment.application)
-         .setComponentNameAndServiceForBindService(new ComponentName(activity.getPackageName(), DataManagementService.class.getName()), binder);
+      shadowOf(RuntimeEnvironment.application).setComponentNameAndServiceForBindService(new ComponentName(activity.getPackageName(), DataManagementService.class.getName()), binder);
       //Start activity
       controller.create().start().resume();
-      //      sessionManager = activity.sessionManager;
+
    }
 
    @Test
@@ -121,10 +122,11 @@ public class ManageFragmentTest {
       //selecting "Crop and Product Library"
       //header text should have been changed and delete button should have been enabled
       int cropId = shadowListView.findIndexOfItemContainingText("Crop");
-      assertThat(headerTextView.getText().toString(), is("3 Items Selected"));
+      assertThat(headerTextView.getText().toString(), is("6 Items Selected"));
+      //deselect root folder
+      shadowListView.clickFirstItemContainingText("Crop");
 
       expandListItem(treeViewList, cropId);
-      shadowListView.clickFirstItemContainingText("Products");
       int productsId = shadowListView.findIndexOfItemContainingText("Products");
 
       shadowListView.populateItems();
@@ -199,7 +201,7 @@ public class ManageFragmentTest {
 
       assertThat(viewById.getVisibility(), is(View.VISIBLE));
       TextView textview = (TextView) viewById.findViewById(R.id.delete_confirm_tv);
-      assertThat(textview.getText().toString(), containsString("3 items"));
+      assertThat(textview.getText().toString(), containsString("6 items"));
 
       //check cancel dialog
       Button cancleBtn = (Button) viewById.findViewById(R.id.btSecond);
@@ -257,6 +259,109 @@ public class ManageFragmentTest {
       shadowOf(dialogRoot).callOnAttachedToWindow();
 
       assertThat(editDialogView.getVisibility(), is(View.VISIBLE));
+
+   }
+
+   /**
+    * PolarionId: CH26_UI-17224
+    */
+   @Test
+   public void testTreeSelection_whenSelectingParentFolder_thanAllItemsInsideAreSelected() {
+      ManageFragment view = (ManageFragment) activity.getFragmentManager().findFragmentByTag("Data Management");
+      assertThat(view, notNullValue());
+      pl.polidea.treeview.TreeViewList treeViewList = (TreeViewList) activity.findViewById(R.id.tree_view_list);
+      DeleteButton delButton = (DeleteButton) activity.findViewById(R.id.dm_delete_button);
+
+      //init the treeView
+      view.initAndPopulateTree(getAllKindOfData());
+      ShadowListView shadowListView = shadowOf(treeViewList);
+      shadowListView.populateItems();
+      ObjectTreeViewAdapter adapter = (ObjectTreeViewAdapter) treeViewList.getAdapter();
+      Set<ObjectGraph> selected = adapter.getSelected();
+      assertThat(selected.isEmpty(), is(true));
+
+      //select the root folder
+      int cropId = shadowListView.findIndexOfItemContainingText("Crop");
+      shadowListView.performItemClick(cropId);
+      selected = adapter.getSelected();
+      assertThat(selected.isEmpty(), is(false));
+      assertThat(selected.size(), is(6));
+
+   }
+
+   /**
+    * PolarionId: CH26_UI-17224
+    */
+   @Test
+   public void testSelectAllBtn_whenClickingSelectAllBtn_thanAllItemsAreSelected() {
+      ManageFragment view = (ManageFragment) activity.getFragmentManager().findFragmentByTag("Data Management");
+      assertThat(view, notNullValue());
+
+      Button selectAllBtn = (Button) activity.findViewById(R.id.select_all_btn);
+      pl.polidea.treeview.TreeViewList treeViewList = (TreeViewList) activity.findViewById(R.id.tree_view_list);
+
+      //init the treeView
+      view.initAndPopulateTree(getAllKindOfData());
+      ShadowListView shadowListView = shadowOf(treeViewList);
+      shadowListView.populateItems();
+      ObjectTreeViewAdapter adapter = (ObjectTreeViewAdapter) treeViewList.getAdapter();
+      Set<ObjectGraph> selected = adapter.getSelected();
+      assertThat(selected.isEmpty(), is(true));
+      assertThat(selectAllBtn.getVisibility(), is(View.VISIBLE));
+
+      selectAllBtn.performClick();
+      selected = adapter.getSelected();
+
+      assertThat(selected.isEmpty(), is(false));
+      assertThat(selected.size(), is(7));
+
+   }
+
+   /**
+    * PolarionId: CH26_UI-17224
+    */
+   @Test
+   public void testSelectAllBtn_whenClickingTwice_thanAllItemsAreDeselected() {
+      ManageFragment view = (ManageFragment) activity.getFragmentManager().findFragmentByTag("Data Management");
+      assertThat(view, notNullValue());
+
+      Button selectAllBtn = (Button) activity.findViewById(R.id.select_all_btn);
+      pl.polidea.treeview.TreeViewList treeViewList = (TreeViewList) activity.findViewById(R.id.tree_view_list);
+
+      //init the treeView
+      view.initAndPopulateTree(getAllKindOfData());
+      ShadowListView shadowListView = shadowOf(treeViewList);
+      shadowListView.populateItems();
+      ObjectTreeViewAdapter adapter = (ObjectTreeViewAdapter) treeViewList.getAdapter();
+
+      Set<ObjectGraph> selected = adapter.getSelected();
+
+      selectAllBtn.performClick();
+      selectAllBtn.performClick();
+      selected = adapter.getSelected();
+      assertThat(selected.isEmpty(), is(true));
+
+   }
+
+   /**
+    * PolarionId: CH26_UI-17224
+    */
+   @Test
+   public void testSelectAllBtn_whenClickingSelectAllBtn_thanLabelChanges() {
+      ManageFragment view = (ManageFragment) activity.getFragmentManager().findFragmentByTag("Data Management");
+      assertThat(view, notNullValue());
+
+      Button selectAllBtn = (Button) activity.findViewById(R.id.select_all_btn);
+      pl.polidea.treeview.TreeViewList treeViewList = (TreeViewList) activity.findViewById(R.id.tree_view_list);
+
+      //init the treeView
+      view.initAndPopulateTree(getAllKindOfData());
+      ShadowListView shadowListView = shadowOf(treeViewList);
+      shadowListView.populateItems();
+
+      assertThat(selectAllBtn.getText().toString(), is("Select All"));
+      selectAllBtn.performClick();
+      assertThat(selectAllBtn.getText().toString(), is("Deselect All"));
 
    }
 
@@ -343,6 +448,9 @@ public class ManageFragmentTest {
          list.add(new ObjectGraph(null, DataTypes.PRODUCT, "3", "Prod3"));
       }
       else if (type.equals(Variety.class)) {
+         list.add(new ObjectGraph(null, DataTypes.VARIETY, "1", "Variety1"));
+         list.add(new ObjectGraph(null, DataTypes.VARIETY, "2", "Variety2"));
+         list.add(new ObjectGraph(null, DataTypes.VARIETY, "3", "Variety3"));
       }
       return list;
    }
