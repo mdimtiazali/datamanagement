@@ -89,7 +89,6 @@ public class AdvancedProductInformation {
       this.restrictedUseToggleButtonGroup = (SegmentedToggleButtonGroup) view.findViewById(R.id.restricted_use_segmented_button_toggle_group);
       this.postingRequiredToggleButtonGroup = (SegmentedToggleButtonGroup) view.findViewById(R.id.posting_required_segmented_button_toggle_group);
       initListeners();
-      addButtons();
       setUnits();
    }
 
@@ -104,13 +103,6 @@ public class AdvancedProductInformation {
       maxWindSpeedInputField.setOnEditorActionListener(new MaxWindSpeedOnEditorActionListener());
       restrictedUseToggleButtonGroup.setOnCheckedChangeListener(new RestrictedUseToggleButtonGroup());
       postingRequiredToggleButtonGroup.setOnCheckedChangeListener(new PostingRequiredToggleButtonGroup());
-   }
-
-   private void addButtons() {
-      restrictedUseToggleButtonGroup.addButton(context.getString(R.string.advanced_product_information_toggle_button_yes), 1);
-      restrictedUseToggleButtonGroup.addButton(context.getString(R.string.advanced_product_information_toggle_button_no), 2);
-      postingRequiredToggleButtonGroup.addButton(context.getString(R.string.advanced_product_information_toggle_button_yes), 1);
-      postingRequiredToggleButtonGroup.addButton(context.getString(R.string.advanced_product_information_toggle_button_no), 2);
    }
 
    private void setUnits() {
