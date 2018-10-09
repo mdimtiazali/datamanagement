@@ -247,9 +247,6 @@ public class ImportFragment extends BaseDataFragment {
          clearTreeSelection();
       }
 
-      //close cancel dialog if still open
-      showErrorStatePanel();
-
       if (SessionUtil.isDiscoveryTask(session)) {
          showStartMessage();
       }
@@ -257,9 +254,10 @@ public class ImportFragment extends BaseDataFragment {
          hideDataTreeLoadingOverlay();
          showTreeList();
       }
-      updateImportButton();
-      updateSelectAllState();
       processOverlay.setMode(DataExchangeProcessOverlay.MODE.HIDDEN);
+      updateImportButton();
+      showDragAndDropZone();
+      updateSelectAllState();
    }
 
    private void setImportDragDropArea(int event) {
@@ -807,10 +805,12 @@ public class ImportFragment extends BaseDataFragment {
       if (!visualFeedbackActive) {
          importDropZone.setVisibility(View.GONE);
          progressBar.setProgress(0);
+         progressBar.hideErrorPercentage(false);
          progressBar.setShowProgress(false);
          progressBar.setTitle(loadingString);
          importFinishedStatePanel.setVisibility(View.GONE);
          leftStatus.setVisibility(View.VISIBLE);
+         stopBtn.setVisibility(View.VISIBLE);
       }
    }
 
@@ -852,12 +852,12 @@ public class ImportFragment extends BaseDataFragment {
       logger.debug("showErrorStatePanel");
       visualFeedbackActive = true;
       importDropZone.setVisibility(View.GONE);
+      stopBtn.setVisibility(View.GONE);
       importFinishedStatePanel.setVisibility(View.GONE);
       leftStatus.setVisibility(View.VISIBLE);
       Resources resources = getResources();
-      String errorString = resources.getString(R.string.pb_error);
-      progressBar.setTitle(errorString);
-      progressBar.setErrorProgress(resources.getInteger(R.integer.error_percentage_value), errorString);
+      progressBar.hideErrorPercentage(true);
+      progressBar.setErrorProgress(resources.getInteger(R.integer.error_percentage_value), resources.getString(R.string.pb_error));
 
       //post cleanup to show drag and drop zone after time X
       final Handler handler = new Handler();
