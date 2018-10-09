@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <!--
-  ~ Copyright (C) 2015 CNH Industrial NV. All rights reserved.
+  ~ Copyright (C) 2018 CNH Industrial NV. All rights reserved.
   ~
   ~ This software contains proprietary information of CNH Industrial NV. Neither
   ~ receipt nor possession thereof confers any right to reproduce, use, or
@@ -23,8 +23,9 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_gravity="center_horizontal"
+            android:paddingTop="@dimen/import_left_operation_title_top_spacing"
             android:text="@string/exporting_string"
-            android:layout_marginBottom="@dimen/dataexchange_perform_title_to_progressbar_margin"
+            android:layout_marginBottom="@dimen/dataexchange_import_perform_title_to_progressbar_margin"
             style="@style/TextAppearance.Import.Entity"/>
 
     <com.cnh.android.widget.control.ProgressBarView
@@ -34,6 +35,7 @@
             android:layout_height="wrap_content"
             android:paddingStart="@dimen/progress_bar_padding"
             android:paddingEnd="@dimen/progress_bar_padding"
+            android:paddingBottom="@dimen/import_left_progressbar_to_cancel_button_spacing"
             cnh:useSmallResources="true"
             cnh:pbTitle="@string/loading_string"/>
 
