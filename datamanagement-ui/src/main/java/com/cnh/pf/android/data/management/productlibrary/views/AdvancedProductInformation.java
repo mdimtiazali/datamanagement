@@ -173,14 +173,24 @@ public class AdvancedProductInformation {
 
    private void setValuesToProductInDefaultMeasurementSystem() {
       logger.trace("setValuesToProductInDefaultMeasurementSystem");
-      product.setBufferDistanceMeters(MathUtility.getConvertedFromBase(Double.valueOf(bufferDistanceInputField.getText().toString()), rateUnitFactor));
-      product.setMaxWindSpeedKph(MathUtility.getConvertedFromBase(Double.valueOf(maxWindSpeedInputField.getText().toString()), rateUnitFactor));
+      try {
+         product.setBufferDistanceMeters(MathUtility.getConvertedFromBase(Double.valueOf(bufferDistanceInputField.getText().toString()), rateUnitFactor));
+         product.setMaxWindSpeedKph(MathUtility.getConvertedFromBase(Double.valueOf(maxWindSpeedInputField.getText().toString()), rateUnitFactor));
+      }
+      catch (NumberFormatException ne) {
+         logger.error("Number format exception: ", ne);
+      }
    }
 
    private void setValuesToUiInDefaultMeasurementSystem() {
       logger.trace("setValuesToUiInDefaultMeasurementSystem");
-      bufferDistanceInputField.setText(Double.toString(MathUtility.getConvertedFromBase(product.getBufferDistanceMeters(), rateUnitFactor)));
-      maxWindSpeedInputField.setText(Double.toString(MathUtility.getConvertedFromBase(product.getMaxWindSpeedKph(), rateUnitFactor)));
+      try {
+         bufferDistanceInputField.setText(Double.toString(MathUtility.getConvertedFromBase(product.getBufferDistanceMeters(), rateUnitFactor)));
+         maxWindSpeedInputField.setText(Double.toString(MathUtility.getConvertedFromBase(product.getMaxWindSpeedKph(), rateUnitFactor)));
+      }
+      catch (NumberFormatException ne) {
+         logger.error("Number format exception: ", ne);
+      }
    }
 
    private double convertBufferDistanceToMetric(double bufferDistance) {
