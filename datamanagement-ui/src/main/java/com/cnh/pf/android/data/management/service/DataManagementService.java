@@ -67,10 +67,9 @@ import roboguice.service.RoboService;
  * @author oscar.salazar@cnhind.com
  */
 public class DataManagementService extends RoboService implements SharedPreferences.OnSharedPreferenceChangeListener, SessionNotifier {
-   private static final Logger logger = LoggerFactory.getLogger(DataManagementService.class);
-
    public static final String ACTION_RESET_CACHE = "com.cnh.pf.data.management.RESET_CACHE";
-
+   private static final Logger logger = LoggerFactory.getLogger(DataManagementService.class);
+   private final IBinder localBinder = new LocalBinder();
    @Inject
    private Mediator mediator;
    @Inject
@@ -88,11 +87,56 @@ public class DataManagementService extends RoboService implements SharedPreferen
    private UsbServiceManager usbServiceManager;
    @Inject
    private CacheManager cacheManager;
-
+   @Inject
+   private DMFaultHandler dmFaultHandler;
    // This is to maintain reference to current active session.
    private AtomicReference<Session> activeSessionRef = new AtomicReference<Session>();
    // This is to maintain reference to current active session view.
    private AtomicReference<SessionContract.SessionView> activeViewRef = new AtomicReference<SessionContract.SessionView>();
+   private List<SessionEventListener> sessionEventListeners = new CopyOnWriteArrayList<SessionEventListener>();
+   private Handler handler = new Handler();
+   private boolean useInternalFileSystem = false;
+   private Mediator.ProgressListener pListener = new Mediator.ProgressListener() {
+      @Override
+      public void onProgressPublished(final String operation, final int progress, final int max) {
+         logger.debug("publishProgress({}, {}, {})", operation, progress, max);
+         handler.post(new Runnable() {
+            @Override
+            public void run() {
+               notifyProgressUpdate(operation, progress, max);
+            }
+         });
+      }
+
+      @Override
+      public void onSecondaryProgressPublished(String secondaryOperation, int secondaryProgress, int secondaryMax) {
+         logger.trace("onSecondaryProgressPublished()");
+      }
+
+      @Override
+      public void onViewAccepted(final View newView) {
+         logger.debug("onViewAccepted {}", newView);
+         dsHelper.updateView(newView, new DatasourceHelper.onConnectionChangeListener() {
+            @Override
+            public void onConnectionChange(Address[] left, Address[] join, boolean updateNeeded) {
+               notifyChannelConnectionChange(updateNeeded);
+            }
+
+            @Override
+            public void onCloudConnectionChange() {
+               notifyMediumUpdate();
+            }
+         });
+      }
+   };
+
+   /**
+    * Getter for currently active session
+    * @return  active session
+    */
+   public Session getActiveSession() {
+      return activeSessionRef.get();
+   }
 
    /**
     * Setter for currently active session
@@ -101,14 +145,6 @@ public class DataManagementService extends RoboService implements SharedPreferen
     */
    public void setActiveSession(final Session session) {
       activeSessionRef.set(session);
-   }
-
-   /**
-    * Getter for currently active session
-    * @return  active session
-    */
-   public Session getActiveSession() {
-      return activeSessionRef.get();
    }
 
    private boolean hasActiveSession() {
@@ -121,15 +157,6 @@ public class DataManagementService extends RoboService implements SharedPreferen
    }
 
    /**
-    * Setter for currently active session view
-    *
-    * @param view session view
-    */
-   public void setActiveView(final SessionContract.SessionView view) {
-      activeViewRef.set(view);
-   }
-
-   /**
     * Getter for currently active session view
     * @return  session view
     */
@@ -137,11 +164,14 @@ public class DataManagementService extends RoboService implements SharedPreferen
       return activeViewRef.get();
    }
 
-   private List<SessionEventListener> sessionEventListeners = new CopyOnWriteArrayList<SessionEventListener>();
-   private Handler handler = new Handler();
-   private final IBinder localBinder = new LocalBinder();
-
-   private boolean useInternalFileSystem = false;
+   /**
+    * Setter for currently active session view
+    *
+    * @param view session view
+    */
+   public void setActiveView(final SessionContract.SessionView view) {
+      activeViewRef.set(view);
+   }
 
    @Override
    public int onStartCommand(Intent intent, int flags, int startId) {
@@ -427,46 +457,6 @@ public class DataManagementService extends RoboService implements SharedPreferen
       stopSelf();
    }
 
-   public class LocalBinder extends Binder {
-      public DataManagementService getService() {
-         return DataManagementService.this;
-      }
-   }
-
-   private Mediator.ProgressListener pListener = new Mediator.ProgressListener() {
-      @Override
-      public void onProgressPublished(final String operation, final int progress, final int max) {
-         logger.debug("publishProgress({}, {}, {})", operation, progress, max);
-         handler.post(new Runnable() {
-            @Override
-            public void run() {
-               notifyProgressUpdate(operation, progress, max);
-            }
-         });
-      }
-
-      @Override
-      public void onSecondaryProgressPublished(String secondaryOperation, int secondaryProgress, int secondaryMax) {
-         logger.trace("onSecondaryProgressPublished()");
-      }
-
-      @Override
-      public void onViewAccepted(final View newView) {
-         logger.debug("onViewAccepted {}", newView);
-         dsHelper.updateView(newView, new DatasourceHelper.onConnectionChangeListener() {
-            @Override
-            public void onConnectionChange(Address[] left, Address[] join, boolean updateNeeded) {
-               notifyChannelConnectionChange(updateNeeded);
-            }
-
-            @Override
-            public void onCloudConnectionChange() {
-               notifyMediumUpdate();
-            }
-         });
-      }
-   };
-
    /**
     * Notify session success to registered callbacks without caching session data.
     *
@@ -572,6 +562,8 @@ public class DataManagementService extends RoboService implements SharedPreferen
          cacheManager.reset(Session.Action.IMPORT);
       }
 
+      dmFaultHandler.changeUSBDetectedStatus(Environment.getExternalStorageState().equals(Environment.MEDIA_MOUNTED));
+
       // Run the callback on the main UI thread to allow UI work.
       new Handler(Looper.getMainLooper()).post(new Runnable() {
          @Override
@@ -581,5 +573,11 @@ public class DataManagementService extends RoboService implements SharedPreferen
             }
          }
       });
+   }
+
+   public class LocalBinder extends Binder {
+      public DataManagementService getService() {
+         return DataManagementService.this;
+      }
    }
 }

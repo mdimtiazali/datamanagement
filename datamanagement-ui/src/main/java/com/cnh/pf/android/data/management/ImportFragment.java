@@ -32,6 +32,7 @@ import android.widget.LinearLayout;
 import android.widget.TextView;
 
 import com.android.annotations.Nullable;
+import com.cnh.alert.types.Status;
 import com.cnh.android.dialog.DialogViewInterface;
 import com.cnh.android.dialog.TextDialogView;
 import com.cnh.android.pf.widget.controls.ToastMessageCustom;
@@ -46,6 +47,7 @@ import com.cnh.pf.android.data.management.adapter.DataManagementBaseAdapter;
 import com.cnh.pf.android.data.management.adapter.TargetProcessViewAdapter;
 import com.cnh.pf.android.data.management.dialog.ImportSourceDialog;
 import com.cnh.pf.android.data.management.dialog.ProcessDialog;
+import com.cnh.pf.android.data.management.fault.DMFaultHandler;
 import com.cnh.pf.android.data.management.helper.DataExchangeProcessOverlay;
 import com.cnh.pf.android.data.management.session.ErrorCode;
 import com.cnh.pf.android.data.management.session.Session;
@@ -53,6 +55,7 @@ import com.cnh.pf.android.data.management.session.SessionContract;
 import com.cnh.pf.android.data.management.session.SessionExtra;
 import com.cnh.pf.android.data.management.session.SessionUtil;
 import com.cnh.pf.android.data.management.utility.UtilityHelper;
+import com.google.inject.Inject;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -75,7 +78,14 @@ import roboguice.inject.InjectView;
  */
 public class ImportFragment extends BaseDataFragment {
    private static final Logger logger = LoggerFactory.getLogger(ImportFragment.class);
-
+   //those are strings defined in the backend to identify the received progress
+   private final static String PROGRESS_CONFLICT_IDENTIFICATION_STRING = "Calculating conflict";
+   private final static String PROGRESS_TARGETS_IDENTIFICATION_STRING = "Calculating Targets";
+   private final static String PROGRESS_FAILED_IDENTIFICATION_STRING = "Failed";
+   private static final int ROOTNODENAMES_WITH_IMPLICIT_PARENT_SELECTION_IN_IMPORT = R.array.rootnodenames_with_implicit_parent_selection_in_import;
+   private static final int CANCEL_DIALOG_WIDTH = 550;
+   private final List<Session.Action> blockingActions = new ArrayList<Session.Action>(Arrays.asList(Session.Action.EXPORT));
+   private final List<Session.Action> executableActions = new ArrayList<Session.Action>(Arrays.asList(Session.Action.IMPORT));
    @InjectView(R.id.import_source_btn)
    Button importSourceBtn;
    @InjectView(R.id.import_drop_zone)
@@ -96,9 +106,7 @@ public class ImportFragment extends BaseDataFragment {
    TextView startText;
    @InjectView(R.id.dataexchange_success_zone)
    LinearLayout importFinishedStatePanel;
-
    ProcessDialog processDialog;
-
    @InjectResource(R.string.keep_both)
    String keepBothStr;
    @InjectResource(R.string.copy_and_replace)
@@ -115,20 +123,10 @@ public class ImportFragment extends BaseDataFragment {
    String mergeStr;
    @InjectView(R.id.operation_name)
    TextView operationName;
-
-   //those are strings defined in the backend to identify the received progress
-   private final static String PROGRESS_CONFLICT_IDENTIFICATION_STRING = "Calculating conflict";
-   private final static String PROGRESS_TARGETS_IDENTIFICATION_STRING = "Calculating Targets";
-   private final static String PROGRESS_FAILED_IDENTIFICATION_STRING = "Failed";
-
    //this variable denotes the current state of dynamic visual feedback (success or failure of process)
    private boolean visualFeedbackActive = false; //true: visual feedback is currently shown, false: currently no visual feedback shown
-
-   private final List<Session.Action> blockingActions = new ArrayList<Session.Action>(Arrays.asList(Session.Action.EXPORT));
-   private final List<Session.Action> executableActions = new ArrayList<Session.Action>(Arrays.asList(Session.Action.IMPORT));
-   private static final int ROOTNODENAMES_WITH_IMPLICIT_PARENT_SELECTION_IN_IMPORT = R.array.rootnodenames_with_implicit_parent_selection_in_import;
-
-   private static final int CANCEL_DIALOG_WIDTH = 550;
+   @Inject
+   private DMFaultHandler dmFaultHandler;
 
    private TextDialogView lastCancelDialogView; //used to keep track of the cancel dialog (should be closed if open if process is finished)
 
@@ -141,6 +139,43 @@ public class ImportFragment extends BaseDataFragment {
    private Drawable importDefaultIcon;
 
    private ImportSourceDialog importSourceDialog;
+
+   /**
+    * granting all permissions recursively
+    * @param currItem can be file or a folder that will be set recursively
+    * @return true if success
+    */
+   private static boolean grantAllPermissionsRecursive(@Nonnull File currItem) {
+      boolean checkVal = true;
+      if (!currItem.exists()) {
+         logger.error("Unable to grant permissions for not existing: {}", currItem.getPath());
+         return false;
+      }
+
+      // first, set the permissions of the item
+      checkVal &= currItem.setWritable(true, false);
+      checkVal &= currItem.setExecutable(true, false);
+      checkVal &= currItem.setReadable(true, false);
+
+      logger.info("granting permissions to: {}", currItem.getPath());
+
+      if (checkVal) {
+         // then check for the next stage
+         if (currItem.isDirectory()) {
+            File[] paths = currItem.listFiles();
+            if (null != paths) {
+               for (File singleItem : paths) {
+                  checkVal &= grantAllPermissionsRecursive(singleItem);
+               }
+            }
+         }
+      }
+      else {
+         checkVal = false;
+         logger.error("Unable to grant permissions for: {}", currItem.getPath());
+      }
+      return checkVal;
+   }
 
    @Override
    protected List<Session.Action> getBlockingActions() {
@@ -246,6 +281,7 @@ public class ImportFragment extends BaseDataFragment {
          ToastMessageCustom.makeToastMessageText(getActivity().getApplicationContext(), getString(R.string.import_cancel), Gravity.TOP | Gravity.CENTER_HORIZONTAL,
                getResources().getInteger(R.integer.toast_message_xoffset), getResources().getInteger(R.integer.toast_message_yoffset)).show();
          clearTreeSelection();
+         dmFaultHandler.showImportExportStatus(Status.StatusType.DM_SESSION_IMPORT_FAILED);
       }
 
       if (SessionUtil.isDiscoveryTask(session)) {
@@ -422,6 +458,8 @@ public class ImportFragment extends BaseDataFragment {
                                           getResources().getInteger(R.integer.toast_message_xoffset), getResources().getInteger(R.integer.toast_message_yoffset))
                                     .show();
                               cancelProcess();
+
+                              dmFaultHandler.showImportExportStatus(Status.StatusType.DM_SESSION_IMPORT_FAILED);
                            }
                         }
                      };
@@ -467,6 +505,8 @@ public class ImportFragment extends BaseDataFragment {
          ToastMessageCustom.makeToastMessageText(getActivity().getApplicationContext(), getString(R.string.import_complete), Gravity.TOP | Gravity.CENTER_HORIZONTAL,
                getResources().getInteger(R.integer.toast_message_xoffset), getResources().getInteger(R.integer.toast_message_yoffset)).show();
 
+         dmFaultHandler.showImportExportStatus(Status.StatusType.DM_SESSION_IMPORT_COMPLETE);
+
          updateSelectAllState();
 
          //close cancel dialog if still open
@@ -497,6 +537,7 @@ public class ImportFragment extends BaseDataFragment {
       hideDataTreeLoadingOverlay();
       closeCancelDialog();
       showErrorStatePanel();
+      dmFaultHandler.showImportExportStatus(Status.StatusType.DM_SESSION_IMPORT_FAILED);
 
       if (ErrorCode.USB_REMOVED.equals(errorCode)) {
          //USB was removed, no tree available anymore
@@ -631,43 +672,6 @@ public class ImportFragment extends BaseDataFragment {
       hideTreeList();
       showDisconnectedOverlay();
       updateSelectAllState();
-   }
-
-   /**
-    * granting all permissions recursively
-    * @param currItem can be file or a folder that will be set recursively
-    * @return true if success
-    */
-   private static boolean grantAllPermissionsRecursive(@Nonnull File currItem) {
-      boolean checkVal = true;
-      if (!currItem.exists()) {
-         logger.error("Unable to grant permissions for not existing: {}", currItem.getPath());
-         return false;
-      }
-
-      // first, set the permissions of the item
-      checkVal &= currItem.setWritable(true, false);
-      checkVal &= currItem.setExecutable(true, false);
-      checkVal &= currItem.setReadable(true, false);
-
-      logger.info("granting permissions to: {}", currItem.getPath());
-
-      if (checkVal) {
-         // then check for the next stage
-         if (currItem.isDirectory()) {
-            File[] paths = currItem.listFiles();
-            if (null != paths) {
-               for (File singleItem : paths) {
-                  checkVal &= grantAllPermissionsRecursive(singleItem);
-               }
-            }
-         }
-      }
-      else {
-         checkVal = false;
-         logger.error("Unable to grant permissions for: {}", currItem.getPath());
-      }
-      return checkVal;
    }
 
    @Override
@@ -925,6 +929,7 @@ public class ImportFragment extends BaseDataFragment {
     */
    private void runImport() {
       logger.debug("Run Import!");
+      dmFaultHandler.showImportExportStatus(Status.StatusType.DM_SESSION_IMPORT_IN_PROGRESS);
       List<ObjectGraph> selected = new ArrayList<ObjectGraph>(getTreeAdapter().getSelected());
       ArrayList<ObjectGraph> ddopsSelect = new ArrayList<ObjectGraph>(getTreeAdapter().getData());
       for (ObjectGraph object : ddopsSelect) {
@@ -951,6 +956,7 @@ public class ImportFragment extends BaseDataFragment {
          processDialog.setOnButtonClickListener(new DialogViewInterface.OnButtonClickListener() {
             @Override
             public void onButtonClick(DialogViewInterface dialog, int which) {
+
                if (which == DialogViewInterface.BUTTON_FIFTH) {
                   //cancel button has been clicked
                   //Show confirmation cancel-dialog
@@ -964,6 +970,7 @@ public class ImportFragment extends BaseDataFragment {
                                        getResources().getInteger(R.integer.toast_message_xoffset), getResources().getInteger(R.integer.toast_message_yoffset))
                                  .show();
                            cancelProcess();
+                           dmFaultHandler.showImportExportStatus(Status.StatusType.DM_SESSION_IMPORT_FAILED);
                         }
                      }
                   };

@@ -44,7 +44,11 @@
           <artifactId>libsignalclient</artifactId>
           <version>${project.version}</version>
        </dependency>
-
+        <dependency>
+            <groupId>com.cnh.alert</groupId>
+            <artifactId>libalert</artifactId>
+            <version>${project.version}</version>
+        </dependency>
        <dependency>
             <groupId>com.cnh.pf</groupId>
             <artifactId>libaidlpf</artifactId>

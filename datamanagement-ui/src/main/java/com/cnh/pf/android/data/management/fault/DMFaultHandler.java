@@ -10,6 +10,10 @@
 package com.cnh.pf.android.data.management.fault;
 
 import android.app.Service;
+
+import com.cnh.alert.AlertProducer;
+import com.cnh.alert.IAlertManager;
+import com.cnh.alert.types.Status;
 import com.cnh.jgroups.Mediator;
 import com.cnh.pf.fault.FaultHandler;
 import com.cnh.pf.signal.OnConnectionChangeListener;
@@ -19,15 +23,17 @@ import com.google.common.net.HostAndPort;
 import com.google.inject.Inject;
 import com.google.inject.Singleton;
 import com.google.inject.name.Named;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import java.util.HashMap;
+import java.util.Map;
+
 import roboguice.context.event.OnCreateEvent;
 import roboguice.context.event.OnDestroyEvent;
 import roboguice.event.EventThread;
 import roboguice.event.Observes;
-
-import java.util.HashMap;
-import java.util.Map;
 
 /**
  * DMFaultHandler manages the signal producer to send fault alert/reset signals and
@@ -44,9 +50,14 @@ public class DMFaultHandler implements OnConnectionChangeListener {
    private HostAndPort daemonAddress;
 
    private Producer producer;
+   private IAlertManager alertManager;
+   private Status importExportStatus;
+   private Status usbMountStatus = new Status(Status.StatusType.DM_USB_DETECTED);
    private FaultHandler faultHandler;
    private Mediator mediator;
    private boolean recoverConnection = false;
+   // Store fault object for later use rather than creating it every time it's needed.
+   private Map<FaultCode, Fault> faultMap = new HashMap<FaultCode, Fault>();
 
    @Override
    public void onConnectionChanged(boolean connected) {
@@ -62,7 +73,7 @@ public class DMFaultHandler implements OnConnectionChangeListener {
          }
 
          // only reconnect, if there was disconnect before and if this is not the first time connection event.
-         if(recoverConnection) {
+         if (recoverConnection) {
             try {
                mediator.reconnectChannel();
                recoverConnection = false;
@@ -78,16 +89,56 @@ public class DMFaultHandler implements OnConnectionChangeListener {
    }
 
    /**
+    * Sets a status icon in the status bar if a USB stick was mounted or removes the icon if the USB stick was unmounted
+    * @param mounted True, if USB stick is mounted, otherwise false.
+    */
+   public void changeUSBDetectedStatus(boolean mounted) {
+      if (producer != null && alertManager != null) {
+         if (mounted) {
+            alertManager.setStatus(usbMountStatus);
+         }
+         else {
+            alertManager.cancelStatus(usbMountStatus);
+         }
+      }
+      else {
+         logger.debug("Producer or AlertManager is not initialized");
+      }
+   }
+
+   /**
+    * Sets a status icon in the status bar that shows the current status of the import or export
+    * @param statusType Current status of the import or export (in progress / complete / failed)
+    */
+   public void showImportExportStatus(Status.StatusType statusType) {
+      if (producer != null && alertManager != null && statusType != null) {
+
+         if (statusType == Status.StatusType.DM_SESSION_EXPORT_IN_PROGRESS || statusType == Status.StatusType.DM_SESSION_IMPORT_IN_PROGRESS) {
+            importExportStatus = new Status(statusType);
+         }
+         else {
+            importExportStatus.setType(statusType);
+         }
+
+         alertManager.setStatus(importExportStatus);
+      }
+      else {
+         logger.debug("Producer or AlertManager is not initialized");
+      }
+   }
+
+   /**
     * Connect to signals
     * @param event   the event
     */
-   @SuppressWarnings({"unused"})
+   @SuppressWarnings({ "unused" })
    public void connectToDaemon(@Observes(EventThread.BACKGROUND) OnCreateEvent<Service> event) {
       logger.debug("Connecting to {}", daemonAddress);
       try {
          producer = new Producer(daemonAddress);
          producer.setOnConnectionChangeListener(this);
          producer.start();
+         alertManager = new AlertProducer(producer);
       }
       catch (Exception e) {
          logger.error("Exception in connecting to Signal", e);
@@ -98,14 +149,34 @@ public class DMFaultHandler implements OnConnectionChangeListener {
     * Disconnect from signals
     * @param event   the event
     */
-   @SuppressWarnings({"unused"})
+   @SuppressWarnings({ "unused" })
    public void disconnect(@Observes(EventThread.BACKGROUND) OnDestroyEvent<Service> event) {
       logger.debug("Disconnect");
       producer.close();
    }
 
-   // Store fault object for later use rather than creating it every time it's needed.
-   private Map<FaultCode, Fault> faultMap = new HashMap<FaultCode, Fault>();
+   /**
+    * Return a fault object that corresponds to given fault code.
+    * @param code fault code
+    * @return fault object that provides an interface to set/clear fault.
+    */
+   public Fault getFault(FaultCode code) {
+      Fault fault = faultMap.get(code);
+      if (fault == null) {
+         fault = Fault.newFault(faultHandler, code);
+         faultMap.put(code, fault);
+      }
+
+      return fault;
+   }
+
+   /**
+    * Store mediator for error recovery.
+    * @param mediator mediator
+    */
+   public void setMediator(Mediator mediator) {
+      this.mediator = mediator;
+   }
 
    /**
     * An inner class to provide interface to set/clear fault.
@@ -136,7 +207,8 @@ public class DMFaultHandler implements OnConnectionChangeListener {
       public void alert() {
          if (handler != null && handler.isInitialized()) {
             handler.setFault(code.getCode());
-         } else {
+         }
+         else {
             logger.debug("Fault handler is not ready.");
          }
       }
@@ -147,33 +219,11 @@ public class DMFaultHandler implements OnConnectionChangeListener {
       public void reset() {
          if (handler != null && handler.isInitialized()) {
             handler.clearFault(code.getCode());
-         } else {
+         }
+         else {
             logger.debug("Fault handler is not ready.");
          }
       }
-   }
-
-   /**
-    * Return a fault object that corresponds to given fault code.
-    * @param code fault code
-    * @return fault object that provides an interface to set/clear fault.
-    */
-   public Fault getFault(FaultCode code) {
-      Fault fault = faultMap.get(code);
-      if (fault == null) {
-         fault = Fault.newFault(faultHandler, code);
-         faultMap.put(code, fault);
-      }
-
-      return fault;
-   }
-
-   /**
-    * Store mediator for error recovery.
-    * @param mediator mediator
-    */
-   public void setMediator(Mediator mediator) {
-      this.mediator = mediator;
    }
 
 }
