@@ -54,7 +54,6 @@ import com.cnh.pf.android.data.management.session.SessionExtra;
 import com.cnh.pf.android.data.management.session.SessionUtil;
 import com.cnh.pf.android.data.management.utility.UtilityHelper;
 
-import com.cnh.pf.datamng.Process;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -550,7 +549,7 @@ public class ImportFragment extends BaseDataFragment {
    private void updateImportButton() {
       Session s = getSession();
       boolean isActiveOperation = ((SessionUtil.isCalculateConflictsTask(s) || SessionUtil.isCalculateOperationsTask(s)) && Session.State.COMPLETE.equals(s.getState()))
-            || (SessionUtil.isPerformOperationsTask(s) && (s.getResultCode() == null || Process.Result.ERROR.equals(s.getResultCode())));
+            || (SessionUtil.isPerformOperationsTask(s) && s.getResultCode() == null);
       boolean connected = getSessionManager().isServiceConnected();
       boolean hasSelection = getTreeAdapter() != null && getTreeAdapter().hasSelection();
       boolean defaultButtonText = true;
