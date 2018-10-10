@@ -40,10 +40,12 @@ import com.cnh.android.widget.control.PickListItem;
 import com.cnh.pf.android.data.management.R;
 import com.cnh.pf.android.data.management.productlibrary.ProductLibraryFragment;
 import com.cnh.pf.android.data.management.productlibrary.utility.sorts.CropTypeComparator;
+import com.cnh.pf.api.pvip.IPVIPServiceAIDL;
 import com.cnh.pf.model.product.configuration.Variety;
 import com.cnh.pf.model.product.configuration.VarietyColor;
 import com.cnh.pf.model.product.library.CropType;
 
+import com.google.common.collect.Lists;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -62,6 +64,10 @@ public class AddOrEditVarietyDialog extends DialogView {
       ADD, EDIT
    }
 
+   private static List<CropType> invalidCropTypes = new ArrayList<CropType>(3);
+   private static List<CropType> validCropTypes = Lists.newArrayList(CropType.values());
+
+
    private static final Logger logger = LoggerFactory.getLogger(AddOrEditVarietyDialog.class);
    private List<Variety> varieties;
    private Variety currentVariety;
@@ -70,14 +76,16 @@ public class AddOrEditVarietyDialog extends DialogView {
    private InputField inputField;
    private PickList pickList;
    private IVIPServiceAIDL vipService;
+   private IPVIPServiceAIDL pvipService;
    private List<PickListItem> cropTypePickListItems;
    private List<VarietyColor> colors;
    private GridView colorGrid;
    private DisabledOverlay disabledOverlay;
    private ColorGridAdapter colorGridAdapter;
+   private Integer selectedId = null;
    private boolean colorChangedByUser = false; // set to true if color change minimum once by the user
 
-   public AddOrEditVarietyDialog(Context context) {
+   public AddOrEditVarietyDialog(Context context, IPVIPServiceAIDL vipService) {
       super(context);
       this.showThirdButton(false).setBodyHeight(ProductLibraryFragment.DIALOG_HEIGHT).setBodyView(R.layout.variety_add_or_edit_dialog)
             .setDialogWidth(ProductLibraryFragment.DIALOG_WIDTH);
@@ -85,6 +93,7 @@ public class AddOrEditVarietyDialog extends DialogView {
       this.setContentPaddings(res.getDimensionPixelSize(R.dimen.variety_dialog_content_padding_left_and_right),
             res.getDimensionPixelSize(R.dimen.variety_dialog_content_padding_top), res.getDimensionPixelSize(R.dimen.variety_dialog_content_padding_left_and_right),
             res.getDimensionPixelSize(R.dimen.variety_dialog_content_padding_bottom));
+      pvipService = vipService;
    }
 
    /**
@@ -183,37 +192,81 @@ public class AddOrEditVarietyDialog extends DialogView {
       });
    }
 
+   /**
+    * Populates all {@link CropType}s and adds them to the cropTypeOrUsagePickList
+    */
+   private void populateCropTypes() {
+      if (pvipService != null) {
+         new AsyncTask<Void, Void, List<CropType>>() {
+            @Override
+            protected  List<CropType> doInBackground(Void... params) {
+               List<CropType> list = null;
+               try {
+                  list = pvipService.getFilteredCropTypes();
+               }
+               catch (RemoteException e) {
+                  logger.error("Error retrieving FilteredCropTypes: ", e);
+               }
+               return list;
+            }
+
+            @Override
+            protected void onPostExecute(List<CropType> cropTypes) {
+               if (cropTypes != null) {
+                  CropType[] cropTypeArray = cropTypes.toArray(new CropType[cropTypes.size()]);
+                  Arrays.sort(cropTypeArray, new CropTypeComparator(getContext()));
+                  cropTypePickListItems = new ArrayList<PickListItem>(cropTypeArray.length);
+                  CropType cropType;
+                  for (int i = 0; i < cropTypeArray.length; ++i) {
+                     cropType = cropTypeArray[i];
+                     cropTypePickListItems.add(
+                        new PickListItemWithTag<CropType>(i, EnumValueToUiStringUtility.getUiStringForCropType(cropType, getContext()), true, false, false, false, false, cropType));
+                     if (actionType.equals(VarietyDialogActionType.EDIT) && (null != modifiedVariety) && (null != modifiedVariety.getCropType())) {
+                        if (modifiedVariety.getCropType().equals(cropType)) {
+                           selectedId = i;
+                        }
+                        if (currentVariety.isUsed()) {
+                           pickList.setReadOnly(true);
+                        }
+                     }
+                  }
+               }
+               else {
+                  CropType cropType;
+                  for (int i = 0; i < validCropTypes.size(); ++i) {
+                     cropType = validCropTypes.get(i);
+                     cropTypePickListItems
+                        .add(new PickListItemWithTag<CropType>(i, EnumValueToUiStringUtility.getUiStringForCropType(cropType, getContext()), true, false, false, false, false, cropType));
+                     if (actionType.equals(VarietyDialogActionType.EDIT) && (null != modifiedVariety) && (null != modifiedVariety.getCropType())) {
+                        if (modifiedVariety.getCropType().equals(cropType)) {
+                           selectedId = i;
+                        }
+                        if (currentVariety.isUsed()) {
+                           pickList.setReadOnly(true);
+                        }
+                     }
+                  }
+               }
+               PickListAdapter pickListAdapter = new PickListAdapter(pickList, getContext());
+               pickListAdapter.addAll(cropTypePickListItems);
+               pickList.setAdapter(pickListAdapter);
+               PickList.OnItemSelectedListener onItemSelectedListener = new CropTypeSelectedListener();
+               pickList.setOnItemSelectedListener(onItemSelectedListener);
+               if (actionType.equals(VarietyDialogActionType.EDIT) && modifiedVariety != null && selectedId != null) {
+                  pickList.setSelectionById(selectedId);
+               }
+
+            }
+         }.execute();
+      }
+   }
+
    private void initPickList() {
       if (pickList == null) {
          pickList = (PickList) findViewById(R.id.variety_dialog_crop_type_pick_list);
       }
-      PickListAdapter pickListAdapter = new PickListAdapter(pickList, getContext());
-      Integer selectedId = null;
       if (cropTypePickListItems == null) {
-         CropType[] cropTypes = CropType.values();
-         Arrays.sort(cropTypes, new CropTypeComparator(getContext()));
-         cropTypePickListItems = new ArrayList<PickListItem>(cropTypes.length);
-         CropType cropType;
-         for (int i = 0; i < cropTypes.length; ++i) {
-            cropType = cropTypes[i];
-            cropTypePickListItems
-                  .add(new PickListItemWithTag<CropType>(i, EnumValueToUiStringUtility.getUiStringForCropType(cropType, getContext()), true, false, false, false, false, cropType));
-            if (actionType.equals(VarietyDialogActionType.EDIT) && (null != modifiedVariety) && (null != modifiedVariety.getCropType())) {
-               if (modifiedVariety.getCropType().equals(cropType)) {
-                  selectedId = i;
-               }
-               if (currentVariety.isUsed()) {
-                  pickList.setReadOnly(true);
-               }
-            }
-         }
-      }
-      pickListAdapter.addAll(cropTypePickListItems);
-      pickList.setAdapter(pickListAdapter);
-      PickList.OnItemSelectedListener onItemSelectedListener = new CropTypeSelectedListener();
-      pickList.setOnItemSelectedListener(onItemSelectedListener);
-      if (actionType.equals(VarietyDialogActionType.EDIT) && modifiedVariety != null && selectedId != null) {
-         pickList.setSelectionById(selectedId);
+         populateCropTypes();
       }
    }
 
