@@ -45,7 +45,7 @@
                     android:orientation="vertical"
                     android:background="@drawable/dashed_border_initial">
 
-                <include layout="@layout/perform_left_layout"/>
+                <include layout="@layout/import_perform_left_layout"/>
 
                 <LinearLayout
                         android:id="@+id/import_drop_zone"

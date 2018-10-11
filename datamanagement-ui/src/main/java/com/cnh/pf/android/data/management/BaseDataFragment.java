@@ -124,7 +124,7 @@ public abstract class BaseDataFragment extends RoboFragment implements SessionCo
       public int compare(InMemoryTreeNode<ObjectGraph> lhs, InMemoryTreeNode<ObjectGraph> rhs) {
          // Do the case-insensitive check first
          if ((lhs != null) && (rhs != null) && (lhs.getId() != null) && (rhs.getId() != null) && (lhs.getId().getName() != null) && (rhs.getId().getName() != null)) {
-            if ((lhs.getId() instanceof  GroupObjectGraph) && (rhs.getId() instanceof  GroupObjectGraph)) {
+            if ((lhs.getId() instanceof GroupObjectGraph) && (rhs.getId() instanceof GroupObjectGraph)) {
                int lhsOrder = TreeEntityHelper.groupSortData.get(lhs.getId().getType());
                int rhsOrder = TreeEntityHelper.groupSortData.get(rhs.getId().getType());
                if (lhsOrder < rhsOrder) {
@@ -796,25 +796,23 @@ public abstract class BaseDataFragment extends RoboFragment implements SessionCo
          addOneObjectGraph(null, objectGraph);
       }
       removeEmptyNodes(null);
-      List<ObjectGraph> tmpLIst =  manager.getChildren(null);
+      List<ObjectGraph> tmpLIst = manager.getChildren(null);
    }
 
    private void removeEmptyNodes(ObjectGraph parent) {
-      List<ObjectGraph> tmpLIst =  manager.getChildren(parent);
-      for(ObjectGraph tmp : tmpLIst) {
+      List<ObjectGraph> tmpLIst = manager.getChildren(parent);
+      for (ObjectGraph tmp : tmpLIst) {
          if (tmp.getChildren() != null) {
             removeEmptyNodes(tmp);
          }
       }
-      if ( (parent != null) && (parent.getChildren() != null) && (parent.getChildren().size() == 0) &&
-         (parent instanceof GroupObjectGraph) ) {
+      if ((parent != null) && (parent.getChildren() != null) && (parent.getChildren().size() == 0) && (parent instanceof GroupObjectGraph)) {
          int childrenCount = parent.getDataInt(TreeEntityHelper.CHILDREN_COUNT);
          if (childrenCount == 0) {
             manager.removeNodeRecursively(parent);
          }
       }
    }
-
 
    /**
     * add object to treeview using json.
@@ -828,12 +826,12 @@ public abstract class BaseDataFragment extends RoboFragment implements SessionCo
             if (gNode != null) {
                int hiddenItem = gNode.getDataInt(TreeEntityHelper.HIDDEN_ITEM);
                int followSource = gNode.getDataInt(TreeEntityHelper.FOLLOW_SOURCE);
-               if(hiddenItem == 0) {
+               if (hiddenItem == 0) {
                   if (followSource != 0) {
                      treeBuilder.bAddRelation(gNode, objectGraph);
                      TreeEntityHelper.UpdateChidrenCount(gNode);
-                     if ( (gNode.getParent() != null) && (gNode.getParent() instanceof  GroupObjectGraph) ) {
-                        TreeEntityHelper.UpdateChidrenCount((GroupObjectGraph)gNode.getParent());
+                     if ((gNode.getParent() != null) && (gNode.getParent() instanceof GroupObjectGraph)) {
+                        TreeEntityHelper.UpdateChidrenCount((GroupObjectGraph) gNode.getParent());
                      }
                      for (ObjectGraph children : objectGraph.getChildren()) {
                         addOneObjectGraph(objectGraph, children);
@@ -841,11 +839,9 @@ public abstract class BaseDataFragment extends RoboFragment implements SessionCo
                   }
                   else {
                      if (parent != null) {
-                        GroupObjectGraph gExitingNode =
-                           TreeEntityHelper.findParentNeededGroup(parent.getId(), gNode.getType());
+                        GroupObjectGraph gExitingNode = TreeEntityHelper.findParentNeededGroup(parent.getId(), gNode.getType());
                         if (gExitingNode == null) {
-                           gExitingNode = new GroupObjectGraph(null,
-                              gNode.getType(), gNode.getName(), gNode.getData(), parent);
+                           gExitingNode = new GroupObjectGraph(null, gNode.getType(), gNode.getName(), gNode.getData(), parent);
                            treeBuilder.bAddRelation(parent, gExitingNode);
                            treeBuilder.bAddRelation(gExitingNode, objectGraph);
                            TreeEntityHelper.UpdateChidrenCount(gExitingNode);

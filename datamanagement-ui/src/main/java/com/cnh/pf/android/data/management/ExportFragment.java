@@ -918,8 +918,8 @@ public class ExportFragment extends BaseDataFragment {
          //error appeared
          logger.debug("Set Progress bar error");
          Resources resources = getResources();
-         String errorString = resources.getString(R.string.pb_error);
-         progressBar.setErrorProgress(resources.getInteger(R.integer.error_percentage_value), errorString);
+         progressBar.hideErrorPercentage(true);
+         progressBar.setErrorProgress(resources.getInteger(R.integer.error_percentage_value), resources.getString(R.string.pb_error));
          stopButton.setVisibility(View.GONE);
       }
       //post cleanup to show drag and drop zone after time X
@@ -943,6 +943,7 @@ public class ExportFragment extends BaseDataFragment {
       //reset button and process
       stopButton.setVisibility(View.VISIBLE);
       progressBar.setProgress(0);
+      progressBar.hideErrorPercentage(false);
       progressBar.setShowProgress(false);
       progressBar.setTitle(loading_string);
       //set visibility of sections

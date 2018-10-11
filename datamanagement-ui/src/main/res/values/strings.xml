@@ -386,11 +386,9 @@
     <string name="import_cloud_inbox">Inbox</string>
 
     <!-- Advanced Product Information -->
-    <string name="advanced_product_information_toggle_button_yes">Yes</string>
-    <string name="advanced_product_information_toggle_button_no">No</string>
     <string name="advanced_product_information_buffer_distance_in_ft">ft</string>
     <string name="advanced_product_information_max_wind_speed_in_mph">mph</string>
-    <string name="advanced_product_information_buffer_distance_in_mts">mts</string>
+    <string name="advanced_product_information_buffer_distance_in_mts">m</string>
     <string name="advanced_product_information_max_wind_speed_in_kph">kph</string>
 
 </resources>

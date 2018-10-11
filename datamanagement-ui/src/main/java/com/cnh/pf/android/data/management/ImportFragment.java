@@ -54,7 +54,6 @@ import com.cnh.pf.android.data.management.session.SessionExtra;
 import com.cnh.pf.android.data.management.session.SessionUtil;
 import com.cnh.pf.android.data.management.utility.UtilityHelper;
 
-import com.cnh.pf.datamng.Process;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -120,6 +119,7 @@ public class ImportFragment extends BaseDataFragment {
    //those are strings defined in the backend to identify the received progress
    private final static String PROGRESS_CONFLICT_IDENTIFICATION_STRING = "Calculating conflict";
    private final static String PROGRESS_TARGETS_IDENTIFICATION_STRING = "Calculating Targets";
+   private final static String PROGRESS_FAILED_IDENTIFICATION_STRING = "Failed";
 
    //this variable denotes the current state of dynamic visual feedback (success or failure of process)
    private boolean visualFeedbackActive = false; //true: visual feedback is currently shown, false: currently no visual feedback shown
@@ -248,9 +248,6 @@ public class ImportFragment extends BaseDataFragment {
          clearTreeSelection();
       }
 
-      //close cancel dialog if still open
-      showErrorStatePanel();
-
       if (SessionUtil.isDiscoveryTask(session)) {
          showStartMessage();
       }
@@ -258,9 +255,10 @@ public class ImportFragment extends BaseDataFragment {
          hideDataTreeLoadingOverlay();
          showTreeList();
       }
-      updateImportButton();
-      updateSelectAllState();
       processOverlay.setMode(DataExchangeProcessOverlay.MODE.HIDDEN);
+      updateImportButton();
+      showDragAndDropZone();
+      updateSelectAllState();
    }
 
    private void setImportDragDropArea(int event) {
@@ -550,7 +548,7 @@ public class ImportFragment extends BaseDataFragment {
    private void updateImportButton() {
       Session s = getSession();
       boolean isActiveOperation = ((SessionUtil.isCalculateConflictsTask(s) || SessionUtil.isCalculateOperationsTask(s)) && Session.State.COMPLETE.equals(s.getState()))
-            || (SessionUtil.isPerformOperationsTask(s) && (s.getResultCode() == null || Process.Result.ERROR.equals(s.getResultCode())));
+            || (SessionUtil.isPerformOperationsTask(s) && s.getResultCode() == null);
       boolean connected = getSessionManager().isServiceConnected();
       boolean hasSelection = getTreeAdapter() != null && getTreeAdapter().hasSelection();
       boolean defaultButtonText = true;
@@ -808,10 +806,12 @@ public class ImportFragment extends BaseDataFragment {
       if (!visualFeedbackActive) {
          importDropZone.setVisibility(View.GONE);
          progressBar.setProgress(0);
+         progressBar.hideErrorPercentage(false);
          progressBar.setShowProgress(false);
          progressBar.setTitle(loadingString);
          importFinishedStatePanel.setVisibility(View.GONE);
          leftStatus.setVisibility(View.VISIBLE);
+         stopBtn.setVisibility(View.VISIBLE);
       }
    }
 
@@ -853,12 +853,12 @@ public class ImportFragment extends BaseDataFragment {
       logger.debug("showErrorStatePanel");
       visualFeedbackActive = true;
       importDropZone.setVisibility(View.GONE);
+      stopBtn.setVisibility(View.GONE);
       importFinishedStatePanel.setVisibility(View.GONE);
       leftStatus.setVisibility(View.VISIBLE);
       Resources resources = getResources();
-      String errorString = resources.getString(R.string.pb_error);
-      progressBar.setTitle(errorString);
-      progressBar.setErrorProgress(resources.getInteger(R.integer.error_percentage_value), errorString);
+      progressBar.hideErrorPercentage(true);
+      progressBar.setErrorProgress(resources.getInteger(R.integer.error_percentage_value), resources.getString(R.string.pb_error));
 
       //post cleanup to show drag and drop zone after time X
       final Handler handler = new Handler();
@@ -886,9 +886,12 @@ public class ImportFragment extends BaseDataFragment {
             processDialog.setProgress(percent);
          }
          else {
-            //non targets / conflict operations are supposed to be performing progress updates
-            progressBar.setProgress(percent > 100 ? 100 : percent);
-            progressBar.setTitle(loadingString);
+            //do not show progress update in case of a failure (operation = Failed and progress == max)
+            if (!(operation.contains(PROGRESS_FAILED_IDENTIFICATION_STRING) && progress == max)) {
+               //non targets / conflict operations are supposed to be performing progress updates
+               progressBar.setProgress(percent > 100 ? 100 : percent);
+               progressBar.setTitle(loadingString);
+            }
          }
       }
       else {

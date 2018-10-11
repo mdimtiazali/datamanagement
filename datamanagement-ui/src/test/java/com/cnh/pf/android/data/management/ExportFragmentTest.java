@@ -13,25 +13,23 @@ package com.cnh.pf.android.data.management;
 import android.content.ComponentName;
 import android.view.View;
 import android.widget.ImageButton;
+
 import com.cnh.pf.android.data.management.helper.DataExchangeBlockedOverlay;
 import com.cnh.pf.android.data.management.helper.VIPDataHandler;
 import com.cnh.pf.android.data.management.service.DataManagementService;
-import com.cnh.pf.android.data.management.session.SessionManager;
 import com.cnh.pf.model.constants.stringsConstants;
+
 import org.junit.Before;
 import org.junit.Test;
-import org.junit.runner.RunWith;
 import org.mockito.Mock;
 import org.mockito.Mockito;
 import org.mockito.MockitoAnnotations;
 import org.robolectric.Robolectric;
-import org.robolectric.RobolectricMavenTestRunner;
 import org.robolectric.RuntimeEnvironment;
-import org.robolectric.annotation.Config;
 import org.robolectric.util.ActivityController;
+
 import pl.polidea.treeview.TreeViewList;
 import roboguice.RoboGuice;
-import roboguice.event.EventManager;
 
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.notNullValue;
@@ -40,19 +38,13 @@ import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 import static org.robolectric.Shadows.shadowOf;
 
-@RunWith(RobolectricMavenTestRunner.class)
-@Config(manifest = "src/main/AndroidManifest.xml", application = TestApp.class)
-public class ExportFragmentTest {
+public class ExportFragmentTest extends BaseTestRobolectric {
    private static final int IMPORT_SOURCE_TAB_POSITION = 2;
    private DataManagementActivity activity;
    @Mock
    DataManagementService service;
    @Mock
    DataManagementService.LocalBinder binder;
-   @Mock
-   SessionManager sessionManager;
-
-   private EventManager eventManager;
 
    ExportFragment exportFragment;
 

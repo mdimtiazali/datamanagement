@@ -102,7 +102,13 @@ public class PerformOperationsTask extends SessionOperationTask<Void> {
             }
 
             if (hasCancelled && !hasError) {
-               session.setResultCode(Process.Result.CANCEL);
+               if (!Environment.getExternalStorageState().equals(MEDIA_MOUNTED)) {
+                  session.setResultCode(Process.Result.ERROR);
+                  throw new SessionException(ErrorCode.USB_REMOVED);
+               }
+               else {
+                  session.setResultCode(Process.Result.CANCEL);
+               }
             }
             else {
                SessionExtra extra = session.getExtra();
@@ -124,7 +130,6 @@ public class PerformOperationsTask extends SessionOperationTask<Void> {
          logger.error("Exception in PERFORM_OPERATIONS: ", e);
          session.setResultCode(Process.Result.ERROR);
          if (!Environment.getExternalStorageState().equals(MEDIA_MOUNTED)) {
-            notifier.notifySessionError(session, ErrorCode.USB_REMOVED);
             throw new SessionException(ErrorCode.USB_REMOVED);
          }
          else {
@@ -212,7 +217,7 @@ public class PerformOperationsTask extends SessionOperationTask<Void> {
             session.setResultCode(Process.Result.ERROR);
             notifier.notifySessionError(session, ErrorCode.USB_REMOVED);
             throw new SessionException(ErrorCode.USB_REMOVED);
-         }
+            }
          }
 
          boolean moveWasSuccessfull = false;
