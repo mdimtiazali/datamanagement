@@ -19,6 +19,7 @@ import android.os.IBinder;
 import com.cnh.jgroups.ObjectGraph;
 import com.cnh.jgroups.Operation;
 import com.cnh.pf.android.data.management.service.DataManagementService;
+import com.cnh.pf.datamng.Process;
 import com.google.inject.Inject;
 import com.google.inject.Singleton;
 
@@ -363,7 +364,8 @@ public class SessionManager implements SessionContract.SessionManager, SessionEv
    @Override
    public void onSessionError(Session session, ErrorCode errorCode) {
       logger.trace("onSessionError(): {}, {}", session.getType(), session.getAction());
-
+      //inject error result code
+      session.setResultCode(Process.Result.ERROR);
       updateSession(session);
       if (view != null) {
          if (isServiceConnected() && dmService.isPCMOnline()) {
