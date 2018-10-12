@@ -106,8 +106,7 @@
                     android:orientation="vertical"
                     android:background="@drawable/dashed_border_initial">
 
-                <include layout="@layout/perform_left_layout"/>
-
+                <include layout="@layout/export_perform_left_layout"/>
 
                 <LinearLayout
                         android:id="@+id/export_drop_zone"
@@ -134,8 +133,8 @@
                             android:text="@string/export_drag_and_drop"/>
                 </LinearLayout>
 
-
                 <include layout="@layout/data_exchange_success_zone"/>
+
             </LinearLayout>
 
             <Button

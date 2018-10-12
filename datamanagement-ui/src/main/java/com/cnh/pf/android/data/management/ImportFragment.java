@@ -109,12 +109,17 @@ public class ImportFragment extends BaseDataFragment {
    String selectTargetStr;
    @InjectResource(R.string.next)
    String nextStr;
+   @InjectResource(R.string.skip)
+   String skipStr;
+   @InjectResource(R.string.merge)
+   String mergeStr;
    @InjectView(R.id.operation_name)
    TextView operationName;
 
    //those are strings defined in the backend to identify the received progress
    private final static String PROGRESS_CONFLICT_IDENTIFICATION_STRING = "Calculating conflict";
    private final static String PROGRESS_TARGETS_IDENTIFICATION_STRING = "Calculating Targets";
+   private final static String PROGRESS_FAILED_IDENTIFICATION_STRING = "Failed";
 
    //this variable denotes the current state of dynamic visual feedback (success or failure of process)
    private boolean visualFeedbackActive = false; //true: visual feedback is currently shown, false: currently no visual feedback shown
@@ -128,7 +133,7 @@ public class ImportFragment extends BaseDataFragment {
    private TextDialogView lastCancelDialogView; //used to keep track of the cancel dialog (should be closed if open if process is finished)
 
    private String loadingString;
-   private String xOfYFormat;
+
    private int whiteTextColor;
    private int defaultTextColor;
 
@@ -158,7 +163,6 @@ public class ImportFragment extends BaseDataFragment {
 
       final Resources resources = getResources();
       loadingString = resources.getString(R.string.loading_string);
-      xOfYFormat = resources.getString(R.string.x_of_y_format);
 
       whiteTextColor = resources.getColor(R.color.drag_drop_white_text_color);
       defaultTextColor = resources.getColor(R.color.drag_drop_default_text_color);
@@ -239,13 +243,10 @@ public class ImportFragment extends BaseDataFragment {
    public void onMyselfSessionCancelled(Session session) {
       logger.debug("onMyselfSessionCancelled(): {}, {}", session.getType(), session.getAction());
       if (SessionUtil.isPerformOperationsTask(session) || SessionUtil.isDiscoveryTask(session)) {
-         ToastMessageCustom.makeToastMessageText(getActivity().getApplicationContext(), getString(R.string.export_cancel), Gravity.TOP | Gravity.CENTER_HORIZONTAL,
+         ToastMessageCustom.makeToastMessageText(getActivity().getApplicationContext(), getString(R.string.import_cancel), Gravity.TOP | Gravity.CENTER_HORIZONTAL,
                getResources().getInteger(R.integer.toast_message_xoffset), getResources().getInteger(R.integer.toast_message_yoffset)).show();
          clearTreeSelection();
       }
-
-      //close cancel dialog if still open
-      showErrorStatePanel();
 
       if (SessionUtil.isDiscoveryTask(session)) {
          showStartMessage();
@@ -254,9 +255,10 @@ public class ImportFragment extends BaseDataFragment {
          hideDataTreeLoadingOverlay();
          showTreeList();
       }
-      updateImportButton();
-      updateSelectAllState();
       processOverlay.setMode(DataExchangeProcessOverlay.MODE.HIDDEN);
+      updateImportButton();
+      showDragAndDropZone();
+      updateSelectAllState();
    }
 
    private void setImportDragDropArea(int event) {
@@ -353,24 +355,65 @@ public class ImportFragment extends BaseDataFragment {
             processDialog.setDimensionsNoPadding(conflictDialogWidth, conflictDialogHeight);
             processDialog.setAdapter(adapter);
             processDialog.setTitle(dataConflictStr);
-            processDialog.showFirstButton(true);
-            processDialog.setFirstButtonText(keepBothStr);
+            //default button behaviour
+            processDialog.showFirstButton(false);
             processDialog.showSecondButton(true);
-            processDialog.setSecondButtonText(replaceStr);
+            processDialog.setSecondButtonText(keepBothStr);
+            processDialog.setThirdButtonEnabled(true);
+            processDialog.setThirdButtonText(replaceStr);
+            processDialog.setFourthButtonEnabled(true);
+            processDialog.setFourthButtonText(skipStr);
             processDialog.clearLoading();
-
+            adapter.setOnConflictTypeChangedListener(new DataConflictViewAdapter.OnConflictTypeChangedListener() {
+               @Override
+               public void onConflictTypeChanged(DataConflictViewAdapter.ConflictDataType currentConflictType) {
+                  //react on config type changed
+                  if (DataConflictViewAdapter.ConflictDataType.GFF.equals(currentConflictType)) {
+                     //is gff, show merge
+                     processDialog.showFirstButton(true);
+                     processDialog.setFirstButtonText(mergeStr);
+                     processDialog.showSecondButton(true);
+                     processDialog.setSecondButtonText(keepBothStr);
+                     processDialog.setThirdButtonEnabled(true);
+                     processDialog.setThirdButtonText(replaceStr);
+                     processDialog.setFourthButtonEnabled(true);
+                     processDialog.setFourthButtonText(skipStr);
+                  }
+                  else {
+                     //is other, hide merge
+                     processDialog.showFirstButton(false);
+                     processDialog.showSecondButton(true);
+                     processDialog.setSecondButtonText(keepBothStr);
+                     processDialog.setThirdButtonEnabled(true);
+                     processDialog.setThirdButtonText(replaceStr);
+                     processDialog.setFourthButtonEnabled(true);
+                     processDialog.setFourthButtonText(skipStr);
+                  }
+               }
+            });
             //show add custom cancel handling
             final DataManagementBaseAdapter.OnActionSelectedListener listener = adapter.getActionListener();
             processDialog.setOnButtonClickListener(new DialogViewInterface.OnButtonClickListener() {
                @Override
                public void onButtonClick(DialogViewInterface dialog, int which) {
                   if (which == DialogViewInterface.BUTTON_FIRST) {
+                     //merge button
                      listener.onButtonSelected(processDialog, DataManagementBaseAdapter.Action.ACTION1);
                   }
                   else if (which == DialogViewInterface.BUTTON_SECOND) {
+                     //keep both button
                      listener.onButtonSelected(processDialog, DataManagementBaseAdapter.Action.ACTION2);
                   }
                   else if (which == DialogViewInterface.BUTTON_THIRD) {
+                     //replace button
+                     listener.onButtonSelected(processDialog, DataManagementBaseAdapter.Action.ACTION3);
+                  }
+                  else if (which == DialogViewInterface.BUTTON_FOURTH) {
+                     //skip button
+                     listener.onButtonSelected(processDialog, DataManagementBaseAdapter.Action.ACTION4);
+                  }
+                  else if (which == DialogViewInterface.BUTTON_FIFTH) {
+                     //cancel button
                      listener.onButtonSelected(processDialog, null);
                      //Show confirmation cancel-dialog
                      DialogViewInterface.OnButtonClickListener onButtonClickListener = new DialogViewInterface.OnButtonClickListener() {
@@ -511,7 +554,7 @@ public class ImportFragment extends BaseDataFragment {
       boolean defaultButtonText = true;
       if (getTreeAdapter() != null && getTreeAdapter().getSelectionMap() != null) {
          int selectedItemCount = countSelectedItem();
-         if (selectedItemCount > 0) {
+         if (selectedItemCount > 0 && !isActiveOperation) {
             defaultButtonText = false;
             Resources resources = getResources();
             importSelectedBtn.setText(resources.getString(R.string.import_selected) + " (" + selectedItemCount + ")");
@@ -537,6 +580,10 @@ public class ImportFragment extends BaseDataFragment {
       if (connected && hasSelection && !isActiveOperation && s != null) {
          importSelectedBtn.setEnabled(true);
          importDropZone.setBackgroundResource(R.drawable.dashed_border_selected);
+      }
+      else if (isActiveOperation) {
+         importSelectedBtn.setEnabled(false);
+         importSelectedBtn.setText(getResources().getString(R.string.import_selected));
       }
       else {
          importSelectedBtn.setEnabled(false);
@@ -759,10 +806,12 @@ public class ImportFragment extends BaseDataFragment {
       if (!visualFeedbackActive) {
          importDropZone.setVisibility(View.GONE);
          progressBar.setProgress(0);
+         progressBar.hideErrorPercentage(false);
          progressBar.setShowProgress(false);
          progressBar.setTitle(loadingString);
          importFinishedStatePanel.setVisibility(View.GONE);
          leftStatus.setVisibility(View.VISIBLE);
+         stopBtn.setVisibility(View.VISIBLE);
       }
    }
 
@@ -804,12 +853,12 @@ public class ImportFragment extends BaseDataFragment {
       logger.debug("showErrorStatePanel");
       visualFeedbackActive = true;
       importDropZone.setVisibility(View.GONE);
+      stopBtn.setVisibility(View.GONE);
       importFinishedStatePanel.setVisibility(View.GONE);
       leftStatus.setVisibility(View.VISIBLE);
       Resources resources = getResources();
-      String errorString = resources.getString(R.string.pb_error);
-      progressBar.setTitle(errorString);
-      progressBar.setErrorProgress(resources.getInteger(R.integer.error_percentage_value), errorString);
+      progressBar.hideErrorPercentage(true);
+      progressBar.setErrorProgress(resources.getInteger(R.integer.error_percentage_value), resources.getString(R.string.pb_error));
 
       //post cleanup to show drag and drop zone after time X
       final Handler handler = new Handler();
@@ -837,9 +886,12 @@ public class ImportFragment extends BaseDataFragment {
             processDialog.setProgress(percent);
          }
          else {
-            //non targets / conflict operations are supposed to be performing progress updates
-            progressBar.setProgress(percent);
-            progressBar.setTitle(loadingString);
+            //do not show progress update in case of a failure (operation = Failed and progress == max)
+            if (!(operation.contains(PROGRESS_FAILED_IDENTIFICATION_STRING) && progress == max)) {
+               //non targets / conflict operations are supposed to be performing progress updates
+               progressBar.setProgress(percent > 100 ? 100 : percent);
+               progressBar.setTitle(loadingString);
+            }
          }
       }
       else {
@@ -926,7 +978,7 @@ public class ImportFragment extends BaseDataFragment {
          processDialog.setOnButtonClickListener(new DialogViewInterface.OnButtonClickListener() {
             @Override
             public void onButtonClick(DialogViewInterface dialog, int which) {
-               if (which == DialogViewInterface.BUTTON_THIRD) {
+               if (which == DialogViewInterface.BUTTON_FIFTH) {
                   //cancel button has been clicked
                   //Show confirmation cancel-dialog
                   DialogViewInterface.OnButtonClickListener onButtonClickListener = new DialogViewInterface.OnButtonClickListener() {

@@ -50,13 +50,7 @@ public class DiscoveryTask extends SessionOperationTask<Void> {
             else {
                session.setObjectData(getMediator().discovery(addrs));
             }
-            if (session.getObjectData() == null || session.getObjectData().isEmpty()) {
-               session.setResultCode(Process.Result.ERROR);
-               throw new SessionException(ErrorCode.NO_DATA);
-            }
-            else {
-               session.setResultCode(Process.Result.SUCCESS);
-            }
+            session.setResultCode(Process.Result.SUCCESS);
          }
          else {
             session.setResultCode(Process.Result.ERROR);

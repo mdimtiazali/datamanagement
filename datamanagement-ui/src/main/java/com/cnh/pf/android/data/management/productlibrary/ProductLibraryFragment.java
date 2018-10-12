@@ -1071,7 +1071,9 @@ public class ProductLibraryFragment extends RoboFragment implements ProductMixCa
       super.onPause();
       this.isPaused = true;
       unregisterVIPService();
-      measurementSystemCache.unregisterContentObservers();
+      // Similar to tractor app, removed unregistering observer. Need confirmation from ui core
+      // before removing below line.
+      //measurementSystemCache.unregisterContentObservers();
    }
 
    /**

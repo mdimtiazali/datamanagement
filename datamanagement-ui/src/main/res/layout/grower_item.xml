@@ -9,15 +9,17 @@
 
 <RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
               android:layout_width="match_parent"
-              android:layout_height="@dimen/list_item_height"
-              android:paddingBottom="2dp">
+              android:layout_height="wrap_content"
+                android:paddingTop="13dp">
     <TextView android:layout_width="match_parent"
-              android:layout_height="match_parent"
+              android:layout_height="32dp"
+              android:minHeight="32dp"
+              style="@style/TextAppearance.Roboto.Bold"
+              android:textSize="18sp"
+              android:textColor="@color/copy_title_text_color"
               android:background="@color/grower_item_bg"
               android:gravity="center"
               android:textStyle="bold"
               android:id="@+id/grower_name"
-              android:paddingTop="4dp"
-              android:paddingBottom="8dp"
               android:ellipsize="middle"/>
 </RelativeLayout>

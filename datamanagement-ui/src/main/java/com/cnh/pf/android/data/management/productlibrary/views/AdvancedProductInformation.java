@@ -56,8 +56,8 @@ public class AdvancedProductInformation {
    private boolean restrictedBoolValue;
    private boolean postingRequiredBoolValue;
 
-   private Double bufferDistance;
-   private Double maxWindSpeed;
+   private double bufferDistance;
+   private double maxWindSpeed;
    private double rateUnitFactor = 1.0;
 
    private String epa;
@@ -89,7 +89,6 @@ public class AdvancedProductInformation {
       this.restrictedUseToggleButtonGroup = (SegmentedToggleButtonGroup) view.findViewById(R.id.restricted_use_segmented_button_toggle_group);
       this.postingRequiredToggleButtonGroup = (SegmentedToggleButtonGroup) view.findViewById(R.id.posting_required_segmented_button_toggle_group);
       initListeners();
-      addButtons();
       setUnits();
    }
 
@@ -104,13 +103,6 @@ public class AdvancedProductInformation {
       maxWindSpeedInputField.setOnEditorActionListener(new MaxWindSpeedOnEditorActionListener());
       restrictedUseToggleButtonGroup.setOnCheckedChangeListener(new RestrictedUseToggleButtonGroup());
       postingRequiredToggleButtonGroup.setOnCheckedChangeListener(new PostingRequiredToggleButtonGroup());
-   }
-
-   private void addButtons() {
-      restrictedUseToggleButtonGroup.addButton(context.getString(R.string.advanced_product_information_toggle_button_yes), 1);
-      restrictedUseToggleButtonGroup.addButton(context.getString(R.string.advanced_product_information_toggle_button_no), 2);
-      postingRequiredToggleButtonGroup.addButton(context.getString(R.string.advanced_product_information_toggle_button_yes), 1);
-      postingRequiredToggleButtonGroup.addButton(context.getString(R.string.advanced_product_information_toggle_button_no), 2);
    }
 
    private void setUnits() {
@@ -133,7 +125,7 @@ public class AdvancedProductInformation {
     * @param product the product which includes the values
     */
    public void setValuesToUi(@Nonnull Product product) {
-      logger.debug("setValuesToUi {} ");
+      logger.trace("setValuesToUi {}", product);
       this.product = product;
       epaNumberInputField.setText(product.getEpaNumber());
       manufacturerInputField.setText(product.getManufacturer());
@@ -158,7 +150,7 @@ public class AdvancedProductInformation {
     * @param product the product to change
     */
    public void setValuesToProduct(@Nonnull Product product) {
-      logger.debug("setValuesToProduct {}");
+      logger.trace("setValuesToProduct {}", product);
       this.product = product;
       product.setEpaNumber(epa);
       product.setManufacturer(manufacturer);
@@ -180,30 +172,30 @@ public class AdvancedProductInformation {
    }
 
    private void setValuesToProductInDefaultMeasurementSystem() {
-      logger.debug("setValuesToProductInDefaultMeasurementSystem {}");
+      logger.trace("setValuesToProductInDefaultMeasurementSystem");
       product.setBufferDistanceMeters(MathUtility.getConvertedFromBase(Double.valueOf(bufferDistanceInputField.getText().toString()), rateUnitFactor));
       product.setMaxWindSpeedKph(MathUtility.getConvertedFromBase(Double.valueOf(maxWindSpeedInputField.getText().toString()), rateUnitFactor));
    }
 
    private void setValuesToUiInDefaultMeasurementSystem() {
-      logger.debug("setValuesToUiInDefaultMeasurementSystem {}");
+      logger.trace("setValuesToUiInDefaultMeasurementSystem");
       bufferDistanceInputField.setText(Double.toString(MathUtility.getConvertedFromBase(product.getBufferDistanceMeters(), rateUnitFactor)));
       maxWindSpeedInputField.setText(Double.toString(MathUtility.getConvertedFromBase(product.getMaxWindSpeedKph(), rateUnitFactor)));
    }
 
-   private double convertBufferDistanceToMetric(Double bufferDistance) {
+   private double convertBufferDistanceToMetric(double bufferDistance) {
       return UnitConverter.feetToMeter(bufferDistance);
    }
 
-   private double convertBufferDistanceToUsa(Double bufferDistance) {
+   private double convertBufferDistanceToUsa(double bufferDistance) {
       return UnitConverter.metersToFeet(bufferDistance);
    }
 
-   private double convertMaxWindSpeedToMetric(Double maxWindSpeed) {
+   private double convertMaxWindSpeedToMetric(double maxWindSpeed) {
       return UnitConverter.milesPerHourToKilometersPerHour(maxWindSpeed);
    }
 
-   private double convertMaxWindSpeedToUsa(Double maxWindSpeed) {
+   private double convertMaxWindSpeedToUsa(double maxWindSpeed) {
       return UnitConverter.kilometersPerHourToMilesPerHour(maxWindSpeed);
    }
 

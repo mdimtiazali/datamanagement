@@ -33,14 +33,12 @@ import com.cnh.android.pf.widget.utilities.listeners.GenericListener;
 import com.cnh.android.pf.widget.utilities.tasks.VIPAsyncTask;
 import com.cnh.android.pf.widget.view.DisabledOverlay;
 import com.cnh.android.vip.aidl.IVIPServiceAIDL;
-import com.cnh.android.widget.Widget;
 import com.cnh.android.widget.control.InputField;
 import com.cnh.android.widget.control.PickList;
 import com.cnh.android.widget.control.PickListAdapter;
 import com.cnh.android.widget.control.PickListItem;
 import com.cnh.pf.android.data.management.R;
 import com.cnh.pf.android.data.management.productlibrary.ProductLibraryFragment;
-import com.cnh.pf.android.data.management.productlibrary.adapter.VarietyAdapter;
 import com.cnh.pf.android.data.management.productlibrary.utility.sorts.CropTypeComparator;
 import com.cnh.pf.model.product.configuration.Variety;
 import com.cnh.pf.model.product.configuration.VarietyColor;
@@ -64,7 +62,7 @@ public class AddOrEditVarietyDialog extends DialogView {
       ADD, EDIT
    }
 
-   private static final Logger logger = LoggerFactory.getLogger(VarietyAdapter.class);
+   private static final Logger logger = LoggerFactory.getLogger(AddOrEditVarietyDialog.class);
    private List<Variety> varieties;
    private Variety currentVariety;
    private Variety modifiedVariety;
@@ -81,16 +79,12 @@ public class AddOrEditVarietyDialog extends DialogView {
 
    public AddOrEditVarietyDialog(Context context) {
       super(context);
-      this.showThirdButton(false).setBodyHeight(ProductLibraryFragment.DIALOG_HEIGHT)
-            .setBodyView(R.layout.variety_add_or_edit_dialog)
+      this.showThirdButton(false).setBodyHeight(ProductLibraryFragment.DIALOG_HEIGHT).setBodyView(R.layout.variety_add_or_edit_dialog)
             .setDialogWidth(ProductLibraryFragment.DIALOG_WIDTH);
       Resources res = context.getResources();
-      this.setContentPaddings(
-            res.getDimensionPixelSize(R.dimen.variety_dialog_content_padding_left_and_right),
-            res.getDimensionPixelSize(R.dimen.variety_dialog_content_padding_top),
-            res.getDimensionPixelSize(R.dimen.variety_dialog_content_padding_left_and_right),
-            res.getDimensionPixelSize(R.dimen.variety_dialog_content_padding_bottom)
-      );
+      this.setContentPaddings(res.getDimensionPixelSize(R.dimen.variety_dialog_content_padding_left_and_right),
+            res.getDimensionPixelSize(R.dimen.variety_dialog_content_padding_top), res.getDimensionPixelSize(R.dimen.variety_dialog_content_padding_left_and_right),
+            res.getDimensionPixelSize(R.dimen.variety_dialog_content_padding_bottom));
    }
 
    /**
@@ -204,11 +198,11 @@ public class AddOrEditVarietyDialog extends DialogView {
             cropType = cropTypes[i];
             cropTypePickListItems
                   .add(new PickListItemWithTag<CropType>(i, EnumValueToUiStringUtility.getUiStringForCropType(cropType, getContext()), true, false, false, false, false, cropType));
-            if (actionType.equals(VarietyDialogActionType.EDIT) && (null != modifiedVariety) && (null != modifiedVariety.getCropType()) ) {
+            if (actionType.equals(VarietyDialogActionType.EDIT) && (null != modifiedVariety) && (null != modifiedVariety.getCropType())) {
                if (modifiedVariety.getCropType().equals(cropType)) {
                   selectedId = i;
                }
-               if(currentVariety.isUsed()) {
+               if (currentVariety.isUsed()) {
                   pickList.setReadOnly(true);
                }
             }
@@ -234,12 +228,12 @@ public class AddOrEditVarietyDialog extends DialogView {
       inputField.addTextChangedListener(new TextWatcher() {
          @Override
          public void beforeTextChanged(CharSequence charSequence, int i, int i1, int i2) {
-
+            //not used
          }
 
          @Override
          public void onTextChanged(CharSequence charSequence, int i, int i1, int i2) {
-
+            //not used
          }
 
          @Override
@@ -271,22 +265,22 @@ public class AddOrEditVarietyDialog extends DialogView {
          colorGridAdapter = new ColorGridAdapter();
          colorGrid.setAdapter(colorGridAdapter);
          colorGrid.setOnItemClickListener(new OnColorClickListener());
-         if (modifiedVariety != null){
-            switch (actionType){
-               case EDIT:
-                  VarietyColor currentColor = modifiedVariety.getVarietyColor();
-                  colorGridAdapter.setSelectedPosition(colorGridAdapter.getPositionOfColor(currentColor));
-                  updateSaveButtonState();
-                  break;
-               case ADD:
-                  VarietyColor nextColor = com.cnh.pf.util.VarietyHelper.retrieveNextUnusedVarietyColor(new ArrayList<Variety>(varieties), new LinkedList<VarietyColor>(colors));
-                  modifiedVariety.setVarietyColor(nextColor);
-                  colorGridAdapter.setSelectedPosition(colorGridAdapter.getPositionOfColor(nextColor));
-                  updateSaveButtonState();
-                  break;
-               default:
-                  logger.error("unimplemented state of variety dialog: {}", actionType);
-                  break;
+         if (modifiedVariety != null) {
+            switch (actionType) {
+            case EDIT:
+               VarietyColor currentColor = modifiedVariety.getVarietyColor();
+               colorGridAdapter.setSelectedPosition(colorGridAdapter.getPositionOfColor(currentColor));
+               updateSaveButtonState();
+               break;
+            case ADD:
+               VarietyColor nextColor = com.cnh.pf.util.VarietyHelper.retrieveNextUnusedVarietyColor(new ArrayList<Variety>(varieties), new LinkedList<VarietyColor>(colors));
+               modifiedVariety.setVarietyColor(nextColor);
+               colorGridAdapter.setSelectedPosition(colorGridAdapter.getPositionOfColor(nextColor));
+               updateSaveButtonState();
+               break;
+            default:
+               logger.error("unimplemented state of variety dialog: {}", actionType);
+               break;
             }
          }
          disabledOverlay.setMode(DisabledOverlay.MODE.HIDDEN);
@@ -304,8 +298,42 @@ public class AddOrEditVarietyDialog extends DialogView {
       new VIPAsyncTask<VarietyCommandParams, Variety>(params, new GenericListener<Variety>() {
          @Override
          public void handleEvent(Variety variety) {
+            //not used
          }
       }).execute(new SaveVarietyCommand());
+   }
+
+   /**
+    * This method only updates the given input field to the given error message, if it is a required update
+    * @param inputField Element the error should be applied to
+    * @param errorMessage String representing the Error
+    */
+   private void applyErrorToInputField(InputField inputField, String errorMessage) {
+      if (inputField != null) {
+         //The following block is to be uncommented, as soon as core defect 14926 is fixed
+         /*
+         if (errorMessage == null && inputField.getError() == null) {
+            //no update required
+            return;
+         }
+         else {
+            if (errorMessage == null) {
+               //clear the error
+               inputField.setError(null);
+            }
+            else {
+               //errorMessage cannot be null, input field cannot be null
+               if (!errorMessage.equals(inputField.getError())) {
+                  //only update error, if an update is required
+                  inputField.setError(errorMessage);
+               }
+            }
+         }
+         */
+         //The following line is to be removed as core defect 14926 is fixed
+         inputField.setError(errorMessage);
+      }
+
    }
 
    /**
@@ -334,17 +362,16 @@ public class AddOrEditVarietyDialog extends DialogView {
             if (variety.getId() != modifiedVariety.getId() && variety.getName().equals(newName)) {
                // name already used by other variety
                setFirstButtonEnabled(false);
-               inputField.setErrorIndicator(Widget.ErrorIndicator.NEEDS_CHECKING);
+               applyErrorToInputField(inputField, getResources().getString(R.string.duplicate_error));
                return;
             }
          }
-         inputField.setErrorIndicator(Widget.ErrorIndicator.NONE);
+         //clear error
+         applyErrorToInputField(inputField, null);
          // Logic: CropType and Color have to have been set, to save,
          //   or  you have to have changed something.  (Also can not check for equality if null)
-         if ((null == modifiedVariety.getCropType()) || (null == modifiedVariety.getVarietyColor())
-                 || (currentVariety.getName().equals(newName)
-                 && modifiedVariety.getCropType().equals(currentVariety.getCropType())
-                 && (currentVariety.getVarietyColor().getId() == modifiedVariety.getVarietyColor().getId()))) {
+         if ((null == modifiedVariety.getCropType()) || (null == modifiedVariety.getVarietyColor()) || (currentVariety.getName().equals(newName)
+               && modifiedVariety.getCropType().equals(currentVariety.getCropType()) && (currentVariety.getVarietyColor().getId() == modifiedVariety.getVarietyColor().getId()))) {
             setFirstButtonEnabled(false);
             return;
          }
@@ -355,21 +382,17 @@ public class AddOrEditVarietyDialog extends DialogView {
             if (variety.getName().equals(newName)) {
                // name already used by other variety
                setFirstButtonEnabled(false);
-               inputField.setErrorIndicator(Widget.ErrorIndicator.NEEDS_CHECKING);
+               applyErrorToInputField(inputField, getResources().getString(R.string.duplicate_error));
                return;
             }
          }
-         inputField.setErrorIndicator(Widget.ErrorIndicator.NONE);
+         //clear error
+         applyErrorToInputField(inputField, null);
          if (modifiedVariety.getCropType() == null || modifiedVariety.getVarietyColor() == null) {
             setFirstButtonEnabled(false);
             return;
          }
          break;
-      default:
-         setFirstButtonEnabled(false);
-         inputField.setErrorIndicator(Widget.ErrorIndicator.INVALID);
-         logger.error("unimplemented state of variety dialog: {}", actionType);
-         return;
       }
       setFirstButtonEnabled(true);
    }
@@ -388,7 +411,8 @@ public class AddOrEditVarietyDialog extends DialogView {
                modifiedVariety.setCropType(cropType);
                if (!colorChangedByUser) {
                   VarietyColor varietyColor = modifiedVariety.getVarietyColor();
-                  VarietyColor newVarietyColor = com.cnh.pf.util.VarietyHelper.retrieveNextUnusedVarietyColor(new ArrayList<Variety>(varieties), new LinkedList<VarietyColor>(colors), cropType);
+                  VarietyColor newVarietyColor = com.cnh.pf.util.VarietyHelper.retrieveNextUnusedVarietyColor(new ArrayList<Variety>(varieties),
+                        new LinkedList<VarietyColor>(colors), cropType);
                   // update only if necessary
                   if (!newVarietyColor.equals(varietyColor)) {
                      modifiedVariety.setVarietyColor(newVarietyColor);
@@ -402,7 +426,7 @@ public class AddOrEditVarietyDialog extends DialogView {
 
       @Override
       public void onNothingSelected(AdapterView<?> parent) {
-
+         //not used
       }
    }
 
@@ -413,7 +437,7 @@ public class AddOrEditVarietyDialog extends DialogView {
 
       private int selectedPosition = -1;
 
-      private void setSelectedPosition(int position){
+      private void setSelectedPosition(int position) {
          this.selectedPosition = position;
          logger.debug("this.selectedPosition: {}", selectedPosition);
          notifyDataSetChanged();
@@ -450,7 +474,7 @@ public class AddOrEditVarietyDialog extends DialogView {
             convertView = LayoutInflater.from(getContext()).inflate(R.layout.variety_color_picker_image_view, null);
          }
          ImageView imageView = (ImageView) convertView;
-         if (position == selectedPosition){
+         if (position == selectedPosition) {
             imageView.setImageResource(R.drawable.varieties_shape_with_border);
          }
          else {

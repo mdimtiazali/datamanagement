@@ -1,0 +1,47 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  ~ Copyright (C) 2015 CNH Industrial NV. All rights reserved.
+  ~
+  ~ This software contains proprietary information of CNH Industrial NV. Neither
+  ~ receipt nor possession thereof confers any right to reproduce, use, or
+  ~ disclose in whole or in part any such information without written
+  ~ authorization from CNH Industrial NV.
+  -->
+
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+              xmlns:cnh="http://schemas.android.com/apk/res-auto"
+              android:id="@+id/left_status_panel"
+              android:orientation="vertical"
+              android:layout_width="match_parent"
+              android:layout_marginTop="@dimen/dataexchange_perform_box_top_margin"
+              android:layout_marginBottom="@dimen/dataexchange_perform_box_bottom_margin"
+              android:layout_height="match_parent"
+              android:visibility="gone">
+
+    <TextView
+            android:id="@+id/operation_name"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center_horizontal"
+            android:text="@string/exporting_string"
+            android:layout_marginBottom="@dimen/dataexchange_export_perform_title_to_progressbar_margin"
+            style="@style/TextAppearance.Import.Entity"/>
+
+    <com.cnh.android.widget.control.ProgressBarView
+            android:id="@+id/progress_bar"
+            style="@style/ProgressBarSmall"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:paddingStart="@dimen/progress_bar_padding"
+            android:paddingEnd="@dimen/progress_bar_padding"
+            cnh:useSmallResources="true"
+            cnh:pbTitle="@string/loading_string"/>
+
+    <ImageButton
+            android:id="@+id/stop_button"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center_horizontal"
+            android:clickable="true"
+            android:background="@drawable/ic_cancel_progress"/>
+</LinearLayout>
