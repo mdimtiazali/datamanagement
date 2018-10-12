@@ -119,6 +119,7 @@ public class ImportFragment extends BaseDataFragment {
    //those are strings defined in the backend to identify the received progress
    private final static String PROGRESS_CONFLICT_IDENTIFICATION_STRING = "Calculating conflict";
    private final static String PROGRESS_TARGETS_IDENTIFICATION_STRING = "Calculating Targets";
+   private final static String PROGRESS_FAILED_IDENTIFICATION_STRING = "Failed";
 
    //this variable denotes the current state of dynamic visual feedback (success or failure of process)
    private boolean visualFeedbackActive = false; //true: visual feedback is currently shown, false: currently no visual feedback shown
@@ -885,9 +886,12 @@ public class ImportFragment extends BaseDataFragment {
             processDialog.setProgress(percent);
          }
          else {
-            //non targets / conflict operations are supposed to be performing progress updates
-            progressBar.setProgress(percent > 100 ? 100 : percent);
-            progressBar.setTitle(loadingString);
+            //do not show progress update in case of a failure (operation = Failed and progress == max)
+            if (!(operation.contains(PROGRESS_FAILED_IDENTIFICATION_STRING) && progress == max)) {
+               //non targets / conflict operations are supposed to be performing progress updates
+               progressBar.setProgress(percent > 100 ? 100 : percent);
+               progressBar.setTitle(loadingString);
+            }
          }
       }
       else {

@@ -83,7 +83,8 @@
     <!-- Import/Export perform - left layout -->
     <dimen name="dataexchange_perform_box_top_margin">16dp</dimen>
     <dimen name="dataexchange_perform_box_bottom_margin">16dp</dimen>
-    <dimen name="dataexchange_perform_title_to_progressbar_margin">22dp</dimen>
+    <dimen name="dataexchange_export_perform_title_to_progressbar_margin">22dp</dimen>
+    <dimen name="dataexchange_import_perform_title_to_progressbar_margin">76dp</dimen>
     <dimen name="dataexchange_perform_box_export_height">300dp</dimen>
     <dimen name="export_perform_left_box_top_spacing_to_text">50dp</dimen>
     <dimen name="dataexchange_perform_left_box_top_spacing_to_top">70dp</dimen>
@@ -95,6 +96,8 @@
     <dimen name="button_default_text_size">22sp</dimen>
     <dimen name="info_image_button_padding">8dp</dimen>
     <dimen name="import_left_layout_background_bottom_margin">62dp</dimen>
+    <dimen name="import_left_progressbar_to_cancel_button_spacing">55dp</dimen>
+    <dimen name="import_left_operation_title_top_spacing">10dp</dimen>
     <dimen name="undelete_dialog_edge_margin">24dp</dimen>
     <dimen name="progress_circle_diameter">48dp</dimen>
     <dimen name="delete_dialog_width">592dp</dimen>
