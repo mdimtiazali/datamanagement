@@ -301,12 +301,11 @@ public class ImportSourceDialogTest {
       //open the treeview
       shadowListView.performItemClick(0);
       shadowListView.populateItems();
-      shadowListView.performItemClick(1);
       //check selecting file enables Button
       assertTrue(selectBtn.isEnabled());
 
       //deselecting file disables Button
-      shadowListView.performItemClick(1);
+      shadowListView.performItemClick(0);
       assertFalse(selectBtn.isEnabled());
 
    }
@@ -337,8 +336,8 @@ public class ImportSourceDialogTest {
       for (String fileName : filetypes) {
          File expectedFile = createValidFile(fileName);
          List<File> fileList = getSupportedFileList(expectedFile);
-
-         assertThat(fileList, hasItem(expectedFile));
+         assertThat(fileList, not(hasItem(expectedFile)));
+         assertThat(fileList, hasItem(expectedFile.getParentFile()));
 
       }
       //for Taskdata.xml only the parent folder is shown, Taskdata.xml itself is not shown to the user
