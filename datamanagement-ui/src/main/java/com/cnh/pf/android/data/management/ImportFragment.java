@@ -348,11 +348,7 @@ public class ImportFragment extends BaseDataFragment {
          }
          if (hasConflicts) {
             DataConflictViewAdapter adapter = new DataConflictViewAdapter(getActivity(), session.getOperations());
-            final android.widget.LinearLayout.LayoutParams dialogContentLayoutParams = new android.widget.LinearLayout.LayoutParams(processDialog.getContentLayoutParameter());
-            Resources resources = getResources();
-            final int conflictDialogWidth = resources.getDimensionPixelSize(R.dimen.import_conflict_width);
-            final int conflictDialogHeight = resources.getDimensionPixelSize(R.dimen.import_conflict_height);
-            processDialog.setDimensionsNoPadding(conflictDialogWidth, conflictDialogHeight);
+
             processDialog.setAdapter(adapter);
             processDialog.setTitle(dataConflictStr);
             //default button behaviour
@@ -444,22 +440,6 @@ public class ImportFragment extends BaseDataFragment {
                   performOperations(extra, operations);
                   updateImportButton();
                   updateSelectAllState();
-               }
-            });
-            processDialog.setOnDismissListener(new DialogViewInterface.OnDismissListener() {
-               @Override
-               public void onDismiss(DialogViewInterface dialogViewInterface) {
-                  //reset layout dimensions
-                  processDialog.setDimensionsNoPadding(ViewGroup.LayoutParams.WRAP_CONTENT, ViewGroup.LayoutParams.WRAP_CONTENT);
-                  //reset margin
-                  processDialog.setContentLayoutParameter(dialogContentLayoutParams);
-                  //reset padding
-                  Resources resources = getActivity().getResources();
-                  int paddingTop = resources.getDimensionPixelSize(R.dimen.dialog_view_content_top_padding);
-                  int paddingBottom = resources.getDimensionPixelSize(R.dimen.dialog_view_content_bottom_padding);
-                  int paddingLeft = resources.getDimensionPixelSize(R.dimen.dialog_view_content_left_padding);
-                  int paddingRight = resources.getDimensionPixelSize(R.dimen.dialog_view_content_right_padding);
-                  processDialog.setContentPaddings(paddingLeft, paddingTop, paddingRight, paddingBottom);
                }
             });
          }
@@ -758,29 +738,10 @@ public class ImportFragment extends BaseDataFragment {
 
    /** Shows conflict resolution dialog */
    private void showConflictDialog() {
-      hideAndDismissProcessDialog();
-      processDialog.init();
-      processDialog.setTitle(getResources().getString(R.string.checking_conflicts));
-      processDialog.setProgress(0);
-      processDialog.setOnCancelListener(new DialogViewInterface.OnCancelListener() {
-         @Override
-         public void onCancel(DialogViewInterface dialogViewInterface) {
-            //Show confirmation cancel-dialog
-            DialogViewInterface.OnButtonClickListener onButtonClickListener = new DialogViewInterface.OnButtonClickListener() {
-               @Override
-               public void onButtonClick(DialogViewInterface dialog, int buttonId) {
-                  if (buttonId == TextDialogView.BUTTON_FIRST) {
-                     ToastMessageCustom.makeToastMessageText(getActivity().getApplicationContext(), getString(R.string.import_cancel), Gravity.TOP | Gravity.CENTER_HORIZONTAL,
-                           getResources().getInteger(R.integer.toast_message_xoffset), getResources().getInteger(R.integer.toast_message_yoffset)).show();
-                     cancelProcess();
-                  }
-               }
-            };
-            showCancelDialog(onButtonClickListener);
-         }
-      });
 
-      processDialog.show();
+      if (!processDialog.isShown()) {
+         processDialog.show();
+      }
    }
 
    /**
@@ -883,7 +844,8 @@ public class ImportFragment extends BaseDataFragment {
       if (operation != null) {
          int percent = (int) Math.round(((double) progress / max) * 100.0);
          if (operation.contains(PROGRESS_TARGETS_IDENTIFICATION_STRING) || operation.contains(PROGRESS_CONFLICT_IDENTIFICATION_STRING)) {
-            processDialog.setProgress(percent);
+            //processDialog.setProgress(percent);
+            //do not forward progress updates
          }
          else {
             //do not show progress update in case of a failure (operation = Failed and progress == max)
@@ -972,8 +934,19 @@ public class ImportFragment extends BaseDataFragment {
       }
       if (!selected.isEmpty()) {
          processDialog.init();
-         processDialog.setTitle(getResources().getString(R.string.checking_targets));
-         processDialog.setProgress(0);
+         processDialog.setTitle(getResources().getString(R.string.data_conflict));
+
+         //save previous layout
+         final android.widget.LinearLayout.LayoutParams dialogContentLayoutParams = new android.widget.LinearLayout.LayoutParams(processDialog.getContentLayoutParameter());
+         Resources resources = getResources();
+         final int conflictDialogWidth = resources.getDimensionPixelSize(R.dimen.import_conflict_width);
+         final int conflictDialogHeight = resources.getDimensionPixelSize(R.dimen.import_conflict_height);
+         processDialog.setDimensionsNoPadding(conflictDialogWidth, conflictDialogHeight);
+
+         //init conflict dialog with loading layout
+         LayoutInflater inflater = getActivity().getLayoutInflater();
+         View view = inflater.inflate(R.layout.data_conflict_loading, null);
+         processDialog.setBodyView(view);
 
          processDialog.setOnButtonClickListener(new DialogViewInterface.OnButtonClickListener() {
             @Override
@@ -999,7 +972,40 @@ public class ImportFragment extends BaseDataFragment {
                }
             }
          });
-
+         processDialog.setOnCancelListener(new DialogViewInterface.OnCancelListener() {
+            @Override
+            public void onCancel(DialogViewInterface dialogViewInterface) {
+               //Show confirmation cancel-dialog
+               DialogViewInterface.OnButtonClickListener onButtonClickListener = new DialogViewInterface.OnButtonClickListener() {
+                  @Override
+                  public void onButtonClick(DialogViewInterface dialog, int buttonId) {
+                     if (buttonId == TextDialogView.BUTTON_FIRST) {
+                        ToastMessageCustom.makeToastMessageText(getActivity().getApplicationContext(), getString(R.string.import_cancel), Gravity.TOP | Gravity.CENTER_HORIZONTAL,
+                              getResources().getInteger(R.integer.toast_message_xoffset), getResources().getInteger(R.integer.toast_message_yoffset)).show();
+                        cancelProcess();
+                     }
+                  }
+               };
+               showCancelDialog(onButtonClickListener);
+            }
+         });
+         //restore previous layout
+         processDialog.setOnDismissListener(new DialogViewInterface.OnDismissListener() {
+            @Override
+            public void onDismiss(DialogViewInterface dialogViewInterface) {
+               //reset layout dimensions
+               processDialog.setDimensionsNoPadding(ViewGroup.LayoutParams.WRAP_CONTENT, ViewGroup.LayoutParams.WRAP_CONTENT);
+               //reset margin
+               processDialog.setContentLayoutParameter(dialogContentLayoutParams);
+               //reset padding
+               Resources resources = getActivity().getResources();
+               int paddingTop = resources.getDimensionPixelSize(R.dimen.dialog_view_content_top_padding);
+               int paddingBottom = resources.getDimensionPixelSize(R.dimen.dialog_view_content_bottom_padding);
+               int paddingLeft = resources.getDimensionPixelSize(R.dimen.dialog_view_content_left_padding);
+               int paddingRight = resources.getDimensionPixelSize(R.dimen.dialog_view_content_right_padding);
+               processDialog.setContentPaddings(paddingLeft, paddingTop, paddingRight, paddingBottom);
+            }
+         });
          processDialog.show();
          calculateOperations(selected);
       }
