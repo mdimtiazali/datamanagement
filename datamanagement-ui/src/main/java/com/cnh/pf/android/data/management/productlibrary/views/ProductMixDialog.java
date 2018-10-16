@@ -407,7 +407,7 @@ public class ProductMixDialog extends DialogView implements DialogHandlerListene
       if (productMixFormPickList != null) {
          PickListAdapter carrierPickListAdapter = new PickListAdapter(productMixFormPickList, getContext());
          for (ProductForm form : ProductForm.values()) {
-            if (form != ProductForm.ANY) {
+            if ( (form == ProductForm.LIQUID) || (form == ProductForm.GRANULAR) ) {
                carrierPickListAdapter.add(new PickListItem(form.getValue(), EnumValueToUiStringUtility.getUiStringForProductForm(form, getContext())));
             }
          }
