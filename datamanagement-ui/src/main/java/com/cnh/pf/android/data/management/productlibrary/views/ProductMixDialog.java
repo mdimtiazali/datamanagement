@@ -12,6 +12,7 @@ package com.cnh.pf.android.data.management.productlibrary.views;
 import android.content.Context;
 import android.os.AsyncTask;
 import android.os.RemoteException;
+import android.support.v4.util.ArrayMap;
 import android.text.Editable;
 import android.text.TextWatcher;
 import android.view.View;
@@ -36,6 +37,7 @@ import com.cnh.android.pf.widget.utilities.ProductHelperMethods;
 import com.cnh.android.pf.widget.utilities.ProductMixHelper;
 import com.cnh.android.pf.widget.utilities.ProductMixRecipeHelper;
 import com.cnh.android.pf.widget.utilities.ProductNameValidator;
+import com.cnh.android.pf.widget.utilities.UnitsSettings;
 import com.cnh.android.pf.widget.utilities.UnitsToggleHolder;
 import com.cnh.android.pf.widget.utilities.commands.ProductCommandParams;
 import com.cnh.android.pf.widget.utilities.commands.ProductMixCommandParams;
@@ -47,6 +49,7 @@ import com.cnh.android.pf.widget.utilities.listeners.GenericListener;
 import com.cnh.android.pf.widget.utilities.tasks.VIPAsyncTask;
 import com.cnh.android.pf.widget.view.DisabledOverlay;
 import com.cnh.android.pf.widget.view.DisabledOverlay.MODE;
+import com.cnh.android.pf.widget.view.productdialogs.AdvancedProductInformation;
 import com.cnh.android.pf.widget.view.productdialogs.DialogActionType;
 import com.cnh.android.pf.widget.view.productdialogs.DialogApplicationRateHandler;
 import com.cnh.android.pf.widget.view.productdialogs.DialogApplicationRateHandlerListener;
@@ -140,6 +143,8 @@ public class ProductMixDialog extends DialogView implements DialogHandlerListene
    private DialogUsageAndCropTypeHandler dialogUsageAndCropTypeHandler;
    private AdvancedProductInformation advancedProductInformation;
    private Widget.ErrorIndicator productMixNameErrorIndicator = Widget.ErrorIndicator.NONE;
+   private final ArrayMap<String, MeasurementSystem> measurementSystemUnitsArrayMap;
+   private Context context;
 
    private CategoryButtonsEventListener eventListener = new CategoryButtonsEventListener() {
       @Override
@@ -266,13 +271,14 @@ public class ProductMixDialog extends DialogView implements DialogHandlerListene
    public ProductMixDialog(Context context, DialogActionType actionType, IVIPServiceAIDL vipService, IPVIPServiceAIDL pvipService, ProductMix productMix,
          ProductMixCallBack callBack, List<ProductMix> productMixes) {
       super(context);
+      this.context = context;
       this.actionType = actionType;
       this.productMix = productMix;
       this.vipService = vipService;
       this.pvipService = pvipService;
       this.callback = callBack;
       this.productMixes = new ArrayList<ProductMix>(productMixes);
-      this.advancedProductInformation = new AdvancedProductInformation(context);
+      measurementSystemUnitsArrayMap = UnitsSettings.queryMeasurementSystemSet(context);
       if (vipService != null) {
          try {
             vipService.register(identifier, vipListener);
@@ -334,20 +340,11 @@ public class ProductMixDialog extends DialogView implements DialogHandlerListene
       initializeMixProductsView();
       initializeApplicationRatesView();
       initializeAdvancedView();
-      initializeAdvancedProductInformationViews(this);
       isInitialized = true;
       overlay.setMode(MODE.HIDDEN);
       if (log.isTraceEnabled()) {
          log.trace("initializeViews duration {}", System.currentTimeMillis() - initializeViewsStart);
       }
-   }
-
-   /**
-    * Initialize the Advanced Product Information View
-    * @param productMixDialog product mix dialog
-    */
-   private void initializeAdvancedProductInformationViews(ProductMixDialog productMixDialog) {
-      advancedProductInformation.initializeViews(productMixDialog);
    }
 
    private void initializeGUI() {
@@ -357,6 +354,7 @@ public class ProductMixDialog extends DialogView implements DialogHandlerListene
       productDialogsApplicationRateHandler = new DialogApplicationRateHandler(this, this, actionType, this);
       dialogDensityHandler = new DialogDensityHandler(this, this);
       dialogPackageSizeHandler = new DialogPackageSizeHandler(this, this);
+      advancedProductInformation = new AdvancedProductInformation(context,this,this,actionType,measurementSystemUnitsArrayMap);
       productMixTable = (TableLayout) this.findViewById(R.id.product_mix_dialog_application_rates_table);
       productMixNameInputField = (InputField) this.findViewById(R.id.product_mix_name_input_field);
       productMixNameInputField.setImeOptions(EditorInfo.IME_FLAG_NO_EXTRACT_UI | EditorInfo.IME_ACTION_DONE);
