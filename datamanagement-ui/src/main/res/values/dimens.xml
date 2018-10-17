@@ -154,4 +154,12 @@
     <!--Dimensions of conflict dialog in import fragment-->
     <dimen name="import_conflict_width">838dp</dimen>
     <dimen name="import_conflict_height">320dp</dimen>
+
+    <!-- Dimension of Datamanagement Copy Complete Dialog-->
+    <dimen name="datamanagement_copy_complete_dialog_datatree_lineblock_width">48dp</dimen>
+    <dimen name="datamanagement_copy_complete_dialog_datatree_item_text_size">22sp</dimen>
+    <dimen name="datamanagement_copy_complete_dialog_datatree_item_minimum_height">44dp</dimen>
+    <dimen name="datamanagement_copy_complete_dialog_datatree_icon_margin_left">2dp</dimen>
+    <dimen name="datamanagement_copy_complete_dialog_datatree_icon_margin_right">8dp</dimen>
+
 </resources>

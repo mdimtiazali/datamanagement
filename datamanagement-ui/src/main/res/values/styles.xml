@@ -131,4 +131,11 @@
         <item name="line_color">@color/tree_line</item>
         <item name="line_width">@dimen/import_source_layout_tree_view_cnh_line_width</item>
     </style>
+
+    <style name="DatamanagementCopyCompleteDialogDatatreeItemTextStyle">
+        <item name="android:ellipsize">middle</item>
+        <item name="android:textSize">@dimen/datamanagement_copy_complete_dialog_datatree_item_text_size</item>
+        <item name="android:textColor">@color/copy_title_text_color</item>
+        <item name="android:lines">1</item>
+    </style>
 </resources>
