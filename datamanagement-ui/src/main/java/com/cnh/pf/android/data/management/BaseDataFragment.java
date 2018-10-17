@@ -879,7 +879,7 @@ public abstract class BaseDataFragment extends RoboFragment implements SessionCo
          }
          //Check if entity can be grouped
          String objectType = object.getType();
-         if (TreeEntityHelper.isGroup(objectType) || object.getParent() == null) {
+         if (TreeEntityHelper.isGroup(objectType)) {
             String gType = TreeEntityHelper.getGroupType(objectType);
             String ggType = TreeEntityHelper.getGroupOfGroupType(objectType);
             GroupObjectGraph group = null;
