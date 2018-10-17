@@ -86,6 +86,7 @@
     <string name="tab_export">Export</string>
     <string name="percent_complete">% Complete</string>
     <string name="loading_string">Loading</string>
+    <string name="loading_progress_string">Loading...</string>
     <string name="exporting_string">Exporting</string>
     <string name="importing_string">Importing</string>
     <string name="exporting_data">Exporting Data</string>
