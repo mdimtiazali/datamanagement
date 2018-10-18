@@ -93,7 +93,7 @@ public abstract class BaseDataFragment extends RoboFragment implements SessionCo
    private SessionContract.SessionManager sessionManager;
 
    private List<String> dataTreeRootNodesWithAutomaticParentSelection = null;
-   private static boolean dsPerfFlag = true;
+   private static boolean dsPerfFlag = false;
 
    public static boolean isDsPerfFlag() {
       return dsPerfFlag;
