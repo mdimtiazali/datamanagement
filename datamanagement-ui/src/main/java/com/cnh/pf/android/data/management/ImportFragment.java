@@ -945,7 +945,7 @@ public class ImportFragment extends BaseDataFragment {
 
          //init conflict dialog with loading layout
          LayoutInflater inflater = getActivity().getLayoutInflater();
-         View view = inflater.inflate(R.layout.data_conflict_loading, null);
+         View view = inflater.inflate(R.layout.loading_container, null);
          processDialog.setBodyView(view);
 
          processDialog.setOnButtonClickListener(new DialogViewInterface.OnButtonClickListener() {
