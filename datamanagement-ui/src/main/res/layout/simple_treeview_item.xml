@@ -8,33 +8,30 @@
   ~ authorization from CNH Industrial NV.
   -->
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
-                xmlns:app="http://schemas.android.com/apk/res-auto"
-    android:layout_width="match_parent"
-    android:layout_height="wrap_content"
+              xmlns:app="http://schemas.android.com/apk/res-auto"
+              android:layout_width="match_parent"
+              android:layout_height="wrap_content"
               android:orientation="horizontal"
               android:layout_gravity="center_horizontal"
               android:gravity="center_vertical"
-    android:minHeight="44dp">
+              android:minHeight="@dimen/datamanagement_copy_complete_dialog_datatree_item_minimum_height">
     <com.cnh.pf.android.data.management.misc.TreeLineWidget
             android:id="@+id/line"
-            android:layout_width="48dp"
-            android:layout_height="42dp"
-            app:tree_line_color = "@color/tree_line"
+            android:layout_width="@dimen/datamanagement_copy_complete_dialog_datatree_lineblock_width"
+            android:layout_height="match_parent"
+            app:tree_line_color="@color/tree_line"
             app:tree_line_width="2"/>
     <ImageView
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:id="@+id/icon"
-            android:layout_marginLeft="2dp"
-            android:layout_marginRight="8dp"/>
+            android:layout_marginLeft="@dimen/datamanagement_copy_complete_dialog_datatree_icon_margin_left"
+            android:layout_marginRight="@dimen/datamanagement_copy_complete_dialog_datatree_icon_margin_right"/>
     <TextView
             android:layout_width="0dp"
             android:layout_height="match_parent"
             android:layout_weight="1"
             android:id="@+id/content"
-            android:lines="1"
-            android:ellipsize="middle"
-            android:textSize="22sp"
-            android:textColor="@color/copy_title_text_color"/>
+            style="@style/DatamanagementCopyCompleteDialogDatatreeItemTextStyle"/>
 
 </LinearLayout>
