@@ -43,11 +43,11 @@
                  android:text=""/>
       </LinearLayout>
    </LinearLayout>
-   <ProgressBar
-           android:id="@+id/data_exchange_loading"
-           style="@style/IndeterminateProgressLargeBlue"
-           android:layout_gravity="center"
-           android:visibility="invisible"/>
+
+   <include layout="@layout/loading_container"
+            android:id="@+id/data_exchange_loading"
+            android:visibility="invisible"/>
+
    <ImageView
            android:id="@+id/data_exchange_disconnected"
            android:layout_width="wrap_content"
