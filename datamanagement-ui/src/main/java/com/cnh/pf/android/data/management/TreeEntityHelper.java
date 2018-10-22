@@ -100,6 +100,7 @@ public class TreeEntityHelper {
    public static final String PRODUCT_MIX_VARIETY = "PRODUCT_MIX_VARIETY";
    public static final String GUIDANCE_CONFIGURATIONS = "GUIDANCE_CONFIGURATIONS";
    public static final String DDOP = "DDOP";
+   public static final String VEHICLE_IMPLEMENTS = "VEHICLE_IMPLEMENTS";
 
    static {
       TYPE_ICONS.put(DataTypes.GROWER, R.drawable.ic_data_tree_grower);
@@ -127,11 +128,9 @@ public class TreeEntityHelper {
       TYPE_ICONS.put(NOTES, R.drawable.dt_icon_bglayers);
       TYPE_ICONS.put(DataTypes.FILE, R.drawable.ic_data_tree_harvesting);
       TYPE_ICONS.put(DataTypes.VEHICLE, R.drawable.ic_data_tree_tractor_case);
-      TYPE_ICONS.put(VEHICLES, R.drawable.ic_data_tree_tractor_case);
       TYPE_ICONS.put(DataTypes.VEHICLE_IMPLEMENT, R.drawable.ic_datatree_implements);
       TYPE_ICONS.put(DataTypes.VEHICLE_IMPLEMENT_CONFIG, R.drawable.ic_datatree_implements);
       TYPE_ICONS.put(DataTypes.IMPLEMENT, R.drawable.ic_datatree_implements);
-      TYPE_ICONS.put(IMPLEMENTS, R.drawable.ic_datatree_implements);
       TYPE_ICONS.put(DataTypes.IMPLEMENT_PRODUCT_CONFIG, R.drawable.ic_datatree_screenshots);
       TYPE_ICONS.put(VARIETIES, R.drawable.dt_icon_varieties);
       TYPE_ICONS.put(DataTypes.VARIETY, R.drawable.dt_icon_varieties);
@@ -245,6 +244,7 @@ public class TreeEntityHelper {
       groupSortData.put(DataTypes.IMPLEMENT, 34);
       groupSortData.put(IMPLEMENTS, 32);
       groupSortData.put(DataTypes.IMPLEMENT_PRODUCT_CONFIG, 35);
+      groupSortData.put(VEHICLE_IMPLEMENTS, 36);
       groupSortData.put(VARIETIES, 13);
       groupSortData.put(PRODUCT_MIX_VARIETY, 2);
 

@@ -71,7 +71,30 @@
     "Hidden" : 1,
     "Children" : null
   },
-
+  {
+    "Title":"Vehicles",
+    "DataType": "VEHICLE",
+    "GroupDataType": "VEHICLES",
+    "FollowSource": 1,
+    "Hidden" : 0,
+    "Children" : null
+  },
+  {
+    "Title":"Implements",
+    "DataType": "IMPLEMENT",
+    "GroupDataType": "IMPLEMENTS",
+    "FollowSource": 1,
+    "Hidden" : 0,
+    "Children" : null
+  },
+  {
+    "Title":"Vehicle/Implement Pair",
+    "DataType": "VEHICLE_IMPLEMENT",
+    "GroupDataType": "VEHICLE_IMPLEMENTS",
+    "FollowSource": 1,
+    "Hidden" : 0,
+    "Children" : null
+  },
   {
     "Title":"Crop and Product Library",
     "DataType": "PRODUCT_MIX_VARIETY",
