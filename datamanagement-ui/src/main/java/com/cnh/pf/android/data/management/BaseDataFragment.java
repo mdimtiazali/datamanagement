@@ -89,6 +89,7 @@ public abstract class BaseDataFragment extends RoboFragment implements SessionCo
 
    protected static boolean isConnectedToPcm = false;
    protected static final int SHOWING_FEEDBACK_AFTER_PROGRESS_MS = 2000;
+   protected String topLevelDataType[];
 
    private SessionContract.SessionManager sessionManager;
 
@@ -106,6 +107,12 @@ public abstract class BaseDataFragment extends RoboFragment implements SessionCo
    @Override
    public void setSessionManager(SessionContract.SessionManager sessionManager) {
       this.sessionManager = sessionManager;
+   }
+
+   @Override
+   public void onCreate(Bundle savedInstanceState) {
+      super.onCreate(savedInstanceState);
+      topLevelDataType = getResources().getStringArray(R.array.top_folder);
    }
 
    /**
@@ -699,11 +706,13 @@ public abstract class BaseDataFragment extends RoboFragment implements SessionCo
       else {
          treeBuilder.clear();
       }
+
       if (isDsPerfFlag()) {
          TreeEntityHelper.LoadDMTreeFromJson(this.getActivity(), treeBuilder);
          jsonAddToTree(objectGraphs);
       }
       else {
+         addingTopLevelFolder();
          addToTree(objectGraphs);
          sortTreeList();
       }
@@ -880,6 +889,11 @@ public abstract class BaseDataFragment extends RoboFragment implements SessionCo
       return newNode;
    }
 
+   protected void addingTopLevelFolder() {
+      for (String type : topLevelDataType) {
+         treeBuilder.bAddRelation(null, new GroupObjectGraph(null, type, TreeEntityHelper.getGroupName(getActivity(), type), null, null));
+      }
+   }
    //Put the object into tree item list and return true for it is visible and false for invisible
    private boolean bAddToTree(ObjectGraph parent, ObjectGraph object) {
       boolean bVisible = false;

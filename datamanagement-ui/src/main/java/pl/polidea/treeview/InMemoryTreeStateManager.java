@@ -182,9 +182,7 @@ public class InMemoryTreeStateManager<T> implements TreeStateManager<T>, Sortabl
                visibleNodeChanged = true;
             }
          }
-         if(visibleNodeChanged){
-            internalDataSetChanged();
-         }
+         internalDataSetChanged();
       }
    }
 

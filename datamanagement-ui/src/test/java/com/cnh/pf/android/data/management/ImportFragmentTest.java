@@ -169,7 +169,7 @@ public class ImportFragmentTest extends BaseTestRobolectric {
    public void testLabelsWithTreeView() {
       //prepare the mocks
       ObjectGraph objectGraphMock = mock(ObjectGraph.class);
-      when(objectGraphMock.getType()).thenReturn("Test");
+      when(objectGraphMock.getType()).thenReturn("GROWER");
       ArrayList<ObjectGraph> objectGraphs = new ArrayList<ObjectGraph>();
       objectGraphs.add(objectGraphMock);
 

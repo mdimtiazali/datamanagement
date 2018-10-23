@@ -275,6 +275,11 @@ public class ImportFragment extends BaseDataFragment {
    }
 
    @Override
+   protected void addingTopLevelFolder() {
+   }
+
+
+   @Override
    public void onMyselfSessionSuccess(Session session) {
       logger.debug("onMyselfSessionSuccess()-Type:{}", session.getType());
 
