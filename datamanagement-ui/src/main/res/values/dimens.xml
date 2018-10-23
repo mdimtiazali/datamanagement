@@ -83,9 +83,11 @@
     <!-- Import/Export perform - left layout -->
     <dimen name="dataexchange_perform_box_top_margin">16dp</dimen>
     <dimen name="dataexchange_perform_box_bottom_margin">16dp</dimen>
-    <dimen name="dataexchange_export_perform_title_to_progressbar_margin">22dp</dimen>
+    <dimen name="dataexchange_export_perform_top_to_title">1dp</dimen>
+    <dimen name="dataexchange_export_perform_title_to_progressbar_margin">33dp</dimen>
+    <dimen name="dataexchange_export_perform_progressbar_to_button_margin">12dp</dimen>
     <dimen name="dataexchange_import_perform_title_to_progressbar_margin">76dp</dimen>
-    <dimen name="dataexchange_perform_box_export_height">300dp</dimen>
+    <dimen name="dataexchange_perform_box_export_height">260dp</dimen>
     <dimen name="export_perform_left_box_top_spacing_to_text">50dp</dimen>
     <dimen name="dataexchange_perform_left_box_top_spacing_to_top">70dp</dimen>
     <dimen name="dataexchange_perform_left_box_spacing_from_top_image_to_text">31dp</dimen>

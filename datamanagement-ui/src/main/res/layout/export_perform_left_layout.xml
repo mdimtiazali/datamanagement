@@ -18,30 +18,32 @@
               android:layout_height="match_parent"
               android:visibility="gone">
 
-    <TextView
-            android:id="@+id/operation_name"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_gravity="center_horizontal"
-            android:text="@string/exporting_string"
-            android:layout_marginBottom="@dimen/dataexchange_export_perform_title_to_progressbar_margin"
-            style="@style/TextAppearance.Import.Entity"/>
+   <TextView
+           android:id="@+id/operation_name"
+           android:layout_width="wrap_content"
+           android:layout_height="wrap_content"
+           android:layout_gravity="center_horizontal"
+           android:text="@string/exporting_string"
+           android:layout_marginTop="@dimen/dataexchange_export_perform_top_to_title"
+           android:layout_marginBottom="@dimen/dataexchange_export_perform_title_to_progressbar_margin"
+           style="@style/TextAppearance.Import.Entity"/>
 
-    <com.cnh.android.widget.control.ProgressBarView
-            android:id="@+id/progress_bar"
-            style="@style/ProgressBarSmall"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:paddingStart="@dimen/progress_bar_padding"
-            android:paddingEnd="@dimen/progress_bar_padding"
-            cnh:useSmallResources="true"
-            cnh:pbTitle="@string/loading_string"/>
+   <com.cnh.android.widget.control.ProgressBarView
+           android:id="@+id/progress_bar"
+           style="@style/ProgressBarSmall"
+           android:layout_width="wrap_content"
+           android:layout_height="wrap_content"
+           android:paddingStart="@dimen/progress_bar_padding"
+           android:paddingEnd="@dimen/progress_bar_padding"
+           android:layout_marginBottom="@dimen/dataexchange_export_perform_progressbar_to_button_margin"
+           cnh:useSmallResources="true"
+           cnh:pbTitle="@string/loading_string"/>
 
-    <ImageButton
-            android:id="@+id/stop_button"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_gravity="center_horizontal"
-            android:clickable="true"
-            android:background="@drawable/ic_cancel_progress"/>
+   <ImageButton
+           android:id="@+id/stop_button"
+           android:layout_width="wrap_content"
+           android:layout_height="wrap_content"
+           android:layout_gravity="center_horizontal"
+           android:clickable="true"
+           android:background="@drawable/ic_cancel_progress"/>
 </LinearLayout>
