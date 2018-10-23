@@ -302,13 +302,7 @@ public class ExportFragment extends BaseDataFragment {
             case DragEvent.ACTION_DRAG_ENDED:
                return true;
             case DragEvent.ACTION_DRAG_ENTERED:
-               if (!exportSelectedBtn.isEnabled()) {
-                  ToastMessageCustom.makeToastMessageText(getActivity().getApplicationContext(), getString(R.string.error_drag_drop), Gravity.TOP | Gravity.CENTER_HORIZONTAL,
-                        getResources().getInteger(R.integer.toast_message_xoffset), getResources().getInteger(R.integer.toast_message_yoffset)).show();
-               }
-               else {
-                  setExportDragDropArea(DragEvent.ACTION_DRAG_ENTERED);
-               }
+               setExportDragDropArea(DragEvent.ACTION_DRAG_ENTERED);
                return true;
             case DragEvent.ACTION_DRAG_EXITED:
                if (exportSelectedBtn.isEnabled()) {
@@ -343,6 +337,21 @@ public class ExportFragment extends BaseDataFragment {
       exportFinishedText.setText(R.string.export_complete_left_layout);
       startText.setVisibility(View.GONE);
       operationName.setText(R.string.exporting_string);
+   }
+
+   @Override
+   protected boolean requestDragAndDropStart() {
+      if (treeAdapter == null || exportSelectedBtn == null) {
+         //Default value: Do not allow dragging if not properly initialized
+         return false;
+      }
+      else if (!exportSelectedBtn.isEnabled() && treeAdapter.getSelectionMap().size() > 0) {
+         //Items are selected, but button is not enabled: Show toast
+         ToastMessageCustom.makeToastMessageText(getActivity().getApplicationContext(), getString(R.string.error_drag_drop), Gravity.TOP | Gravity.CENTER_HORIZONTAL,
+               getResources().getInteger(R.integer.toast_message_xoffset), getResources().getInteger(R.integer.toast_message_yoffset)).show();
+         return false;
+      }
+      return exportSelectedBtn.isEnabled();
    }
 
    private void setExportDragDropArea(int event) {
