@@ -363,24 +363,33 @@ public abstract class BaseDataFragment extends RoboFragment implements SessionCo
       treeViewList.setOnItemLongClickListener(new AdapterView.OnItemLongClickListener() {
          @Override
          public boolean onItemLongClick(AdapterView<?> parent, View view, int position, long id) {
-            if (!treeAdapter.getSelectionMap().containsKey(view.getTag())) {
-               treeAdapter.handleItemClick(parent, view, position, view.getTag()); //update selection
-               view.setPressed(false); //Item would be shown/marked as pressed while in OnItemLongClickListener
+            if (requestDragAndDropStart()) {
+               if (!treeAdapter.getSelectionMap().containsKey(view.getTag())) {
+                  treeAdapter.handleItemClick(parent, view, position, view.getTag()); //update selection
+                  view.setPressed(false); //Item would be shown/marked as pressed while in OnItemLongClickListener
+               }
+               //use different shadow builder depending on number of selected items
+               View.DragShadowBuilder shadowBuilder = null;
+               if (treeAdapter.getSelectionMap().size() == 1) {
+                  shadowBuilder = new View.DragShadowBuilder(view);
+               }
+               else {
+                  shadowBuilder = new TreeDragMultipleSelectionShadowBuilder(countSelectedItem(), getResources());
+               }
+               view.startDrag(null, shadowBuilder, treeAdapter.getSelected(), 0);
             }
-
-            //use different shadow builder depending on number of selected items
-            View.DragShadowBuilder shadowBuilder = null;
-            if (treeAdapter.getSelectionMap().size() == 1) {
-               shadowBuilder = new View.DragShadowBuilder(view);
-            }
-            else {
-               shadowBuilder = new TreeDragMultipleSelectionShadowBuilder(countSelectedItem(), getResources());
-            }
-            view.startDrag(null, shadowBuilder, treeAdapter.getSelected(), 0);
-
-            return false;
+            return true;
          }
       });
+   }
+
+   /**
+    * This method is called, whenever a drag and drop start  in the datatree is requested.
+    * It returns weather drag and drop is (currently) allowed (true) or not (false).
+    * @return True, if DragAndDropStart is currently allowed, false otherwise.
+    */
+   protected boolean requestDragAndDropStart() {
+      return true;
    }
 
    @Override
