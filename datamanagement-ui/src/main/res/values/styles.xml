@@ -37,6 +37,12 @@
         <item name="android:textColor">@color/defaultTextColor</item>
     </style>
 
+    <style name="TextAppearance.Loading.Progress" parent="@style/TextAppearance.Roboto.Bold">
+        <item name="android:textSize">20sp</item>
+        <item name="android:paddingBottom">20dp</item>
+        <item name="android:textColor">@color/defaultTextColor</item>
+    </style>
+
     <style name="TextAppearance.Data.File.Header" parent="@style/TextAppearance.Roboto.Bold">
         <item name="android:textSize">16sp</item>
         <item name="android:textColor">@color/e_gray_text_medium</item>
@@ -124,5 +130,12 @@
         <item name="draw_line">true</item>
         <item name="line_color">@color/tree_line</item>
         <item name="line_width">@dimen/import_source_layout_tree_view_cnh_line_width</item>
+    </style>
+
+    <style name="DatamanagementCopyCompleteDialogDatatreeItemTextStyle">
+        <item name="android:ellipsize">middle</item>
+        <item name="android:textSize">@dimen/datamanagement_copy_complete_dialog_datatree_item_text_size</item>
+        <item name="android:textColor">@color/copy_title_text_color</item>
+        <item name="android:lines">1</item>
     </style>
 </resources>

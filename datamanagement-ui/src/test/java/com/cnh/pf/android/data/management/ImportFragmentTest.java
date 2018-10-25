@@ -241,7 +241,7 @@ public class ImportFragmentTest extends BaseTestRobolectric {
 
       assertThat(dialogRoot, notNullValue());
       TextView dialogTitleTextview = (TextView) dialogRoot.findViewById(R.id.tvTitle);
-      assertThat(dialogTitleTextview.getText().toString(), is("Checking Potential Targets..."));
+      assertThat(dialogTitleTextview.getText().toString(), is("Data Conflict"));
 
       Button btnCancel = (Button) dialogRoot.findViewById(R.id.btFifth);
       assertThat(btnCancel.getText().toString(), is("Cancel"));

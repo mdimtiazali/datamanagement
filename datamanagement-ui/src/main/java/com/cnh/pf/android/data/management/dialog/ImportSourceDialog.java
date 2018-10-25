@@ -348,9 +348,6 @@ public class ImportSourceDialog extends DialogView {
             if (file.isDirectory()) {
                ret = isDirAccept(file);
             }
-            else if (isFileExtensionSupported(file.getName())) {
-               ret = true;
-            }
             return ret;
          }
       });
