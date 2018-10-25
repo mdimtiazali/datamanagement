@@ -83,9 +83,11 @@
     <!-- Import/Export perform - left layout -->
     <dimen name="dataexchange_perform_box_top_margin">16dp</dimen>
     <dimen name="dataexchange_perform_box_bottom_margin">16dp</dimen>
-    <dimen name="dataexchange_export_perform_title_to_progressbar_margin">22dp</dimen>
+    <dimen name="dataexchange_export_perform_top_to_title">1dp</dimen>
+    <dimen name="dataexchange_export_perform_title_to_progressbar_margin">33dp</dimen>
+    <dimen name="dataexchange_export_perform_progressbar_to_button_margin">12dp</dimen>
     <dimen name="dataexchange_import_perform_title_to_progressbar_margin">76dp</dimen>
-    <dimen name="dataexchange_perform_box_export_height">300dp</dimen>
+    <dimen name="dataexchange_perform_box_export_height">260dp</dimen>
     <dimen name="export_perform_left_box_top_spacing_to_text">50dp</dimen>
     <dimen name="dataexchange_perform_left_box_top_spacing_to_top">70dp</dimen>
     <dimen name="dataexchange_perform_left_box_spacing_from_top_image_to_text">31dp</dimen>
@@ -154,4 +156,12 @@
     <!--Dimensions of conflict dialog in import fragment-->
     <dimen name="import_conflict_width">838dp</dimen>
     <dimen name="import_conflict_height">320dp</dimen>
+
+    <!-- Dimension of Datamanagement Copy Complete Dialog-->
+    <dimen name="datamanagement_copy_complete_dialog_datatree_lineblock_width">48dp</dimen>
+    <dimen name="datamanagement_copy_complete_dialog_datatree_item_text_size">22sp</dimen>
+    <dimen name="datamanagement_copy_complete_dialog_datatree_item_minimum_height">44dp</dimen>
+    <dimen name="datamanagement_copy_complete_dialog_datatree_icon_margin_left">2dp</dimen>
+    <dimen name="datamanagement_copy_complete_dialog_datatree_icon_margin_right">8dp</dimen>
+
 </resources>

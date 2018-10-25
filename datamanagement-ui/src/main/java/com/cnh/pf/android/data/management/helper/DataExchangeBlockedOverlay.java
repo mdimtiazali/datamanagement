@@ -16,7 +16,6 @@ import android.view.View;
 import android.widget.FrameLayout;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
-import android.widget.ProgressBar;
 import android.widget.TextView;
 
 import com.cnh.pf.android.data.management.R;
@@ -38,7 +37,7 @@ public class DataExchangeBlockedOverlay extends FrameLayout {
    private TextView descriptionText = null;
    private ImageView modeImage = null;
    private LinearLayout blockedContainer = null;
-   private ProgressBar loadingContainer = null;
+   private View loadingContainer = null;
    private ImageView disconnectedContainer = null;
 
    private MODE mode = MODE.HIDDEN;
@@ -76,7 +75,7 @@ public class DataExchangeBlockedOverlay extends FrameLayout {
       descriptionText = (TextView) findViewById(R.id.data_exchange_overlay_description);
       descriptionText.setText(R.string.dataexchange_accessible_after_process_finished);
       modeImage = (ImageView) findViewById(R.id.data_exchange_overlay_mode_image);
-      loadingContainer = (ProgressBar) findViewById(R.id.data_exchange_loading);
+      loadingContainer = findViewById(R.id.data_exchange_loading);
       disconnectedContainer = (ImageView) findViewById(R.id.data_exchange_disconnected);
       this.mode = MODE.HIDDEN;
       hideOverlay();
