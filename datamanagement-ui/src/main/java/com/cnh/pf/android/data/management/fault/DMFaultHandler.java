@@ -59,6 +59,21 @@ public class DMFaultHandler implements OnConnectionChangeListener {
    // Store fault object for later use rather than creating it every time it's needed.
    private Map<FaultCode, Fault> faultMap = new HashMap<FaultCode, Fault>();
 
+   /**
+    * Getter for recoverConnection.
+    */
+
+   public boolean isRecoverConnection() {
+      return recoverConnection;
+   }
+
+   /**
+    * Setter for recoverConnection.
+    */
+   public void setRecoverConnection(boolean recoverConnection) {
+      this.recoverConnection = recoverConnection;
+   }
+
    @Override
    public void onConnectionChanged(boolean connected) {
       logger.debug("onConnectionChanged: {}", connected);
@@ -156,6 +171,17 @@ public class DMFaultHandler implements OnConnectionChangeListener {
    }
 
    /**
+    * Getter & Setter for faultMap.
+    */
+   public Map<FaultCode, Fault> getFaultMap() {
+      return faultMap;
+   }
+
+   public void setFaultMap(Map<FaultCode, Fault> faultMap) {
+      this.faultMap = faultMap;
+   }
+
+   /**
     * Return a fault object that corresponds to given fault code.
     * @param code fault code
     * @return fault object that provides an interface to set/clear fault.
@@ -168,6 +194,13 @@ public class DMFaultHandler implements OnConnectionChangeListener {
       }
 
       return fault;
+   }
+
+   /**
+    * Retrieve mediator for error recovery.
+    */
+   public Mediator getMediator() {
+      return mediator;
    }
 
    /**
