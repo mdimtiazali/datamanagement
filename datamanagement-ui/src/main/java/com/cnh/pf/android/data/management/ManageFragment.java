@@ -9,6 +9,7 @@
 package com.cnh.pf.android.data.management;
 
 import android.app.ProgressDialog;
+import android.content.Intent;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.view.Gravity;
@@ -38,6 +39,7 @@ import com.cnh.pf.android.data.management.graph.GroupObjectGraph;
 import com.cnh.pf.android.data.management.helper.DataExchangeBlockedOverlay;
 import com.cnh.pf.android.data.management.helper.DmAccessibleObserver;
 import com.cnh.pf.android.data.management.misc.DeleteButton;
+import com.cnh.pf.android.data.management.service.DataManagementService;
 import com.cnh.pf.android.data.management.session.ErrorCode;
 import com.cnh.pf.android.data.management.session.Session;
 import com.cnh.pf.android.data.management.session.SessionUtil;
@@ -518,18 +520,24 @@ public class ManageFragment extends BaseDataFragment implements DmAccessibleObse
       }
    }
 
+   private void notifyCacheDataChange(){
+      Intent intent = new Intent(getActivity(), DataManagementService.class);
+      intent.setAction(DataManagementService.ACTION_RESET_CACHE);
+      getActivity().startService(intent);
+   }
    //remove data and refresh UI
    private void removeAndRefreshObjectUI(List<ObjectGraph> objects) {
       treeAdapter.removeObjectGraphs(objects);
       treeAdapter.updateViewSelection(treeViewList);
       manager.removeNodesRecursively(objects);
       removeParentEmptyGroup(objects);
+      notifyCacheDataChange();
       setHeaderAndDeleteButton(false);
    }
 
    //true for empty group false for not
    private boolean isEmptyGroup(ObjectGraph objectGraph) {
-      if (objectGraph instanceof GroupObjectGraph) {
+      if (objectGraph != null && objectGraph instanceof GroupObjectGraph) {
          List<ObjectGraph> children = manager.getChildren(objectGraph);
          if (children == null || children.isEmpty()) {
             return true;
@@ -545,56 +553,44 @@ public class ManageFragment extends BaseDataFragment implements DmAccessibleObse
       }
       return false;
    }
+   private boolean isTopLevelGroup(ObjectGraph group){
+      for(String type: topLevelDataType){
+         if(type.equals(group.getType())){
+            return true;
+         }
+      }
+      return false;
+   }
 
+   private boolean addingEmptyGroupRecursively(ObjectGraph objectGraph, List<ObjectGraph> emptyList){
+      List<ObjectGraph> children = manager.getChildren(objectGraph);
+      boolean isEmpty = true;
+      if(children != null && !children.isEmpty()){
+         for(ObjectGraph o: children) {
+            isEmpty &= addingEmptyGroupRecursively(o, emptyList);
+         }
+         if(isEmpty && !isTopLevelGroup(objectGraph) && isEmptyGroup(objectGraph)){
+            if(!emptyList.contains(objectGraph)) {
+               emptyList.add(objectGraph);
+            }
+            return true;
+         }
+      }
+      else if(!isTopLevelGroup(objectGraph) && isEmptyGroup(objectGraph)){
+         if(!emptyList.contains(objectGraph)) {
+            emptyList.add(objectGraph);
+         }
+         return true;
+      }
+      return false;
+   }
    //remove the empty group items
    private void removeParentEmptyGroup(List<ObjectGraph> list) {
       List<ObjectGraph> emptyGroup = new LinkedList<ObjectGraph>();
-      List<ObjectGraph> siblingsOrParent = null;
-      for (ObjectGraph o : list) {
-         if (TreeEntityHelper.obj2group.containsKey(o.getType())) {
-            if (TreeEntityHelper.group2group.containsKey(TreeEntityHelper.obj2group.get(o.getType()))) {
-               List<ObjectGraph> ggoups = manager.getChildren(o.getParent());
-               if (ggoups != null && !ggoups.isEmpty()) {
-                  for (ObjectGraph gg : ggoups) {
-                     if (gg.getType().equals(TreeEntityHelper.group2group.get(TreeEntityHelper.obj2group.get(o.getType())))) {
-                        siblingsOrParent = manager.getChildren(gg);
-                        boolean ggEmpty = true;
-                        if (siblingsOrParent != null && !siblingsOrParent.isEmpty()) {
-                           for (ObjectGraph obj : siblingsOrParent) {
-                              if (obj instanceof GroupObjectGraph && isEmptyGroup(obj) && !emptyGroup.contains(obj)) {
-                                 emptyGroup.add(obj);
-                              }
-                              else{
-                                 ggEmpty = false;
-                              }
-                           }
-                        }
-                        if(ggEmpty && !emptyGroup.contains(gg)){
-                           emptyGroup.add(gg);
-                        }
-                        break;
-                     }
-                  }
-               }
-            }
-            else {
-               siblingsOrParent = manager.getChildren(o.getParent());
-               if (siblingsOrParent != null && !siblingsOrParent.isEmpty()) {
-                  for (ObjectGraph obj : siblingsOrParent) {
-                     if (obj instanceof GroupObjectGraph && isEmptyGroup(obj) && !emptyGroup.contains(obj)) {
-                        emptyGroup.add(obj);
-                     }
-                  }
-               }
-            }
-
-         }
-      }
+      addingEmptyGroupRecursively(null, emptyGroup);
       if (!emptyGroup.isEmpty()) {
          manager.removeNodesRecursively(new LinkedList<ObjectGraph>(emptyGroup));
       }
-
-
    }
 
    // find out what object in change were removed compared with base object.
@@ -648,6 +644,7 @@ public class ManageFragment extends BaseDataFragment implements DmAccessibleObse
          setHeaderAndDeleteButton(false);
          ToastMessageCustom.makeToastMessageText(getActivity().getApplicationContext(), getString(R.string.delete_error_notice), Gravity.TOP | Gravity.CENTER_HORIZONTAL,
                getResources().getInteger(R.integer.toast_message_xoffset), getResources().getInteger(R.integer.toast_message_yoffset)).show();
+         notifyCacheDataChange();
          discovery();
       }
       else if (SessionUtil.isUpdateTask(session)) {
@@ -670,10 +667,12 @@ public class ManageFragment extends BaseDataFragment implements DmAccessibleObse
 
    private void setHeaderAndDeleteButton(boolean enable) {
       if (enable) {
-         enableDeleteButton(true);
          int count = countSelectedItem();
          logger.info("The # of selected items: {}", count);
          setHeaderText(getResources().getQuantityString(R.plurals.tab_mng_selected_items_header, count, count));
+         if(count > 0){
+            enableDeleteButton(true);
+         }
       }
       else {
          delBtn.setEnabled(false);
