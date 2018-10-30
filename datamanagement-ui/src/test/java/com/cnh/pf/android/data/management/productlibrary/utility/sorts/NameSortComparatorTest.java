@@ -1,10 +1,10 @@
 /*
- * Copyright (C) 2018 CNH Industrial NV. All rights reserved.
+ *  Copyright (C) 2018 CNH Industrial NV. All rights reserved.
  *
- * This software contains proprietary information of CNH Industrial NV. Neither
- * receipt nor possession thereof confers any right to reproduce, use, or
- * disclose in whole or in part any such information without written
- * authorization from CNH Industrial NV.
+ *  This software contains proprietary information of CNH Industrial NV. Neither
+ *  receipt nor possession thereof confers any right to reproduce, use, or
+ *  disclose in whole or in part any such information without written
+ *  authorization from CNH Industrial NV.
  *
  */
 package com.cnh.pf.android.data.management.productlibrary.utility.sorts;
@@ -20,6 +20,7 @@ import org.mockito.MockitoAnnotations;
 import org.robolectric.Robolectric;
 import org.robolectric.RobolectricMavenTestRunner;
 import org.robolectric.annotation.Config;
+import com.cnh.pf.model.product.library.ProductForm;
 
 import static org.mockito.Mockito.*;
 
@@ -50,9 +51,33 @@ import static org.mockito.Mockito.*;
       Product productOne = new Product();
       Product productTwo = new Product();
       productOne.setName("abc");
+      productOne.setForm(ProductForm.SEED);
       productTwo.setName("abc");
+      productTwo.setForm(ProductForm.SEED);
       int result = nameSortComparator.compare(productOne, productTwo);
       Assert.assertTrue("expected to be equal", result == 0);
+   }
+
+   @Test public void testEqualWithFormGreaterThan() {
+      Product productOne = new Product();
+      Product productTwo = new Product();
+      productOne.setName("abc");
+      productOne.setForm(ProductForm.SEED);
+      productTwo.setName("abc");
+      productTwo.setForm(ProductForm.LIQUID);
+      int result = nameSortComparator.compare(productOne, productTwo);
+      Assert.assertTrue("expected to be equal", result >= 1);
+   }
+
+   @Test public void testEqualWithFormLessThan() {
+      Product productOne = new Product();
+      Product productTwo = new Product();
+      productOne.setName("abc");
+      productOne.setForm(ProductForm.LIQUID);
+      productTwo.setName("abc");
+      productTwo.setForm(ProductForm.SEED);
+      int result = nameSortComparator.compare(productOne, productTwo);
+      Assert.assertTrue("expected to be equal", result <= -1);
    }
 
    @Test public void testGreaterThan() {

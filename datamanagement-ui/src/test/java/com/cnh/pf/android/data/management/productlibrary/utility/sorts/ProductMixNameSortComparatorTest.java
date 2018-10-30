@@ -1,10 +1,10 @@
 /*
- * Copyright (C) 2018 CNH Industrial NV. All rights reserved.
+ *  Copyright (C) 2018 CNH Industrial NV. All rights reserved.
  *
- * This software contains proprietary information of CNH Industrial NV. Neither
- * receipt nor possession thereof confers any right to reproduce, use, or
- * disclose in whole or in part any such information without written
- * authorization from CNH Industrial NV.
+ *  This software contains proprietary information of CNH Industrial NV. Neither
+ *  receipt nor possession thereof confers any right to reproduce, use, or
+ *  disclose in whole or in part any such information without written
+ *  authorization from CNH Industrial NV.
  *
  */
 package com.cnh.pf.android.data.management.productlibrary.utility.sorts;
@@ -13,6 +13,7 @@ import android.app.Activity;
 import com.cnh.pf.android.data.management.TestApp;
 import com.cnh.pf.model.product.library.Product;
 import com.cnh.pf.model.product.library.ProductMix;
+import com.cnh.pf.model.product.library.ProductForm;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
@@ -56,6 +57,12 @@ import static org.mockito.Mockito.*;
 
       productOne.setName("abc");
       productTwo.setName("abc");
+
+      productOne.setForm(ProductForm.SEED);
+      productTwo.setForm(ProductForm.SEED);
+
+      productOne.setDefaultRate(5.0);
+      productTwo.setDefaultRate(5.0);
 
       productMixOne.setProductMixParameters(productOne);
       productMixTwo.setProductMixParameters(productTwo);

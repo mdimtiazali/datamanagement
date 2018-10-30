@@ -1,12 +1,13 @@
 /*
- * Copyright (C) 2018 CNH Industrial NV. All rights reserved.
+ *  Copyright (C) 2018 CNH Industrial NV. All rights reserved.
  *
- * This software contains proprietary information of CNH Industrial NV. Neither
- * receipt nor possession thereof confers any right to reproduce, use, or
- * disclose in whole or in part any such information without written
- * authorization from CNH Industrial NV.
+ *  This software contains proprietary information of CNH Industrial NV. Neither
+ *  receipt nor possession thereof confers any right to reproduce, use, or
+ *  disclose in whole or in part any such information without written
+ *  authorization from CNH Industrial NV.
  *
  */
+
 package com.cnh.pf.android.data.management.session;
 
 import com.cnh.pf.android.data.management.TestApp;
@@ -61,17 +62,44 @@ import static org.mockito.Mockito.*;
       Assert.assertNotNull(cacheManager);
       Assert.assertNotNull(session);
       cacheManager.save(session);
+
+      Assert.assertTrue(SessionUtil.isComplete(session) && SessionUtil.isSuccessful(session));
+      session.setAction(Session.Action.MANAGE);
+      Assert.assertTrue(SessionUtil.isDiscoveryTask(session) && SessionUtil.isManageAction(session));
+      session.setAction(Session.Action.EXPORT);
+      Assert.assertTrue(SessionUtil.isDiscoveryTask(session) && SessionUtil.isExportAction(session));
+
       Assert.assertTrue(cacheManager.cached(session));
 
    }
 
+   @Test public void cacheTestWithActionAndType() {
+
+      Assert.assertNotNull(cacheManager);
+      Assert.assertNotNull(session);
+      cacheManager.save(session);
+      Assert.assertTrue(cacheManager.cached(session.getAction(),session.getType()));
+
+   }
+
+
    @Test public void retrieveTest() {
+
+      Assert.assertNotNull(cacheManager);
+      Assert.assertNotNull(session);
+      Assert.assertTrue(cacheManager.retrieve(session) instanceof CacheManager.CacheItem);
+
+   }
+
+
+   @Test public void retrieveTestWithActionAndType() {
 
       Assert.assertNotNull(cacheManager);
       Assert.assertNotNull(session);
       Assert.assertTrue(cacheManager.retrieve(session.getAction(), session.getType()) instanceof CacheManager.CacheItem);
 
    }
+
 
    @Test public void resetSessionTest() {
 
