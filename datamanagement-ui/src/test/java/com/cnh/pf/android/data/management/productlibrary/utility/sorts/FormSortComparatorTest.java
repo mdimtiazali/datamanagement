@@ -1,10 +1,10 @@
 /*
- * Copyright (C) 2018 CNH Industrial NV. All rights reserved.
+ *  Copyright (C) 2018 CNH Industrial NV. All rights reserved.
  *
- * This software contains proprietary information of CNH Industrial NV. Neither
- * receipt nor possession thereof confers any right to reproduce, use, or
- * disclose in whole or in part any such information without written
- * authorization from CNH Industrial NV.
+ *  This software contains proprietary information of CNH Industrial NV. Neither
+ *  receipt nor possession thereof confers any right to reproduce, use, or
+ *  disclose in whole or in part any such information without written
+ *  authorization from CNH Industrial NV.
  *
  */
 package com.cnh.pf.android.data.management.productlibrary.utility.sorts;
@@ -52,9 +52,11 @@ import static org.mockito.Mockito.*;
       Product product1 = new Product();
       product1.setForm(ProductForm.SEED);
       product1.setName("abc");
+      product1.setDefaultRate(5.0);
       Product product2 = new Product();
       product2.setForm(ProductForm.SEED);
       product2.setName("abc");
+      product2.setDefaultRate(5.0);
       int result = formSortComparator.compare(product1, product2);
       Assert.assertTrue("expected to be equal", result == 0);
    }

@@ -92,4 +92,12 @@ public class TreeLineWidget extends View {
             invalidate();
         }
     }
+
+    /**
+     * Getter for corner
+     * @return corner
+     */
+    public boolean isCorner() {
+        return corner;
+    }
 }

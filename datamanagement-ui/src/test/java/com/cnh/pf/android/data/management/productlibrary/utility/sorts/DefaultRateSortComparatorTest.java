@@ -1,10 +1,10 @@
 /*
- * Copyright (C) 2018 CNH Industrial NV. All rights reserved.
+ *  Copyright (C) 2018 CNH Industrial NV. All rights reserved.
  *
- * This software contains proprietary information of CNH Industrial NV. Neither
- * receipt nor possession thereof confers any right to reproduce, use, or
- * disclose in whole or in part any such information without written
- * authorization from CNH Industrial NV.
+ *  This software contains proprietary information of CNH Industrial NV. Neither
+ *  receipt nor possession thereof confers any right to reproduce, use, or
+ *  disclose in whole or in part any such information without written
+ *  authorization from CNH Industrial NV.
  *
  */
 package com.cnh.pf.android.data.management.productlibrary.utility.sorts;
@@ -12,6 +12,7 @@ package com.cnh.pf.android.data.management.productlibrary.utility.sorts;
 import android.app.Activity;
 import com.cnh.pf.android.data.management.TestApp;
 import com.cnh.pf.model.product.library.Product;
+import com.cnh.pf.model.product.library.ProductForm;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
@@ -50,9 +51,11 @@ import static org.mockito.Mockito.*;
       Product product1 = new Product();
       product1.setDefaultRate(5.0);
       product1.setName("abc");
+      product1.setForm(ProductForm.SEED);
       Product product2 = new Product();
       product2.setDefaultRate(5.0);
       product2.setName("abc");
+      product2.setForm(ProductForm.SEED);
       int result = defaultRateSortComparator.compare(product1, product2);
       Assert.assertTrue("expected to be equal", result == 0);
    }

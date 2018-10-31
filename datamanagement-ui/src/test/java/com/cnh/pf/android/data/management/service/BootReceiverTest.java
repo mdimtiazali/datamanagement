@@ -1,10 +1,10 @@
 /*
- * Copyright (C) 2018 CNH Industrial NV. All rights reserved.
+ *  Copyright (C) 2018 CNH Industrial NV. All rights reserved.
  *
- * This software contains proprietary information of CNH Industrial NV. Neither
- * receipt nor possession thereof confers any right to reproduce, use, or
- * disclose in whole or in part any such information without written
- * authorization from CNH Industrial NV.
+ *  This software contains proprietary information of CNH Industrial NV. Neither
+ *  receipt nor possession thereof confers any right to reproduce, use, or
+ *  disclose in whole or in part any such information without written
+ *  authorization from CNH Industrial NV.
  *
  */
 package com.cnh.pf.android.data.management.service;
@@ -52,7 +52,7 @@ public class BootReceiverTest {
    @Test
    public void onReceiveDataManagementServiceTest() {
       Intent intent = new Intent(mContext, DataManagementService.class);
-      intent.setAction("android.intent.action.BOOT_COMPLETED_PRI_2");
+      intent.setAction("com.cnh.android.intent.action.BOOT_COMPLETED_PRI_2");
       mReceiver.onReceive(mContext, intent);
       assertNull(mReceiver.getResultData());
       ArgumentCaptor<Intent> argument = ArgumentCaptor.forClass(Intent.class);

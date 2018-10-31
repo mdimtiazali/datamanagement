@@ -1,10 +1,10 @@
 /*
- * Copyright (C) 2018 CNH Industrial NV. All rights reserved.
+ *  Copyright (C) 2018 CNH Industrial NV. All rights reserved.
  *
- * This software contains proprietary information of CNH Industrial NV. Neither
- * receipt nor possession thereof confers any right to reproduce, use, or
- * disclose in whole or in part any such information without written
- * authorization from CNH Industrial NV.
+ *  This software contains proprietary information of CNH Industrial NV. Neither
+ *  receipt nor possession thereof confers any right to reproduce, use, or
+ *  disclose in whole or in part any such information without written
+ *  authorization from CNH Industrial NV.
  *
  */
 package com.cnh.pf.android.data.management.productlibrary.utility.sorts;
@@ -12,6 +12,7 @@ package com.cnh.pf.android.data.management.productlibrary.utility.sorts;
 import android.app.Activity;
 import com.cnh.pf.android.data.management.TestApp;
 import com.cnh.pf.model.product.configuration.Variety;
+import com.cnh.pf.model.product.library.CropType;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
@@ -50,8 +51,13 @@ import static org.mockito.Mockito.*;
 
       Variety varietyOne = new Variety();
       Variety varietyTwo = new Variety();
+
       varietyOne.setName("abc");
       varietyTwo.setName("abc");
+
+      varietyOne.setCropType(CropType.CORN);
+      varietyTwo.setCropType(CropType.CORN);
+
       int result = varietyByNameComparator.compare(varietyOne, varietyTwo);
       Assert.assertTrue("expected to be equal", result == 0);
    }
