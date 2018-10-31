@@ -32,6 +32,15 @@ public class CacheManager {
            = new EnumMap<Session.Action, Map<Session.Type, CacheItem>>(Session.Action.class);
 
    /**
+    * Getter for the cache
+    *
+    * @return cached object
+    */
+   public Map<Session.Action, Map<Session.Type, CacheItem>> getCache() {
+      return cache;
+   }
+
+   /**
     * Save session data. CacheItemImpl will pick item within session selectively and provide spaces
     * to store data.
     *
