@@ -51,11 +51,24 @@ public class TreeLineWidgetTest {
 
    @Test
    public void testsetCornerFlag() {
-      //case if the value of flag is true
+      //case if the value of flag is true and corner is false
+      treeLineWidget.setCorner(false);
       treeLineWidget.setCornerFlag(true);
       Assert.assertEquals(true, treeLineWidget.isCorner());
 
-      //case if the value of the flag is false
+
+      //case if the value of the flag is false and corner is false
+      treeLineWidget.setCorner(false);
+      treeLineWidget.setCornerFlag(false);
+      Assert.assertEquals(false, treeLineWidget.isCorner());
+
+      //case if the value of the flag is true and corner is true
+      treeLineWidget.setCorner(true);
+      treeLineWidget.setCornerFlag(true);
+      Assert.assertEquals(true, treeLineWidget.isCorner());
+
+      //case if the value of the flag is false and corner is true
+      treeLineWidget.setCorner(true);
       treeLineWidget.setCornerFlag(false);
       Assert.assertEquals(false, treeLineWidget.isCorner());
    }
