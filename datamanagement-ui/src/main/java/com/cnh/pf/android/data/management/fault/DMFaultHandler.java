@@ -128,7 +128,7 @@ public class DMFaultHandler implements OnConnectionChangeListener {
    public void showImportExportStatus(Status.StatusType statusType) {
       if (producer != null && alertManager != null && statusType != null) {
 
-         if (statusType == Status.StatusType.DM_SESSION_EXPORT_IN_PROGRESS || statusType == Status.StatusType.DM_SESSION_IMPORT_IN_PROGRESS) {
+         if (importExportStatus == null || statusType == Status.StatusType.DM_SESSION_EXPORT_IN_PROGRESS || statusType == Status.StatusType.DM_SESSION_IMPORT_IN_PROGRESS) {
             importExportStatus = new Status(statusType);
          }
          else {
