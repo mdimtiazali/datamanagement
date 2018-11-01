@@ -61,14 +61,19 @@ import static org.mockito.Mockito.*;
 
       Assert.assertNotNull(cacheManager);
       Assert.assertNotNull(session);
-      cacheManager.save(session);
+
 
       Assert.assertTrue(SessionUtil.isComplete(session) && SessionUtil.isSuccessful(session));
       session.setAction(Session.Action.MANAGE);
       Assert.assertTrue(SessionUtil.isDiscoveryTask(session) && SessionUtil.isManageAction(session));
+
+      cacheManager.save(session);
+      Assert.assertTrue(cacheManager.cached(session));
+
       session.setAction(Session.Action.EXPORT);
       Assert.assertTrue(SessionUtil.isDiscoveryTask(session) && SessionUtil.isExportAction(session));
 
+      cacheManager.save(session);
       Assert.assertTrue(cacheManager.cached(session));
 
    }
@@ -78,6 +83,7 @@ import static org.mockito.Mockito.*;
       Assert.assertNotNull(cacheManager);
       Assert.assertNotNull(session);
       cacheManager.save(session);
+      cacheManager.cached(session.getAction(),session.getType());
       Assert.assertTrue(cacheManager.cached(session.getAction(),session.getType()));
 
    }
@@ -87,6 +93,7 @@ import static org.mockito.Mockito.*;
 
       Assert.assertNotNull(cacheManager);
       Assert.assertNotNull(session);
+      cacheManager.retrieve(session);
       Assert.assertTrue(cacheManager.retrieve(session) instanceof CacheManager.CacheItem);
 
    }
@@ -117,6 +124,16 @@ import static org.mockito.Mockito.*;
       Assert.assertNotNull(session);
       cacheManager.save(session);
       cacheManager.reset(session.getAction());
+      Assert.assertNull(cacheManager.getCache().get(session.getAction()));
+
+   }
+
+   @Test public void resetActionAndTypeTest() {
+
+      Assert.assertNotNull(cacheManager);
+      Assert.assertNotNull(session);
+      cacheManager.save(session);
+      cacheManager.reset(session.getAction(),session.getType());
       Assert.assertNull(cacheManager.getCache().get(session.getAction()));
 
    }

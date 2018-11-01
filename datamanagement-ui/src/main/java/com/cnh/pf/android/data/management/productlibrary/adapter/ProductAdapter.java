@@ -601,4 +601,42 @@ public final class ProductAdapter extends SearchableSortableExpandableListAdapte
          }
       }
    }
+
+   /**
+    * getter for the vipService.
+    *
+    * @param vipService the vipService
+    */
+   protected IVIPServiceAIDL getVipService() {
+      return vipService;
+   }
+
+   /**
+    * getter for the pvipService.
+    *
+    * @param pvipService the pvipService
+    */
+   protected IPVIPServiceAIDL getPvipService() {
+      return pvipService;
+   }
+
+
+   /**
+    * getter for the list of all productUnits
+    *
+    * @param productUnits the productUnitsList
+    */
+   protected List<ProductUnits> getProductUnits() {
+      return productUnits;
+   }
+
+   /**
+    * getter for the currentImplement
+    *
+    * @param currentImplement the currentImplement
+    */
+
+   protected Implement getCurrentImplement() {
+      return currentImplement;
+   }
 }

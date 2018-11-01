@@ -397,4 +397,40 @@ public final class VarietyAdapter extends BaseAdapter implements Filterable {
          }
       }
    }
+
+   /**
+    * Getter for the vipservice.
+    *
+    * @return vipService
+    */
+   protected IVIPServiceAIDL getVipService() {
+      return vipService;
+   }
+
+   /**
+    * Setter for the AddOrEditVarietyDialog.
+    *
+    * @param editVarietyDialog
+    */
+   protected void setEditVarietyDialog(AddOrEditVarietyDialog editVarietyDialog) {
+      this.editVarietyDialog = editVarietyDialog;
+   }
+
+   /**
+    * Getter for the OriginalList.
+    *
+    * @return originalList
+    */
+   protected List<Variety> getOriginalList() {
+      return originalList;
+   }
+
+   /**
+    * Getter for the FilterList.
+    *
+    * @return filteredList
+    */
+   protected List<Variety> getFilteredList() {
+      return filteredList;
+   }
 }
