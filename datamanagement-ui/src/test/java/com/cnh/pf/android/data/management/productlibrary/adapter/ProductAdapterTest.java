@@ -119,4 +119,9 @@ public class ProductAdapterTest {
         Assert.assertEquals(currentImplement, productAdapter.getCurrentImplement());
     }
 
+    @org.junit.Test
+    public void testgetFilter() {
+        Assert.assertTrue(productAdapter.getFilter() instanceof Filter);
+    }
+
 }

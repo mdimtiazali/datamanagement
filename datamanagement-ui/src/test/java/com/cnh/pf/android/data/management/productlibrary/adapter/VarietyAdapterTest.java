@@ -26,6 +26,7 @@ import org.robolectric.RuntimeEnvironment;
 import org.robolectric.RobolectricMavenTestRunner;
 import org.robolectric.annotation.Config;
 import roboguice.RoboGuice;
+import android.widget.Filter;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -111,5 +112,32 @@ public class VarietyAdapterTest {
       varietyAdatpter.setVarietyList(varieties);
       Assert.assertEquals(varieties,varietyAdatpter.getFilteredList());
       Assert.assertNull(varietyAdatpter.getOriginalList());
+   }
+
+   @Test
+   public void testgetItemId() {
+      Assert.assertEquals(0,varietyAdatpter.getItemId(0));
+   }
+
+   @Test
+   public void testremoveVariety() {
+      varietyAdatpter.removeVariety(varietyB);
+      Assert.assertEquals(1,varietyAdatpter.getCount());
+   }
+
+   @Test
+   public void testgetCount() {
+      Assert.assertEquals(2,varietyAdatpter.getCount());
+   }
+
+   @Test
+   public void testgetItem() {
+      Assert.assertEquals(varietyA,varietyAdatpter.getItem(0));
+   }
+
+   @Test
+   public void testgetFilter() {
+      //Case : Filter is not set and value for filter is null
+      Assert.assertTrue( varietyAdatpter.getFilter() instanceof Filter);
    }
 }
