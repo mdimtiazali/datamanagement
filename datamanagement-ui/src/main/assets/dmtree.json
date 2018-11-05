@@ -2,7 +2,7 @@
   {
     "Title":"Grower/Farm/Field/Task",
     "DataType": "GROWER",
-    "GroupDataType": "GROWER",
+    "GroupDataType": "GROWERS",
     "FollowSource": 1,
     "Hidden" : 0 ,
     "Children" : null
@@ -33,7 +33,7 @@
   },
   {
     "Title":"Swaths",
-    "DataType": "GUIDANCE_CONFIGURATION",
+    "DataType": "GUIDANCE_GROUP",
     "GroupDataType": "GUIDANCE_GROUPS",
     "FollowSource": 0,
     "Hidden" : 0 ,
@@ -56,9 +56,49 @@
     "Children" : null
   },
   {
+    "Title":"GUIDANCE_PATTERN",
+    "DataType": "GUIDANCE_PATTERN",
+    "GroupDataType": "GUIDANCE_PATTERN",
+    "FollowSource": 1,
+    "Hidden" : 1,
+    "Children" : null
+  },
+  {
+    "Title":"FILE",
+    "DataType": "FILE",
+    "GroupDataType": "FILE",
+    "FollowSource": 1,
+    "Hidden" : 1,
+    "Children" : null
+  },
+  {
+    "Title":"Vehicles",
+    "DataType": "VEHICLE",
+    "GroupDataType": "VEHICLES",
+    "FollowSource": 1,
+    "Hidden" : 0,
+    "Children" : null
+  },
+  {
+    "Title":"Implements",
+    "DataType": "IMPLEMENT",
+    "GroupDataType": "IMPLEMENTS",
+    "FollowSource": 1,
+    "Hidden" : 0,
+    "Children" : null
+  },
+  {
+    "Title":"Vehicle/Implement Pair",
+    "DataType": "VEHICLE_IMPLEMENT",
+    "GroupDataType": "VEHICLE_IMPLEMENTS",
+    "FollowSource": 1,
+    "Hidden" : 0,
+    "Children" : null
+  },
+  {
     "Title":"Crop and Product Library",
-    "DataType": "PRODUCT",
-    "GroupDataType": "PRODUCT",
+    "DataType": "PRODUCT_MIX_VARIETY",
+    "GroupDataType": "PRODUCT_MIX_VARIETY",
     "FollowSource": 1,
     "Hidden" : 0,
     "Children" : [

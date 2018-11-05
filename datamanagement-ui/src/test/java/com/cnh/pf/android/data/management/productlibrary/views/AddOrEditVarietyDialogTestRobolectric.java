@@ -77,7 +77,7 @@ public class AddOrEditVarietyDialogTestRobolectric extends BaseTestRobolectric {
       shadowOf(RuntimeEnvironment.application).setComponentNameAndServiceForBindService(new ComponentName(activity.getPackageName(), DataManagementService.class.getName()), binder);
       activity = controller.create().start().resume().visible().get();
 
-      testDialog = new AddOrEditVarietyDialog(RuntimeEnvironment.application);
+      testDialog = new AddOrEditVarietyDialog(RuntimeEnvironment.application, null);
 
    }
 
@@ -146,7 +146,7 @@ public class AddOrEditVarietyDialogTestRobolectric extends BaseTestRobolectric {
       assertFalse(btnFirst.isEnabled());
 
       //Select Crop type, but don't set name
-      testDialog = new AddOrEditVarietyDialog(RuntimeEnvironment.application);
+      testDialog = new AddOrEditVarietyDialog(RuntimeEnvironment.application, null);
       testDialog.onAttachedToWindow();
       testDialog.setVarietyList(Collections.EMPTY_LIST);
       testDialog.setVIPService(vipService);

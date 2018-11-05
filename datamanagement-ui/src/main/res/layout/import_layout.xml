@@ -59,6 +59,7 @@
                         android:layout_marginLeft="@dimen/header_indent_width"
                         android:layout_weight="1"
                         android:gravity="center_vertical|left"
+                        android:ellipsize="middle"
                         style="@style/TextAppearance.Import.Entity"/>
                 <Button
                         android:id="@+id/select_all_btn"

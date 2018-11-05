@@ -827,7 +827,9 @@ public class ManageFragment extends BaseDataFragment implements DmAccessibleObse
                         layout.setImplicitlySelected(false);
                      }
                      updateButtonVisible(node, cpButton, editButton);
-                     indicatorShown(child, manager.getNodeInfo(node));
+                     if (manager.isInTree(node)) {
+                        indicatorShown(child, manager.getNodeInfo(node));
+                     }
                   }
                }
             }

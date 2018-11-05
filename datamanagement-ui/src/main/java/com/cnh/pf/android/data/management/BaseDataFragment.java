@@ -714,8 +714,8 @@ public abstract class BaseDataFragment extends RoboFragment implements SessionCo
       else {
          addingTopLevelFolder();
          addToTree(objectGraphs);
-         sortTreeList();
       }
+      sortTreeList();
       createTreeAdapter();
 
       treeAdapter.setData(objectGraphs);
@@ -814,7 +814,6 @@ public abstract class BaseDataFragment extends RoboFragment implements SessionCo
          addOneObjectGraph(null, objectGraph);
       }
       removeEmptyNodes(null);
-      List<ObjectGraph> tmpLIst = manager.getChildren(null);
    }
 
    private void removeEmptyNodes(ObjectGraph parent) {
@@ -903,7 +902,7 @@ public abstract class BaseDataFragment extends RoboFragment implements SessionCo
          }
          //Check if entity can be grouped
          String objectType = object.getType();
-         if (TreeEntityHelper.isGroup(objectType) || object.getParent() == null) {
+         if (TreeEntityHelper.isGroup(objectType)) {
             String gType = TreeEntityHelper.getGroupType(objectType);
             String ggType = TreeEntityHelper.getGroupOfGroupType(objectType);
             GroupObjectGraph group = null;

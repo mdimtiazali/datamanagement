@@ -33,6 +33,7 @@ import com.cnh.android.widget.activity.TabActivity;
 import com.cnh.pf.android.data.management.R;
 import com.cnh.pf.android.data.management.productlibrary.utility.UiHelper;
 import com.cnh.pf.android.data.management.productlibrary.views.AddOrEditVarietyDialog;
+import com.cnh.pf.api.pvip.IPVIPServiceAIDL;
 import com.cnh.pf.model.product.configuration.Variety;
 
 import org.slf4j.Logger;
@@ -63,6 +64,7 @@ public final class VarietyAdapter extends BaseAdapter implements Filterable {
    private final OnDeleteButtonClickListener onDeleteButtonClickListener;
    private final TabActivity activity;
    private IVIPServiceAIDL vipService;
+   private IPVIPServiceAIDL pvipService;
    private AddOrEditVarietyDialog editVarietyDialog;
    private boolean isFiltered = false;
 
@@ -75,7 +77,7 @@ public final class VarietyAdapter extends BaseAdapter implements Filterable {
     * @param tabActivity the tabActivity
     * @param vipService the vipService
     */
-   public VarietyAdapter(final Context context, final List<Variety> varieties, final TabActivity tabActivity, final IVIPServiceAIDL vipService) {
+   public VarietyAdapter(final Context context, final List<Variety> varieties, final TabActivity tabActivity, final IVIPServiceAIDL vipService, final IPVIPServiceAIDL pvipService) {
       this.context = context;
       // don't allow modifications from outside.
       // as long as the filtered list is "unfiltered", it's the list we get via parameter
@@ -84,6 +86,7 @@ public final class VarietyAdapter extends BaseAdapter implements Filterable {
       onDeleteButtonClickListener = new OnDeleteButtonClickListener();
       this.activity = tabActivity;
       this.vipService = vipService;
+      this.pvipService = pvipService;
    }
 
    /**
@@ -261,7 +264,7 @@ public final class VarietyAdapter extends BaseAdapter implements Filterable {
       public void onClick(View view) {
          logger.debug("on edit button clicked for variety: {}", ((Variety) view.getTag()).getName());
          final Variety variety = (Variety) view.getTag();
-         editVarietyDialog = new AddOrEditVarietyDialog(context);
+         editVarietyDialog = new AddOrEditVarietyDialog(context, pvipService);
          editVarietyDialog.setCurrentVariety(variety);
          synchronized (listsLock) {
             editVarietyDialog.setVarietyList(originalList != null ? originalList : filteredList);
@@ -393,5 +396,41 @@ public final class VarietyAdapter extends BaseAdapter implements Filterable {
             }
          }
       }
+   }
+
+   /**
+    * Getter for the vipservice.
+    *
+    * @return vipService
+    */
+   protected IVIPServiceAIDL getVipService() {
+      return vipService;
+   }
+
+   /**
+    * Setter for the AddOrEditVarietyDialog.
+    *
+    * @param editVarietyDialog
+    */
+   protected void setEditVarietyDialog(AddOrEditVarietyDialog editVarietyDialog) {
+      this.editVarietyDialog = editVarietyDialog;
+   }
+
+   /**
+    * Getter for the OriginalList.
+    *
+    * @return originalList
+    */
+   protected List<Variety> getOriginalList() {
+      return originalList;
+   }
+
+   /**
+    * Getter for the FilterList.
+    *
+    * @return filteredList
+    */
+   protected List<Variety> getFilteredList() {
+      return filteredList;
    }
 }

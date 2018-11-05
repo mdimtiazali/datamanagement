@@ -9,6 +9,14 @@
 
 package com.cnh.pf.android.data.management;
 
+import com.cnh.autoguidance.boundary.GeometryType;
+import com.cnh.autoguidance.boundary.Impassable;
+import com.cnh.autoguidance.shared.SwathType;
+import com.cnh.pf.android.data.management.graph.GroupObjectGraph;
+import com.cnh.pf.model.vip.vehimp.Operation;
+import com.cnh.pf.model.product.library.ProductForm;
+import com.google.gson.Gson;
+
 import android.content.Context;
 
 import com.cnh.autoguidance.shared.SwathType;
@@ -20,9 +28,9 @@ import com.cnh.autoguidance.shared.SwathType;
 import com.cnh.pf.android.data.management.graph.GroupObjectGraph;
 import com.cnh.pf.model.vip.vehimp.Operation;
 import com.cnh.pf.model.product.library.ProductForm;
+import com.cnh.android.persistence.PFConstantData;
 import com.cnh.jgroups.DataTypes;
 import com.cnh.jgroups.ObjectGraph;
-import com.cnh.pf.android.data.management.graph.GroupObjectGraph;
 import com.cnh.pf.android.data.management.helper.DMTreeJsonData;
 import com.google.common.base.CaseFormat;
 import com.google.gson.Gson;
@@ -59,9 +67,6 @@ public class TreeEntityHelper {
    private static final Map<Operation, Integer> TASK_ICONS = new EnumMap<Operation, Integer>(Operation.class);
 
 
-   public static final String  NOGROWER_DESIGNATOR = "NoGrower";
-   public static final String  NOFARM_DESIGNATOR   = "NoFarm";
-   public static final String  NOFIELD_DESIGNATOR  = "NoField";
    public static final String HIDDEN_ITEM = "HIDDEN_ITEM";
    public static final String FOLLOW_SOURCE = "FOLLOW_SOURCE";
    public static final String CHILDREN_COUNT = "CHILDREN_COUNT";
@@ -75,8 +80,8 @@ public class TreeEntityHelper {
    protected static final Map<String, Integer> group2name = new HashMap<String, Integer>();
    protected static final Map<String, String> obj2group = new HashMap<String, String>();
    protected static final Map<String, String> group2group = new HashMap<String, String>();
-   protected static final Map<String, Integer> datatype2name = new HashMap<String, Integer>();
    protected static final Map<String, Integer> groupSortData = new HashMap<String, Integer>();
+   protected static final Map<String, Integer> datatype2name = new HashMap<String, Integer>();
 
    public static final String SUB_TYPE = "_subtype";
    public static final String IS_BOUNDARY_OUTER = "_iSBoundaryOuter";
@@ -95,6 +100,7 @@ public class TreeEntityHelper {
    public static final String PRODUCT_MIX_VARIETY = "PRODUCT_MIX_VARIETY";
    public static final String GUIDANCE_CONFIGURATIONS = "GUIDANCE_CONFIGURATIONS";
    public static final String DDOP = "DDOP";
+   public static final String VEHICLE_IMPLEMENTS = "VEHICLE_IMPLEMENTS";
 
    static {
       TYPE_ICONS.put(DataTypes.GROWER, R.drawable.ic_data_tree_grower);
@@ -122,11 +128,9 @@ public class TreeEntityHelper {
       TYPE_ICONS.put(NOTES, R.drawable.dt_icon_bglayers);
       TYPE_ICONS.put(DataTypes.FILE, R.drawable.ic_data_tree_harvesting);
       TYPE_ICONS.put(DataTypes.VEHICLE, R.drawable.ic_data_tree_tractor_case);
-      TYPE_ICONS.put(VEHICLES, R.drawable.ic_data_tree_tractor_case);
       TYPE_ICONS.put(DataTypes.VEHICLE_IMPLEMENT, R.drawable.ic_datatree_implements);
       TYPE_ICONS.put(DataTypes.VEHICLE_IMPLEMENT_CONFIG, R.drawable.ic_datatree_implements);
       TYPE_ICONS.put(DataTypes.IMPLEMENT, R.drawable.ic_datatree_implements);
-      TYPE_ICONS.put(IMPLEMENTS, R.drawable.ic_datatree_implements);
       TYPE_ICONS.put(DataTypes.IMPLEMENT_PRODUCT_CONFIG, R.drawable.ic_datatree_screenshots);
       TYPE_ICONS.put(VARIETIES, R.drawable.dt_icon_varieties);
       TYPE_ICONS.put(DataTypes.VARIETY, R.drawable.dt_icon_varieties);
@@ -240,6 +244,7 @@ public class TreeEntityHelper {
       groupSortData.put(DataTypes.IMPLEMENT, 34);
       groupSortData.put(IMPLEMENTS, 32);
       groupSortData.put(DataTypes.IMPLEMENT_PRODUCT_CONFIG, 35);
+      groupSortData.put(VEHICLE_IMPLEMENTS, 36);
       groupSortData.put(VARIETIES, 13);
       groupSortData.put(PRODUCT_MIX_VARIETY, 2);
 
@@ -360,7 +365,7 @@ public class TreeEntityHelper {
          return getSubtypeIcon(objectGraph);
       }
       else if (DataTypes.GROWER.equals(objectGraph.getType())) {
-         if ((objectGraph.getName() != null) &&(objectGraph.getName().contains(NOGROWER_DESIGNATOR))) {
+         if ((objectGraph.getName() != null) &&(objectGraph.getName().contains(PFConstantData.NOGROWER_DESIGNATOR))) {
             return R.drawable.dm_nogrower_icon;
          }
          else {
@@ -368,7 +373,7 @@ public class TreeEntityHelper {
          }
       }
       else if (DataTypes.FARM.equals(objectGraph.getType())) {
-         if ((objectGraph.getName() != null) &&(objectGraph.getName().contains(NOFARM_DESIGNATOR))) {
+         if ((objectGraph.getName() != null) &&(objectGraph.getName().contains(PFConstantData.NOFARM_DESIGNATOR))) {
             return R.drawable.dm_nofarm_icon;
          }
          else {
@@ -376,7 +381,7 @@ public class TreeEntityHelper {
          }
       }
       else if (DataTypes.FIELD.equals(objectGraph.getType())) {
-         if ((objectGraph.getName() != null) &&(objectGraph.getName().contains(NOFIELD_DESIGNATOR))) {
+         if ((objectGraph.getName() != null) &&(objectGraph.getName().contains(PFConstantData.NOFIELD_DESIGNATOR))) {
             return R.drawable.dm_nofield_icon;
          }
          else {

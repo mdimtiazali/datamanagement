@@ -242,7 +242,7 @@ public class DataManagementUITest {
    @Test
    public void testForVarietiesCropTypeWhenIsUsed() {
       activateTab(PRODUCT_LIBRARY_TAB_POSITION);
-      AddOrEditVarietyDialog addOrEditVarietyDialog = new AddOrEditVarietyDialog(activity);
+      AddOrEditVarietyDialog addOrEditVarietyDialog = new AddOrEditVarietyDialog(activity, null);
       LayoutInflater layoutInflater = (LayoutInflater) activity.getSystemService(Context.LAYOUT_INFLATER_SERVICE);
       Variety TEST_VARIETY = new Variety();
       TEST_VARIETY.setName("Mock Variety");

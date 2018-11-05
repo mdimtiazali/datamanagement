@@ -49,4 +49,12 @@ public class SimpleTreeView extends ListView {
         adaptor = new SimpleTreeViewAdaptor(getContext(), icons, data);
         setAdapter(adaptor);
     }
+
+    /**
+     * Getter for adapter count
+     * @return  adapter count
+     */
+    public int getAdaptorCount() {
+        return adaptor.getCount();
+    }
 }

@@ -99,4 +99,11 @@ public class StatusSender {
       Intent intent = new Intent(Status.ACTION_STATUS_REMOVE).putExtra(Status.ID, ParcelUuid.fromString(status.getID().toString()));
       context.sendBroadcast(intent);
    }
+
+   /**
+    * Get Status
+    */
+   public Status getStatus() {
+      return status;
+   }
 }

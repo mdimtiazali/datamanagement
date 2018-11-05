@@ -105,4 +105,20 @@ public class ListHeaderSortView extends Button {
          this.currentState = STATE_SORT_ASC;
       }
    }
+
+   /**
+    * Getter for CurrentState
+    * @return currentState
+    */
+   public int getCurrentState() {
+      return currentState;
+   }
+
+   /**
+    * Setter for CurrentState
+    * @param currentState
+    */
+   public void setCurrentState(int currentState) {
+      this.currentState = currentState;
+   }
 }

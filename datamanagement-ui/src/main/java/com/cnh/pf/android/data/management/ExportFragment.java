@@ -35,6 +35,7 @@ import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.TextView;
 
+import com.cnh.alert.types.Status;
 import com.cnh.android.dialog.DialogViewInterface;
 import com.cnh.android.dialog.TextDialogView;
 import com.cnh.android.pf.widget.controls.PopoverWindowInfoView;
@@ -51,6 +52,7 @@ import com.cnh.jgroups.Datasource;
 import com.cnh.jgroups.ObjectGraph;
 import com.cnh.jgroups.Operation;
 import com.cnh.pf.android.data.management.adapter.ObjectTreeViewAdapter;
+import com.cnh.pf.android.data.management.fault.DMFaultHandler;
 import com.cnh.pf.android.data.management.helper.DataExchangeProcessOverlay;
 import com.cnh.pf.android.data.management.helper.IVIPDataHelper;
 import com.cnh.pf.android.data.management.helper.VIPDataHandler;
@@ -87,7 +89,10 @@ public class ExportFragment extends BaseDataFragment {
    private static final String SAVED_FORMAT = "format";
    private static final String ISOXML_FORMAT = "ISOXML";
    private static final String TASKDATA_FILE = "TASKDATA.XML";
-
+   private static final int CANCEL_DIALOG_WIDTH = 550;
+   private final List<Session.Action> blockingActions = new ArrayList<Session.Action>(Arrays.asList(Session.Action.IMPORT));
+   private final List<Session.Action> executableActions = new ArrayList<Session.Action>(Arrays.asList(Session.Action.EXPORT));
+   private final int rootNodeNamesWithImplicitSelectionResourceId = R.array.rootnodenames_with_implicit_parent_selection_in_export;
    @Inject
    protected FormatManager formatManager;
    @InjectView(R.id.export_medium_picklist)
@@ -120,30 +125,21 @@ public class ExportFragment extends BaseDataFragment {
    ImageButton destInfoButton;
    @InjectView(R.id.format_info_btn)
    ImageButton formatInfoButton;
-
-   private final List<Session.Action> blockingActions = new ArrayList<Session.Action>(Arrays.asList(Session.Action.IMPORT));
-   private final List<Session.Action> executableActions = new ArrayList<Session.Action>(Arrays.asList(Session.Action.EXPORT));
-   private final int rootNodeNamesWithImplicitSelectionResourceId = R.array.rootnodenames_with_implicit_parent_selection_in_export;
-
    private int transparentColor;
    private int whiteTextColor;
    private int defaultTextColor;
-
    private Drawable exportWhiteIcon;
    private Drawable exportDefaultIcon;
-
    private VIPDataHandler vipDataHandler;
    private VipDataHelperListener vipDataHelperListener;
    private Map<Datasource.LocationType, String> displayStringMap;
    /** Used to indicate if the path is internal or external */
    private boolean useInternalFileSystem = false;
-
    private ProgressValue progressValue = ProgressValue.initProgress();
-
    private String loading_string;
-
    private TextDialogView lastDialogView;
-   private static final int CANCEL_DIALOG_WIDTH = 550;
+   @Inject
+   private DMFaultHandler dmFaultHandler;
 
    /**
     * Sets the VIP Data Handler
@@ -151,59 +147,6 @@ public class ExportFragment extends BaseDataFragment {
     */
    public void setVipDataHandler(VIPDataHandler vipDataHandler) {
       this.vipDataHandler = vipDataHandler;
-   }
-
-   static class ProgressValue {
-      private int currentValue;
-      private int maxValue;
-
-      public ProgressValue(int currentValue, int maxValue) {
-         this.currentValue = currentValue;
-         this.maxValue = maxValue;
-      }
-
-      /**
-       * Getter for current progress value
-       *
-       * @return  current progress value
-       */
-      public int getCurrentValue() {
-         return this.currentValue;
-      }
-
-      /**
-       * Setter for current progress value
-       *
-       * @param currentValue  progress value
-       */
-      public void setCurrentValue(int currentValue) {
-         this.currentValue = currentValue;
-      }
-
-      /**
-       * Getter for the progress max value
-       *
-       * @return  the max value
-       */
-      public int getMaxValue() {
-         return this.maxValue;
-      }
-
-      /**
-       * Setter for the progress max value
-       * @param maxValue
-       */
-      public void setMaxValue(int maxValue) {
-         this.maxValue = maxValue;
-      }
-
-      /**
-       * Return ProgressValue instance with initialized value set to zeros.
-       * @return  ProgressValue instance
-       */
-      public static ProgressValue initProgress() {
-         return new ProgressValue(0, 0);
-      }
    }
 
    @Override
@@ -387,7 +330,8 @@ public class ExportFragment extends BaseDataFragment {
 
    private void formatInfoButtonClicked() {
       Context popoverContext = getActivity().getApplicationContext();
-      PopoverWindowInfoView infoPopupWindow = new PopoverWindowInfoView(popoverContext, EXPORT_FORMAT_POPOVER_DEFAULT_WIDTH, EXPORT_FORMAT_POPOVER_DEFAULT_HEIGHT, Popover.Style.LIGHT_INFO);
+      PopoverWindowInfoView infoPopupWindow = new PopoverWindowInfoView(popoverContext, EXPORT_FORMAT_POPOVER_DEFAULT_WIDTH, EXPORT_FORMAT_POPOVER_DEFAULT_HEIGHT,
+            Popover.Style.LIGHT_INFO);
       infoPopupWindow.setDescription(getString(R.string.format_description));
       infoPopupWindow.setTitle(getString(R.string.format_description_title));
       infoPopupWindow.showAt(formatInfoButton, Gravity.END, Popover.ArrowPosition.LEFT_TOP);
@@ -426,14 +370,6 @@ public class ExportFragment extends BaseDataFragment {
          hideTreeList();
          showLoadingOverlay();
          discovery();
-      }
-   }
-
-   private class VipDataHelperListener implements IVIPDataHelper.OnVehicleChangedListener {
-
-      @Override
-      public void onCurrentVehicleChanged(VehicleCurrent vehicleCurrent) {
-         logger.debug("VipDataHelperListener onCurrentVehicleChanged {}", vehicleCurrent);
       }
    }
 
@@ -523,14 +459,14 @@ public class ExportFragment extends BaseDataFragment {
       for (Map.Entry<UtilityHelper.MediumVariant, Integer> entry : resourceMap.entrySet()) {
          UtilityHelper.MediumVariant mediumVariant = entry.getKey();
 
-         if ( (useInternalFileSystem) || (SessionExtra.USB == mediumVariant.getExtraType() && Environment.getExternalStorageState().equals(Environment.MEDIA_MOUNTED)) ) {
+         if ((useInternalFileSystem) || (SessionExtra.USB == mediumVariant.getExtraType() && Environment.getExternalStorageState().equals(Environment.MEDIA_MOUNTED))) {
             Integer resId = resourceMap.get(mediumVariant);
             SessionExtra newExtra = new SessionExtra(SessionExtra.USB, getResources().getString(resId), mediumVariant.getValue());
             newExtra.setBasePath(basePath);
             newExtra.setUseInternalFileSystem(useInternalFileSystem);
             list.add(newExtra);
          }
-         else if (((mediumVariant.getExtraType() & SessionExtra.CLOUD) == SessionExtra.CLOUD) && getSessionManager().isCloudPresent()){
+         else if (((mediumVariant.getExtraType() & SessionExtra.CLOUD) == SessionExtra.CLOUD) && getSessionManager().isCloudPresent()) {
             Integer resId = resourceMap.get(mediumVariant);
             SessionExtra newExtra = new SessionExtra(SessionExtra.CLOUD | SessionExtra.USB, getResources().getString(resId), mediumVariant.getValue());
             newExtra.setBasePath(basePath);
@@ -568,7 +504,8 @@ public class ExportFragment extends BaseDataFragment {
          logger.info("Unable to check if internal flash need to be used.", e);
       }
 
-      if (!resourceMap.isEmpty() && useInternalFileSystem == false && (Environment.getExternalStorageState().equals(Environment.MEDIA_MOUNTED) || getSessionManager().isCloudPresent())) {
+      if (!resourceMap.isEmpty() && useInternalFileSystem == false
+            && (Environment.getExternalStorageState().equals(Environment.MEDIA_MOUNTED) || getSessionManager().isCloudPresent())) {
          list = createMediumVariants(resourceMap, Environment.getExternalStorageDirectory().getPath());
       }
       return list;
@@ -635,18 +572,6 @@ public class ExportFragment extends BaseDataFragment {
       }
    }
 
-   /**
-   * Comparator class used to order position of Encryption Key Picklist so that "None" value is always top position
-   *
-   * @author mreece
-   */
-   private class IDPicklistComparator implements Comparator<PickListItem> {
-      @Override
-      public int compare(PickListItem lhs, PickListItem rhs) {
-         return (int) lhs.getId() - (int) rhs.getId();
-      }
-   }
-
    @Override
    public void onPCMDisconnected() {
       logger.trace("PCM is not online.");
@@ -697,6 +622,7 @@ public class ExportFragment extends BaseDataFragment {
          ToastMessageCustom.makeToastMessageText(getActivity().getApplicationContext(), getString(R.string.export_cancel), Gravity.TOP | Gravity.CENTER_HORIZONTAL,
                getResources().getInteger(R.integer.toast_message_xoffset), getResources().getInteger(R.integer.toast_message_yoffset)).show();
          clearTreeSelection();
+         dmFaultHandler.showImportExportStatus(Status.StatusType.DM_SESSION_EXPORT_FAILED);
       }
 
       resetSession();
@@ -736,6 +662,8 @@ public class ExportFragment extends BaseDataFragment {
 
                // Reset session data after completing PERFORM_OPERATIONS successfully.
                resetSession();
+
+               dmFaultHandler.showImportExportStatus(Status.StatusType.DM_SESSION_EXPORT_COMPLETE);
             }
             else {
                showDragAndDropZone();
@@ -754,6 +682,7 @@ public class ExportFragment extends BaseDataFragment {
       logger.debug("onMyselfSessionError(): {}", session.getType());
       if (SessionUtil.isPerformOperationsTask(session)) {
          clearTreeSelection();
+         dmFaultHandler.showImportExportStatus(Status.StatusType.DM_SESSION_EXPORT_FAILED);
 
          processOverlay.setMode(DataExchangeProcessOverlay.MODE.HIDDEN);
          setExportPicklistsReadOnly(false);
@@ -826,6 +755,9 @@ public class ExportFragment extends BaseDataFragment {
     */
    private void runExport() {
       logger.trace("runExport()");
+
+      dmFaultHandler.showImportExportStatus(Status.StatusType.DM_SESSION_EXPORT_IN_PROGRESS);
+
       progressValue = ProgressValue.initProgress();
       List<ObjectGraph> selected = new ArrayList<ObjectGraph>(getTreeAdapter().getSelected());
       ArrayList<ObjectGraph> ddopsSelect = new ArrayList<ObjectGraph>(getTreeAdapter().getData());
@@ -862,7 +794,8 @@ public class ExportFragment extends BaseDataFragment {
          if (taskFile.exists()) {
             logger.error("Unexpected taskdata file detected. Stop the process.");
             ToastMessageCustom.makeToastMessageText(getActivity().getApplicationContext(), getString(R.string.export_cancel), Gravity.TOP | Gravity.CENTER_HORIZONTAL,
-                    getResources().getInteger(R.integer.toast_message_xoffset), getResources().getInteger(R.integer.toast_message_yoffset)).show();
+                  getResources().getInteger(R.integer.toast_message_xoffset), getResources().getInteger(R.integer.toast_message_yoffset)).show();
+            dmFaultHandler.showImportExportStatus(Status.StatusType.DM_SESSION_EXPORT_FAILED);
             return;
          }
 
@@ -976,12 +909,12 @@ public class ExportFragment extends BaseDataFragment {
             if (selectedItemCount > MAX_TREE_SELECTIONS_FOR_DEFAULT_TEXT_SIZE) {
                exportSelectedBtn.setTextSize(resources.getDimension(R.dimen.button_default_text_size) - resources.getDimension(R.dimen.decrease_text_size));
                exportSelectedBtn.setPadding(resources.getInteger(R.integer.button_minimum_padding_left), resources.getInteger(R.integer.button_default_padding_top),
-                       resources.getInteger(R.integer.button_minimum_padding_right), resources.getInteger(R.integer.button_default_padding_bottom));
+                     resources.getInteger(R.integer.button_minimum_padding_right), resources.getInteger(R.integer.button_default_padding_bottom));
             }
             else {
                exportSelectedBtn.setTextSize(resources.getDimension(R.dimen.button_default_text_size));
                exportSelectedBtn.setPadding(resources.getInteger(R.integer.button_default_padding_left), resources.getInteger(R.integer.button_default_padding_top),
-                       resources.getInteger(R.integer.button_default_padding_right), resources.getInteger(R.integer.button_default_padding_bottom));
+                     resources.getInteger(R.integer.button_default_padding_right), resources.getInteger(R.integer.button_default_padding_bottom));
             }
          }
       }
@@ -1014,6 +947,59 @@ public class ExportFragment extends BaseDataFragment {
       return Session.Action.EXPORT;
    }
 
+   static class ProgressValue {
+      private int currentValue;
+      private int maxValue;
+
+      public ProgressValue(int currentValue, int maxValue) {
+         this.currentValue = currentValue;
+         this.maxValue = maxValue;
+      }
+
+      /**
+       * Return ProgressValue instance with initialized value set to zeros.
+       * @return  ProgressValue instance
+       */
+      public static ProgressValue initProgress() {
+         return new ProgressValue(0, 0);
+      }
+
+      /**
+       * Getter for current progress value
+       *
+       * @return  current progress value
+       */
+      public int getCurrentValue() {
+         return this.currentValue;
+      }
+
+      /**
+       * Setter for current progress value
+       *
+       * @param currentValue  progress value
+       */
+      public void setCurrentValue(int currentValue) {
+         this.currentValue = currentValue;
+      }
+
+      /**
+       * Getter for the progress max value
+       *
+       * @return  the max value
+       */
+      public int getMaxValue() {
+         return this.maxValue;
+      }
+
+      /**
+       * Setter for the progress max value
+       * @param maxValue
+       */
+      public void setMaxValue(int maxValue) {
+         this.maxValue = maxValue;
+      }
+   }
+
    public static class ObjectPickListItem<T> extends PickListItem {
       private T object;
 
@@ -1024,6 +1010,26 @@ public class ExportFragment extends BaseDataFragment {
 
       public T getObject() {
          return object;
+      }
+   }
+
+   private class VipDataHelperListener implements IVIPDataHelper.OnVehicleChangedListener {
+
+      @Override
+      public void onCurrentVehicleChanged(VehicleCurrent vehicleCurrent) {
+         logger.debug("VipDataHelperListener onCurrentVehicleChanged {}", vehicleCurrent);
+      }
+   }
+
+   /**
+   * Comparator class used to order position of Encryption Key Picklist so that "None" value is always top position
+   *
+   * @author mreece
+   */
+   private class IDPicklistComparator implements Comparator<PickListItem> {
+      @Override
+      public int compare(PickListItem lhs, PickListItem rhs) {
+         return (int) lhs.getId() - (int) rhs.getId();
       }
    }
 }

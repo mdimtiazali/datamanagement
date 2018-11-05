@@ -70,4 +70,12 @@ public class GFFSelectionView extends DialogView{
         }
         return null;
     }
+
+    /**
+     * Setter for the SelectedPosition.
+     * @param  position
+     */
+    protected void setSelectedPosition(int position) {
+        adapter.setSelectedPosition(position);
+    }
 }
