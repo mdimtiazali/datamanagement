@@ -525,11 +525,23 @@ public class ManageFragment extends BaseDataFragment implements DmAccessibleObse
       intent.setAction(DataManagementService.ACTION_RESET_CACHE);
       getActivity().startService(intent);
    }
+
+   private List<ObjectGraph> filterNoneUiObjectGraph(List<ObjectGraph> objectGraphs){
+      if(objectGraphs != null && !objectGraphs.isEmpty()){
+         Iterator<ObjectGraph> iterator = objectGraphs.iterator();
+         while(iterator.hasNext()){
+            if(isIgnoredInUi(iterator.next().getType())){
+               iterator.remove();
+            }
+         }
+      }
+      return objectGraphs;
+   }
    //remove data and refresh UI
    private void removeAndRefreshObjectUI(List<ObjectGraph> objects) {
       treeAdapter.removeObjectGraphs(objects);
       treeAdapter.updateViewSelection(treeViewList);
-      manager.removeNodesRecursively(objects);
+      manager.removeNodesRecursively(filterNoneUiObjectGraph(objects));
       removeParentEmptyGroup(objects);
       notifyCacheDataChange();
       setHeaderAndDeleteButton(false);
