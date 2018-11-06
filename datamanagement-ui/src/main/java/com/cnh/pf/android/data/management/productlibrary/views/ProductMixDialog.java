@@ -795,7 +795,7 @@ public class ProductMixDialog extends DialogView implements DialogHandlerListene
             newProductButtonAdd.setEnabled(false);
             PickListAdapter productFormAdapter = new PickListAdapter(newProductFormPickList, getContext());
             for (ProductForm form : ProductForm.values()) {
-               if (form != ProductForm.ANY) {
+               if ( (form == ProductForm.LIQUID) || (form == ProductForm.GRANULAR) ) {
                   productFormAdapter.add(new PickListItem(form.getValue(), EnumValueToUiStringUtility.getUiStringForProductForm(form, getContext())));
                }
             }
@@ -1148,7 +1148,7 @@ public class ProductMixDialog extends DialogView implements DialogHandlerListene
          PickListAdapter productFormAdapter = new PickListAdapter(newProductFormPickList, getContext());
 
          for (ProductForm form : ProductForm.values()) {
-            if (form != ProductForm.ANY) {
+            if ( (form == ProductForm.LIQUID) || (form == ProductForm.GRANULAR) ) {
                productFormAdapter.add(new PickListItem(form.getValue(), EnumValueToUiStringUtility.getUiStringForProductForm(form, getContext())));
             }
          }
@@ -1387,7 +1387,10 @@ public class ProductMixDialog extends DialogView implements DialogHandlerListene
    private void fillPickListAdapterWithProducts(PickListAdapter picklistAdapter, List<Product> productList) {
       if (picklistAdapter != null && productList != null && !productList.isEmpty()) {
          for (int i = 0; i < productList.size(); i++) {
+            ProductForm pform = productList.get(i).getForm();
+            if ( (pform == ProductForm.LIQUID) || (pform == ProductForm.GRANULAR) ) {
             picklistAdapter.add(new PickListItem(i, productList.get(i).getName()));
+            }
          }
       }
    }
