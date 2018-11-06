@@ -7,6 +7,8 @@ import android.view.Gravity;
 import android.view.MotionEvent;
 import android.widget.ImageButton;
 import android.widget.Toast;
+import com.cnh.android.pf.widget.controls.ToastMessageCustom;
+import com.cnh.pf.android.data.management.R;
 
 public class DeleteButton extends ImageButton {
     private PopContentProvider popContentProvider;
@@ -34,9 +36,8 @@ public class DeleteButton extends ImageButton {
     @Override
     public boolean onTouchEvent(MotionEvent event) {
         if(!isEnabled() && MotionEvent.ACTION_UP == event.getAction() && popContentProvider != null){
-            Toast toast = Toast.makeText(getContext(),popContentProvider.getStringResourceId(),Toast.LENGTH_SHORT);
-            toast.setGravity(Gravity.TOP,0,48);
-            toast.show();
+            ToastMessageCustom.makeToastMessageText(getContext(),getResources().getString(R.string.delete_select_notice), Gravity.TOP | Gravity.CENTER_HORIZONTAL,
+               getResources().getInteger(R.integer.toast_message_xoffset), getResources().getInteger(R.integer.toast_message_yoffset)).show();
         }
         return super.onTouchEvent(event);
     }
