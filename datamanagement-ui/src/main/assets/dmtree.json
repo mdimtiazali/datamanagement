@@ -40,7 +40,7 @@
     "Children" : null
   },
   {
-    "Title":"Obstacles",
+    "Title":"Landmarks",
     "DataType": "LANDMARK",
     "GroupDataType": "LANDMARKS",
     "FollowSource": 0,
@@ -93,6 +93,14 @@
     "GroupDataType": "VEHICLE_IMPLEMENTS",
     "FollowSource": 1,
     "Hidden" : 0,
+    "Children" : null
+  },
+  {
+    "Title":"NOTE",
+    "DataType": "FILE",
+    "GroupDataType": "FILE",
+    "FollowSource": 1,
+    "Hidden" : 1,
     "Children" : null
   },
   {
