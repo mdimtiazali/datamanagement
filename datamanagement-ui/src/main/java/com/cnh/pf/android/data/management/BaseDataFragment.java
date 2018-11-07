@@ -893,11 +893,17 @@ public abstract class BaseDataFragment extends RoboFragment implements SessionCo
          treeBuilder.bAddRelation(null, new GroupObjectGraph(null, type, TreeEntityHelper.getGroupName(getActivity(), type), null, null));
       }
    }
+   protected boolean isIgnoredInUi(String dataType){
+      if(DataTypes.DDOP.equals(dataType) || DataTypes.GUIDANCE_PATTERN.equals(dataType) || DataTypes.FILE.equals(dataType)){
+         return true;
+      }
+      return false;
+   }
    //Put the object into tree item list and return true for it is visible and false for invisible
    private boolean bAddToTree(ObjectGraph parent, ObjectGraph object) {
       boolean bVisible = false;
       try {
-         if (DataTypes.DDOP.equals(object.getType()) || DataTypes.GUIDANCE_PATTERN.equals(object.getType()) || DataTypes.FILE.equals(object.getType())) {
+         if (isIgnoredInUi(object.getType())) {
             return bVisible;
          }
          //Check if entity can be grouped
