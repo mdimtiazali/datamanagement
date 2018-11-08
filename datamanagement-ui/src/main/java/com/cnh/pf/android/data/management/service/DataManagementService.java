@@ -12,6 +12,7 @@ import android.app.Application;
 import android.app.NotificationManager;
 import android.content.Intent;
 import android.content.SharedPreferences;
+import android.os.AsyncTask;
 import android.os.Binder;
 import android.os.Environment;
 import android.os.Handler;
@@ -51,6 +52,7 @@ import org.jgroups.View;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.util.LinkedList;
 import java.util.List;
 import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.concurrent.atomic.AtomicReference;
@@ -579,5 +581,37 @@ public class DataManagementService extends RoboService implements SharedPreferen
       public DataManagementService getService() {
          return DataManagementService.this;
       }
+   }
+
+   public interface GffCallback{
+      void onGffs(List<ObjectGraph> gffs);
+   }
+   /**
+    * Query the Gff objects.
+    *
+    * @param callback  callback object for data is available.
+    */
+   public void queryGff(final GffCallback callback){
+      List<Address> addresses = dsHelper.getAddressesForLocation(Datasource.LocationType.PCM);
+      new AsyncTask<Address, Void, List<ObjectGraph>>(){
+         @Override
+         protected List<ObjectGraph> doInBackground(Address... addresses) {
+            List<ObjectGraph> objectGraphs = new LinkedList<ObjectGraph>();
+            try{
+               objectGraphs = DataManagementService.this.mediator.discoveryGFF(addresses);
+            } catch (Throwable ex){
+               logger.error("Error occur when calling mediator ");
+               logger.error(ex.getMessage());
+            }
+            return objectGraphs;
+         }
+
+         @Override
+         protected void onPostExecute(List<ObjectGraph> objectGraphs) {
+            if(callback != null){
+               callback.onGffs(objectGraphs);
+            }
+         }
+      }.execute(addresses.toArray(new Address[addresses.size()]));
    }
 }

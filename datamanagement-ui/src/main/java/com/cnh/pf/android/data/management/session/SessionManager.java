@@ -465,4 +465,11 @@ public class SessionManager implements SessionContract.SessionManager, SessionEv
    public boolean isCloudPresent() {
       return dmService.isCloudOnline();
    }
+
+   @Override
+   public void queryGff(Object callback) {
+      if(dmService != null){
+         dmService.queryGff((DataManagementService.GffCallback)callback);
+      }
+   }
 }

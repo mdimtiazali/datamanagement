@@ -120,6 +120,14 @@ public interface SessionContract {
        * @return True if Cloud is available
        */
       boolean isCloudPresent();
+
+      /**
+       * Return GFF objects
+       *
+       * @param callback callback when data is available
+       *
+       */
+      void queryGff(Object callback);
    }
 
    interface SessionView {
