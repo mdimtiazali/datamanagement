@@ -5,44 +5,30 @@
  * receipt nor possession thereof confers any right to reproduce, use, or
  * disclose in whole or in part any such information without written
  * authorization from CNH Industrial NV.
- *
  */
 package com.cnh.pf.android.data.management.fault;
 
+import com.cnh.alert.types.Status;
 import com.cnh.jgroups.Mediator;
+import com.cnh.pf.android.data.management.TestApp;
 import com.cnh.pf.fault.FaultHandler;
-
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertTrue;
-import static org.junit.Assert.*;
-import static org.mockito.Mockito.*;
-
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.robolectric.RobolectricMavenTestRunner;
-import org.robolectric.RuntimeEnvironment;
 import org.robolectric.annotation.Config;
-
-import com.cnh.pf.android.data.management.R;
-import com.cnh.pf.android.data.management.TestApp;
-import com.cnh.pf.android.data.management.TestModule;
-
-import android.graphics.drawable.Drawable;
-import android.view.View;
-import android.widget.Button;
-import android.widget.EditText;
-import android.widget.TextView;
-import roboguice.RoboGuice;
-import roboguice.context.event.OnCreateEvent;
 import roboguice.context.event.OnDestroyEvent;
 
-import java.util.HashMap;
-import java.util.Map;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertTrue;
+import static org.mockito.Mockito.doNothing;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
 
 @RunWith(RobolectricMavenTestRunner.class)
-@Config(manifest = "src/main/AndroidManifest.xml", application = TestApp.class)
-public class DMFaultHandlerTest {
+@Config(manifest = "src/main/AndroidManifest.xml", application = TestApp.class) public class DMFaultHandlerTest {
 
    private DMFaultHandler dmFaultHandler;
    private FaultCode faultcode;
@@ -119,4 +105,36 @@ public class DMFaultHandlerTest {
       /* verify method was executed */
       verify(faultHandlermock).setFault(faultcode.getCode());
    }
+
+   @Test
+   public void changeUSBDetectedStatusTest() {
+
+      dmFaultHandler = mock(DMFaultHandler.class);
+
+      //      assertNull(alertManager);
+      //      assertNull(producer);
+
+      dmFaultHandler.changeUSBDetectedStatus(true);
+
+      verify(dmFaultHandler).changeUSBDetectedStatus(true);
+
+      dmFaultHandler.changeUSBDetectedStatus(false);
+
+      verify(dmFaultHandler).changeUSBDetectedStatus(false);
+
+   }
+
+   @Test
+   public void showImportExportStatusTest() {
+
+      dmFaultHandler = mock(DMFaultHandler.class);
+
+      dmFaultHandler.showImportExportStatus(Status.StatusType.DM_SESSION_IMPORT_IN_PROGRESS);
+      verify(dmFaultHandler).showImportExportStatus(Status.StatusType.DM_SESSION_IMPORT_IN_PROGRESS);
+
+      dmFaultHandler.showImportExportStatus(Status.StatusType.DM_SESSION_EXPORT_IN_PROGRESS);
+      verify(dmFaultHandler).showImportExportStatus(Status.StatusType.DM_SESSION_EXPORT_IN_PROGRESS);
+
+   }
+
 }
